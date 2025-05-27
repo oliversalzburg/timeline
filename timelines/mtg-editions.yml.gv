@@ -1,0 +1,689 @@
+digraph {
+    node [fontname="Simple Plan";];
+    edge [fontname="Master Photograph";];
+    fontname="Simple Plan";
+    rankdir="TD";
+    subgraph cluster_1993 {
+        penwidth="0.2";
+        label="1993";
+        subgraph {
+            peripheries=0;
+            cluster=true;
+            label="";
+            "Limited Edition Alpha (LEA)" [fontsize="20";];
+            "annotation0" [label="Thu Aug 05 1993\n0ms\n-31y 305d 12h 14m 37.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation0" -> "Limited Edition Alpha (LEA)" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+        }
+        subgraph {
+            peripheries=0;
+            cluster=true;
+            label="";
+            "Limited Edition Beta (LEB)" [fontsize="20";];
+            "annotation1" [label="Fri Oct 01 1993\n57d\n-31y 248d 12h 14m 37.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation1" -> "Limited Edition Beta (LEB)" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "Limited Edition Alpha (LEA)" -> "Limited Edition Beta (LEB)" [label="  57d\ncarrying: 0ms"; minlen="2.097141118779237"; penwidth="0.5"; weight="1";];
+        }
+        subgraph {
+            peripheries=0;
+            cluster=true;
+            label="";
+            "Unlimited Edition (2ED)" [fontsize="20";];
+            "annotation2" [label="Wed Dec 01 1993\n118d\n-31y 187d 12h 14m 37.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation2" -> "Unlimited Edition (2ED)" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "Limited Edition Beta (LEB)" -> "Unlimited Edition (2ED)" [label="  61d\ncarrying: 0ms"; minlen="2.164963715117998"; penwidth="0.5"; weight="1";];
+        }
+        subgraph {
+            peripheries=0;
+            cluster=true;
+            label="";
+            "Arabian Nights (ARN)" [fontsize="20";];
+            "annotation3" [label="Thu Dec 02 1993\n119d\n-31y 186d 12h 14m 37.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation3" -> "Arabian Nights (ARN)" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "Unlimited Edition (2ED)" -> "Arabian Nights (ARN)" [label="  1d\ncarrying: 1d"; minlen="0.01"; penwidth="0.5"; weight="1";];
+        }
+    }
+    subgraph cluster_1994 {
+        penwidth="0.2";
+        label="1994";
+        subgraph {
+            peripheries=0;
+            cluster=true;
+            label="";
+            "Foreign Limited (FBB)" [fontsize="20";];
+            "annotation4" [label="Sat Jan 01 1994\n149d\n-31y 156d 12h 14m 37.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation4" -> "Foreign Limited (FBB)" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "Arabian Nights (ARN)" -> "Foreign Limited (FBB)" [label="  30d\ncarrying: 0ms"; minlen="1.488077055429833"; penwidth="0.5"; weight="1";];
+        }
+        subgraph {
+            peripheries=0;
+            cluster=true;
+            label="";
+            "Antiquities (ATQ)" [fontsize="20";];
+            "annotation5" [label="Tue Mar 01 1994\n208d\n-31y 97d 12h 14m 37.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation5" -> "Antiquities (ATQ)" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "Foreign Limited (FBB)" -> "Antiquities (ATQ)" [label="  59d\ncarrying: 0ms"; minlen="2.1316272948504063"; penwidth="0.5"; weight="1";];
+        }
+        subgraph {
+            peripheries=0;
+            cluster=true;
+            label="";
+            "Revised Edition (3ED)" [fontsize="20";];
+            "annotation6" [label="Thu Apr 14 1994\n252d\n-31y 53d 12h 14m 37.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation6" -> "Revised Edition (3ED)" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "Antiquities (ATQ)" -> "Revised Edition (3ED)" [label="  44d\ncarrying: 0ms"; minlen="1.8382794848629478"; penwidth="0.5"; weight="1";];
+        }
+        subgraph {
+            peripheries=0;
+            cluster=true;
+            label="";
+            "Legends (LEG)" [fontsize="20";];
+            "annotation7" [label="Wed Jun 01 1994\n300d\n-31y 5d 12h 14m 37.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation7" -> "Legends (LEG)" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "Revised Edition (3ED)" -> "Legends (LEG)" [label="  48d\ncarrying: 0ms"; minlen="1.9252908618525777"; penwidth="0.5"; weight="1";];
+        }
+        subgraph {
+            peripheries=0;
+            cluster=true;
+            label="";
+            "The Dark (DRK)" [fontsize="20";];
+            "annotation8" [label="Mon Aug 01 1994\n361d\n-30y 309d 12h 14m 37.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation8" -> "The Dark (DRK)" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "Legends (LEG)" -> "The Dark (DRK)" [label="  61d\ncarrying: 0ms"; minlen="2.164963715117998"; penwidth="0.5"; weight="1";];
+        }
+        subgraph {
+            peripheries=0;
+            cluster=true;
+            label="";
+            "Fallen Empires (FEM)" [fontsize="20";];
+            "annotation9" [label="Sat Oct 01 1994\n1y 57d\n-30y 248d 12h 14m 37.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation9" -> "Fallen Empires (FEM)" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "The Dark (DRK)" -> "Fallen Empires (FEM)" [label="  61d\ncarrying: 0ms"; minlen="2.164963715117998"; penwidth="0.5"; weight="1";];
+        }
+    }
+    subgraph cluster_1995 {
+        penwidth="0.2";
+        label="1995";
+        subgraph {
+            peripheries=0;
+            cluster=true;
+            label="";
+            "Foreign Limited 4th PT/ES (FBB)" [fontsize="20";];
+            "annotation10" [label="Sun Jan 01 1995\n1y 149d\n-30y 156d 12h 14m 37.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation10" -> "Foreign Limited 4th PT/ES (FBB)" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "Fallen Empires (FEM)" -> "Foreign Limited 4th PT/ES (FBB)" [label="  92d\ncarrying: 0ms"; minlen="2.575878427993727"; penwidth="0.5"; weight="1";];
+        }
+        subgraph {
+            peripheries=0;
+            cluster=true;
+            label="";
+            "Fourth Edition (4ED)" [fontsize="20";];
+            "annotation11" [label="Sat Apr 01 1995\n1y 239d\n-30y 66d 12h 14m 37.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation11" -> "Fourth Edition (4ED)" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "Foreign Limited 4th PT/ES (FBB)" -> "Fourth Edition (4ED)" [label="  90d\ncarrying: 0ms"; minlen="2.5538995212749516"; penwidth="0.5"; weight="1";];
+        }
+        subgraph {
+            peripheries=0;
+            cluster=true;
+            label="";
+            "Ice Age (ICE)" [fontsize="20";];
+            "annotation12" [label="Thu Jun 01 1995\n1y 300d\n-30y 5d 12h 14m 37.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation12" -> "Ice Age (ICE)" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "Fourth Edition (4ED)" -> "Ice Age (ICE)" [label="  61d\ncarrying: 0ms"; minlen="2.164963715117998"; penwidth="0.5"; weight="1";];
+        }
+        subgraph {
+            peripheries=0;
+            cluster=true;
+            label="";
+            "Homelands (HML)" [fontsize="20";];
+            "annotation13" [label="Sat Oct 14 1995\n2y 70d\n-29y 235d 12h 14m 37.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation13" -> "Homelands (HML)" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "Ice Age (ICE)" -> "Homelands (HML)" [label="  135d\ncarrying: 0ms"; minlen="2.959364629383116"; penwidth="0.5"; weight="1";];
+        }
+    }
+    subgraph cluster_1996 {
+        penwidth="0.2";
+        label="1996";
+        subgraph {
+            peripheries=0;
+            cluster=true;
+            label="";
+            "Foreign Limited 4th JP/KR/CN (FBB)" [fontsize="20";];
+            "annotation14" [label="Mon Jan 01 1996\n2y 149d\n-29y 156d 12h 14m 37.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation14" -> "Foreign Limited 4th JP/KR/CN (FBB)" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "Homelands (HML)" -> "Foreign Limited 4th JP/KR/CN (FBB)" [label="  79d\ncarrying: 0ms"; minlen="2.423537703411708"; penwidth="0.5"; weight="1";];
+        }
+        subgraph {
+            peripheries=0;
+            cluster=true;
+            label="";
+            "Alliances (ALL)" [fontsize="20";];
+            "annotation15" [label="Mon Jun 10 1996\n2y 310d\n-28y 360d 12h 14m 37.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation15" -> "Alliances (ALL)" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "Foreign Limited 4th JP/KR/CN (FBB)" -> "Alliances (ALL)" [label="  161d\ncarrying: 0ms"; minlen="3.1354942159291497"; penwidth="0.5"; weight="1";];
+        }
+        subgraph {
+            peripheries=0;
+            cluster=true;
+            label="";
+            "Mirage (MIR)" [fontsize="20";];
+            "annotation16" [label="Mon Oct 07 1996\n3y 64d\n-28y 241d 12h 14m 37.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation16" -> "Mirage (MIR)" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "Alliances (ALL)" -> "Mirage (MIR)" [label="  119d\ncarrying: 0ms"; minlen="2.833213344056216"; penwidth="0.5"; weight="1";];
+        }
+    }
+    subgraph cluster_1997 {
+        penwidth="0.2";
+        label="1997";
+        subgraph {
+            peripheries=0;
+            cluster=true;
+            label="";
+            "Visions (VIS)" [fontsize="20";];
+            "annotation17" [label="Mon Feb 03 1997\n3y 183d\n-28y 122d 12h 14m 37.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation17" -> "Visions (VIS)" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "Mirage (MIR)" -> "Visions (VIS)" [label="  119d\ncarrying: 0ms"; minlen="2.833213344056216"; penwidth="0.5"; weight="1";];
+        }
+        subgraph {
+            peripheries=0;
+            cluster=true;
+            label="";
+            "Fifth Edition (5ED)" [fontsize="20";];
+            "annotation18" [label="Mon Mar 24 1997\n3y 232d\n-28y 73d 12h 14m 37.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation18" -> "Fifth Edition (5ED)" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "Visions (VIS)" -> "Fifth Edition (5ED)" [label="  49d\ncarrying: 0ms"; minlen="1.9459101490553132"; penwidth="0.5"; weight="1";];
+        }
+        subgraph {
+            peripheries=0;
+            cluster=true;
+            label="";
+            "Weatherlight (WTH)" [fontsize="20";];
+            "annotation19" [label="Mon Jun 09 1997\n3y 309d\n-27y 361d 12h 14m 37.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation19" -> "Weatherlight (WTH)" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "Fifth Edition (5ED)" -> "Weatherlight (WTH)" [label="  77d\ncarrying: 0ms"; minlen="2.3978952727983707"; penwidth="0.5"; weight="1";];
+        }
+        subgraph {
+            peripheries=0;
+            cluster=true;
+            label="";
+            "Tempest (TMP)" [fontsize="20";];
+            "annotation20" [label="Mon Oct 13 1997\n4y 70d\n-27y 235d 12h 14m 37.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation20" -> "Tempest (TMP)" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "Weatherlight (WTH)" -> "Tempest (TMP)" [label="  126d\ncarrying: 0ms"; minlen="2.8903717578961645"; penwidth="0.5"; weight="1";];
+        }
+    }
+    subgraph cluster_1998 {
+        penwidth="0.2";
+        label="1998";
+        subgraph {
+            peripheries=0;
+            cluster=true;
+            label="";
+            "Stronghold (STH)" [fontsize="20";];
+            "annotation21" [label="Mon Mar 02 1998\n4y 210d\n-27y 95d 12h 14m 37.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation21" -> "Stronghold (STH)" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "Tempest (TMP)" -> "Stronghold (STH)" [label="  140d\ncarrying: 0ms"; minlen="2.995732273553991"; penwidth="0.5"; weight="1";];
+        }
+        subgraph {
+            peripheries=0;
+            cluster=true;
+            label="";
+            "Exodus (EXO)" [fontsize="20";];
+            "annotation22" [label="Mon Jun 15 1998\n4y 315d\n-26y 355d 12h 14m 37.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation22" -> "Exodus (EXO)" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "Stronghold (STH)" -> "Exodus (EXO)" [label="  105d\ncarrying: 0ms"; minlen="2.70805020110221"; penwidth="0.5"; weight="1";];
+        }
+        subgraph {
+            peripheries=0;
+            cluster=true;
+            label="";
+            "Unglued (UGL)" [fontsize="20";];
+            "annotation23" [label="Mon Aug 17 1998\n5y 13d\n-26y 292d 12h 14m 37.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation23" -> "Unglued (UGL)" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "Exodus (EXO)" -> "Unglued (UGL)" [label="  63d\ncarrying: 0ms"; minlen="2.1972245773362196"; penwidth="0.5"; weight="1";];
+        }
+        subgraph {
+            peripheries=0;
+            cluster=true;
+            label="";
+            "Urza's Saga (USG)" [fontsize="20";];
+            "annotation24" [label="Mon Oct 12 1998\n5y 69d\n-26y 236d 12h 14m 37.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation24" -> "Urza's Saga (USG)" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "Unglued (UGL)" -> "Urza's Saga (USG)" [label="  56d\ncarrying: 0ms"; minlen="2.0794415416798357"; penwidth="0.5"; weight="1";];
+        }
+    }
+    subgraph cluster_1999 {
+        penwidth="0.2";
+        label="1999";
+        subgraph {
+            peripheries=0;
+            cluster=true;
+            label="";
+            "Urza's Legacy (ULG)" [fontsize="20";];
+            "annotation25" [label="Mon Feb 15 1999\n5y 195d\n-26y 110d 12h 14m 37.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation25" -> "Urza's Legacy (ULG)" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "Urza's Saga (USG)" -> "Urza's Legacy (ULG)" [label="  126d\ncarrying: 0ms"; minlen="2.8903717578961645"; penwidth="0.5"; weight="1";];
+        }
+        subgraph {
+            peripheries=0;
+            cluster=true;
+            label="";
+            "Classic Sixth Edition (6ED)" [fontsize="20";];
+            "annotation26" [label="Wed Apr 28 1999\n5y 267d\n-26y 38d 12h 14m 37.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation26" -> "Classic Sixth Edition (6ED)" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "Urza's Legacy (ULG)" -> "Classic Sixth Edition (6ED)" [label="  72d\ncarrying: 0ms"; minlen="2.330755969960742"; penwidth="0.5"; weight="1";];
+        }
+        subgraph {
+            peripheries=0;
+            cluster=true;
+            label="";
+            "Urza's Destiny (UDS)" [fontsize="20";];
+            "annotation27" [label="Mon Jun 07 1999\n5y 307d\n-25y 363d 12h 14m 37.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation27" -> "Urza's Destiny (UDS)" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "Classic Sixth Edition (6ED)" -> "Urza's Destiny (UDS)" [label="  40d\ncarrying: 0ms"; minlen="1.742969305058623"; penwidth="0.5"; weight="1";];
+        }
+        subgraph {
+            peripheries=0;
+            cluster=true;
+            label="";
+            "Mercadian Masques (MMQ)" [fontsize="20";];
+            "annotation28" [label="Mon Oct 04 1999\n6y 61d\n-25y 244d 12h 14m 37.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation28" -> "Mercadian Masques (MMQ)" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "Urza's Destiny (UDS)" -> "Mercadian Masques (MMQ)" [label="  119d\ncarrying: 0ms"; minlen="2.833213344056216"; penwidth="0.5"; weight="1";];
+        }
+    }
+    subgraph cluster_2000 {
+        penwidth="0.2";
+        label="2000";
+        subgraph {
+            peripheries=0;
+            cluster=true;
+            label="";
+            "Nemesis (NEM)" [fontsize="20";];
+            "annotation29" [label="Mon Feb 14 2000\n6y 194d\n-25y 111d 12h 14m 37.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation29" -> "Nemesis (NEM)" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "Mercadian Masques (MMQ)" -> "Nemesis (NEM)" [label="  133d\ncarrying: 0ms"; minlen="2.9444389791664403"; penwidth="0.5"; weight="1";];
+        }
+        subgraph {
+            peripheries=0;
+            cluster=true;
+            label="";
+            "Prophecy (PCY)" [fontsize="20";];
+            "annotation30" [label="Mon Jun 05 2000\n6y 306d\n-24y 364d 12h 14m 37.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation30" -> "Prophecy (PCY)" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "Nemesis (NEM)" -> "Prophecy (PCY)" [label="  112d\ncarrying: 0ms"; minlen="2.772588722239781"; penwidth="0.5"; weight="1";];
+        }
+    }
+    subgraph cluster_2001 {
+        penwidth="0.2";
+        label="2001";
+        subgraph {
+            peripheries=0;
+            cluster=true;
+            label="";
+            "Seventh Edition (7ED)" [fontsize="20";];
+            "annotation31" [label="Wed Apr 11 2001\n7y 251d\n-24y 54d 12h 14m 37.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation31" -> "Seventh Edition (7ED)" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "Prophecy (PCY)" -> "Seventh Edition (7ED)" [label="  310d\ncarrying: 0ms"; minlen="3.7906621484238787"; penwidth="0.5"; weight="1";];
+        }
+        subgraph {
+            peripheries=0;
+            cluster=true;
+            label="";
+            "Odyssey (ODY)" [fontsize="20";];
+            "annotation32" [label="Mon Oct 01 2001\n8y 59d\n-23y 246d 12h 14m 37.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation32" -> "Odyssey (ODY)" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "Seventh Edition (7ED)" -> "Odyssey (ODY)" [label="  173d\ncarrying: 0ms"; minlen="3.207381445442466"; penwidth="0.5"; weight="1";];
+        }
+    }
+    subgraph cluster_2002 {
+        penwidth="0.2";
+        label="2002";
+        subgraph {
+            peripheries=0;
+            cluster=true;
+            label="";
+            "Torment (TOR)" [fontsize="20";];
+            "annotation33" [label="Mon Feb 04 2002\n8y 185d\n-23y 120d 12h 14m 37.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation33" -> "Torment (TOR)" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "Odyssey (ODY)" -> "Torment (TOR)" [label="  126d\ncarrying: 0ms"; minlen="2.8903717578961645"; penwidth="0.5"; weight="1";];
+        }
+        subgraph {
+            peripheries=0;
+            cluster=true;
+            label="";
+            "Judgment (JUD)" [fontsize="20";];
+            "annotation34" [label="Mon May 27 2002\n8y 297d\n-23y 8d 12h 14m 37.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation34" -> "Judgment (JUD)" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "Torment (TOR)" -> "Judgment (JUD)" [label="  112d\ncarrying: 0ms"; minlen="2.772588722239781"; penwidth="0.5"; weight="1";];
+        }
+        subgraph {
+            peripheries=0;
+            cluster=true;
+            label="";
+            "Onslaught (ONS)" [fontsize="20";];
+            "annotation35" [label="Wed Oct 02 2002\n9y 60d\n-22y 245d 12h 14m 37.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation35" -> "Onslaught (ONS)" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "Judgment (JUD)" -> "Onslaught (ONS)" [label="  128d\ncarrying: 0ms"; minlen="2.906120114864304"; penwidth="0.5"; weight="1";];
+        }
+    }
+    subgraph cluster_2003 {
+        penwidth="0.2";
+        label="2003";
+        subgraph {
+            peripheries=0;
+            cluster=true;
+            label="";
+            "Legions (LGN)" [fontsize="20";];
+            "annotation36" [label="Mon Feb 03 2003\n9y 184d\n-22y 121d 12h 14m 37.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation36" -> "Legions (LGN)" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "Onslaught (ONS)" -> "Legions (LGN)" [label="  124d\ncarrying: 0ms"; minlen="2.8743714165497236"; penwidth="0.5"; weight="1";];
+        }
+        subgraph {
+            peripheries=0;
+            cluster=true;
+            label="";
+            "Scourge (SCG)" [fontsize="20";];
+            "annotation37" [label="Mon May 26 2003\n9y 296d\n-22y 9d 12h 14m 37.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation37" -> "Scourge (SCG)" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "Legions (LGN)" -> "Scourge (SCG)" [label="  112d\ncarrying: 0ms"; minlen="2.772588722239781"; penwidth="0.5"; weight="1";];
+        }
+        subgraph {
+            peripheries=0;
+            cluster=true;
+            label="";
+            "Eighth Edition (8ED)" [fontsize="20";];
+            "annotation38" [label="Mon Jul 28 2003\n9y 359d\n-21y 311d 12h 14m 37.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation38" -> "Eighth Edition (8ED)" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "Scourge (SCG)" -> "Eighth Edition (8ED)" [label="  63d\ncarrying: 0ms"; minlen="2.1972245773362196"; penwidth="0.5"; weight="1";];
+        }
+        subgraph {
+            peripheries=0;
+            cluster=true;
+            label="";
+            "Mirrodin (MRD)" [fontsize="20";];
+            "annotation39" [label="Thu Oct 02 2003\n10y 60d\n-21y 245d 12h 14m 37.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation39" -> "Mirrodin (MRD)" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "Eighth Edition (8ED)" -> "Mirrodin (MRD)" [label="  66d\ncarrying: 0ms"; minlen="2.243744592971112"; penwidth="0.5"; weight="1";];
+        }
+    }
+    subgraph cluster_2004 {
+        penwidth="0.2";
+        label="2004";
+        subgraph {
+            peripheries=0;
+            cluster=true;
+            label="";
+            "Darksteel (DST)" [fontsize="20";];
+            "annotation40" [label="Fri Feb 06 2004\n10y 187d\n-21y 118d 12h 14m 37.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation40" -> "Darksteel (DST)" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "Mirrodin (MRD)" -> "Darksteel (DST)" [label="  127d\ncarrying: 0ms"; minlen="2.8982769374032777"; penwidth="0.5"; weight="1";];
+        }
+        subgraph {
+            peripheries=0;
+            cluster=true;
+            label="";
+            "Fifth Dawn (5DN)" [fontsize="20";];
+            "annotation41" [label="Fri Jun 04 2004\n10y 306d\n-20y 364d 12h 14m 37.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation41" -> "Fifth Dawn (5DN)" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "Darksteel (DST)" -> "Fifth Dawn (5DN)" [label="  119d\ncarrying: 0ms"; minlen="2.833213344056216"; penwidth="0.5"; weight="1";];
+        }
+        subgraph {
+            peripheries=0;
+            cluster=true;
+            label="";
+            "Champions of Kamigawa (CHK)" [fontsize="20";];
+            "annotation42" [label="Fri Oct 01 2004\n11y 60d\n-20y 245d 12h 14m 37.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation42" -> "Champions of Kamigawa (CHK)" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "Fifth Dawn (5DN)" -> "Champions of Kamigawa (CHK)" [label="  119d\ncarrying: 0ms"; minlen="2.833213344056216"; penwidth="0.5"; weight="1";];
+        }
+        subgraph {
+            peripheries=0;
+            cluster=true;
+            label="";
+            "Unhinged (UNH)" [fontsize="20";];
+            "annotation43" [label="Fri Nov 19 2004\n11y 109d\n-20y 196d 12h 14m 37.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation43" -> "Unhinged (UNH)" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "Champions of Kamigawa (CHK)" -> "Unhinged (UNH)" [label="  49d\ncarrying: 0ms"; minlen="1.9459101490553132"; penwidth="0.5"; weight="1";];
+        }
+    }
+    subgraph cluster_2005 {
+        penwidth="0.2";
+        label="2005";
+        subgraph {
+            peripheries=0;
+            cluster=true;
+            label="";
+            "Betrayers of Kamigawa (BOK)" [fontsize="20";];
+            "annotation44" [label="Fri Feb 04 2005\n11y 186d\n-20y 119d 12h 14m 37.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation44" -> "Betrayers of Kamigawa (BOK)" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "Unhinged (UNH)" -> "Betrayers of Kamigawa (BOK)" [label="  77d\ncarrying: 0ms"; minlen="2.3978952727983707"; penwidth="0.5"; weight="1";];
+        }
+        subgraph {
+            peripheries=0;
+            cluster=true;
+            label="";
+            "Saviors of Kamigawa (SOK)" [fontsize="20";];
+            "annotation45" [label="Fri Jun 03 2005\n11y 305d\n-20y 12h 14m 37.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation45" -> "Saviors of Kamigawa (SOK)" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "Betrayers of Kamigawa (BOK)" -> "Saviors of Kamigawa (SOK)" [label="  119d\ncarrying: 0ms"; minlen="2.833213344056216"; penwidth="0.5"; weight="1";];
+        }
+        subgraph {
+            peripheries=0;
+            cluster=true;
+            label="";
+            "Ninth Edition (9ED)" [fontsize="20";];
+            "annotation46" [label="Fri Jul 29 2005\n11y 361d\n-19y 309d 12h 14m 37.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation46" -> "Ninth Edition (9ED)" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "Saviors of Kamigawa (SOK)" -> "Ninth Edition (9ED)" [label="  56d\ncarrying: 0ms"; minlen="2.0794415416798357"; penwidth="0.5"; weight="1";];
+        }
+        subgraph {
+            peripheries=0;
+            cluster=true;
+            label="";
+            "Ravnica: City of Guilds (RAV)" [fontsize="20";];
+            "annotation47" [label="Fri Oct 07 2005\n12y 66d\n-19y 239d 12h 14m 37.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation47" -> "Ravnica: City of Guilds (RAV)" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "Ninth Edition (9ED)" -> "Ravnica: City of Guilds (RAV)" [label="  70d\ncarrying: 0ms"; minlen="2.302585092994046"; penwidth="0.5"; weight="1";];
+        }
+    }
+    subgraph cluster_2006 {
+        penwidth="0.2";
+        label="2006";
+        subgraph {
+            peripheries=0;
+            cluster=true;
+            label="";
+            "Guildpact (GPT)" [fontsize="20";];
+            "annotation48" [label="Fri Feb 03 2006\n12y 185d\n-19y 120d 12h 14m 37.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation48" -> "Guildpact (GPT)" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "Ravnica: City of Guilds (RAV)" -> "Guildpact (GPT)" [label="  119d\ncarrying: 0ms"; minlen="2.833213344056216"; penwidth="0.5"; weight="1";];
+        }
+        subgraph {
+            peripheries=0;
+            cluster=true;
+            label="";
+            "Dissension (DIS)" [fontsize="20";];
+            "annotation49" [label="Fri May 05 2006\n12y 276d\n-19y 29d 12h 14m 37.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation49" -> "Dissension (DIS)" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "Guildpact (GPT)" -> "Dissension (DIS)" [label="  91d\ncarrying: 0ms"; minlen="2.5649493574615367"; penwidth="0.5"; weight="1";];
+        }
+        subgraph {
+            peripheries=0;
+            cluster=true;
+            label="";
+            "Coldsnap (CSP)" [fontsize="20";];
+            "annotation50" [label="Fri Jul 21 2006\n12y 353d\n-18y 317d 12h 14m 37.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation50" -> "Coldsnap (CSP)" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "Dissension (DIS)" -> "Coldsnap (CSP)" [label="  77d\ncarrying: 0ms"; minlen="2.3978952727983707"; penwidth="0.5"; weight="1";];
+        }
+    }
+    subgraph cluster_2007 {
+        penwidth="0.2";
+        label="2007";
+        subgraph {
+            peripheries=0;
+            cluster=true;
+            label="";
+            "Tenth Edition (10ED)" [fontsize="20";];
+            "annotation51" [label="Fri Jul 13 2007\n13y 345d\n-17y 325d 12h 14m 37.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation51" -> "Tenth Edition (10ED)" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "Coldsnap (CSP)" -> "Tenth Edition (10ED)" [label="  357d\ncarrying: 0ms"; minlen="3.9318256327243257"; penwidth="0.5"; weight="1";];
+        }
+    }
+    subgraph cluster_2009 {
+        penwidth="0.2";
+        label="2009";
+        subgraph {
+            peripheries=0;
+            cluster=true;
+            label="";
+            "Magic 2010 (M10)" [fontsize="20";];
+            "annotation52" [label="Fri Jul 17 2009\n15y 350d\n-15y 320d 12h 14m 37.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation52" -> "Magic 2010 (M10)" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "Tenth Edition (10ED)" -> "Magic 2010 (M10)" [label="  2y 5d\ncarrying: 0ms"; minlen="4.653960350157523"; penwidth="0.5"; weight="1";];
+        }
+    }
+    subgraph cluster_2010 {
+        penwidth="0.2";
+        label="2010";
+        subgraph {
+            peripheries=0;
+            cluster=true;
+            label="";
+            "Magic 2011 (M11)" [fontsize="20";];
+            "annotation53" [label="Fri Jul 16 2010\n16y 349d\n-14y 321d 12h 14m 37.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation53" -> "Magic 2011 (M11)" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "Magic 2010 (M10)" -> "Magic 2011 (M11)" [label="  364d\ncarrying: 0ms"; minlen="3.9512437185814275"; penwidth="0.5"; weight="1";];
+        }
+    }
+    subgraph cluster_2011 {
+        penwidth="0.2";
+        label="2011";
+        subgraph {
+            peripheries=0;
+            cluster=true;
+            label="";
+            "Magic 2012 (M12)" [fontsize="20";];
+            "annotation54" [label="Fri Jul 15 2011\n17y 348d\n-13y 322d 12h 14m 37.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation54" -> "Magic 2012 (M12)" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "Magic 2011 (M11)" -> "Magic 2012 (M12)" [label="  364d\ncarrying: 0ms"; minlen="3.9512437185814275"; penwidth="0.5"; weight="1";];
+        }
+    }
+    subgraph cluster_2012 {
+        penwidth="0.2";
+        label="2012";
+        subgraph {
+            peripheries=0;
+            cluster=true;
+            label="";
+            "Magic 2013 (M13)" [fontsize="20";];
+            "annotation55" [label="Fri Jul 13 2012\n18y 347d\n-12y 323d 12h 14m 37.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation55" -> "Magic 2013 (M13)" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "Magic 2012 (M12)" -> "Magic 2013 (M13)" [label="  364d\ncarrying: 0ms"; minlen="3.9512437185814275"; penwidth="0.5"; weight="1";];
+        }
+    }
+    subgraph cluster_2013 {
+        penwidth="0.2";
+        label="2013";
+        subgraph {
+            peripheries=0;
+            cluster=true;
+            label="";
+            "Magic 2014 (M14)" [fontsize="20";];
+            "annotation56" [label="Fri Jul 19 2013\n19y 353d\n-11y 317d 12h 14m 37.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation56" -> "Magic 2014 (M14)" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "Magic 2013 (M13)" -> "Magic 2014 (M14)" [label="  1y 6d\ncarrying: 0ms"; minlen="3.970291913552122"; penwidth="0.5"; weight="1";];
+        }
+    }
+    subgraph cluster_2014 {
+        penwidth="0.2";
+        label="2014";
+        subgraph {
+            peripheries=0;
+            cluster=true;
+            label="";
+            "Magic 2015 (M15)" [fontsize="20";];
+            "annotation57" [label="Fri Jul 18 2014\n20y 352d\n-10y 318d 12h 14m 37.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation57" -> "Magic 2015 (M15)" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "Magic 2014 (M14)" -> "Magic 2015 (M15)" [label="  364d\ncarrying: 0ms"; minlen="3.9512437185814275"; penwidth="0.5"; weight="1";];
+        }
+    }
+    subgraph cluster_2015 {
+        penwidth="0.2";
+        label="2015";
+        subgraph {
+            peripheries=0;
+            cluster=true;
+            label="";
+            "Magic Origins (ORI)" [fontsize="20";];
+            "annotation58" [label="Fri Jul 17 2015\n21y 351d\n-9y 319d 12h 14m 37.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation58" -> "Magic Origins (ORI)" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "Magic 2015 (M15)" -> "Magic Origins (ORI)" [label="  364d\ncarrying: 0ms"; minlen="3.9512437185814275"; penwidth="0.5"; weight="1";];
+        }
+    }
+    subgraph cluster_2018 {
+        penwidth="0.2";
+        label="2018";
+        subgraph {
+            peripheries=0;
+            cluster=true;
+            label="";
+            "Core Set 2019 (M19)" [fontsize="20";];
+            "annotation59" [label="Fri Jul 13 2018\n24y 348d\n-6y 322d 12h 14m 37.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation59" -> "Core Set 2019 (M19)" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "Magic Origins (ORI)" -> "Core Set 2019 (M19)" [label="  2y 362d\ncarrying: 0ms"; minlen="5.049856007249537"; penwidth="0.5"; weight="1";];
+        }
+    }
+    subgraph cluster_2019 {
+        penwidth="0.2";
+        label="2019";
+        subgraph {
+            peripheries=0;
+            cluster=true;
+            label="";
+            "Core Set 2020 (M20)" [fontsize="20";];
+            "annotation60" [label="Fri Jul 12 2019\n25y 347d\n-5y 323d 12h 14m 37.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation60" -> "Core Set 2020 (M20)" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "Core Set 2019 (M19)" -> "Core Set 2020 (M20)" [label="  364d\ncarrying: 0ms"; minlen="3.9512437185814275"; penwidth="0.5"; weight="1";];
+        }
+    }
+    subgraph cluster_2020 {
+        penwidth="0.2";
+        label="2020";
+        subgraph {
+            peripheries=0;
+            cluster=true;
+            label="";
+            "Core Set 2021 (M21)" [fontsize="20";];
+            "annotation61" [label="Fri Jul 03 2020\n26y 339d\n-4y 331d 12h 14m 37.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation61" -> "Core Set 2021 (M21)" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "Core Set 2020 (M20)" -> "Core Set 2021 (M21)" [label="  357d\ncarrying: 0ms"; minlen="3.9318256327243257"; penwidth="0.5"; weight="1";];
+        }
+    }
+    subgraph cluster_2024 {
+        penwidth="0.2";
+        label="2024";
+        subgraph {
+            peripheries=0;
+            cluster=true;
+            label="";
+            "Magic: The Gathering Foundations (FDN)" [fontsize="20";];
+            "annotation62" [label="Fri Nov 15 2024\n31y 110d\n-195d 12h 14m 37.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation62" -> "Magic: The Gathering Foundations (FDN)" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "Core Set 2021 (M21)" -> "Magic: The Gathering Foundations (FDN)" [label="  4y 136d\ncarrying: 0ms"; minlen="5.429345628954441"; penwidth="0.5"; weight="1";];
+        }
+    }
+    subgraph cluster_2025 {
+        penwidth="0.2";
+        label="2025";
+        subgraph {
+            peripheries=0;
+            cluster=true;
+            label="";
+            "Now" [fontsize="20";];
+            "annotation63" [label="Thu, 29 May 2025 12:14:37 GMT\n31y 305d 12h 14m 37.3s\n-11ms"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation63" -> "Now" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "Magic: The Gathering Foundations (FDN)" -> "Now" [label="  195d 12h 14m 37.3s\ncarrying: 0ms"; minlen="3.3297021715711064"; penwidth="0.5"; weight="1";];
+        }
+    }
+}
