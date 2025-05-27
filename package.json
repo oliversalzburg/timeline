@@ -7,8 +7,16 @@
   "type": "module",
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
+    "@oliversalzburg/js-utils": "0.3.0",
+    "@types/node": "22.15.21",
     "@types/web": "0.0.235",
+    "@viz-js/viz": "3.12.0",
+    "esbuild": "0.25.4",
     "typescript": "5.8.3",
     "vite": "6.3.5"
+  },
+  "packageManager": "yarn@1.22.21+sha1.1959a18351b811cdeedbd484a8f86c3cc3bbaf72",
+  "dependencies": {
+    "yaml": "2.8.0"
   }
 }

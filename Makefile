@@ -24,15 +24,22 @@ lint: node_modules
 test:
 	@echo "This project has no tests."
 
-run: clean
+run: node_modules
 	npm exec -- vite serve
+run-main: output
+	@node output/main.js
 
+svg-test:
+	rm -rf output
+	$(MAKE) output
+	@node output/main.js
 
 node_modules:
 	npm install
 
 output: node_modules
 	npm exec -- vite build
+	@node build.js
 
 preview: clean
 	npm exec -- vite preview

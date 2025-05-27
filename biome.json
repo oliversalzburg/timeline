@@ -59,7 +59,7 @@
         "noCatchAssign": "error",
         "noClassAssign": "error",
         "noCompareNegZero": "error",
-        "noConsole": "error",
+        "noConsole": "off",
         "noControlCharactersInRegex": "error",
         "noDebugger": "error",
         "noDoubleEquals": "error",
