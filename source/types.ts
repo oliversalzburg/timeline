@@ -1,4 +1,5 @@
 export interface TimelineDocument {
+  color?: string;
   timeline: TimelineSimple | TimelineExtended;
 }
 export interface TimelineSimple extends Record<string | number, string> {}
@@ -7,7 +8,7 @@ export interface TimelineEntry {
   title: string;
 }
 export type TimelineRecord = [number, TimelineEntry];
-export type Timeline = Array<TimelineRecord>;
+export type Timeline = { meta: { color?: string }; records: Array<TimelineRecord> };
 export interface TimelineMetrics {
   durationTotal: number;
   periodLongest: number;

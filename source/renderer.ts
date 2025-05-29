@@ -14,22 +14,24 @@ export interface RendererOptions {
 }
 
 export const render = (timelines: Array<Timeline>, options: Partial<RendererOptions> = {}) => {
-  const timestamps = timelines.flatMap(t => t.map(([time, _]) => time)).sort((a,b)=>a-b);
+  const timestamps = timelines
+    .flatMap(t => t.records.map(([time, _]) => time))
+    .sort((a, b) => a - b);
   //const metrics = analyze(timeline);
   //process.stderr.write(JSON.stringify(metrics, undefined, 2) + "\n");
-  const timeMaps = timelines.map(t => new Map(t));
+  const timeMaps = timelines.map(t => new Map(t.records));
 
   const d = dot();
 
-  d.render("digraph {");
+  d.raw("digraph {");
   let fontname =
     "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif";
   fontname = "Simple Plan";
-  d.render(`node [fontname="${fontname}";]`);
-  d.render(`edge [fontname="Master Photograph";]`);
-  d.render(`fontname="${fontname}"`);
+  d.raw(`node [fontname="${fontname}";]`);
+  d.raw(`edge [fontname="Master Photograph";]`);
+  d.raw(`fontname="${fontname}"`);
   //d.render(`pad="0.5"`);
-  d.render(`rankdir="TD"`);
+  d.raw(`rankdir="TD"`);
 
   const TIME_BASE = options.baseUnit === "week" ? MILLISECONDS.ONE_WEEK : MILLISECONDS.ONE_MONTH;
   const TIME_SCALE = 1 / TIME_BASE;
@@ -52,38 +54,45 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
 
     if (options.clusterYears && currentYear !== previousYear) {
       if (previousYear !== undefined) {
-        d.render("}");
+        d.raw("}");
       }
-      d.render(`subgraph cluster_${currentYear} {`);
-      d.render(`fontname="Master Photograph"`);
-      //d.render(`fontsize="40"`);
-      d.render(`label="${currentYear}"`);
-      d.render(`penwidth="0.2"`);
-      d.render(`style="dashed"`);
+      d.raw(`subgraph cluster_${currentYear} {`);
+      d.raw(`fontname="Master Photograph"`);
+      d.raw(`label="${currentYear}"`);
+      d.raw(`penwidth="0.2"`);
+      d.raw(`style="dashed"`);
     }
 
-    for (const timeline of timeMaps) {
-      const entry = timeline.get(timestamp);
+    for (const timeMap of timeMaps) {
+      const entry = timeMap.get(timestamp);
       if (entry === undefined) {
         continue;
       }
 
-      d.render("subgraph {");
-      d.render("peripheries=0");
-      d.render("cluster=true");
-      d.render('label=""');
-      d.renderNode(entry.title, { fontsize: 20 });
-      d.renderAnnotation(
+      const timeline = timelines[timeMaps.indexOf(timeMap)];
+
+      d.raw("subgraph {");
+      d.raw("peripheries=0");
+      d.raw("cluster=true");
+      d.raw('label=""');
+      d.node(entry.title, { color: timeline.meta.color, fontsize: 20 });
+      d.annotation(
         entry.title,
-        `${isDateMarker ? new Date(timestamp).toDateString() : new Date(timestamp).toUTCString()}\\n${formatMilliseconds(timePassedSinceStart)}\\n-${formatMilliseconds(timePassedSinceThen)}`,
+        `${isDateMarker ? new Date(timestamp).toDateString() : new Date(timestamp).toUTCString()}\\n${formatMilliseconds(timePassedSinceStart)}\\n${formatMilliseconds(timePassedSinceThen * -1)}`,
       );
+      d.raw("}");
 
-      d.render("}");
+      if (previous) {
+        // Draw force-directing link between merged timeline entries.
+        // This forces all entries into linear global order.
+        d.link(previous[1].title, entry.title, { style: "dotted", minlen: 0, weight:0 });
+      }
 
-      //console.info(`- Time passed: ${formatMilliseconds(timePassed)}`);
-      //console.info(`* ${new Date(timestamp).toLocaleString()} ${entry.title}`);
+      if (previous && previous[0] === timestamp) {
+        process.stderr.write(`Unhandled timeline collision at ${timestamp}!\n`);
+      }
 
-      //previous = [timestamp, entry];
+      previous = [timestamp, entry];
     }
 
     previousYear = date.getUTCFullYear();
@@ -93,7 +102,7 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
     previous = undefined;
     timePassed = 0;
     remainder = 0;
-    for (const [timestamp, entry] of timeline) {
+    for (const [timestamp, entry] of timeline.records) {
       timePassed = previous ? Math.max(1, timestamp - previous[0]) : 0;
       if (previous) {
         let adjustedTime = timePassed;
@@ -112,10 +121,11 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
           1000,
         );
 
-        d.renderLink(previous[1].title, entry.title, {
-          label: `${formatMilliseconds(timePassed)}${0 < remainder ? ` +${formatMilliseconds(remainder)}` : ""}`,
+        d.link(previous[1].title, entry.title, {
+          color: timeline.meta.color,
           minlen: linkLength,
           penwidth: 0.5,
+          style:"solid",
           weight: 1,
         });
       }
@@ -125,10 +135,10 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
 
   // Ensure last cluster is closed.
   if (options.clusterYears) {
-    d.render("}");
+    d.raw("}");
   }
 
-  d.render("}");
+  d.raw("}");
 
   return d.toString();
 };

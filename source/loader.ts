@@ -47,5 +47,8 @@ export const load = (
     }
   }
 
-  return timelineEntries.sort(([a, _a], [b, _b]) => a - b) as Timeline;
+  return {
+    meta: { color: document.color },
+    records: timelineEntries.sort(([a, _a], [b, _b]) => a - b),
+  } as Timeline;
 };

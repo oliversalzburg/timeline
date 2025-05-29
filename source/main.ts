@@ -9,9 +9,12 @@ import { render } from "./renderer.js";
 import type { TimelineDocument } from "./types.js";
 
 // Read raw data from input files.
-const files = readdirSync("timelines/")
-  .filter(_ => _.endsWith(".yml"))
-  .map(_ => `timelines/${_}`);
+const files =
+  2 < process.argv.length
+    ? [process.argv[2]]
+    : readdirSync("timelines/")
+        .filter(_ => _.endsWith(".yml"))
+        .map(_ => `timelines/${_}`);
 const rawData = new Map(files.map(_ => [_, readFileSync(_, "utf-8")]));
 
 // Parse raw data with appropriate parser.
@@ -23,7 +26,7 @@ const plainData = new Map(
 const data = new Map(
   plainData
     .entries()
-    .map(([filename, data]) => [filename, load(data, { addNewYearMarkers: false, addNow: true })]),
+    .map(([filename, data]) => [filename, load(data, { addNewYearMarkers: false, addNow: false })]),
 );
 
 // Generate DOT graph.
@@ -36,7 +39,10 @@ const dotGraphs = new Map(
     ]),
 );
 
-dotGraphs.set("timelines/.universe", render([...data.values()],{ baseUnit: "week", clusterYears: true, scale: "logarithmic" }));
+dotGraphs.set(
+  "timelines/.universe",
+  render([...data.values()], { baseUnit: "week", clusterYears: true, scale: "logarithmic" }),
+);
 
 // Render DOT graph with GraphViz.
 instance().then(viz => {

@@ -1,5 +1,6 @@
 import { indent } from "@oliversalzburg/js-utils/data/string.js";
 
+export type Color = string;
 export type PortPos = "n" | "ne" | "e" | "se" | "s" | "sw" | "w" | "nw" | "c" | "_";
 
 export interface LinkProperties {
@@ -23,10 +24,14 @@ export interface LinkProperties {
     | "open"
     | "tee"
     | "vee";
+  color: Color;
+  fillcolor: Color;
+  fontcolor: Color;
   fontname: string;
   fontsize: number;
   headport: PortPos;
   label: string;
+  labelfontcolor: Color;
   minlen: number;
   penwidth: number;
   style: "bold" | "dashed" | "dotted" | "invis" | "solid" | "tapered";
@@ -35,6 +40,9 @@ export interface LinkProperties {
   weight: number;
 }
 export interface NodeProperties {
+  color: Color;
+  fillcolor: Color;
+  fontcolor: Color;
   fontname: string;
   fontsize: number;
   label: string;
@@ -43,13 +51,18 @@ export interface NodeProperties {
   style: "bold" | "dashed" | "dotted" | "invis" | "solid";
 }
 
+const makePropertyString = (properties: Record<string, boolean | number | string>) =>
+  Object.entries(properties)
+    .map(([key, _]) => `${key}="${_}"`)
+    .join("; ");
+
 export const dot = () => {
   const buffer = new Array<string>();
 
   let indentation = 0;
   let nextNodeIndex = 0;
 
-  const render = (_: string) => {
+  const renderRaw = (_: string) => {
     const opens = _.endsWith("{");
     const closes = _ === "}";
     if (closes) {
@@ -60,12 +73,13 @@ export const dot = () => {
       ++indentation;
     }
   };
-  const makePropertyString = (properties: Record<string, boolean | number | string>) =>
-    Object.entries(properties)
-      .map(([key, _]) => `${key}="${_}"`)
-      .join("; ");
+
   const renderNode = (_: string, options?: Partial<NodeProperties>) =>
-    render(`"${_}" [${makePropertyString(options ?? { label: _ })};]`);
+    renderRaw(`"${_}" [${makePropertyString(options ?? { label: _ })};]`);
+
+  const renderLink = (a: string, b: string, options?: Partial<LinkProperties>) =>
+    renderRaw(`"${a}" -> "${b}"${options ? ` [${makePropertyString(options ?? {})};]` : ""}`);
+
   const renderAnnotation = (_: string, text: string) => {
     renderNode(`annotation${nextNodeIndex}`, {
       label: text,
@@ -73,6 +87,7 @@ export const dot = () => {
       shape: "plaintext",
       style: "dotted",
     });
+
     renderLink(`annotation${nextNodeIndex}`, _, {
       arrowhead: "none",
       minlen: 0,
@@ -81,16 +96,15 @@ export const dot = () => {
       tailclip: false,
       weight: 0,
     });
+
     ++nextNodeIndex;
   };
-  const renderLink = (a: string, b: string, options?: Partial<LinkProperties>) =>
-    render(`"${a}" -> "${b}" [${makePropertyString(options ?? {})};]`);
 
   return {
-    render,
-    renderNode,
-    renderAnnotation,
-    renderLink,
+    raw: renderRaw,
+    node: renderNode,
+    annotation: renderAnnotation,
+    link: renderLink,
     toString: () => buffer.join("\n"),
   };
 };

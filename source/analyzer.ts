@@ -1,11 +1,11 @@
 import { mustExist } from "@oliversalzburg/js-utils/data/nil.js";
 import { InvalidOperationError } from "@oliversalzburg/js-utils/errors/InvalidOperationError.js";
-import type { Timeline, TimelineMetrics } from "./types.js";
+import type { Timeline, TimelineMetrics, TimelineRecord } from "./types.js";
 
 /**
  * The timeline is expected to already be sorted.
  */
-export const analyze = (timeline: Timeline): TimelineMetrics => {
+export const analyze = (timeline: Array<TimelineRecord>): TimelineMetrics => {
   if (timeline.length < 1) {
     throw new InvalidOperationError("Timelines must contain at least one item.");
   }
