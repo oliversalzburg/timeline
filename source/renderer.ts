@@ -13,10 +13,11 @@ export interface RendererOptions {
   scale: "linear" | "logarithmic";
 }
 
-export const render = (timeline: Timeline, options: Partial<RendererOptions> = {}) => {
-  const timestamps = timeline.map(([time, _]) => time);
+export const render = (timelines: Array<Timeline>, options: Partial<RendererOptions> = {}) => {
+  const timestamps = timelines.flatMap(t => t.map(([time, _]) => time)).sort((a,b)=>a-b);
   //const metrics = analyze(timeline);
   //process.stderr.write(JSON.stringify(metrics, undefined, 2) + "\n");
+  const timeMaps = timelines.map(t => new Map(t));
 
   const d = dot();
 
@@ -37,12 +38,12 @@ export const render = (timeline: Timeline, options: Partial<RendererOptions> = {
   let previousYear: number | undefined;
   let timePassed = 0;
   let remainder = 0;
-  for (const [timestamp, entry] of timeline) {
+  for (const timestamp of timestamps) {
     const date = new Date(timestamp);
     const currentYear = date.getUTCFullYear();
 
     // Force at least 1ms gap between events, regardless of input.
-    timePassed = previous ? Math.max(1, timestamp - previous[0]) : 0;
+    //timePassed = previous ? Math.max(1, timestamp - previous[0]) : 0;
 
     const timePassedSinceStart = timestamp - timestamps[0];
     const timePassedSinceThen = Date.now() - timestamp;
@@ -54,50 +55,72 @@ export const render = (timeline: Timeline, options: Partial<RendererOptions> = {
         d.render("}");
       }
       d.render(`subgraph cluster_${currentYear} {`);
-      d.render(`penwidth="0.2"`);
+      d.render(`fontname="Master Photograph"`);
+      //d.render(`fontsize="40"`);
       d.render(`label="${currentYear}"`);
+      d.render(`penwidth="0.2"`);
+      d.render(`style="dashed"`);
     }
 
-    d.render("subgraph {");
-    d.render("peripheries=0");
-    d.render("cluster=true");
-    d.render('label=""');
-    d.renderNode(entry.title, { fontsize: 20 });
-    d.renderAnnotation(
-      entry.title,
-      `${isDateMarker ? new Date(timestamp).toDateString() : new Date(timestamp).toUTCString()}\\n${formatMilliseconds(timePassedSinceStart)}\\n-${formatMilliseconds(timePassedSinceThen)}`,
-    );
-    if (previous) {
-      let adjustedTime = timePassed;
-      if (remainder !== 0 && TIME_BASE < timePassed) {
-        adjustedTime += remainder;
-        remainder = 0;
-      } else if (timePassed < TIME_BASE) {
-        remainder += timePassed;
+    for (const timeline of timeMaps) {
+      const entry = timeline.get(timestamp);
+      if (entry === undefined) {
+        continue;
       }
 
-      const linkLength = clamp(
-        options?.scale === "logarithmic"
-          ? Math.log(adjustedTime * TIME_SCALE)
-          : adjustedTime * TIME_SCALE,
-        0.01,
-        1000,
+      d.render("subgraph {");
+      d.render("peripheries=0");
+      d.render("cluster=true");
+      d.render('label=""');
+      d.renderNode(entry.title, { fontsize: 20 });
+      d.renderAnnotation(
+        entry.title,
+        `${isDateMarker ? new Date(timestamp).toDateString() : new Date(timestamp).toUTCString()}\\n${formatMilliseconds(timePassedSinceStart)}\\n-${formatMilliseconds(timePassedSinceThen)}`,
       );
 
-      d.renderLink(previous[1].title, entry.title, {
-        label: `${formatMilliseconds(timePassed)} +${formatMilliseconds(remainder)}`,
-        minlen: linkLength,
-        penwidth: 0.5,
-        weight: 1,
-      });
+      d.render("}");
+
+      //console.info(`- Time passed: ${formatMilliseconds(timePassed)}`);
+      //console.info(`* ${new Date(timestamp).toLocaleString()} ${entry.title}`);
+
+      //previous = [timestamp, entry];
     }
-    d.render("}");
 
-    //console.info(`- Time passed: ${formatMilliseconds(timePassed)}`);
-    //console.info(`* ${new Date(timestamp).toLocaleString()} ${entry.title}`);
-
-    previous = [timestamp, entry];
     previousYear = date.getUTCFullYear();
+  }
+
+  for (const timeline of timelines) {
+    previous = undefined;
+    timePassed = 0;
+    remainder = 0;
+    for (const [timestamp, entry] of timeline) {
+      timePassed = previous ? Math.max(1, timestamp - previous[0]) : 0;
+      if (previous) {
+        let adjustedTime = timePassed;
+        if (remainder !== 0 && TIME_BASE < timePassed) {
+          adjustedTime += remainder;
+          remainder = 0;
+        } else if (timePassed < TIME_BASE) {
+          remainder += timePassed;
+        }
+
+        const linkLength = clamp(
+          options?.scale === "logarithmic"
+            ? Math.log(adjustedTime * TIME_SCALE)
+            : adjustedTime * TIME_SCALE,
+          0.01,
+          1000,
+        );
+
+        d.renderLink(previous[1].title, entry.title, {
+          label: `${formatMilliseconds(timePassed)}${0 < remainder ? ` +${formatMilliseconds(remainder)}` : ""}`,
+          minlen: linkLength,
+          penwidth: 0.5,
+          weight: 1,
+        });
+      }
+      previous = [timestamp, entry];
+    }
   }
 
   // Ensure last cluster is closed.

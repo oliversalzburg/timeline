@@ -4,269 +4,281 @@ digraph {
     fontname="Simple Plan";
     rankdir="TD";
     subgraph cluster_2015 {
-        penwidth="0.2";
+        fontname="Master Photograph";
         label="2015";
+        penwidth="0.2";
+        style="dashed";
         subgraph {
             peripheries=0;
             cluster=true;
             label="";
             "Initial commit" [fontsize="20";];
-            "annotation0" [label="Wed, 25 Feb 2015 01:25:04 GMT\n0ms\n-10y 96d 10h 49m 33.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation0" [label="Wed, 25 Feb 2015 01:25:04 GMT\n0ms\n-10y 96d 15h 6m 5.2s"; margin="0.2"; shape="plaintext"; style="dotted";];
             "annotation0" -> "Initial commit" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
         }
     }
     subgraph cluster_2021 {
-        penwidth="0.2";
+        fontname="Master Photograph";
         label="2021";
+        penwidth="0.2";
+        style="dashed";
         subgraph {
             peripheries=0;
             cluster=true;
             label="";
             "v2.0.0-alpha.0" [fontsize="20";];
-            "annotation1" [label="Sun, 11 Jul 2021 18:22:51 GMT\n6y 138d 16h 57m 47s\n-3y 322d 17h 51m 46.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation1" [label="Sun, 11 Jul 2021 18:22:51 GMT\n6y 138d 16h 57m 47s\n-3y 322d 22h 8m 18.2s"; margin="0.2"; shape="plaintext"; style="dotted";];
             "annotation1" -> "v2.0.0-alpha.0" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
-            "Initial commit" -> "v2.0.0-alpha.0" [label="  6y 138d 16h 57m 47s\ncarrying: 0ms"; minlen="5.807158219379291"; penwidth="0.5"; weight="1";];
         }
     }
     subgraph cluster_2022 {
-        penwidth="0.2";
+        fontname="Master Photograph";
         label="2022";
+        penwidth="0.2";
+        style="dashed";
         subgraph {
             peripheries=0;
             cluster=true;
             label="";
             "v2.0.0-alpha.1" [fontsize="20";];
-            "annotation2" [label="Fri, 29 Apr 2022 12:48:31 GMT\n7y 65d 11h 23m 27s\n-3y 30d 23h 26m 6.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation2" [label="Fri, 29 Apr 2022 12:48:31 GMT\n7y 65d 11h 23m 27s\n-3y 31d 3h 42m 38.2s"; margin="0.2"; shape="plaintext"; style="dotted";];
             "annotation2" -> "v2.0.0-alpha.1" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
-            "v2.0.0-alpha.0" -> "v2.0.0-alpha.1" [label="  291d 18h 25m 40s\ncarrying: 0ms"; minlen="3.7300482139009916"; penwidth="0.5"; weight="1";];
         }
         subgraph {
             peripheries=0;
             cluster=true;
             label="";
             "v2.0.0-alpha.2" [fontsize="20";];
-            "annotation3" [label="Fri, 24 Jun 2022 12:51:35 GMT\n7y 121d 11h 26m 31s\n-2y 339d 23h 23m 2.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation3" [label="Fri, 24 Jun 2022 12:51:35 GMT\n7y 121d 11h 26m 31s\n-2y 340d 3h 39m 34.2s"; margin="0.2"; shape="plaintext"; style="dotted";];
             "annotation3" -> "v2.0.0-alpha.2" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
-            "v2.0.0-alpha.1" -> "v2.0.0-alpha.2" [label="  56d 3m 4s\ncarrying: 0ms"; minlen="2.079479570057277"; penwidth="0.5"; weight="1";];
         }
         subgraph {
             peripheries=0;
             cluster=true;
             label="";
             "v2.0.0-alpha.3" [fontsize="20";];
-            "annotation4" [label="Wed, 29 Jun 2022 13:05:52 GMT\n7y 126d 11h 40m 48s\n-2y 334d 23h 8m 45.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation4" [label="Wed, 29 Jun 2022 13:05:52 GMT\n7y 126d 11h 40m 48s\n-2y 335d 3h 25m 17.2s"; margin="0.2"; shape="plaintext"; style="dotted";];
             "annotation4" -> "v2.0.0-alpha.3" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
-            "v2.0.0-alpha.2" -> "v2.0.0-alpha.3" [label="  5d 14m 17s\ncarrying: 5d 14m 17s"; minlen="0.01"; penwidth="0.5"; weight="1";];
         }
         subgraph {
             peripheries=0;
             cluster=true;
             label="";
             "v2.0.0-alpha.4" [fontsize="20";];
-            "annotation5" [label="Tue, 20 Sep 2022 17:51:27 GMT\n7y 209d 16h 26m 23s\n-2y 251d 18h 23m 10.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation5" [label="Tue, 20 Sep 2022 17:51:27 GMT\n7y 209d 16h 26m 23s\n-2y 251d 22h 39m 42.2s"; margin="0.2"; shape="plaintext"; style="dotted";];
             "annotation5" -> "v2.0.0-alpha.4" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
-            "v2.0.0-alpha.3" -> "v2.0.0-alpha.4" [label="  83d 4h 45m 35s\ncarrying: 0ms"; minlen="2.5337902420275964"; penwidth="0.5"; weight="1";];
         }
         subgraph {
             peripheries=0;
             cluster=true;
             label="";
             "v2.0.0-alpha.5" [fontsize="20";];
-            "annotation6" [label="Thu, 06 Oct 2022 20:31:06 GMT\n7y 225d 19h 6m 2s\n-2y 235d 15h 43m 31.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation6" [label="Thu, 06 Oct 2022 20:31:06 GMT\n7y 225d 19h 6m 2s\n-2y 235d 20h 3.2s"; margin="0.2"; shape="plaintext"; style="dotted";];
             "annotation6" -> "v2.0.0-alpha.5" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
-            "v2.0.0-alpha.4" -> "v2.0.0-alpha.5" [label="  16d 2h 39m 39s\ncarrying: 0ms"; minlen="0.8335839297083473"; penwidth="0.5"; weight="1";];
         }
         subgraph {
             peripheries=0;
             cluster=true;
             label="";
             "v2.0.0-alpha.6" [fontsize="20";];
-            "annotation7" [label="Wed, 12 Oct 2022 18:40:11 GMT\n7y 231d 17h 15m 7s\n-2y 229d 17h 34m 26.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation7" [label="Wed, 12 Oct 2022 18:40:11 GMT\n7y 231d 17h 15m 7s\n-2y 229d 21h 50m 58.2s"; margin="0.2"; shape="plaintext"; style="dotted";];
             "annotation7" -> "v2.0.0-alpha.6" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
-            "v2.0.0-alpha.5" -> "v2.0.0-alpha.6" [label="  5d 22h 9m 5s\ncarrying: 5d 22h 9m 5s"; minlen="0.01"; penwidth="0.5"; weight="1";];
         }
         subgraph {
             peripheries=0;
             cluster=true;
             label="";
             "v2.0.0-alpha.7" [fontsize="20";];
-            "annotation8" [label="Thu, 13 Oct 2022 16:53:13 GMT\n7y 232d 15h 28m 9s\n-2y 228d 19h 21m 24.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation8" [label="Thu, 13 Oct 2022 16:53:13 GMT\n7y 232d 15h 28m 9s\n-2y 228d 23h 37m 56.2s"; margin="0.2"; shape="plaintext"; style="dotted";];
             "annotation8" -> "v2.0.0-alpha.7" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
-            "v2.0.0-alpha.6" -> "v2.0.0-alpha.7" [label="  22h 13m 2s\ncarrying: 6d 20h 22m 7s"; minlen="0.01"; penwidth="0.5"; weight="1";];
         }
         subgraph {
             peripheries=0;
             cluster=true;
             label="";
             "v2.0.0-alpha.8" [fontsize="20";];
-            "annotation9" [label="Wed, 19 Oct 2022 18:35:57 GMT\n7y 238d 17h 10m 53s\n-2y 222d 17h 38m 40.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation9" [label="Wed, 19 Oct 2022 18:35:57 GMT\n7y 238d 17h 10m 53s\n-2y 222d 21h 55m 12.2s"; margin="0.2"; shape="plaintext"; style="dotted";];
             "annotation9" -> "v2.0.0-alpha.8" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
-            "v2.0.0-alpha.7" -> "v2.0.0-alpha.8" [label="  6d 1h 42m 44s\ncarrying: 12d 22h 4m 51s"; minlen="0.01"; penwidth="0.5"; weight="1";];
         }
         subgraph {
             peripheries=0;
             cluster=true;
             label="";
             "v2.0.0-alpha.9" [fontsize="20";];
-            "annotation10" [label="Tue, 25 Oct 2022 16:33:13 GMT\n7y 244d 15h 8m 9s\n-2y 216d 19h 41m 24.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation10" [label="Tue, 25 Oct 2022 16:33:13 GMT\n7y 244d 15h 8m 9s\n-2y 216d 23h 57m 56.2s"; margin="0.2"; shape="plaintext"; style="dotted";];
             "annotation10" -> "v2.0.0-alpha.9" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
-            "v2.0.0-alpha.8" -> "v2.0.0-alpha.9" [label="  5d 21h 57m 16s\ncarrying: 18d 20h 2m 7s"; minlen="0.01"; penwidth="0.5"; weight="1";];
         }
         subgraph {
             peripheries=0;
             cluster=true;
             label="";
             "v2.0.0-alpha.10" [fontsize="20";];
-            "annotation11" [label="Sun, 20 Nov 2022 18:34:34 GMT\n7y 270d 17h 9m 30s\n-2y 190d 17h 40m 3.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation11" [label="Sun, 20 Nov 2022 18:34:34 GMT\n7y 270d 17h 9m 30s\n-2y 190d 21h 56m 35.2s"; margin="0.2"; shape="plaintext"; style="dotted";];
             "annotation11" -> "v2.0.0-alpha.10" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
-            "v2.0.0-alpha.9" -> "v2.0.0-alpha.10" [label="  26d 2h 1m 21s\ncarrying: 0ms"; minlen="1.8589523678258595"; penwidth="0.5"; weight="1";];
         }
         subgraph {
             peripheries=0;
             cluster=true;
             label="";
             "v2.0.0-alpha.11" [fontsize="20";];
-            "annotation12" [label="Sat, 17 Dec 2022 14:47:02 GMT\n7y 297d 13h 21m 58s\n-2y 163d 21h 27m 35.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation12" [label="Sat, 17 Dec 2022 14:47:02 GMT\n7y 297d 13h 21m 58s\n-2y 164d 1h 44m 7.2s"; margin="0.2"; shape="plaintext"; style="dotted";];
             "annotation12" -> "v2.0.0-alpha.11" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
-            "v2.0.0-alpha.10" -> "v2.0.0-alpha.11" [label="  26d 20h 12m 28s\ncarrying: 0ms"; minlen="1.3440573309660926"; penwidth="0.5"; weight="1";];
         }
         subgraph {
             peripheries=0;
             cluster=true;
             label="";
             "v2.0.0-alpha.12" [fontsize="20";];
-            "annotation13" [label="Tue, 20 Dec 2022 18:56:26 GMT\n7y 300d 17h 31m 22s\n-2y 160d 17h 18m 11.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation13" [label="Tue, 20 Dec 2022 18:56:26 GMT\n7y 300d 17h 31m 22s\n-2y 160d 21h 34m 43.2s"; margin="0.2"; shape="plaintext"; style="dotted";];
             "annotation13" -> "v2.0.0-alpha.12" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
-            "v2.0.0-alpha.11" -> "v2.0.0-alpha.12" [label="  3d 4h 9m 24s\ncarrying: 3d 4h 9m 24s"; minlen="0.01"; penwidth="0.5"; weight="1";];
         }
         subgraph {
             peripheries=0;
             cluster=true;
             label="";
             "v2.0.0-beta.1" [fontsize="20";];
-            "annotation14" [label="Sun, 25 Dec 2022 18:30:32 GMT\n7y 305d 17h 5m 28s\n-2y 155d 17h 44m 5.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation14" [label="Sun, 25 Dec 2022 18:30:32 GMT\n7y 305d 17h 5m 28s\n-2y 155d 22h 37.2s"; margin="0.2"; shape="plaintext"; style="dotted";];
             "annotation14" -> "v2.0.0-beta.1" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
-            "v2.0.0-alpha.12" -> "v2.0.0-beta.1" [label="  4d 23h 34m 6s\ncarrying: 8d 3h 43m 30s"; minlen="0.01"; penwidth="0.5"; weight="1";];
         }
     }
     subgraph cluster_2023 {
-        penwidth="0.2";
+        fontname="Master Photograph";
         label="2023";
+        penwidth="0.2";
+        style="dashed";
         subgraph {
             peripheries=0;
             cluster=true;
             label="";
             "v2.0.0-beta.2" [fontsize="20";];
-            "annotation15" [label="Sat, 07 Jan 2023 20:24:06 GMT\n7y 318d 18h 59m 2s\n-2y 142d 15h 50m 31.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation15" [label="Sat, 07 Jan 2023 20:24:06 GMT\n7y 318d 18h 59m 2s\n-2y 142d 20h 7m 3.2s"; margin="0.2"; shape="plaintext"; style="dotted";];
             "annotation15" -> "v2.0.0-beta.2" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
-            "v2.0.0-beta.1" -> "v2.0.0-beta.2" [label="  13d 1h 53m 34s\ncarrying: 0ms"; minlen="1.1096970099953725"; penwidth="0.5"; weight="1";];
         }
         subgraph {
             peripheries=0;
             cluster=true;
             label="";
             "v2.0.0-beta.3" [fontsize="20";];
-            "annotation16" [label="Sat, 14 Jan 2023 18:22:08 GMT\n7y 325d 16h 57m 4s\n-2y 135d 17h 52m 29.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation16" [label="Sat, 14 Jan 2023 18:22:08 GMT\n7y 325d 16h 57m 4s\n-2y 135d 22h 9m 1.2s"; margin="0.2"; shape="plaintext"; style="dotted";];
             "annotation16" -> "v2.0.0-beta.3" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
-            "v2.0.0-beta.2" -> "v2.0.0-beta.3" [label="  6d 21h 58m 2s\ncarrying: 6d 21h 58m 2s"; minlen="0.01"; penwidth="0.5"; weight="1";];
         }
         subgraph {
             peripheries=0;
             cluster=true;
             label="";
             "v2.0.0-beta.4" [fontsize="20";];
-            "annotation17" [label="Tue, 24 Jan 2023 20:19:12 GMT\n7y 335d 18h 54m 8s\n-2y 125d 15h 55m 25.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation17" [label="Tue, 24 Jan 2023 20:19:12 GMT\n7y 335d 18h 54m 8s\n-2y 125d 20h 11m 57.2s"; margin="0.2"; shape="plaintext"; style="dotted";];
             "annotation17" -> "v2.0.0-beta.4" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
-            "v2.0.0-beta.3" -> "v2.0.0-beta.4" [label="  10d 1h 57m 4s\ncarrying: 0ms"; minlen="0.8871030115668432"; penwidth="0.5"; weight="1";];
         }
         subgraph {
             peripheries=0;
             cluster=true;
             label="";
             "v2.0.0-beta.5" [fontsize="20";];
-            "annotation18" [label="Sat, 11 Feb 2023 18:03:09 GMT\n7y 353d 16h 38m 5s\n-2y 107d 18h 11m 28.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation18" [label="Sat, 11 Feb 2023 18:03:09 GMT\n7y 353d 16h 38m 5s\n-2y 107d 22h 28m 0.2s"; margin="0.2"; shape="plaintext"; style="dotted";];
             "annotation18" -> "v2.0.0-beta.5" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
-            "v2.0.0-beta.4" -> "v2.0.0-beta.5" [label="  17d 21h 43m 57s\ncarrying: 0ms"; minlen="0.9391989426809413"; penwidth="0.5"; weight="1";];
         }
         subgraph {
             peripheries=0;
             cluster=true;
             label="";
             "v2.0.0-beta.6" [fontsize="20";];
-            "annotation19" [label="Sun, 05 Mar 2023 21:24:45 GMT\n8y 10d 19h 59m 41s\n-2y 85d 14h 49m 52.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation19" [label="Sun, 05 Mar 2023 21:24:45 GMT\n8y 10d 19h 59m 41s\n-2y 85d 19h 6m 24.2s"; margin="0.2"; shape="plaintext"; style="dotted";];
             "annotation19" -> "v2.0.0-beta.6" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
-            "v2.0.0-beta.5" -> "v2.0.0-beta.6" [label="  22d 3h 21m 36s\ncarrying: 0ms"; minlen="1.1514757782251774"; penwidth="0.5"; weight="1";];
         }
         subgraph {
             peripheries=0;
             cluster=true;
             label="";
             "v2.0.0-beta.7" [fontsize="20";];
-            "annotation20" [label="Sun, 19 Mar 2023 19:56:42 GMT\n8y 24d 18h 31m 38s\n-2y 71d 16h 17m 55.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation20" [label="Sun, 19 Mar 2023 19:56:42 GMT\n8y 24d 18h 31m 38s\n-2y 71d 20h 34m 27.2s"; margin="0.2"; shape="plaintext"; style="dotted";];
             "annotation20" -> "v2.0.0-beta.7" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
-            "v2.0.0-beta.6" -> "v2.0.0-beta.7" [label="  13d 22h 31m 57s\ncarrying: 0ms"; minlen="0.6887700553855122"; penwidth="0.5"; weight="1";];
         }
         subgraph {
             peripheries=0;
             cluster=true;
             label="";
             "v2.0.0-beta.8" [fontsize="20";];
-            "annotation21" [label="Mon, 25 Dec 2023 13:16:51 GMT\n8y 305d 11h 51m 47s\n-1y 155d 22h 57m 46.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation21" [label="Mon, 25 Dec 2023 13:16:51 GMT\n8y 305d 11h 51m 47s\n-1y 156d 3h 14m 18.2s"; margin="0.2"; shape="plaintext"; style="dotted";];
             "annotation21" -> "v2.0.0-beta.8" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
-            "v2.0.0-beta.7" -> "v2.0.0-beta.8" [label="  280d 17h 20m 9s\ncarrying: 0ms"; minlen="3.6914558694070547"; penwidth="0.5"; weight="1";];
         }
     }
     subgraph cluster_2024 {
-        penwidth="0.2";
+        fontname="Master Photograph";
         label="2024";
+        penwidth="0.2";
+        style="dashed";
         subgraph {
             peripheries=0;
             cluster=true;
             label="";
             "v2.0.0-beta.9" [fontsize="20";];
-            "annotation22" [label="Wed, 25 Dec 2024 13:10:55 GMT\n9y 306d 11h 45m 51s\n-154d 23h 3m 42.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation22" [label="Wed, 25 Dec 2024 13:10:55 GMT\n9y 306d 11h 45m 51s\n-155d 3h 20m 14.2s"; margin="0.2"; shape="plaintext"; style="dotted";];
             "annotation22" -> "v2.0.0-beta.9" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
-            "v2.0.0-beta.8" -> "v2.0.0-beta.9" [label="  1y 23h 54m 4s\ncarrying: 0ms"; minlen="3.956711926440141"; penwidth="0.5"; weight="1";];
         }
     }
     subgraph cluster_2025 {
-        penwidth="0.2";
+        fontname="Master Photograph";
         label="2025";
+        penwidth="0.2";
+        style="dashed";
         subgraph {
             peripheries=0;
             cluster=true;
             label="";
             "v2.0.0-beta.10" [fontsize="20";];
-            "annotation23" [label="Sat, 19 Apr 2025 17:54:52 GMT\n10y 56d 16h 29m 48s\n-39d 18h 19m 45.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation23" [label="Sat, 19 Apr 2025 17:54:52 GMT\n10y 56d 16h 29m 48s\n-39d 22h 36m 17.2s"; margin="0.2"; shape="plaintext"; style="dotted";];
             "annotation23" -> "v2.0.0-beta.10" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
-            "v2.0.0-beta.9" -> "v2.0.0-beta.10" [label="  115d 4h 43m 57s\ncarrying: 0ms"; minlen="2.8007351848459496"; penwidth="0.5"; weight="1";];
         }
         subgraph {
             peripheries=0;
             cluster=true;
             label="";
             "dev" [fontsize="20";];
-            "annotation24" [label="Wed, 21 May 2025 10:31:48 GMT\n10y 88d 9h 6m 44s\n-8d 1h 42m 49.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation24" [label="Wed, 21 May 2025 10:31:48 GMT\n10y 88d 9h 6m 44s\n-8d 5h 59m 21.2s"; margin="0.2"; shape="plaintext"; style="dotted";];
             "annotation24" -> "dev" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
-            "v2.0.0-beta.10" -> "dev" [label="  31d 16h 36m 56s\ncarrying: 0ms"; minlen="1.5101640675719534"; penwidth="0.5"; weight="1";];
         }
         subgraph {
             peripheries=0;
             cluster=true;
             label="";
             "nightly" [fontsize="20";];
-            "annotation25" [label="Wed, 21 May 2025 16:57:13 GMT\n10y 88d 15h 32m 9s\n-7d 19h 17m 24.3s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation25" [label="Wed, 21 May 2025 16:57:13 GMT\n10y 88d 15h 32m 9s\n-7d 23h 33m 56.2s"; margin="0.2"; shape="plaintext"; style="dotted";];
             "annotation25" -> "nightly" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
-            "dev" -> "nightly" [label="  6h 25m 25s\ncarrying: 6h 25m 25s"; minlen="0.01"; penwidth="0.5"; weight="1";];
         }
         subgraph {
             peripheries=0;
             cluster=true;
             label="";
             "Now" [fontsize="20";];
-            "annotation26" [label="Thu, 29 May 2025 12:14:37 GMT\n10y 96d 10h 49m 33.3s\n-9ms"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation26" [label="Thu, 29 May 2025 16:31:09 GMT\n10y 96d 15h 6m 5.2s\n-8ms"; margin="0.2"; shape="plaintext"; style="dotted";];
             "annotation26" -> "Now" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
-            "nightly" -> "Now" [label="  7d 19h 17m 24.3s\ncarrying: 0ms"; minlen="0.14241739100431636"; penwidth="0.5"; weight="1";];
         }
+        "Initial commit" -> "v2.0.0-alpha.0" [label="6y 138d 16h 57m 47s"; minlen="5.807158219379291"; penwidth="0.5"; weight="1";];
+        "v2.0.0-alpha.0" -> "v2.0.0-alpha.1" [label="291d 18h 25m 40s"; minlen="3.7300482139009916"; penwidth="0.5"; weight="1";];
+        "v2.0.0-alpha.1" -> "v2.0.0-alpha.2" [label="56d 3m 4s"; minlen="2.079479570057277"; penwidth="0.5"; weight="1";];
+        "v2.0.0-alpha.2" -> "v2.0.0-alpha.3" [label="5d 14m 17s +5d 14m 17s"; minlen="0.01"; penwidth="0.5"; weight="1";];
+        "v2.0.0-alpha.3" -> "v2.0.0-alpha.4" [label="83d 4h 45m 35s"; minlen="2.5337902420275964"; penwidth="0.5"; weight="1";];
+        "v2.0.0-alpha.4" -> "v2.0.0-alpha.5" [label="16d 2h 39m 39s"; minlen="0.8335839297083473"; penwidth="0.5"; weight="1";];
+        "v2.0.0-alpha.5" -> "v2.0.0-alpha.6" [label="5d 22h 9m 5s +5d 22h 9m 5s"; minlen="0.01"; penwidth="0.5"; weight="1";];
+        "v2.0.0-alpha.6" -> "v2.0.0-alpha.7" [label="22h 13m 2s +6d 20h 22m 7s"; minlen="0.01"; penwidth="0.5"; weight="1";];
+        "v2.0.0-alpha.7" -> "v2.0.0-alpha.8" [label="6d 1h 42m 44s +12d 22h 4m 51s"; minlen="0.01"; penwidth="0.5"; weight="1";];
+        "v2.0.0-alpha.8" -> "v2.0.0-alpha.9" [label="5d 21h 57m 16s +18d 20h 2m 7s"; minlen="0.01"; penwidth="0.5"; weight="1";];
+        "v2.0.0-alpha.9" -> "v2.0.0-alpha.10" [label="26d 2h 1m 21s"; minlen="1.8589523678258595"; penwidth="0.5"; weight="1";];
+        "v2.0.0-alpha.10" -> "v2.0.0-alpha.11" [label="26d 20h 12m 28s"; minlen="1.3440573309660926"; penwidth="0.5"; weight="1";];
+        "v2.0.0-alpha.11" -> "v2.0.0-alpha.12" [label="3d 4h 9m 24s +3d 4h 9m 24s"; minlen="0.01"; penwidth="0.5"; weight="1";];
+        "v2.0.0-alpha.12" -> "v2.0.0-beta.1" [label="4d 23h 34m 6s +8d 3h 43m 30s"; minlen="0.01"; penwidth="0.5"; weight="1";];
+        "v2.0.0-beta.1" -> "v2.0.0-beta.2" [label="13d 1h 53m 34s"; minlen="1.1096970099953725"; penwidth="0.5"; weight="1";];
+        "v2.0.0-beta.2" -> "v2.0.0-beta.3" [label="6d 21h 58m 2s +6d 21h 58m 2s"; minlen="0.01"; penwidth="0.5"; weight="1";];
+        "v2.0.0-beta.3" -> "v2.0.0-beta.4" [label="10d 1h 57m 4s"; minlen="0.8871030115668432"; penwidth="0.5"; weight="1";];
+        "v2.0.0-beta.4" -> "v2.0.0-beta.5" [label="17d 21h 43m 57s"; minlen="0.9391989426809413"; penwidth="0.5"; weight="1";];
+        "v2.0.0-beta.5" -> "v2.0.0-beta.6" [label="22d 3h 21m 36s"; minlen="1.1514757782251774"; penwidth="0.5"; weight="1";];
+        "v2.0.0-beta.6" -> "v2.0.0-beta.7" [label="13d 22h 31m 57s"; minlen="0.6887700553855122"; penwidth="0.5"; weight="1";];
+        "v2.0.0-beta.7" -> "v2.0.0-beta.8" [label="280d 17h 20m 9s"; minlen="3.6914558694070547"; penwidth="0.5"; weight="1";];
+        "v2.0.0-beta.8" -> "v2.0.0-beta.9" [label="1y 23h 54m 4s"; minlen="3.956711926440141"; penwidth="0.5"; weight="1";];
+        "v2.0.0-beta.9" -> "v2.0.0-beta.10" [label="115d 4h 43m 57s"; minlen="2.8007351848459496"; penwidth="0.5"; weight="1";];
+        "v2.0.0-beta.10" -> "dev" [label="31d 16h 36m 56s"; minlen="1.5101640675719534"; penwidth="0.5"; weight="1";];
+        "dev" -> "nightly" [label="6h 25m 25s +6h 25m 25s"; minlen="0.01"; penwidth="0.5"; weight="1";];
+        "nightly" -> "Now" [label="7d 23h 33m 56.2s"; minlen="0.16424866148445602"; penwidth="0.5"; weight="1";];
     }
 }

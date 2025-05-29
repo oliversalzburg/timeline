@@ -32,9 +32,11 @@ const dotGraphs = new Map(
     .entries()
     .map(([filename, timeline]) => [
       filename,
-      render(timeline, { baseUnit: "week", clusterYears: true, scale: "logarithmic" }),
+      render([timeline], { baseUnit: "week", clusterYears: true, scale: "logarithmic" }),
     ]),
 );
+
+dotGraphs.set("timelines/.universe", render([...data.values()],{ baseUnit: "week", clusterYears: true, scale: "logarithmic" }));
 
 // Render DOT graph with GraphViz.
 instance().then(viz => {
@@ -43,7 +45,7 @@ instance().then(viz => {
       const imageData = viz.renderString(graph, { format: "svg" });
       process.stderr.write(filename + "\n");
       writeFileSync(`${filename}.svg`, imageData);
-      //writeFileSync(`${filename}.gv`, graph);
+      writeFileSync(`${filename}.gv`, graph);
     } catch (fault) {
       const error = unknownToError(fault);
       process.stderr.write(
