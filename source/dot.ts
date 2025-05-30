@@ -1,30 +1,33 @@
 import { indent } from "@oliversalzburg/js-utils/data/string.js";
 
+export type Arrow =
+  | "box"
+  | "crow"
+  | "diamond"
+  | "dot"
+  | "ediamond"
+  | "empty"
+  | "halfopen"
+  | "inv"
+  | "invdot"
+  | "invempty"
+  | "invodot"
+  | "none"
+  | "normal"
+  | "obox"
+  | "odiamond"
+  | "odot"
+  | "open"
+  | "tee"
+  | "vee";
 export type Color = string;
 export type PortPos = "n" | "ne" | "e" | "se" | "s" | "sw" | "w" | "nw" | "c" | "_";
 
 export interface LinkProperties {
-  arrowhead:
-    | "box"
-    | "crow"
-    | "diamond"
-    | "dot"
-    | "ediamond"
-    | "empty"
-    | "halfopen"
-    | "inv"
-    | "invdot"
-    | "invempty"
-    | "invodot"
-    | "none"
-    | "normal"
-    | "obox"
-    | "odiamond"
-    | "odot"
-    | "open"
-    | "tee"
-    | "vee";
+  arrowhead:Arrow;
+  arrowtail:Arrow;
   color: Color;
+  constraint: boolean;
   fillcolor: Color;
   fontcolor: Color;
   fontname: string;
@@ -54,6 +57,7 @@ export interface NodeProperties {
 const makePropertyString = (properties: Record<string, boolean | number | string>) =>
   Object.entries(properties)
     .map(([key, _]) => `${key}="${_}"`)
+    .sort()
     .join("; ");
 
 export const dot = () => {
@@ -90,11 +94,10 @@ export const dot = () => {
 
     renderLink(`annotation${nextNodeIndex}`, _, {
       arrowhead: "none",
-      minlen: 0,
+      constraint: false,
       penwidth: 0.5,
       style: "dotted",
       tailclip: false,
-      weight: 0,
     });
 
     ++nextNodeIndex;

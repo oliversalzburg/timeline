@@ -3,3 +3,4 @@ node_modules
 output
 tsconfig.tsbuildinfo
 timelines/.*
+timelines/*.dump

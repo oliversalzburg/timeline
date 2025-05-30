@@ -13,8 +13,8 @@ digraph {
             cluster=true;
             label="";
             "Evoke 2000" [color="#aacf1f"; fontsize="20";];
-            "annotation0" [label="Fri Aug 18 2000\n0ms\n-24y -290d -21h -13m -27s -428ms"; margin="0.2"; shape="plaintext"; style="dotted";];
-            "annotation0" -> "Evoke 2000" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "annotation0" [label="Fri Aug 18 2000\n0ms\n-24y -291d -14h -4m -59s -352ms"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation0" -> "Evoke 2000" [arrowhead="none"; constraint="false"; penwidth="0.5"; style="dotted"; tailclip="false";];
         }
     }
     subgraph cluster_2002 {
@@ -27,10 +27,9 @@ digraph {
             cluster=true;
             label="";
             "Evoke 2002" [color="#aacf1f"; fontsize="20";];
-            "annotation1" [label="Fri Aug 30 2002\n2y 12d\n-22y -278d -21h -13m -27s -428ms"; margin="0.2"; shape="plaintext"; style="dotted";];
-            "annotation1" -> "Evoke 2002" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "annotation1" [label="Fri Aug 30 2002\n2y 12d\n-22y -279d -14h -4m -59s -352ms"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation1" -> "Evoke 2002" [arrowhead="none"; constraint="false"; penwidth="0.5"; style="dotted"; tailclip="false";];
         }
-        "Evoke 2000" -> "Evoke 2002" [style="dotted"; minlen="0"; weight="0";];
     }
     subgraph cluster_2003 {
         fontname="Master Photograph";
@@ -42,10 +41,9 @@ digraph {
             cluster=true;
             label="";
             "Evoke Z003" [color="#aacf1f"; fontsize="20";];
-            "annotation2" [label="Wed Aug 20 2003\n3y 2d\n-21y -288d -21h -13m -27s -428ms"; margin="0.2"; shape="plaintext"; style="dotted";];
-            "annotation2" -> "Evoke Z003" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "annotation2" [label="Wed Aug 20 2003\n3y 2d\n-21y -289d -14h -4m -59s -352ms"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation2" -> "Evoke Z003" [arrowhead="none"; constraint="false"; penwidth="0.5"; style="dotted"; tailclip="false";];
         }
-        "Evoke 2002" -> "Evoke Z003" [style="dotted"; minlen="0"; weight="0";];
     }
     subgraph cluster_2004 {
         fontname="Master Photograph";
@@ -57,10 +55,9 @@ digraph {
             cluster=true;
             label="";
             "Evoke 2004" [color="#aacf1f"; fontsize="20";];
-            "annotation3" [label="Fri Aug 27 2004\n4y 10d\n-20y -280d -21h -13m -27s -428ms"; margin="0.2"; shape="plaintext"; style="dotted";];
-            "annotation3" -> "Evoke 2004" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "annotation3" [label="Fri Aug 27 2004\n4y 10d\n-20y -281d -14h -4m -59s -352ms"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation3" -> "Evoke 2004" [arrowhead="none"; constraint="false"; penwidth="0.5"; style="dotted"; tailclip="false";];
         }
-        "Evoke Z003" -> "Evoke 2004" [style="dotted"; minlen="0"; weight="0";];
     }
     subgraph cluster_2005 {
         fontname="Master Photograph";
@@ -72,10 +69,9 @@ digraph {
             cluster=true;
             label="";
             "Evoke 2005" [color="#aacf1f"; fontsize="20";];
-            "annotation4" [label="Fri Aug 26 2005\n5y 9d\n-19y -281d -21h -13m -27s -428ms"; margin="0.2"; shape="plaintext"; style="dotted";];
-            "annotation4" -> "Evoke 2005" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "annotation4" [label="Fri Aug 26 2005\n5y 9d\n-19y -282d -14h -4m -59s -352ms"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation4" -> "Evoke 2005" [arrowhead="none"; constraint="false"; penwidth="0.5"; style="dotted"; tailclip="false";];
         }
-        "Evoke 2004" -> "Evoke 2005" [style="dotted"; minlen="0"; weight="0";];
     }
     subgraph cluster_2006 {
         fontname="Master Photograph";
@@ -87,10 +83,9 @@ digraph {
             cluster=true;
             label="";
             "Evoke 2006" [color="#aacf1f"; fontsize="20";];
-            "annotation5" [label="Fri Aug 11 2006\n5y 359d\n-18y -296d -21h -13m -27s -428ms"; margin="0.2"; shape="plaintext"; style="dotted";];
-            "annotation5" -> "Evoke 2006" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "annotation5" [label="Fri Aug 11 2006\n5y 359d\n-18y -297d -14h -4m -59s -352ms"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation5" -> "Evoke 2006" [arrowhead="none"; constraint="false"; penwidth="0.5"; style="dotted"; tailclip="false";];
         }
-        "Evoke 2005" -> "Evoke 2006" [style="dotted"; minlen="0"; weight="0";];
     }
     subgraph cluster_2007 {
         fontname="Master Photograph";
@@ -102,10 +97,9 @@ digraph {
             cluster=true;
             label="";
             "Evoke 10" [color="#aacf1f"; fontsize="20";];
-            "annotation6" [label="Fri Aug 10 2007\n6y 358d\n-17y -297d -21h -13m -27s -428ms"; margin="0.2"; shape="plaintext"; style="dotted";];
-            "annotation6" -> "Evoke 10" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "annotation6" [label="Fri Aug 10 2007\n6y 358d\n-17y -298d -14h -4m -59s -353ms"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation6" -> "Evoke 10" [arrowhead="none"; constraint="false"; penwidth="0.5"; style="dotted"; tailclip="false";];
         }
-        "Evoke 2006" -> "Evoke 10" [style="dotted"; minlen="0"; weight="0";];
     }
     subgraph cluster_2008 {
         fontname="Master Photograph";
@@ -117,10 +111,9 @@ digraph {
             cluster=true;
             label="";
             "Evoke 2008" [color="#aacf1f"; fontsize="20";];
-            "annotation7" [label="Fri Aug 08 2008\n7y 357d\n-16y -298d -21h -13m -27s -428ms"; margin="0.2"; shape="plaintext"; style="dotted";];
-            "annotation7" -> "Evoke 2008" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "annotation7" [label="Fri Aug 08 2008\n7y 357d\n-16y -299d -14h -4m -59s -353ms"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation7" -> "Evoke 2008" [arrowhead="none"; constraint="false"; penwidth="0.5"; style="dotted"; tailclip="false";];
         }
-        "Evoke 10" -> "Evoke 2008" [style="dotted"; minlen="0"; weight="0";];
     }
     subgraph cluster_2009 {
         fontname="Master Photograph";
@@ -132,10 +125,9 @@ digraph {
             cluster=true;
             label="";
             "Evoke 2009" [color="#aacf1f"; fontsize="20";];
-            "annotation8" [label="Fri Jul 31 2009\n8y 349d\n-15y -306d -21h -13m -27s -428ms"; margin="0.2"; shape="plaintext"; style="dotted";];
-            "annotation8" -> "Evoke 2009" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "annotation8" [label="Fri Jul 31 2009\n8y 349d\n-15y -307d -14h -4m -59s -353ms"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation8" -> "Evoke 2009" [arrowhead="none"; constraint="false"; penwidth="0.5"; style="dotted"; tailclip="false";];
         }
-        "Evoke 2008" -> "Evoke 2009" [style="dotted"; minlen="0"; weight="0";];
     }
     subgraph cluster_2010 {
         fontname="Master Photograph";
@@ -147,10 +139,9 @@ digraph {
             cluster=true;
             label="";
             "Evoke 2010" [color="#aacf1f"; fontsize="20";];
-            "annotation9" [label="Fri Aug 27 2010\n10y 11d\n-14y -279d -21h -13m -27s -428ms"; margin="0.2"; shape="plaintext"; style="dotted";];
-            "annotation9" -> "Evoke 2010" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "annotation9" [label="Fri Aug 27 2010\n10y 11d\n-14y -280d -14h -4m -59s -353ms"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation9" -> "Evoke 2010" [arrowhead="none"; constraint="false"; penwidth="0.5"; style="dotted"; tailclip="false";];
         }
-        "Evoke 2009" -> "Evoke 2010" [style="dotted"; minlen="0"; weight="0";];
     }
     subgraph cluster_2011 {
         fontname="Master Photograph";
@@ -162,10 +153,9 @@ digraph {
             cluster=true;
             label="";
             "Evoke 2011" [color="#aacf1f"; fontsize="20";];
-            "annotation10" [label="Fri Aug 12 2011\n10y 361d\n-13y -294d -21h -13m -27s -428ms"; margin="0.2"; shape="plaintext"; style="dotted";];
-            "annotation10" -> "Evoke 2011" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "annotation10" [label="Fri Aug 12 2011\n10y 361d\n-13y -295d -14h -4m -59s -353ms"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation10" -> "Evoke 2011" [arrowhead="none"; constraint="false"; penwidth="0.5"; style="dotted"; tailclip="false";];
         }
-        "Evoke 2010" -> "Evoke 2011" [style="dotted"; minlen="0"; weight="0";];
     }
     subgraph cluster_2012 {
         fontname="Master Photograph";
@@ -177,10 +167,9 @@ digraph {
             cluster=true;
             label="";
             "Evoke 2012" [color="#aacf1f"; fontsize="20";];
-            "annotation11" [label="Fri Aug 10 2012\n11y 360d\n-12y -295d -21h -13m -27s -428ms"; margin="0.2"; shape="plaintext"; style="dotted";];
-            "annotation11" -> "Evoke 2012" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "annotation11" [label="Fri Aug 10 2012\n11y 360d\n-12y -296d -14h -4m -59s -353ms"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation11" -> "Evoke 2012" [arrowhead="none"; constraint="false"; penwidth="0.5"; style="dotted"; tailclip="false";];
         }
-        "Evoke 2011" -> "Evoke 2012" [style="dotted"; minlen="0"; weight="0";];
     }
     subgraph cluster_2013 {
         fontname="Master Photograph";
@@ -192,10 +181,9 @@ digraph {
             cluster=true;
             label="";
             "Evoke 2013" [color="#aacf1f"; fontsize="20";];
-            "annotation12" [label="Fri Aug 16 2013\n13y 1d\n-11y -289d -21h -13m -27s -428ms"; margin="0.2"; shape="plaintext"; style="dotted";];
-            "annotation12" -> "Evoke 2013" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "annotation12" [label="Fri Aug 16 2013\n13y 1d\n-11y -290d -14h -4m -59s -353ms"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation12" -> "Evoke 2013" [arrowhead="none"; constraint="false"; penwidth="0.5"; style="dotted"; tailclip="false";];
         }
-        "Evoke 2012" -> "Evoke 2013" [style="dotted"; minlen="0"; weight="0";];
     }
     subgraph cluster_2014 {
         fontname="Master Photograph";
@@ -207,10 +195,9 @@ digraph {
             cluster=true;
             label="";
             "Evoke 2014" [color="#aacf1f"; fontsize="20";];
-            "annotation13" [label="Fri Aug 08 2014\n13y 358d\n-10y -297d -21h -13m -27s -428ms"; margin="0.2"; shape="plaintext"; style="dotted";];
-            "annotation13" -> "Evoke 2014" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "annotation13" [label="Fri Aug 08 2014\n13y 358d\n-10y -298d -14h -4m -59s -353ms"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation13" -> "Evoke 2014" [arrowhead="none"; constraint="false"; penwidth="0.5"; style="dotted"; tailclip="false";];
         }
-        "Evoke 2013" -> "Evoke 2014" [style="dotted"; minlen="0"; weight="0";];
     }
     subgraph cluster_2015 {
         fontname="Master Photograph";
@@ -222,10 +209,9 @@ digraph {
             cluster=true;
             label="";
             "Evoke 2015" [color="#aacf1f"; fontsize="20";];
-            "annotation14" [label="Fri Jul 31 2015\n14y 350d\n-9y -305d -21h -13m -27s -428ms"; margin="0.2"; shape="plaintext"; style="dotted";];
-            "annotation14" -> "Evoke 2015" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "annotation14" [label="Fri Jul 31 2015\n14y 350d\n-9y -306d -14h -4m -59s -353ms"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation14" -> "Evoke 2015" [arrowhead="none"; constraint="false"; penwidth="0.5"; style="dotted"; tailclip="false";];
         }
-        "Evoke 2014" -> "Evoke 2015" [style="dotted"; minlen="0"; weight="0";];
     }
     subgraph cluster_2016 {
         fontname="Master Photograph";
@@ -237,10 +223,9 @@ digraph {
             cluster=true;
             label="";
             "Evoke 2016" [color="#aacf1f"; fontsize="20";];
-            "annotation15" [label="Fri Aug 12 2016\n15y 363d\n-8y -292d -21h -13m -27s -428ms"; margin="0.2"; shape="plaintext"; style="dotted";];
-            "annotation15" -> "Evoke 2016" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "annotation15" [label="Fri Aug 12 2016\n15y 363d\n-8y -293d -14h -4m -59s -353ms"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation15" -> "Evoke 2016" [arrowhead="none"; constraint="false"; penwidth="0.5"; style="dotted"; tailclip="false";];
         }
-        "Evoke 2015" -> "Evoke 2016" [style="dotted"; minlen="0"; weight="0";];
     }
     subgraph cluster_2017 {
         fontname="Master Photograph";
@@ -252,10 +237,9 @@ digraph {
             cluster=true;
             label="";
             "Evoke 20" [color="#aacf1f"; fontsize="20";];
-            "annotation16" [label="Fri Aug 18 2017\n17y 4d\n-7y -286d -21h -13m -27s -428ms"; margin="0.2"; shape="plaintext"; style="dotted";];
-            "annotation16" -> "Evoke 20" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "annotation16" [label="Fri Aug 18 2017\n17y 4d\n-7y -287d -14h -4m -59s -353ms"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation16" -> "Evoke 20" [arrowhead="none"; constraint="false"; penwidth="0.5"; style="dotted"; tailclip="false";];
         }
-        "Evoke 2016" -> "Evoke 20" [style="dotted"; minlen="0"; weight="0";];
     }
     subgraph cluster_2018 {
         fontname="Master Photograph";
@@ -267,10 +251,9 @@ digraph {
             cluster=true;
             label="";
             "Evoke 2018" [color="#aacf1f"; fontsize="20";];
-            "annotation17" [label="Fri Aug 17 2018\n18y 3d\n-6y -287d -21h -13m -27s -428ms"; margin="0.2"; shape="plaintext"; style="dotted";];
-            "annotation17" -> "Evoke 2018" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "annotation17" [label="Fri Aug 17 2018\n18y 3d\n-6y -288d -14h -4m -59s -353ms"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation17" -> "Evoke 2018" [arrowhead="none"; constraint="false"; penwidth="0.5"; style="dotted"; tailclip="false";];
         }
-        "Evoke 20" -> "Evoke 2018" [style="dotted"; minlen="0"; weight="0";];
     }
     subgraph cluster_2019 {
         fontname="Master Photograph";
@@ -282,10 +265,9 @@ digraph {
             cluster=true;
             label="";
             "Evoke 2019" [color="#aacf1f"; fontsize="20";];
-            "annotation18" [label="Fri Aug 16 2019\n19y 2d\n-5y -288d -21h -13m -27s -428ms"; margin="0.2"; shape="plaintext"; style="dotted";];
-            "annotation18" -> "Evoke 2019" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "annotation18" [label="Fri Aug 16 2019\n19y 2d\n-5y -289d -14h -4m -59s -353ms"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation18" -> "Evoke 2019" [arrowhead="none"; constraint="false"; penwidth="0.5"; style="dotted"; tailclip="false";];
         }
-        "Evoke 2018" -> "Evoke 2019" [style="dotted"; minlen="0"; weight="0";];
     }
     subgraph cluster_2020 {
         fontname="Master Photograph";
@@ -297,10 +279,9 @@ digraph {
             cluster=true;
             label="";
             "Novoque" [color="#aacf1f"; fontsize="20";];
-            "annotation19" [label="Sat Aug 15 2020\n20y 2d\n-4y -288d -21h -13m -27s -428ms"; margin="0.2"; shape="plaintext"; style="dotted";];
-            "annotation19" -> "Novoque" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "annotation19" [label="Sat Aug 15 2020\n20y 2d\n-4y -289d -14h -4m -59s -353ms"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation19" -> "Novoque" [arrowhead="none"; constraint="false"; penwidth="0.5"; style="dotted"; tailclip="false";];
         }
-        "Evoke 2019" -> "Novoque" [style="dotted"; minlen="0"; weight="0";];
     }
     subgraph cluster_2021 {
         fontname="Master Photograph";
@@ -312,10 +293,9 @@ digraph {
             cluster=true;
             label="";
             "Névoke" [color="#aacf1f"; fontsize="20";];
-            "annotation20" [label="Sat Aug 14 2021\n21y 1d\n-3y -289d -21h -13m -27s -428ms"; margin="0.2"; shape="plaintext"; style="dotted";];
-            "annotation20" -> "Névoke" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "annotation20" [label="Sat Aug 14 2021\n21y 1d\n-3y -290d -14h -4m -59s -353ms"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation20" -> "Névoke" [arrowhead="none"; constraint="false"; penwidth="0.5"; style="dotted"; tailclip="false";];
         }
-        "Novoque" -> "Névoke" [style="dotted"; minlen="0"; weight="0";];
     }
     subgraph cluster_2022 {
         fontname="Master Photograph";
@@ -327,10 +307,9 @@ digraph {
             cluster=true;
             label="";
             "Evoke 2022" [color="#aacf1f"; fontsize="20";];
-            "annotation21" [label="Fri Aug 05 2022\n21y 357d\n-2y -298d -21h -13m -27s -429ms"; margin="0.2"; shape="plaintext"; style="dotted";];
-            "annotation21" -> "Evoke 2022" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "annotation21" [label="Fri Aug 05 2022\n21y 357d\n-2y -299d -14h -4m -59s -353ms"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation21" -> "Evoke 2022" [arrowhead="none"; constraint="false"; penwidth="0.5"; style="dotted"; tailclip="false";];
         }
-        "Névoke" -> "Evoke 2022" [style="dotted"; minlen="0"; weight="0";];
     }
     subgraph cluster_2023 {
         fontname="Master Photograph";
@@ -342,10 +321,9 @@ digraph {
             cluster=true;
             label="";
             "Evoke 2023" [color="#aacf1f"; fontsize="20";];
-            "annotation22" [label="Fri Jul 28 2023\n22y 349d\n-1y -306d -21h -13m -27s -429ms"; margin="0.2"; shape="plaintext"; style="dotted";];
-            "annotation22" -> "Evoke 2023" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "annotation22" [label="Fri Jul 28 2023\n22y 349d\n-1y -307d -14h -4m -59s -353ms"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation22" -> "Evoke 2023" [arrowhead="none"; constraint="false"; penwidth="0.5"; style="dotted"; tailclip="false";];
         }
-        "Evoke 2022" -> "Evoke 2023" [style="dotted"; minlen="0"; weight="0";];
     }
     subgraph cluster_2024 {
         fontname="Master Photograph";
@@ -357,10 +335,9 @@ digraph {
             cluster=true;
             label="";
             "Evoke 2024" [color="#aacf1f"; fontsize="20";];
-            "annotation23" [label="Fri Aug 16 2024\n24y 4d\n-286d -21h -13m -27s -429ms"; margin="0.2"; shape="plaintext"; style="dotted";];
-            "annotation23" -> "Evoke 2024" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "annotation23" [label="Fri Aug 16 2024\n24y 4d\n-287d -14h -4m -59s -353ms"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation23" -> "Evoke 2024" [arrowhead="none"; constraint="false"; penwidth="0.5"; style="dotted"; tailclip="false";];
         }
-        "Evoke 2023" -> "Evoke 2024" [style="dotted"; minlen="0"; weight="0";];
     }
     subgraph cluster_2025 {
         fontname="Master Photograph";
@@ -372,33 +349,32 @@ digraph {
             cluster=true;
             label="";
             "Evoke 2025" [color="#aacf1f"; fontsize="20";];
-            "annotation24" [label="Fri Aug 15 2025\n25y 3d\n77d 2h 46m 32.5s"; margin="0.2"; shape="plaintext"; style="dotted";];
-            "annotation24" -> "Evoke 2025" [arrowhead="none"; minlen="0"; penwidth="0.5"; style="dotted"; tailclip="false"; weight="0";];
+            "annotation24" [label="Fri Aug 15 2025\n25y 3d\n76d 9h 55m 0.6s"; margin="0.2"; shape="plaintext"; style="dotted";];
+            "annotation24" -> "Evoke 2025" [arrowhead="none"; constraint="false"; penwidth="0.5"; style="dotted"; tailclip="false";];
         }
-        "Evoke 2024" -> "Evoke 2025" [style="dotted"; minlen="0"; weight="0";];
-        "Evoke 2000" -> "Evoke 2002" [color="#aacf1f"; minlen="4.663439094112067"; penwidth="0.5"; style="solid"; weight="1";];
-        "Evoke 2002" -> "Evoke Z003" [color="#aacf1f"; minlen="3.9262076404201025"; penwidth="0.5"; style="solid"; weight="1";];
-        "Evoke Z003" -> "Evoke 2004" [color="#aacf1f"; minlen="3.975668270588502"; penwidth="0.5"; style="solid"; weight="1";];
-        "Evoke 2004" -> "Evoke 2005" [color="#aacf1f"; minlen="3.9512437185814275"; penwidth="0.5"; style="solid"; weight="1";];
-        "Evoke 2005" -> "Evoke 2006" [color="#aacf1f"; minlen="3.912023005428146"; penwidth="0.5"; style="solid"; weight="1";];
-        "Evoke 2006" -> "Evoke 10" [color="#aacf1f"; minlen="3.9512437185814275"; penwidth="0.5"; style="solid"; weight="1";];
-        "Evoke 10" -> "Evoke 2008" [color="#aacf1f"; minlen="3.9512437185814275"; penwidth="0.5"; style="solid"; weight="1";];
-        "Evoke 2008" -> "Evoke 2009" [color="#aacf1f"; minlen="3.9318256327243257"; penwidth="0.5"; style="solid"; weight="1";];
-        "Evoke 2009" -> "Evoke 2010" [color="#aacf1f"; minlen="4.02535169073515"; penwidth="0.5"; style="solid"; weight="1";];
-        "Evoke 2010" -> "Evoke 2011" [color="#aacf1f"; minlen="3.912023005428146"; penwidth="0.5"; style="solid"; weight="1";];
-        "Evoke 2011" -> "Evoke 2012" [color="#aacf1f"; minlen="3.9512437185814275"; penwidth="0.5"; style="solid"; weight="1";];
-        "Evoke 2012" -> "Evoke 2013" [color="#aacf1f"; minlen="3.970291913552122"; penwidth="0.5"; style="solid"; weight="1";];
-        "Evoke 2013" -> "Evoke 2014" [color="#aacf1f"; minlen="3.9318256327243257"; penwidth="0.5"; style="solid"; weight="1";];
-        "Evoke 2014" -> "Evoke 2015" [color="#aacf1f"; minlen="3.9318256327243257"; penwidth="0.5"; style="solid"; weight="1";];
-        "Evoke 2015" -> "Evoke 2016" [color="#aacf1f"; minlen="3.9889840465642745"; penwidth="0.5"; style="solid"; weight="1";];
-        "Evoke 2016" -> "Evoke 20" [color="#aacf1f"; minlen="3.970291913552122"; penwidth="0.5"; style="solid"; weight="1";];
-        "Evoke 20" -> "Evoke 2018" [color="#aacf1f"; minlen="3.9512437185814275"; penwidth="0.5"; style="solid"; weight="1";];
-        "Evoke 2018" -> "Evoke 2019" [color="#aacf1f"; minlen="3.9512437185814275"; penwidth="0.5"; style="solid"; weight="1";];
-        "Evoke 2019" -> "Novoque" [color="#aacf1f"; minlen="3.9539872045271784"; penwidth="0.5"; style="solid"; weight="1";];
-        "Novoque" -> "Névoke" [color="#aacf1f"; minlen="3.9512437185814275"; penwidth="0.5"; style="solid"; weight="1";];
-        "Névoke" -> "Evoke 2022" [color="#aacf1f"; minlen="3.9290205817967174"; penwidth="0.5"; style="solid"; weight="1";];
-        "Evoke 2022" -> "Evoke 2023" [color="#aacf1f"; minlen="3.9318256327243257"; penwidth="0.5"; style="solid"; weight="1";];
-        "Evoke 2023" -> "Evoke 2024" [color="#aacf1f"; minlen="4.007333185232471"; penwidth="0.5"; style="solid"; weight="1";];
-        "Evoke 2024" -> "Evoke 2025" [color="#aacf1f"; minlen="3.9512437185814275"; penwidth="0.5"; style="solid"; weight="1";];
     }
+    "Evoke 2000" -> "Evoke 2002" [color="#aacf1f"; label="2y 12d +0ms"; minlen="4.663439094112067"; penwidth="0.5"; style="solid";];
+    "Evoke 2002" -> "Evoke Z003" [color="#aacf1f"; label="355d +0ms"; minlen="3.9262076404201025"; penwidth="0.5"; style="solid";];
+    "Evoke Z003" -> "Evoke 2004" [color="#aacf1f"; label="1y 8d +0ms"; minlen="3.975668270588502"; penwidth="0.5"; style="solid";];
+    "Evoke 2004" -> "Evoke 2005" [color="#aacf1f"; label="364d +0ms"; minlen="3.9512437185814275"; penwidth="0.5"; style="solid";];
+    "Evoke 2005" -> "Evoke 2006" [color="#aacf1f"; label="350d +0ms"; minlen="3.912023005428146"; penwidth="0.5"; style="solid";];
+    "Evoke 2006" -> "Evoke 10" [color="#aacf1f"; label="364d +0ms"; minlen="3.9512437185814275"; penwidth="0.5"; style="solid";];
+    "Evoke 10" -> "Evoke 2008" [color="#aacf1f"; label="364d +0ms"; minlen="3.9512437185814275"; penwidth="0.5"; style="solid";];
+    "Evoke 2008" -> "Evoke 2009" [color="#aacf1f"; label="357d +0ms"; minlen="3.9318256327243257"; penwidth="0.5"; style="solid";];
+    "Evoke 2009" -> "Evoke 2010" [color="#aacf1f"; label="1y 27d +0ms"; minlen="4.02535169073515"; penwidth="0.5"; style="solid";];
+    "Evoke 2010" -> "Evoke 2011" [color="#aacf1f"; label="350d +0ms"; minlen="3.912023005428146"; penwidth="0.5"; style="solid";];
+    "Evoke 2011" -> "Evoke 2012" [color="#aacf1f"; label="364d +0ms"; minlen="3.9512437185814275"; penwidth="0.5"; style="solid";];
+    "Evoke 2012" -> "Evoke 2013" [color="#aacf1f"; label="1y 6d +0ms"; minlen="3.970291913552122"; penwidth="0.5"; style="solid";];
+    "Evoke 2013" -> "Evoke 2014" [color="#aacf1f"; label="357d +0ms"; minlen="3.9318256327243257"; penwidth="0.5"; style="solid";];
+    "Evoke 2014" -> "Evoke 2015" [color="#aacf1f"; label="357d +0ms"; minlen="3.9318256327243257"; penwidth="0.5"; style="solid";];
+    "Evoke 2015" -> "Evoke 2016" [color="#aacf1f"; label="1y 13d +0ms"; minlen="3.9889840465642745"; penwidth="0.5"; style="solid";];
+    "Evoke 2016" -> "Evoke 20" [color="#aacf1f"; label="1y 6d +0ms"; minlen="3.970291913552122"; penwidth="0.5"; style="solid";];
+    "Evoke 20" -> "Evoke 2018" [color="#aacf1f"; label="364d +0ms"; minlen="3.9512437185814275"; penwidth="0.5"; style="solid";];
+    "Evoke 2018" -> "Evoke 2019" [color="#aacf1f"; label="364d +0ms"; minlen="3.9512437185814275"; penwidth="0.5"; style="solid";];
+    "Evoke 2019" -> "Novoque" [color="#aacf1f"; label="1y +0ms"; minlen="3.9539872045271784"; penwidth="0.5"; style="solid";];
+    "Novoque" -> "Névoke" [color="#aacf1f"; label="364d +0ms"; minlen="3.9512437185814275"; penwidth="0.5"; style="solid";];
+    "Névoke" -> "Evoke 2022" [color="#aacf1f"; label="356d +0ms"; minlen="3.9290205817967174"; penwidth="0.5"; style="solid";];
+    "Evoke 2022" -> "Evoke 2023" [color="#aacf1f"; label="357d +0ms"; minlen="3.9318256327243257"; penwidth="0.5"; style="solid";];
+    "Evoke 2023" -> "Evoke 2024" [color="#aacf1f"; label="1y 20d +0ms"; minlen="4.007333185232471"; penwidth="0.5"; style="solid";];
+    "Evoke 2024" -> "Evoke 2025" [color="#aacf1f"; label="364d +0ms"; minlen="3.9512437185814275"; penwidth="0.5"; style="solid";];
 }
