@@ -34,6 +34,9 @@ svg-test:
 	$(MAKE) output
 	@node --enable-source-maps output/main.js
 
+universe: svg-test
+	dot -Tsvg:cairo timelines/.universe.gv > timelines/.universe.svg
+
 node_modules:
 	npm install
 

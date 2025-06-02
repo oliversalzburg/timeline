@@ -1,11 +1,13 @@
 #!/bin/env node
 
-import { readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { basename, join } from "node:path";
 import { errorToString, unknownToError } from "@oliversalzburg/js-utils/errors/error-serializer.js";
-import { instance } from "@viz-js/viz";
 import { parse } from "yaml";
+import { recurringYearly } from "./generator.js";
 import { load } from "./loader.js";
 import { render } from "./renderer.js";
+import { serialize } from "./serializer.js";
 import type { TimelineDocument } from "./types.js";
 
 // Read raw data from input files.
@@ -29,6 +31,33 @@ const data = new Map(
     .map(([filename, data]) => [filename, load(data, { addNewYearMarkers: false, addNow: false })]),
 );
 
+// Inject generated timeline.
+data.set("timelines/.birthdays", {
+  meta: { color: "#123456" },
+  records: recurringYearly(new Date("1983-12-24 02:00:00 +0700"), "Birthday", 85),
+});
+
+// Write normalized timelines back to storage.
+mkdirSync("timelines/.generated", { recursive: true });
+for (const [filename, timeline] of data) {
+  try {
+    const normalized = serialize(timeline);
+    const generatedName = join(
+      "timelines",
+      ".generated",
+      `.${basename(filename).replace(/\.ya?ml$/, "")}.generated.yml`.replace(/^\.+/, "."),
+    );
+    process.stderr.write(generatedName + "\n");
+    writeFileSync(generatedName, normalized, { encoding: "utf-8" });
+  } catch (fault) {
+    const error = unknownToError(fault);
+    process.stderr.write(
+      `${filename} produced an error while trying to dump the associated normalization. Processing continues.\n`,
+    );
+    process.stderr.write(errorToString(error) + "\n");
+  }
+}
+
 // Generate DOT graph.
 const dotGraphs = new Map(
   data
@@ -41,10 +70,33 @@ const dotGraphs = new Map(
 
 dotGraphs.set(
   "timelines/.universe",
-  render([...data.values()], { baseUnit: "week", clusterYears: true, scale: "logarithmic" }),
+  render(
+    [
+      ...data
+        .entries()
+        .filter(([filename]) => !basename(filename).startsWith("_"))
+        .map(([_, timeline]) => timeline),
+    ],
+    { baseUnit: "week", clusterYears: true, scale: "logarithmic" },
+  ),
 );
 
-// Render DOT graph with GraphViz.
+for (const [filename, graph] of dotGraphs) {
+  try {
+    process.stderr.write(`Writing DOT graph for ${filename}...` + "\n");
+    writeFileSync(`${filename}.gv`, graph);
+  } catch (fault) {
+    const error = unknownToError(fault);
+    process.stderr.write(
+      `${filename} produced an error while storing the result. Processing is aborted.\n`,
+    );
+    process.stderr.write(errorToString(error) + "\n");
+    throw fault;
+  }
+}
+
+// Write generated output to file or DOM.
+/*
 instance().then(viz => {
   for (const [filename, graph] of dotGraphs) {
     try {
@@ -62,5 +114,4 @@ instance().then(viz => {
     }
   }
 });
-
-// Write generated output to file or DOM.
+*/

@@ -2,5 +2,6 @@ build
 node_modules
 output
 tsconfig.tsbuildinfo
+contrib/fonts/
 timelines/.*
 timelines/*.dump

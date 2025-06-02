@@ -3,7 +3,7 @@ import { formatMilliseconds } from "@oliversalzburg/js-utils/format/milliseconds
 import { clamp } from "@oliversalzburg/js-utils/math/core.js";
 import { analyze } from "./analyzer.js";
 import { MILLISECONDS } from "./constants.js";
-import { dot } from "./dot.js";
+import { dot, makeHtmlString } from "./dot.js";
 import type { Timeline, TimelineEntry } from "./types.js";
 
 export interface RendererOptions {
@@ -70,13 +70,13 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
 
       // Did the previous item already occupy this timestamp?
       if (previous && previous[0] === timestamp) {
+        if (previous[1].title === entry.title) {
+          //process.stderr.write(`+ Exact match in title. Items will be merged.\n`);
+          continue;
+        }
         process.stderr.write(
           `Timeline collision at ${timestamp}! ${previous[1].title} - ${entry.title}\n`,
         );
-        if (previous[1].title === entry.title) {
-          process.stderr.write(`+ Exact match in title. Items will be merged.\n`);
-          continue;
-        }
         process.stderr.write(`! Collision remains unhandled! Node is rendered.\n`);
       }
 
@@ -94,16 +94,13 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
       }
       nodes.set(entry.title, timestamp);
 
-      d.raw("subgraph {");
-      d.raw("peripheries=0");
-      d.raw("cluster=true");
-      d.raw('label=""');
-      d.node(entry.title, { color: timeline.meta.color, fontsize: 20 });
-      d.annotation(
-        entry.title,
-        `${isDateMarker ? new Date(timestamp).toDateString() : new Date(timestamp).toUTCString()}\\n${formatMilliseconds(timePassedSinceStart)}\\n${formatMilliseconds(timePassedSinceThen * -1)}`,
-      );
-      d.raw("}");
+      d.node(entry.title, {
+        color: timeline.meta.color,
+        fontsize: 20,
+        label: makeHtmlString(
+          `${entry.title}\\n${isDateMarker ? new Date(timestamp).toDateString() : new Date(timestamp).toUTCString()}\\n${formatMilliseconds(timePassedSinceStart)}\\n${formatMilliseconds(timePassedSinceThen * -1)}`,
+        ),
+      });
 
       previous = [timestamp, entry];
     }
@@ -193,13 +190,13 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
 
         // Handle collisions.
         if (previous && previous[0] === timestamp) {
+          if (previous[1].title === entry.title) {
+            //process.stderr.write(`+ Exact match in title. Link is skipped.\n`);
+            continue;
+          }
           process.stderr.write(
             `Timeline collision at ${timestamp}! ${previous[1].title} - ${entry.title}\n`,
           );
-          if (previous[1].title === entry.title) {
-            process.stderr.write(`+ Exact match in title. Link is skipped.\n`);
-            continue;
-          }
           process.stderr.write(`! Collision remains unhandled! Link is rendered.\n`);
         }
 

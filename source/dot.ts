@@ -46,6 +46,7 @@ export interface LinkProperties {
 export interface NodeProperties {
   color: Color;
   fillcolor: Color;
+  fixedsize: boolean;
   fontcolor: Color;
   fontname: string;
   fontsize: number;
@@ -53,6 +54,7 @@ export interface NodeProperties {
   margin: number;
   shape: "egg" | "ellipse" | "box" | "point" | "plain" | "plaintext";
   style: "bold" | "dashed" | "dotted" | "invis" | "solid";
+  width: number;
 }
 
 const makePropertyString = (properties: Record<string, boolean | number | string>) =>
@@ -60,6 +62,9 @@ const makePropertyString = (properties: Record<string, boolean | number | string
     .map(([key, _]) => (key === "label" ? `${key}=<${_}>` : `${key}="${_}"`))
     .sort()
     .join("; ");
+
+export const makeHtmlString = (_: string) =>
+  `<TABLE ALIGN="CENTER" BORDER="0" CELLBORDER="0" CELLPADDING="0" CELLSPACING="0"><TR><TD ALIGN="TEXT" CELLPADDING="0" CELLSPACING="0">${_.replaceAll(/\n|\\n/g, `<BR ALIGN="CENTER"/>`).replaceAll(/&/g, "&amp;")}</TD></TR></TABLE>`;
 
 export const dot = () => {
   const buffer = new Array<string>();
@@ -80,8 +85,6 @@ export const dot = () => {
     }
   };
 
-  const toHtmlString = (_: string) => `<TABLE ALIGN="CENTER" BORDER="0" CELLBORDER="0" CELLPADDING="0" CELLSPACING="0"><TR><TD ALIGN="TEXT" CELLPADDING="0" CELLSPACING="0">${_.replaceAll(/\n|\\n/g, `<BR ALIGN="CENTER"/>`)}</TD></TR></TABLE>`;
-
   const renderNode = (_: string, options?: Partial<NodeProperties>) => {
     if (nodeIds.get(_)) {
       // Not re-rendering node with already seen title.
@@ -89,7 +92,7 @@ export const dot = () => {
     }
     const id = ++nextNodeIndex;
     nodeIds.set(_, id);
-    renderRaw(`${id} [${makePropertyString({ label: toHtmlString(_), ...options })};]`);
+    renderRaw(`${id} [${makePropertyString({ label: makeHtmlString(_), ...options })};]`);
   };
 
   const renderLink = (a: string, b: string, options?: Partial<LinkProperties>) => {
@@ -104,28 +107,9 @@ export const dot = () => {
     renderRaw(`${aId} -> ${bId}${options ? ` [${makePropertyString(options ?? {})};]` : ""}`);
   };
 
-  const renderAnnotation = (_: string, text: string) => {
-    const annotationId = nextNodeIndex;
-    renderNode(`annotation${annotationId}`, {
-      label: toHtmlString( text),
-      margin: 0.2,
-      shape: "plaintext",
-      style: "dotted",
-    });
-
-    renderLink(`annotation${annotationId}`, _, {
-      arrowhead: "none",
-      constraint: false,
-      penwidth: 0.5,
-      style: "dotted",
-      tailclip: false,
-    });
-  };
-
   return {
     raw: renderRaw,
     node: renderNode,
-    annotation: renderAnnotation,
     link: renderLink,
     toString: () => buffer.join("\n"),
   };
