@@ -41,7 +41,7 @@ data.set("timelines/.birthdays", {
 mkdirSync("timelines/.generated", { recursive: true });
 for (const [filename, timeline] of data) {
   try {
-    const normalized = serialize(timeline);
+    const normalized = `---\n${serialize(timeline)}`;
     const generatedName = join(
       "timelines",
       ".generated",
