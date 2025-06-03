@@ -32,10 +32,10 @@ const data = new Map(
 );
 
 // Inject generated timeline.
-data.set("timelines/.birthdays", {
-  meta: { color: "#123456" },
-  records: recurringYearly(new Date("1983-12-24 02:00:00 +0700"), "Birthday", 85),
-});
+// data.set("timelines/.birthdays", {
+//   meta: { color: "#123456" },
+//   records: recurringYearly(new Date("1980-10-04 01:00:00 +0700"), "Birthday", 85),
+// });
 
 // Write normalized timelines back to storage.
 mkdirSync("timelines/.generated", { recursive: true });

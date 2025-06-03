@@ -22,7 +22,8 @@ lint: node_modules
 	npm exec -- tsc --noEmit
 
 test:
-	@echo "This project has no tests."
+	npm exec -- tsc
+	NODE_OPTIONS=--enable-source-maps npm exec -- c8 --reporter=html-spa mocha output/*.test.js
 
 run: node_modules
 	npm exec -- vite serve
