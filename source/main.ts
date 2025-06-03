@@ -4,6 +4,8 @@ import { mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { basename, join } from "node:path";
 import { errorToString, unknownToError } from "@oliversalzburg/js-utils/errors/error-serializer.js";
 import { parse } from "yaml";
+import { analyze } from "./analyzer.js";
+import { MILLISECONDS } from "./constants.js";
 import { recurringYearly } from "./generator.js";
 import { load } from "./loader.js";
 import { render } from "./renderer.js";
@@ -25,17 +27,48 @@ const plainData = new Map(
 );
 
 // Load raw data to generate normalized model.
-const data = new Map(
-  plainData
-    .entries()
-    .map(([filename, data]) => [filename, load(data, { addNewYearMarkers: false, addNow: false })]),
-);
+const data = new Map(plainData.entries().map(([filename, data]) => [filename, load(data)]));
 
 // Inject generated timeline.
 // data.set("timelines/.birthdays", {
 //   meta: { color: "#123456" },
 //   records: recurringYearly(new Date("1980-10-04 01:00:00 +0700"), "Birthday", 85),
 // });
+
+const metrics = new Map(
+  data.entries().map(([filename, timeline]) => [filename, analyze(timeline.records)]),
+);
+const globalEarliest = metrics
+  .values()
+  .reduce(
+    (previous, current) => (current.timeEarliest < previous ? current.timeEarliest : previous),
+    Number.POSITIVE_INFINITY,
+  );
+const globalLatest = metrics
+  .values()
+  .reduce(
+    (previous, current) => (previous < current.timeLatest ? current.timeLatest : previous),
+    0,
+  );
+
+data.set("timelines/.decoration.now", {
+  meta: {
+    color: "#808080",
+  },
+  records: [[Date.now(), { title: "Now" }]],
+});
+data.set("timelines/.decoration.nye", {
+  meta: {
+    color: "#808080",
+  },
+  records: [
+    ...recurringYearly(
+      new Date(Date.UTC(new Date(globalEarliest).getFullYear(), 0, 1, 0, 0, 0, 0)),
+      "New Year",
+      Math.floor((globalLatest - globalEarliest) / MILLISECONDS.ONE_YEAR),
+    ),
+  ],
+});
 
 // Write normalized timelines back to storage.
 mkdirSync("timelines/.generated", { recursive: true });
@@ -68,6 +101,7 @@ const dotGraphs = new Map(
     ]),
 );
 
+// Inject the "universe" graph.
 dotGraphs.set(
   "timelines/.universe",
   render(
@@ -81,6 +115,7 @@ dotGraphs.set(
   ),
 );
 
+// Write DOT graphs to storage.
 for (const [filename, graph] of dotGraphs) {
   try {
     process.stderr.write(`Writing DOT graph for ${filename}...` + "\n");

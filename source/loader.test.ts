@@ -1,9 +1,8 @@
 import { expect } from "chai";
 import { describe, it } from "mocha";
-import type { TimelineDocument } from "./types.js";
-import { load } from "./loader.js";
 import { random, withConflict } from "./fixtures/documents.js";
-import { serialize } from "./serializer.js";
+import { load } from "./loader.js";
+import type { TimelineDocument } from "./types.js";
 
 /**
  * The purpose of the Loader is to accept a well-formed TimelineDocument,

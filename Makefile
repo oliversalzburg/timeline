@@ -30,12 +30,10 @@ run: node_modules
 run-main: output
 	@node --enable-source-maps output/main.js
 
-svg-test:
+universe:
 	rm -rf output
 	$(MAKE) output
-	@node --enable-source-maps output/main.js
-
-universe: svg-test
+	node --enable-source-maps output/main.js
 	dot -Tsvg:cairo timelines/.universe.gv > timelines/.universe.svg
 
 node_modules:

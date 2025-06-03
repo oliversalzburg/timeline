@@ -1,1 +1,1 @@
-export const merge = () => {};
+export const merge = () => null;
