@@ -1,4 +1,5 @@
 ---
+# yaml-language-server: $schema=../schemas/spec.schema.yml
 color: "#cf1fc1"
 timeline:
   2025-05-21 18:57:13 +0200: nightly

@@ -1,5 +1,5 @@
 import { analyze } from "./analyzer.js";
-import type { Timeline, TimelineDocument, TimelineRecord, TimelineSimple } from "./types.js";
+import type { Timeline, TimelineDocument, TimelineRecord } from "./types.js";
 
 export interface LoaderOptions {
   addNewYearMarkers: boolean;
@@ -13,8 +13,8 @@ export const load = (
   const timelineEntries = [...Object.entries(document.timeline)].map(
     ([timestampLike, entry]) =>
       [
-        new Date(timestampLike).getTime(),
-        typeof entry === "string" ? { title: entry } : entry,
+        new Date(timestampLike).valueOf(),
+        ["number", "string"].includes(typeof entry) ? { title: entry.toString() } : entry,
       ] as TimelineRecord,
   );
 

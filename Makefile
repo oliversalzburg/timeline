@@ -21,9 +21,9 @@ lint: node_modules
 	npm exec -- biome check .
 	npm exec -- tsc --noEmit
 
-test:
+test: node_modules
 	npm exec -- tsc
-	NODE_OPTIONS=--enable-source-maps npm exec -- c8 --reporter=html-spa mocha output/*.test.js
+	NODE_OPTIONS=--enable-source-maps TZ=UTC npm exec -- c8 --reporter=html-spa mocha output/*.test.js
 
 run: node_modules
 	npm exec -- vite serve
