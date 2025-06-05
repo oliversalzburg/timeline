@@ -39,5 +39,5 @@ export const load = (document: TimelineDocument): Timeline => {
   return {
     meta: { color: document.color },
     records: timelineEntries.sort(([a, _a], [b, _b]) => a - b),
-  } as Timeline;
+  };
 };

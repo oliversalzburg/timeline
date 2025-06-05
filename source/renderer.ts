@@ -5,6 +5,8 @@ import { analyze } from "./analyzer.js";
 import { MILLISECONDS } from "./constants.js";
 import { dot, makeHtmlString } from "./dot.js";
 import type { Timeline, TimelineEntry } from "./types.js";
+import { errorToString, unknownToError } from "@oliversalzburg/js-utils/errors/error-serializer.js";
+import { flatten } from "./operator.js";
 
 export interface RendererOptions {
   baseUnit: "week" | "month";
@@ -21,11 +23,12 @@ export interface RendererOptions {
  */
 export const render = (timelines: Array<Timeline>, options: Partial<RendererOptions> = {}) => {
   const timestamps = timelines
-    .flatMap(t => t.records.map(([time, _]) => time))
+    .flatMap(t => flatten(t).records.map(([time, _]) => time))
     .sort((a, b) => a - b);
+
   //const metrics = analyze(timeline);
   //process.stderr.write(JSON.stringify(metrics, undefined, 2) + "\n");
-  const timeMaps = timelines.map(t => new Map(t.records));
+  const timeMaps = timelines.map(t => new Map(flatten(t).records));
 
   const d = dot();
 
@@ -77,7 +80,7 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
       // Did the previous item already occupy this timestamp?
       if (previous && previous[0] === timestamp) {
         if (previous[1].title === entry.title) {
-          //process.stderr.write(`+ Exact match in title. Items will be merged.\n`);
+          process.stderr.write(`+ Exact match in title. Items will be merged. '${entry.title}'\n`);
           continue;
         }
         process.stderr.write(
