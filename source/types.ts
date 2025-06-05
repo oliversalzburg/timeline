@@ -1,9 +1,9 @@
 export interface TimelineDocument {
   color?: string;
-  timeline: TimelineSimple | TimelineExtended;
+  timeline: TimelineFlexibleInput;
 }
-export interface TimelineSimple extends Record<string | number, string | number> {}
-export interface TimelineExtended extends Record<string | number, TimelineEntry> {}
+export interface TimelineFlexibleInput
+  extends Record<string, string | number | Array<string | number | TimelineEntry>> {}
 export interface TimelineEntry {
   title: string;
 }

@@ -29,6 +29,9 @@ properties:
         oneOf:
           - $ref: '#/definitions/record'
           - type: string
+          - type: array
+            items:
+              type: string
     type: object
 required:
   - timeline

@@ -13,6 +13,12 @@ export interface RendererOptions {
   scale: "linear" | "logarithmic";
 }
 
+/**
+ * The Renderer in the reference implementation generates a DOT graph containing all passed
+ * timelines. How these timelines are merged, and rendered, is opinionated. It should serve
+ * as an example of how to further utilize recorded timeline data.
+ * Readers are encouraged to write their own Renderer implementation.
+ */
 export const render = (timelines: Array<Timeline>, options: Partial<RendererOptions> = {}) => {
   const timestamps = timelines
     .flatMap(t => t.records.map(([time, _]) => time))

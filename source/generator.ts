@@ -3,7 +3,7 @@ import type { TimelineRecord } from "./types.js";
 
 export const recurringYearly = (
   date: Date,
-  title: string,
+  title: string | ((index: number) => string),
   limit = 100,
   offset = 1,
 ): Array<TimelineRecord> =>
@@ -19,12 +19,12 @@ export const recurringYearly = (
         date.getUTCSeconds(),
         date.getUTCMilliseconds(),
       ),
-      { title: `${title} #${index + offset}` },
+      { title: typeof title === "string" ? `${title} #${index + offset}` : title(index) },
     ]);
 
 export const interval = (
   date: Date,
-  title: string,
+  title: string | ((index: number) => string),
   intervalMilliseconds = MILLISECONDS.ONE_MONTH,
   limit = 100,
   offset = 0,
@@ -33,5 +33,5 @@ export const interval = (
     .fill(0)
     .map((_, index) => [
       date.valueOf() + intervalMilliseconds * (index + offset),
-      { title: `${title} #${index + offset}` },
+      { title: typeof title === "string" ? `${title} #${index + offset}` : title(index) },
     ]);
