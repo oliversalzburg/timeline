@@ -6,21 +6,27 @@ export const recurringYearly = (
   title: string | ((index: number) => string),
   limit = 100,
   offset = 1,
+  skip = 0,
 ): Array<TimelineRecord> =>
-  new Array(limit)
-    .fill(0)
-    .map((_, index) => [
-      Date.UTC(
-        date.getUTCFullYear() + index + offset,
-        date.getUTCMonth(),
-        date.getUTCDate(),
-        date.getUTCHours(),
-        date.getUTCMinutes(),
-        date.getUTCSeconds(),
-        date.getUTCMilliseconds(),
-      ),
-      { title: typeof title === "string" ? `${title} #${index + offset}` : title(index) },
-    ]);
+  new Array(limit - skip).fill(0).map((_, index) => [
+    Date.UTC(
+      date.getUTCFullYear() + index + offset + skip,
+      date.getUTCMonth(),
+      date.getUTCDate(),
+      date.getUTCHours(),
+      date.getUTCMinutes(),
+      date.getUTCSeconds(),
+      date.getUTCMilliseconds(),
+    ),
+    {
+      title:
+        typeof title === "string"
+          ? 0 < index + offset + skip
+            ? `${title} #${index + offset + skip}`
+            : title
+          : title(index),
+    },
+  ]);
 
 export const interval = (
   date: Date,

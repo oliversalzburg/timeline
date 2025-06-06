@@ -107,7 +107,7 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
         color: timeline.meta.color,
         fontsize: 20,
         label: makeHtmlString(
-          `${entry.title}\\n${isDateMarker ? new Date(timestamp).toDateString() : new Date(timestamp).toUTCString()}\\n${formatMilliseconds(timePassedSinceStart)}\\n${formatMilliseconds(timePassedSinceThen * -1)}`,
+          `${(timeline.meta.prefix ? `${timeline.meta.prefix} ` : "") + entry.title}\\n${isDateMarker ? new Date(timestamp).toDateString() : new Date(timestamp).toUTCString()}\\n${formatMilliseconds(timePassedSinceStart)}\\n${formatMilliseconds(timePassedSinceThen * -1)}`,
         ),
       });
 
