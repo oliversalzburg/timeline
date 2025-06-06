@@ -22,9 +22,11 @@ export interface RendererOptions {
  * Readers are encouraged to write their own Renderer implementation.
  */
 export const render = (timelines: Array<Timeline>, options: Partial<RendererOptions> = {}) => {
-  const timestamps = timelines
-    .flatMap(t => flatten(t).records.map(([time, _]) => time))
-    .sort((a, b) => a - b);
+  const timestamps = [
+    ...new Set(
+      timelines.flatMap(t => flatten(t).records.map(([time, _]) => time)).sort((a, b) => a - b),
+    ),
+  ];
 
   //const metrics = analyze(timeline);
   //process.stderr.write(JSON.stringify(metrics, undefined, 2) + "\n");
