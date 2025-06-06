@@ -84,9 +84,8 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
           continue;
         }
         process.stderr.write(
-          `Timeline collision at ${timestamp}! ${previous[1].title} - ${entry.title}\n`,
+          `! Unhandled timeline collision at ${timestamp}! ${previous[1].title} - ${entry.title}\n`,
         );
-        process.stderr.write(`! Collision remains unhandled! Node is rendered.\n`);
       }
 
       const timeline = timelines[timeMaps.indexOf(timeMap)];
@@ -96,9 +95,8 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
           continue;
         }
         process.stderr.write(
-          `Node with title ${entry.title} was already rendered with different timestamp (${nodes.get(entry.title)}, current:${timestamp})!\n`,
+          `! Node with title ${entry.title} was already rendered with different timestamp (${nodes.get(entry.title)}, current:${timestamp})! Node is skipped.\n`,
         );
-        process.stderr.write(`! Node is skipped with information loss.\n`);
         continue;
       }
       nodes.set(entry.title, timestamp);
@@ -142,7 +140,7 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
           remainder += timePassed;
         }
 
-        // If nodes were already linked, link them again.
+        // If nodes were already linked, don't link them again.
         if (links.get(previous[1].title) === entry.title) {
           previous = [timestamp, entry];
           continue;
