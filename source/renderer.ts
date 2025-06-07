@@ -1,12 +1,9 @@
-import { indent } from "@oliversalzburg/js-utils/data/string.js";
 import { formatMilliseconds } from "@oliversalzburg/js-utils/format/milliseconds.js";
 import { clamp } from "@oliversalzburg/js-utils/math/core.js";
 import { analyze } from "./analyzer.js";
 import { MILLISECONDS } from "./constants.js";
 import { dot, makeHtmlString } from "./dot.js";
 import type { Timeline, TimelineEntry } from "./types.js";
-import { errorToString, unknownToError } from "@oliversalzburg/js-utils/errors/error-serializer.js";
-import { flatten } from "./operator.js";
 
 export interface RendererOptions {
   baseUnit: "week" | "month";
@@ -22,15 +19,17 @@ export interface RendererOptions {
  * Readers are encouraged to write their own Renderer implementation.
  */
 export const render = (timelines: Array<Timeline>, options: Partial<RendererOptions> = {}) => {
-  const timestamps = [
-    ...new Set(
-      timelines.flatMap(t => flatten(t).records.map(([time, _]) => time)).sort((a, b) => a - b),
-    ),
+  const timestampsUnique = [
+    ...new Set(timelines.flatMap(t => t.records.map(([time, _]) => time)).sort((a, b) => a - b)),
   ];
+  type TimeTuple = [number, Timeline, TimelineEntry];
+  const timelineGlobal = timelines
+    .flatMap(_ => _.records.map(r => [r[0], _, r[1]] as TimeTuple))
+    .sort(([a], [b]) => a - b);
 
   //const metrics = analyze(timeline);
   //process.stderr.write(JSON.stringify(metrics, undefined, 2) + "\n");
-  const timeMaps = timelines.map(t => new Map(flatten(t).records));
+  //const timeMaps = timelines.map(t => new Map(t.records));
 
   const d = dot();
 
@@ -50,14 +49,15 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
   let previous: [number, TimelineEntry] | undefined;
   let previousYear: number | undefined;
   const nodes = new Map<string, number>();
-  for (const timestamp of timestamps) {
+  let nextEventIndex = 0;
+  for (const timestamp of timestampsUnique) {
     const date = new Date(timestamp);
     const currentYear = date.getUTCFullYear();
 
     // Force at least 1ms gap between events, regardless of input.
     //timePassed = previous ? Math.max(1, timestamp - previous[0]) : 0;
 
-    const timePassedSinceStart = timestamp - timestamps[0];
+    const timePassedSinceStart = timestamp - timestampsUnique[0];
     const timePassedSinceThen = Date.now() - timestamp;
     const isDateMarker =
       Math.trunc(timestamp / MILLISECONDS.ONE_DAY) * MILLISECONDS.ONE_DAY === timestamp;
@@ -73,27 +73,24 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
       d.raw(`style="dashed"`);
     }
 
-    for (const timeMap of timeMaps) {
-      const entry = timeMap.get(timestamp);
-      if (entry === undefined) {
-        continue;
-      }
+    while (
+      nextEventIndex < timelineGlobal.length &&
+      timelineGlobal[nextEventIndex][0] === timestamp
+    ) {
+      const [, timeline, entry] = timelineGlobal[nextEventIndex++];
 
-      // Did the previous item already occupy this timestamp?
-      if (previous && previous[0] === timestamp) {
+      if (previous) {
         if (previous[1].title === entry.title) {
-          process.stderr.write(`+ Exact match in title. Items will be merged. '${entry.title}'\n`);
+          process.stderr.write(
+            `+ Events in multiple timelines share time and title. '${entry.title}'\n  Items will be merged automatically.\n`,
+          );
           continue;
         }
-        process.stderr.write(
-          `! Unhandled timeline collision at ${timestamp}! ${previous[1].title} - ${entry.title}\n`,
-        );
       }
 
-      const timeline = timelines[timeMaps.indexOf(timeMap)];
       if (nodes.has(entry.title)) {
         if (nodes.get(entry.title) === timestamp) {
-          process.stderr.write(`- Skipping duplicate node ${entry.title} at ${timestamp}.\n`);
+          process.stderr.write(`- Skipping duplicate node '${entry.title}' at ${timestamp}.\n`);
           continue;
         }
         process.stderr.write(
@@ -123,90 +120,95 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
   }
 
   // Link items in timelines together.
-  const links = new Map<string, string>();
-  previous = undefined;
   let timePassed = 0;
   let remainder = 0;
   for (const timeline of timelines) {
-    previous = undefined;
+    if (timeline.meta.link === false) {
+      continue;
+    }
+
+    let previousTimestamp: number | undefined;
+    let allPrevious = new Array<TimelineEntry>();
     let timePassed = 0;
     let remainder = 0;
-    for (const [timestamp, entry] of timeline.records) {
-      timePassed = previous ? Math.max(1, timestamp - previous[0]) : 0;
-      if (previous) {
-        let adjustedTime = timePassed;
-        if (remainder !== 0 && TIME_BASE < timePassed) {
-          adjustedTime += remainder;
-          remainder = 0;
-        } else if (timePassed < TIME_BASE) {
-          remainder += timePassed;
-        }
+    nextEventIndex = 0;
+    for (const [timestamp] of timeline.records) {
+      if (previousTimestamp && timestamp <= previousTimestamp) {
+        continue;
+      }
 
-        // If nodes were already linked, don't link them again.
-        if (links.get(previous[1].title) === entry.title) {
-          previous = [timestamp, entry];
+      timePassed = previousTimestamp ? Math.max(1, timestamp - previousTimestamp) : 0;
+      const nextPrevious = new Array<TimelineEntry>();
+
+      while (
+        nextEventIndex < timeline.records.length &&
+        timeline.records[nextEventIndex][0] === timestamp
+      ) {
+        const [, entry] = timeline.records[nextEventIndex++];
+        nextPrevious.push(entry);
+        if (0 === allPrevious.length) {
           continue;
         }
 
-        const linkLength = clamp(
-          options?.scale === "logarithmic"
-            ? Math.log(adjustedTime * TIME_SCALE)
-            : adjustedTime * TIME_SCALE,
-          0.01,
-          1000,
-        );
+        for (const previousEntry of allPrevious) {
+          let adjustedTime = timePassed;
+          if (remainder !== 0 && TIME_BASE < timePassed) {
+            adjustedTime += remainder;
+            remainder = 0;
+          } else if (timePassed < TIME_BASE) {
+            remainder += timePassed;
+          }
 
-        d.link(previous[1].title, entry.title, {
-          color: timeline.meta.color,
-          label: `${formatMilliseconds(timePassed)} +${formatMilliseconds(remainder)}`,
-          minlen: linkLength,
-          penwidth: 0.5,
-          style: "solid",
-        });
+          const linkLength = clamp(
+            options?.scale === "logarithmic"
+              ? Math.log(adjustedTime * TIME_SCALE)
+              : adjustedTime * TIME_SCALE,
+            0.01,
+            1000,
+          );
 
-        links.set(previous[1].title, entry.title);
+          d.link(previousEntry.title, entry.title, {
+            color: timeline.meta.color,
+            label: `${formatMilliseconds(timePassed)} +${formatMilliseconds(remainder)}`,
+            minlen: linkLength,
+            penwidth: 0.5,
+            style: "solid",
+          });
+        }
       }
-      previous = [timestamp, entry];
+
+      previousTimestamp = timestamp;
+      allPrevious = nextPrevious;
     }
   }
 
   // Link up all entries in a single time chain.
-  previous = undefined;
+  let previousTimestamp: number | undefined;
+  let allPrevious = new Array<TimelineEntry>();
   timePassed = 0;
   remainder = 0;
-  for (const timestamp of timestamps) {
-    for (const timeMap of timeMaps) {
-      const entry = timeMap.get(timestamp);
-      if (entry === undefined) {
+  nextEventIndex = 0;
+  for (const timestamp of timestampsUnique) {
+    timePassed = previousTimestamp ? Math.max(1, timestamp - previousTimestamp) : 0;
+    const nextPrevious = new Array<TimelineEntry>();
+
+    while (
+      nextEventIndex < timelineGlobal.length &&
+      timelineGlobal[nextEventIndex][0] === timestamp
+    ) {
+      const [, , entry] = timelineGlobal[nextEventIndex++];
+      nextPrevious.push(entry);
+      if (0 === allPrevious.length) {
         continue;
       }
 
-      timePassed = previous ? Math.max(1, timestamp - previous[0]) : 0;
-      if (previous) {
+      for (const previousEntry of allPrevious) {
         let adjustedTime = timePassed;
         if (remainder !== 0 && TIME_BASE < timePassed) {
           adjustedTime += remainder;
           remainder = 0;
         } else if (timePassed < TIME_BASE) {
           remainder += timePassed;
-        }
-
-        // If nodes were already linked, link them again.
-        if (links.get(previous[1].title) === entry.title) {
-          previous = [timestamp, entry];
-          continue;
-        }
-
-        // Handle collisions.
-        if (previous && previous[0] === timestamp) {
-          if (previous[1].title === entry.title) {
-            //process.stderr.write(`+ Exact match in title. Link is skipped.\n`);
-            continue;
-          }
-          process.stderr.write(
-            `Timeline collision at ${timestamp}! ${previous[1].title} - ${entry.title}\n`,
-          );
-          process.stderr.write(`! Collision remains unhandled! Link is rendered.\n`);
         }
 
         const linkLength = clamp(
@@ -220,7 +222,7 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
         // Draw force-directing link between merged timeline entries.
         // This forces all entries into linear global order.
         //d.link(previous[1].title, entry.title, { minlen:0.5, style: "dashed", weight:0.5 });
-        d.link(previous[1].title, entry.title, {
+        d.link(previousEntry.title, entry.title, {
           arrowhead: "empty",
           color: "#000000",
           label: `${formatMilliseconds(timePassed)} +${formatMilliseconds(remainder)}`,
@@ -228,12 +230,11 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
           penwidth: 0.5,
           style: "dashed",
         });
-
-        links.set(previous[1].title, entry.title);
       }
-
-      previous = [timestamp, entry];
     }
+
+    previousTimestamp = timestamp;
+    allPrevious = nextPrevious;
   }
 
   d.raw("}");

@@ -1,5 +1,6 @@
 export interface TimelineDocument {
   color?: string;
+  link?: boolean;
   prefix?: string;
   timeline: TimelineFlexibleInput;
 }
@@ -10,7 +11,7 @@ export interface TimelineEntry {
 }
 export type TimelineRecord = [number, TimelineEntry];
 export type Timeline = {
-  meta: { color?: string; prefix?: string };
+  meta: { color?: string; prefix?: string; link?: boolean };
   records: Array<TimelineRecord>;
 };
 export interface TimelineMetrics {
