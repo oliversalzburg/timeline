@@ -123,10 +123,6 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
   let timePassed = 0;
   let remainder = 0;
   for (const timeline of timelines) {
-    if (timeline.meta.link === false) {
-      continue;
-    }
-
     let previousTimestamp: number | undefined;
     let allPrevious = new Array<TimelineEntry>();
     let timePassed = 0;
@@ -172,7 +168,7 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
             label: `${formatMilliseconds(timePassed)} +${formatMilliseconds(remainder)}`,
             minlen: linkLength,
             penwidth: 0.5,
-            style: "solid",
+            style: timeline.meta.link !== false ? "solid" : "invis",
           });
         }
       }
