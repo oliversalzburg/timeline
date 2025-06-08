@@ -18,3 +18,10 @@ export const flatten = (timeline: Timeline): Timeline => {
 
   return timeline;
 };
+
+export const roundToDay = (timeline: Timeline): Timeline => {
+  for (const _ of timeline.records) {
+    _[0] = new Date(_[0]).setHours(0, 0, 0, 0).valueOf();
+  }
+  return timeline;
+};

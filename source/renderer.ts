@@ -1,9 +1,10 @@
 import { formatMilliseconds } from "@oliversalzburg/js-utils/format/milliseconds.js";
-import { clamp } from "@oliversalzburg/js-utils/math/core.js";
+import { clamp, roundTo } from "@oliversalzburg/js-utils/math/core.js";
 import { analyze } from "./analyzer.js";
 import { MILLISECONDS } from "./constants.js";
 import { dot, makeHtmlString } from "./dot.js";
 import type { Timeline, TimelineEntry } from "./types.js";
+import { roundToDay } from "./operator.js";
 
 export interface RendererOptions {
   baseUnit: "week" | "month";
@@ -20,12 +21,16 @@ export interface RendererOptions {
  */
 export const render = (timelines: Array<Timeline>, options: Partial<RendererOptions> = {}) => {
   const timestampsUnique = [
-    ...new Set(timelines.flatMap(t => t.records.map(([time, _]) => time)).sort((a, b) => a - b)),
+    ...new Set(
+      timelines.flatMap(t => roundToDay(t).records.map(([time, _]) => time)).sort((a, b) => a - b),
+    ),
   ];
   type TimeTuple = [number, Timeline, TimelineEntry];
   const timelineGlobal = timelines
-    .flatMap(_ => _.records.map(r => [r[0], _, r[1]] as TimeTuple))
-    .sort(([a], [b]) => a - b);
+    .flatMap(_ => roundToDay(_).records.map(r => [r[0], _, r[1]] as TimeTuple))
+    .sort(([a, , aentry], [b, , bentry]) =>
+      a - b !== 0 ? a - b : aentry.title.localeCompare(bentry.title),
+    );
 
   //const metrics = analyze(timeline);
   //process.stderr.write(JSON.stringify(metrics, undefined, 2) + "\n");
@@ -59,8 +64,6 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
 
     const timePassedSinceStart = timestamp - timestampsUnique[0];
     const timePassedSinceThen = Date.now() - timestamp;
-    const isDateMarker =
-      Math.trunc(timestamp / MILLISECONDS.ONE_DAY) * MILLISECONDS.ONE_DAY === timestamp;
 
     if (options.clusterYears && currentYear !== previousYear) {
       if (previousYear !== undefined) {
@@ -101,10 +104,10 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
       nodes.set(entry.title, timestamp);
 
       d.node(entry.title, {
-        color: timeline.meta.color,
+        color: timeline.meta?.color,
         fontsize: 20,
         label: makeHtmlString(
-          `${(timeline.meta.prefix ? `${timeline.meta.prefix} ` : "") + entry.title}\\n${isDateMarker ? new Date(timestamp).toDateString() : new Date(timestamp).toUTCString()}\\n${formatMilliseconds(timePassedSinceStart)}\\n${formatMilliseconds(timePassedSinceThen * -1)}`,
+          `${(timeline.meta?.prefix ? `${timeline.meta.prefix} ` : "") + entry.title}\\n${new Date(timestamp).toDateString()}\\n${formatMilliseconds(timePassedSinceStart)}\\n${formatMilliseconds(timePassedSinceThen * -1)}`,
         ),
       });
 
@@ -164,11 +167,11 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
           );
 
           d.link(previousEntry.title, entry.title, {
-            color: timeline.meta.color,
+            color: timeline.meta?.color,
             label: `${formatMilliseconds(timePassed)} +${formatMilliseconds(remainder)}`,
             minlen: linkLength,
             penwidth: 0.5,
-            style: timeline.meta.link !== false ? "solid" : "invis",
+            style: timeline.meta?.link !== false ? "solid" : "invis",
           });
         }
       }
@@ -193,7 +196,16 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
       timelineGlobal[nextEventIndex][0] === timestamp
     ) {
       const [, , entry] = timelineGlobal[nextEventIndex++];
+
+      if (nextPrevious.find(_ => _.title === entry.title)) {
+        process.stderr.write(
+          `+ Events in multiple timelines share time and title. '${entry.title}'\n  Items will be merged automatically.\n`,
+        );
+        continue;
+      }
+
       nextPrevious.push(entry);
+
       if (0 === allPrevious.length) {
         continue;
       }
@@ -221,10 +233,10 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
         d.link(previousEntry.title, entry.title, {
           arrowhead: "empty",
           color: "#000000",
-          label: `${formatMilliseconds(timePassed)} +${formatMilliseconds(remainder)}`,
+          //label: `${formatMilliseconds(timePassed)} +${formatMilliseconds(remainder)}`,
           minlen: linkLength,
           penwidth: 0.5,
-          style: "dashed",
+          style: "invis",
         });
       }
     }

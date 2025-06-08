@@ -22,7 +22,7 @@ export const recurringYearly = (
       title:
         typeof title === "string"
           ? 0 < index + offset + skip
-            ? `${title} ${index + offset + skip}`
+            ? `${title} ${index + offset + skip + 1}`
             : title
           : title(index),
     },
