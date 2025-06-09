@@ -55,6 +55,7 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
   let previous: [number, TimelineEntry] | undefined;
   let previousYear: number | undefined;
   const nodes = new Map<string, number>();
+  const firstNodeAlreadySeen = new Set<Timeline>();
   let nextEventIndex = 0;
   for (const timestamp of timestampsUnique) {
     const date = new Date(timestamp);
@@ -104,14 +105,17 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
       }
       nodes.set(entry.title, timestamp);
 
+      const penWidth = firstNodeAlreadySeen.has(timeline) ? 1 : 3;
       d.node(entry.title, {
         color: timeline.meta?.color,
         fontsize: 20,
         label: makeHtmlString(
           `${(timeline.meta?.prefix ? `${timeline.meta.prefix} ` : "") + entry.title}\\n${new Date(timestamp).toDateString()}\\n${formatMilliseconds(timePassedSinceStart)}\\n${formatMilliseconds(timePassedSinceThen * -1)}`,
         ),
+        penwidth: penWidth,
       });
 
+      firstNodeAlreadySeen.add(timeline);
       previous = [timestamp, entry];
     }
 

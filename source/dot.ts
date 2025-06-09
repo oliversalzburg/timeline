@@ -52,6 +52,7 @@ export interface NodeProperties {
   fontsize: number;
   label: string;
   margin: number;
+  penwidth:number;
   shape: "egg" | "ellipse" | "box" | "point" | "plain" | "plaintext";
   style: "bold" | "dashed" | "dotted" | "invis" | "solid";
   width: number;
