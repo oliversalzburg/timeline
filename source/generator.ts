@@ -9,20 +9,20 @@ export const recurringYearly = (
   skip = 0,
 ): Array<TimelineRecord> =>
   new Array(limit - skip).fill(0).map((_, index) => [
-    Date.UTC(
-      date.getUTCFullYear() + index + offset + skip,
-      date.getUTCMonth(),
-      date.getUTCDate(),
-      date.getUTCHours(),
-      date.getUTCMinutes(),
-      date.getUTCSeconds(),
-      date.getUTCMilliseconds(),
-    ),
+    new Date(
+      date.getFullYear() + index + offset + skip,
+      date.getMonth(),
+      date.getDate(),
+      date.getHours(),
+      date.getMinutes(),
+      date.getSeconds(),
+      date.getMilliseconds(),
+    ).valueOf(),
     {
       title:
         typeof title === "string"
           ? 0 < index + offset + skip
-            ? `${title} ${index + offset + skip + 1}`
+            ? `${title} ${index + offset + skip}`
             : title
           : title(index),
     },

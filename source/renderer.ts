@@ -57,7 +57,7 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
   let nextEventIndex = 0;
   for (const timestamp of timestampsUnique) {
     const date = new Date(timestamp);
-    const currentYear = date.getUTCFullYear();
+    const currentYear = date.getFullYear();
 
     // Force at least 1ms gap between events, regardless of input.
     //timePassed = previous ? Math.max(1, timestamp - previous[0]) : 0;
@@ -114,7 +114,7 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
       previous = [timestamp, entry];
     }
 
-    previousYear = date.getUTCFullYear();
+    previousYear = date.getFullYear();
   }
 
   // Ensure last cluster is closed.
