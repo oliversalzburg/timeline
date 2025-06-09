@@ -9,7 +9,8 @@ import { roundToDay } from "./operator.js";
 export interface RendererOptions {
   baseUnit: "week" | "month";
   clusterYears: boolean;
-  dateFormat: string;
+  now: number;
+  origin: number;
   scale: "linear" | "logarithmic";
 }
 
@@ -21,10 +22,8 @@ export interface RendererOptions {
  */
 export const render = (timelines: Array<Timeline>, options: Partial<RendererOptions> = {}) => {
   const timestampsUnique = [
-    ...new Set(
-      timelines.flatMap(t => roundToDay(t).records.map(([time, _]) => time)).sort((a, b) => a - b),
-    ),
-  ];
+    ...new Set(timelines.flatMap(t => roundToDay(t).records.map(([time, _]) => time))),
+  ].sort((a, b) => a - b);
   type TimeTuple = [number, Timeline, TimelineEntry];
   const timelineGlobal = timelines
     .flatMap(_ => roundToDay(_).records.map(r => [r[0], _, r[1]] as TimeTuple))
@@ -51,6 +50,8 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
   const TIME_BASE = options.baseUnit === "week" ? MILLISECONDS.ONE_WEEK : MILLISECONDS.ONE_MONTH;
   const TIME_SCALE = 1 / TIME_BASE;
 
+  const now = options?.now ?? Date.now();
+  const origin = options?.origin ?? timestampsUnique[0];
   let previous: [number, TimelineEntry] | undefined;
   let previousYear: number | undefined;
   const nodes = new Map<string, number>();
@@ -62,8 +63,8 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
     // Force at least 1ms gap between events, regardless of input.
     //timePassed = previous ? Math.max(1, timestamp - previous[0]) : 0;
 
-    const timePassedSinceStart = timestamp - timestampsUnique[0];
-    const timePassedSinceThen = Date.now() - timestamp;
+    const timePassedSinceStart = timestamp - origin;
+    const timePassedSinceThen = now - timestamp;
 
     if (options.clusterYears && currentYear !== previousYear) {
       if (previousYear !== undefined) {
