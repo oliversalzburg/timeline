@@ -5,6 +5,7 @@ import { MILLISECONDS } from "./constants.js";
 import { dot, makeHtmlString } from "./dot.js";
 import type { Timeline, TimelineEntry } from "./types.js";
 import { roundToDay } from "./operator.js";
+import { isNil } from "@oliversalzburg/js-utils/data/nil.js";
 
 export interface RendererOptions {
   baseUnit: "week" | "month";
@@ -52,9 +53,7 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
 
   const now = options?.now ?? Date.now();
   const origin = options?.origin ?? timestampsUnique[0];
-  let previous: [number, TimelineEntry] | undefined;
   let previousYear: number | undefined;
-  const nodes = new Map<string, number>();
   const firstNodeAlreadySeen = new Set<Timeline>();
   let nextEventIndex = 0;
   for (const timestamp of timestampsUnique) {
@@ -84,39 +83,26 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
     ) {
       const [, timeline, entry] = timelineGlobal[nextEventIndex++];
 
-      if (previous) {
-        if (previous[1].title === entry.title) {
-          process.stderr.write(
-            `+ Events in multiple timelines share time and title. '${entry.title}'\n  Items will be merged automatically.\n`,
-          );
-          continue;
+      let prefixes = timeline.meta?.prefix ?? "";
+      if (nextEventIndex < timelineGlobal.length) {
+        let [, timelineNext, entryNext] = timelineGlobal[nextEventIndex];
+        while (nextEventIndex < timelineGlobal.length && entryNext.title === entry.title) {
+          prefixes += timelineNext.meta?.prefix ?? "";
+          [, timelineNext, entryNext] = timelineGlobal[++nextEventIndex];
         }
       }
-
-      if (nodes.has(entry.title)) {
-        if (nodes.get(entry.title) === timestamp) {
-          process.stderr.write(`- Skipping duplicate node '${entry.title}' at ${timestamp}.\n`);
-          continue;
-        }
-        process.stderr.write(
-          `! Node with title ${entry.title} was already rendered with different timestamp (${nodes.get(entry.title)}, current:${timestamp})! Node is skipped.\n`,
-        );
-        continue;
-      }
-      nodes.set(entry.title, timestamp);
 
       const penWidth = firstNodeAlreadySeen.has(timeline) ? 1 : 3;
       d.node(entry.title, {
         color: timeline.meta?.color,
         fontsize: 20,
         label: makeHtmlString(
-          `${(timeline.meta?.prefix ? `${timeline.meta.prefix} ` : "") + entry.title}\\n${new Date(timestamp).toDateString()}\\n${formatMilliseconds(timePassedSinceStart)}\\n${formatMilliseconds(timePassedSinceThen * -1)}`,
+          `${(prefixes !== "" ? `${prefixes} ` : "") + entry.title}\\n${new Date(timestamp).toDateString()}\\n${formatMilliseconds(timePassedSinceStart)}\\n${formatMilliseconds(timePassedSinceThen * -1)}`,
         ),
         penwidth: penWidth,
       });
 
       firstNodeAlreadySeen.add(timeline);
-      previous = [timestamp, entry];
     }
 
     previousYear = date.getFullYear();
