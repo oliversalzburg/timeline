@@ -22,7 +22,79 @@ export type Arrow =
   | "tee"
   | "vee";
 export type Color = string;
+export type NodeStyle =
+  | "bold"
+  | "dashed"
+  | "diagonals"
+  | "dotted"
+  | "filled"
+  | "invis"
+  | "radial"
+  | "rounded"
+  | "solid"
+  | "striped"
+  | "wedged";
 export type PortPos = "n" | "ne" | "e" | "se" | "s" | "sw" | "w" | "nw" | "c" | "_";
+export type Shape =
+  | "assembly"
+  | "box"
+  | "box3d"
+  | "cds"
+  | "circle"
+  | "component"
+  | "cylinder"
+  | "diamond"
+  | "doublecircle"
+  | "doubleoctagon"
+  | "egg"
+  | "ellipse"
+  | "fivepoverhang"
+  | "folder"
+  | "hexagon"
+  | "house"
+  | "insulator"
+  | "invhouse"
+  | "invtrapezium"
+  | "invtriangle"
+  | "larrow"
+  | "lpromoter"
+  | "Mcircle"
+  | "Mdiamond"
+  | "Msquare"
+  | "none"
+  | "note"
+  | "noverhang"
+  | "octagon"
+  | "oval"
+  | "parallelogram"
+  | "pentagon"
+  | "plain"
+  | "plaintext"
+  | "point"
+  | "polygon"
+  | "primersite"
+  | "promoter"
+  | "proteasesite"
+  | "proteinstab"
+  | "rarrow"
+  | "rect"
+  | "rectangle"
+  | "restrictionsite"
+  | "ribosite"
+  | "rnastab"
+  | "rpromoter"
+  | "septagon"
+  | "signature"
+  | "square"
+  | "star"
+  | "tab"
+  | "terminator"
+  | "threepoverhang"
+  | "trapezium"
+  | "triangle"
+  | "tripleoctagon"
+  | "underline"
+  | "utr";
 
 export interface LinkProperties {
   arrowhead: Arrow;
@@ -52,14 +124,15 @@ export interface NodeProperties {
   fontsize: number;
   label: string;
   margin: number;
-  penwidth:number;
-  shape: "egg" | "ellipse" | "box" | "point" | "plain" | "plaintext";
-  style: "bold" | "dashed" | "dotted" | "invis" | "solid";
+  penwidth: number;
+  shape: Shape;
+  style: NodeStyle | string;
   width: number;
 }
 
 const makePropertyString = (properties: Record<string, boolean | number | string>) =>
   Object.entries(properties)
+    .filter(([_, value]) => value !== undefined)
     .map(([key, _]) => (key === "label" ? `${key}=<${_}>` : `${key}="${_}"`))
     .sort()
     .join("; ");

@@ -12,7 +12,12 @@ export interface TimelineEntry {
 }
 export type TimelineRecord = [number, TimelineEntry];
 export type Timeline = {
-  meta?: { color?: string; link?: boolean; relation?: string; prefix?: string };
+  meta?: {
+    color?: string;
+    link?: boolean;
+    relation?: "follow" | "observe" | "visit";
+    prefix?: string;
+  };
   records: Array<TimelineRecord>;
 };
 export interface TimelineMetrics {

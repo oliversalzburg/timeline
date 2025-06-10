@@ -1,8 +1,8 @@
+import { readFileSync } from "node:fs";
 import { expect } from "chai";
 import { describe, it } from "mocha";
-import type { Timeline, TimelineDocument } from "./types.js";
 import { serialize } from "./serializer.js";
-import { readFileSync } from "node:fs";
+import type { Timeline, TimelineDocument } from "./types.js";
 
 /**
  * Serializer
@@ -17,7 +17,7 @@ describe("Serializer", () => {
   });
 
   it("should merge records with same timestamp into array", () => {
-    const fixture = readFileSync("source/fixtures/serializer-merge.yml","utf-8");
+    const fixture = readFileSync("source/fixtures/serializer-merge.yml", "utf-8");
     const timeline: Timeline = {
       records: [
         [100, { title: "one" }],

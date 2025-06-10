@@ -1,11 +1,11 @@
+import { isNil } from "@oliversalzburg/js-utils/data/nil.js";
 import { formatMilliseconds } from "@oliversalzburg/js-utils/format/milliseconds.js";
 import { clamp, roundTo } from "@oliversalzburg/js-utils/math/core.js";
 import { analyze } from "./analyzer.js";
 import { MILLISECONDS } from "./constants.js";
 import { dot, makeHtmlString } from "./dot.js";
-import type { Timeline, TimelineEntry } from "./types.js";
 import { roundToDay } from "./operator.js";
-import { isNil } from "@oliversalzburg/js-utils/data/nil.js";
+import type { Timeline, TimelineEntry } from "./types.js";
 
 export interface RendererOptions {
   baseUnit: "week" | "month";
@@ -37,6 +37,8 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
   //const timeMaps = timelines.map(t => new Map(t.records));
 
   const d = dot();
+  const appendOpacity = (color: string, opacity = 25): string =>
+    color === "" ? color : `${color}${opacity.toString(16)}`;
 
   d.raw("digraph {");
   let fontname =
@@ -74,7 +76,7 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
       d.raw(`fontname="Master Photograph"`);
       d.raw(`label="${currentYear}"`);
       d.raw(`penwidth="0.2"`);
-      d.raw(`style="dashed"`);
+      d.raw(`style="dashed,rounded"`);
     }
 
     while (
@@ -83,10 +85,24 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
     ) {
       const [, timeline, entry] = timelineGlobal[nextEventIndex++];
 
+      let colors = timeline.meta?.color ?? "";
+      let colorsFill = appendOpacity(timeline.meta?.color ?? "");
       let prefixes = timeline.meta?.prefix ?? "";
+      let merges = 0;
       if (nextEventIndex < timelineGlobal.length) {
         let [, timelineNext, entryNext] = timelineGlobal[nextEventIndex];
         while (nextEventIndex < timelineGlobal.length && entryNext.title === entry.title) {
+          ++merges;
+          colors = timelineNext.meta?.color
+            ? colors === ""
+              ? (timelineNext.meta?.color ?? "")
+              : `${colors}:${timelineNext.meta.color}`
+            : colors;
+          colorsFill = timelineNext.meta?.color
+            ? colorsFill === ""
+              ? appendOpacity(timelineNext.meta?.color ?? "")
+              : `${colorsFill}:${appendOpacity(timelineNext.meta.color)}`
+            : colorsFill;
           prefixes += timelineNext.meta?.prefix ?? "";
           [, timelineNext, entryNext] = timelineGlobal[++nextEventIndex];
         }
@@ -94,12 +110,15 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
 
       const penWidth = firstNodeAlreadySeen.has(timeline) ? 1 : 3;
       d.node(entry.title, {
-        color: timeline.meta?.color,
+        color: colors !== "" ? colors : undefined,
+        fillcolor: colorsFill !== "" ? colorsFill : undefined,
         fontsize: 20,
         label: makeHtmlString(
           `${(prefixes !== "" ? `${prefixes} ` : "") + entry.title}\\n${new Date(timestamp).toDateString()}\\n${formatMilliseconds(timePassedSinceStart)}\\n${formatMilliseconds(timePassedSinceThen * -1)}`,
         ),
         penwidth: penWidth,
+        shape: 0 < merges ? "ellipse" : "box",
+        style: 0 < merges ? "wedged" : "rounded",
       });
 
       firstNodeAlreadySeen.add(timeline);
