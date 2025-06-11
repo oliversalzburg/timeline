@@ -1,4 +1,4 @@
-import type { Timeline } from "./types.js";
+import type { Timeline, TimelineEntry, TimelineRecord } from "./types.js";
 
 export const flatten = (timeline: Timeline): Timeline => {
   let previousTimestamp;
@@ -24,4 +24,31 @@ export const roundToDay = (timeline: Timeline): Timeline => {
     _[0] = new Date(_[0]).setHours(0, 0, 0, 0).valueOf();
   }
   return timeline;
+};
+
+export const sort = (timeline: Timeline): Timeline => {
+  return {
+    ...timeline,
+    records: timeline.records.toSorted(([a], [b]) => a - b),
+  };
+};
+
+export const add = (
+  timeline: Timeline,
+  record: TimelineRecord,
+): Timeline => {
+  return {
+    ...timeline,
+    records: timeline.records.concat([record]),
+  };
+};
+
+export const concat = (
+  timeline: Timeline,
+  record: Array<TimelineRecord>,
+): Timeline => {
+  return {
+    ...timeline,
+    records: timeline.records.concat(record),
+  };
 };
