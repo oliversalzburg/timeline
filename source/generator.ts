@@ -24,7 +24,7 @@ export const recurringYearly = (
           ? 0 < index + offset + skip
             ? `${title} ${index + offset + skip}`
             : title
-          : title(index),
+          : title(index + offset + skip),
     },
   ]);
 
@@ -39,5 +39,5 @@ export const interval = (
     .fill(0)
     .map((_, index) => [
       date.valueOf() + intervalMilliseconds * (index + offset),
-      { title: typeof title === "string" ? `${title} #${index + offset}` : title(index) },
+      { title: typeof title === "string" ? `${title} #${index + offset}` : title(index + offset) },
     ]);
