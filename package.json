@@ -1,6 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/package.json",
-  "name": "browser",
+  "name": "timeline",
+  "private": true,
   "version": "0.0.0",
   "license": "MIT",
   "author": "Oliver Salzburg <oliver.salzburg@gmail.com>",

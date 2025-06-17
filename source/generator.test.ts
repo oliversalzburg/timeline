@@ -1,10 +1,10 @@
 import { expect } from "chai";
 import { describe, it } from "mocha";
+import { MILLISECONDS } from "./constants.js";
 import { random, withConflict } from "./fixtures/documents.js";
+import { interval, recurringYearly } from "./generator.js";
 import { load } from "./loader.js";
 import type { TimelineDocument } from "./types.js";
-import { interval, recurringYearly } from "./generator.js";
-import { MILLISECONDS } from "./constants.js";
 
 /**
  * The Generator provides convenience mechanisms to generate timeline data.
@@ -89,13 +89,7 @@ describe("Generator - Yearly Occurrence", () => {
   });
 
   it("should generate a series of 4 years", () => {
-    const records = recurringYearly(
-      new Date(2000, 0, 1, 0, 0, 0, 0),
-      "Some Event",
-      4,
-      0,
-      0
-    );
+    const records = recurringYearly(new Date(2000, 0, 1, 0, 0, 0, 0), "Some Event", 4, 0, 0);
 
     expect(records).to.eql(
       [

@@ -35,16 +35,14 @@ export const interval = (
   limit = 100,
   offset = 0,
 ) =>
-  new Array(limit)
-    .fill(0)
-    .map((_, index) => [
-      date.valueOf() + intervalMilliseconds * (index + offset),
-      {
-        title:
-          typeof title === "string"
-            ? 0 < index + offset
-              ? `${title} #${index + offset}`
-              : title
-            : title(index + offset),
-      },
-    ]);
+  new Array(limit).fill(0).map((_, index) => [
+    date.valueOf() + intervalMilliseconds * (index + offset),
+    {
+      title:
+        typeof title === "string"
+          ? 0 < index + offset
+            ? `${title} #${index + offset}`
+            : title
+          : title(index + offset),
+    },
+  ]);
