@@ -1,9 +1,6 @@
 import { mustExist } from "@oliversalzburg/js-utils/data/nil.js";
 import type { TimelineMetrics, TimelineRecord } from "./types.js";
 
-/**
- * The timeline is expected to already be sorted.
- */
 export const analyze = (timeline: Array<TimelineRecord>): TimelineMetrics => {
   let earliest;
   let latest;
