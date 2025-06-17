@@ -1,5 +1,6 @@
 import { InvalidOperationError } from "@oliversalzburg/js-utils/errors/InvalidOperationError.js";
 import type { Timeline, TimelineDocument, TimelineEntry, TimelineRecord } from "./types.js";
+import { sortRecords } from "./operator.js";
 
 export const voidInvalidEntry = (entry?: unknown) => {
   if (entry && "title" in (entry as Record<string, unknown>)) {
@@ -34,10 +35,8 @@ export const load = (document: TimelineDocument): Timeline => {
     }
   }
 
-  timelineEntries.sort(([a, _a], [b, _b]) => a - b);
-
   return {
     meta: { color: document.color, link: document.link, prefix: document.prefix },
-    records: timelineEntries.sort(([a, _a], [b, _b]) => a - b),
+    records: sortRecords(timelineEntries),
   };
 };
