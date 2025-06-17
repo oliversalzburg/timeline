@@ -1,15 +1,10 @@
 import { mustExist } from "@oliversalzburg/js-utils/data/nil.js";
-import { InvalidOperationError } from "@oliversalzburg/js-utils/errors/InvalidOperationError.js";
-import type { Timeline, TimelineMetrics, TimelineRecord } from "./types.js";
+import type { TimelineMetrics, TimelineRecord } from "./types.js";
 
 /**
  * The timeline is expected to already be sorted.
  */
 export const analyze = (timeline: Array<TimelineRecord>): TimelineMetrics => {
-  if (timeline.length < 1) {
-    throw new InvalidOperationError("Timelines must contain at least one item.");
-  }
-
   let earliest;
   let latest;
   let shortest;
@@ -35,10 +30,11 @@ export const analyze = (timeline: Array<TimelineRecord>): TimelineMetrics => {
   }
 
   return {
-    durationTotal: mustExist(latest) - mustExist(earliest),
+    durationTotal:
+      latest !== undefined && earliest !== undefined ? mustExist(latest) - mustExist(earliest) : 0,
     periodLongest: longest ?? 0,
     periodShortest: shortest ?? 0,
-    timeEarliest: mustExist(earliest),
-    timeLatest: mustExist(latest),
+    timeEarliest: earliest ?? Number.POSITIVE_INFINITY,
+    timeLatest: latest ?? Number.NEGATIVE_INFINITY,
   };
 };
