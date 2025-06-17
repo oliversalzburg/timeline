@@ -2,7 +2,6 @@ export interface TimelineDocument {
   color?: string;
   link?: boolean;
   prefix?: string;
-  relation?: string;
   timeline: TimelineFlexibleInput;
 }
 export interface TimelineFlexibleInput
@@ -15,7 +14,6 @@ export type Timeline = {
   meta?: {
     color?: string;
     link?: boolean;
-    relation?: "follow" | "observe" | "visit";
     prefix?: string;
   };
   records: Array<TimelineRecord>;

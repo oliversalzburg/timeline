@@ -1,22 +1,80 @@
-import type { Timeline, TimelineEntry, TimelineRecord } from "./types.js";
+import type { Timeline, TimelineRecord } from "./types.js";
 
-export const flatten = (timeline: Timeline): Timeline => {
+export const add = (timeline: Timeline, record: TimelineRecord): Timeline => {
+  return concat(timeline, [record]);
+};
+
+export const concat = (timeline: Timeline, records: Array<TimelineRecord>): Timeline => {
+  return {
+    ...timeline,
+    records: timeline.records.concat(records),
+  };
+};
+
+export const deduplicateRecords = (records: Array<TimelineRecord>): Array<TimelineRecord> => {
+  const unique = new Array<TimelineRecord>();
   let previousTimestamp;
-  let corrections = 0;
-  for (const _ of timeline.records) {
-    const [timestamp] = _;
-    if (timestamp === previousTimestamp) {
-      _[0] += 0.1;
-      ++corrections;
+  let previousEntry;
+  for (const record of records) {
+    const [timestamp, entry] = record;
+    if (timestamp === previousTimestamp && entry.title === previousEntry) {
+      continue;
     }
+    unique.push(record);
     previousTimestamp = timestamp;
+    previousEntry = entry.title;
   }
+  return unique;
+};
 
-  if (0 < corrections) {
-    return flatten(timeline);
+export const sort = (timeline: Timeline): Timeline => {
+  return {
+    ...timeline,
+    records: sortRecords(timeline.records),
+  };
+};
+
+export const sortRecords = (records: Array<TimelineRecord>): Array<TimelineRecord> => {
+  return records.toSorted(([a], [b]) => a - b);
+};
+
+export const joinDuringPeriod = (
+  start: number,
+  end: number,
+  host: Timeline,
+  guests: Array<Timeline>,
+): void => {
+  const period = new Array<TimelineRecord>();
+  for (const [timestamp, entry] of host.records) {
+    if (timestamp < start) {
+      continue;
+    }
+    if (end < timestamp) {
+      break;
+    }
+    period.push([timestamp, entry]);
   }
+  for (const guest of guests) {
+    guest.records = sortRecords(guest.records.concat(period));
+  }
+};
 
-  return timeline;
+export const mergeDuringPeriod = (start: number, end: number, guests: Array<Timeline>): void => {
+  const period = new Array<TimelineRecord>();
+  for (const guest of guests) {
+    for (const [timestamp, entry] of guest.records) {
+      if (timestamp < start) {
+        continue;
+      }
+      if (end < timestamp) {
+        break;
+      }
+      period.push([timestamp, entry]);
+    }
+  }
+  for (const guest of guests) {
+    guest.records = deduplicateRecords(sortRecords(guest.records.concat(period)));
+  }
 };
 
 export const roundToDay = (timeline: Timeline): Timeline => {
@@ -24,31 +82,4 @@ export const roundToDay = (timeline: Timeline): Timeline => {
     _[0] = new Date(_[0]).setHours(0, 0, 0, 0).valueOf();
   }
   return timeline;
-};
-
-export const sort = (timeline: Timeline): Timeline => {
-  return {
-    ...timeline,
-    records: timeline.records.toSorted(([a], [b]) => a - b),
-  };
-};
-
-export const add = (
-  timeline: Timeline,
-  record: TimelineRecord,
-): Timeline => {
-  return {
-    ...timeline,
-    records: timeline.records.concat([record]),
-  };
-};
-
-export const concat = (
-  timeline: Timeline,
-  record: Array<TimelineRecord>,
-): Timeline => {
-  return {
-    ...timeline,
-    records: timeline.records.concat(record),
-  };
 };
