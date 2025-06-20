@@ -15,7 +15,7 @@
     "lib": ["DOM", "ESNext", "WebWorker"],
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
-    "outDir": "output",
+    "outDir": "lib",
     "resolveJsonModule": true,
     "rootDir": "source",
     "skipLibCheck": true,

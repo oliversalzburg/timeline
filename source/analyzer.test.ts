@@ -1,10 +1,10 @@
+import { time } from "console";
 import { expect } from "chai";
 import { describe, it } from "mocha";
+import { analyze } from "./analyzer.js";
 import { random, withConflict } from "./fixtures/documents.js";
 import { load } from "./loader.js";
 import type { TimelineDocument } from "./types.js";
-import { analyze } from "./analyzer.js";
-import { time } from "console";
 
 /**
  * The Analyzer calculates metrics about a timeline.

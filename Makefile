@@ -2,7 +2,7 @@
 
 default: build
 
-build: output
+build: lib output
 
 clean:
 	rm --force --recursive node_modules output tsconfig.tsbuildinfo
@@ -27,18 +27,18 @@ test: node_modules
 
 run: node_modules
 	npm exec -- vite serve
-run-main: output
-	@node --enable-source-maps output/main.js
 
 universe:
 	rm -rf output
 	$(MAKE) output
-	node --enable-source-maps output/main.js
+	node examples/universe.js > timelines/.universe.gv
 	dot -Tsvg:cairo timelines/.universe.gv > timelines/.universe.svg
 
 node_modules:
 	npm install
 
+lib: node_modules
+	npm exec -- tsc
 output: node_modules
 	npm exec -- vite build
 	@node build.js

@@ -6,10 +6,11 @@ import esbuild from "esbuild";
 esbuild
   .build({
     bundle: true,
-    entryPoints: ["./source/main.ts"],
+    entryPoints: ["./source/index.ts"],
     external: ["node:*", "yaml"],
     format: "esm",
-    outdir: "./output/",
+    minify: true,
+    outfile: "./output/timeline.js",
     packages: "bundle",
     platform: "node",
     sourcemap: true,

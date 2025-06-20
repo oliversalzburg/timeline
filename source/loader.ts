@@ -1,6 +1,6 @@
 import { InvalidOperationError } from "@oliversalzburg/js-utils/errors/InvalidOperationError.js";
-import type { Timeline, TimelineDocument, TimelineEntry, TimelineRecord } from "./types.js";
 import { sortRecords } from "./operator.js";
+import type { Timeline, TimelineDocument, TimelineEntry, TimelineRecord } from "./types.js";
 
 export const voidInvalidEntry = (entry?: unknown) => {
   if (entry && "title" in (entry as Record<string, unknown>)) {
