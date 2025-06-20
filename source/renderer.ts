@@ -37,7 +37,7 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
   //const timeMaps = timelines.map(t => new Map(t.records));
 
   const d = dot();
-  const appendOpacity = (color: string, opacity = 25): string =>
+  const appendOpacity = (color: string, opacity = 35): string =>
     color === "" ? color : `${color}${opacity.toString(16)}`;
 
   d.raw("digraph {");
@@ -85,7 +85,7 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
     ) {
       const [, timeline, entry] = timelineGlobal[nextEventIndex++];
 
-      let colors = timeline.meta?.color ?? "";
+      let color = timeline.meta?.color ?? "";
       let colorsFill = appendOpacity(timeline.meta?.color ?? "");
       let prefixes = timeline.meta?.prefix ?? "";
       let merges = 0;
@@ -93,16 +93,13 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
         let [, timelineNext, entryNext] = timelineGlobal[nextEventIndex];
         while (nextEventIndex < timelineGlobal.length && entryNext.title === entry.title) {
           ++merges;
-          colors = timelineNext.meta?.color
-            ? colors === ""
-              ? (timelineNext.meta?.color ?? "")
-              : `${colors}:${timelineNext.meta.color}`
-            : colors;
-          colorsFill = timelineNext.meta?.color
-            ? colorsFill === ""
-              ? appendOpacity(timelineNext.meta?.color ?? "")
-              : `${colorsFill}:${appendOpacity(timelineNext.meta.color)}`
-            : colorsFill;
+          color ??= timelineNext.meta?.color ?? color;
+          colorsFill =
+            timelineNext.meta?.link !== false && timelineNext.meta?.color
+              ? colorsFill === ""
+                ? appendOpacity(timelineNext.meta?.color ?? "")
+                : `${colorsFill}:${appendOpacity(timelineNext.meta.color)}`
+              : colorsFill;
           prefixes += timelineNext.meta?.prefix ?? "";
           [, timelineNext, entryNext] = timelineGlobal[++nextEventIndex];
         }
@@ -110,7 +107,7 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
 
       const penWidth = firstNodeAlreadySeen.has(timeline) ? 1 : 3;
       d.node(entry.title, {
-        color: colors !== "" ? colors : undefined,
+        color,
         fillcolor: colorsFill !== "" ? colorsFill : undefined,
         fontsize: 20,
         label: makeHtmlString(
