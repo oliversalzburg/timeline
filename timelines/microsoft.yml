@@ -1,0 +1,37 @@
+---
+color: "#787de8"
+prefix: 🎮
+timeline:
+  1981-08-12: Microsoft MS-DOS
+  1985-11-20: Microsoft Windows 1.0 RTM
+  1987-12-09: Microsoft Windows 2.0 RTM
+  1988-05-27: Microsoft Windows 2.1 RTM
+  1990-05-22: Microsoft Windows 3.0 RTM
+  1992-04-06: Microsoft Windows 3.1 RTM
+  1993-07-27: Microsoft Windows NT 3.1 RTM
+  1993-11-08: Microsoft Windows 3.11
+  1994-09-21: Microsoft Windows NT 3.5 GA
+  1995-05-30: Microsoft Windows NT 3.51 GA
+  1995-08-24: Microsoft Windows 95 GA
+  1996-08-24: Microsoft Windows NT 4.0 GA
+  1998-06-25: Microsoft Windows 98 GA
+  2000-02-17: Microsoft Windows 2000 GA
+  2000-09-14: Microsoft Windows Me GA
+  2001-10-25: Microsoft Windows XP GA
+  2001-11-15: Microsoft Xbox NA Release
+  2002-02-22: Microsoft Xbox JP Release
+  2002-03-14: Microsoft Xbox PAL Release
+  2005-11-22: Microsoft Xbox 360 US/CA Release
+  2005-12-02: Microsoft Xbox 360 EZ/NO/SE/UK/CH Release
+  2005-12-10: Microsoft Xbox 360 JP Release
+  2007-01-30: Microsoft Windows Vista GA
+  2009-10-22: Microsoft Windows 7 GA
+  2012-10-26: Microsoft Windows 8 GA
+  2013-10-17: Microsoft Windows 8.1 GA
+  2013-11-22: Microsoft Xbox One NA/EU/AU/SA Release
+  2014-09-04: Microsoft Xbox One JP Release
+  2014-09-29: Microsoft Xbox One CN Release
+  2015-07-29: Microsoft Windows 10 GA
+  2020-11-10: Microsoft Xbox Series WW Release
+  2021-06-10: Microsoft Xbox Series PRC Release
+  2021-10-24: Microsoft Windows 11 GA

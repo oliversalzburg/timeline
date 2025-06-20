@@ -5,7 +5,7 @@ default: build
 build: lib output
 
 clean:
-	rm --force --recursive node_modules output tsconfig.tsbuildinfo
+	rm --force --recursive lib node_modules output tsconfig.tsbuildinfo
 
 docs:
 	@echo "No documentation included by default."
@@ -23,14 +23,14 @@ lint: node_modules
 
 test: node_modules
 	npm exec -- tsc
-	NODE_OPTIONS=--enable-source-maps TZ=UTC npm exec -- c8 --reporter=html-spa mocha output/*.test.js
+	NODE_OPTIONS=--enable-source-maps TZ=UTC npm exec -- c8 --reporter=html-spa mocha lib/*.test.js
 
 run: node_modules
 	npm exec -- vite serve
 
 universe:
-	rm -rf output
-	$(MAKE) output
+	$(MAKE) clean
+	$(MAKE) build
 	node examples/universe.js > timelines/.universe.gv
 	dot -Tsvg:cairo timelines/.universe.gv > timelines/.universe.svg
 

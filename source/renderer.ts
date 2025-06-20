@@ -47,7 +47,7 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
   d.raw(`node [fontname="${fontname}";]`);
   d.raw(`edge [fontname="Master Photograph";]`);
   d.raw(`fontname="${fontname}"`);
-  //d.render(`pad="0.5"`);
+  d.raw("layout=dot");
   d.raw(`rankdir="TD"`);
 
   const TIME_BASE = options.baseUnit === "week" ? MILLISECONDS.ONE_WEEK : MILLISECONDS.ONE_MONTH;
@@ -175,7 +175,7 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
 
           d.link(previousEntry.title, entry.title, {
             color: timeline.meta?.color,
-            label: `${formatMilliseconds(timePassed)} +${formatMilliseconds(remainder)}`,
+            //label: `${formatMilliseconds(timePassed)} +${formatMilliseconds(remainder)}`,
             minlen: linkLength,
             penwidth: 0.5,
             style: timeline.meta?.link !== false ? "solid" : "invis",

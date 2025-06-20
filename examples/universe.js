@@ -9,7 +9,7 @@ import { analyze } from "../lib/analyzer.js";
 import { MILLISECONDS } from "../lib/constants.js";
 import { recurringYearly } from "../lib/generator.js";
 import { load } from "../lib/loader.js";
-import { add, concat, joinDuringPeriod, sort } from "../lib/operator.js";
+import { add, concat, joinDuringPeriod, sort, uniquify } from "../lib/operator.js";
 import { render } from "../lib/renderer.js";
 import { serialize } from "../lib/serializer.js";
 
@@ -69,7 +69,7 @@ const dotGraph = render(
     ...data
       .entries()
       .filter(([filename]) => !basename(filename).startsWith("_"))
-      .map(([_, timeline]) => sort(add(timeline, [NOW, { title: "Now" }]))),
+      .map(([_, timeline]) => uniquify(sort(add(timeline, [NOW, { title: "Now" }])))),
   ],
   {
     baseUnit: "week",

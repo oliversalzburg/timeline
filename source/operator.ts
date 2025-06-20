@@ -27,6 +27,33 @@ export const deduplicateRecords = (records: Array<TimelineRecord>): Array<Timeli
   return unique;
 };
 
+export const uniquify = (timeline: Timeline): Timeline => {
+  return {
+    ...timeline,
+    records: uniquifyRecords(timeline.records),
+  };
+};
+
+export const uniquifyRecords = (records: Array<TimelineRecord>): Array<TimelineRecord> => {
+  const counts = new Map<string, number>();
+  for (const record of records) {
+    const [, entry] = record;
+    counts.set(entry.title, (counts.get(entry.title) ?? 0) + 1);
+  }
+  const result = new Array<TimelineRecord>();
+  for (const record of records.toReversed()) {
+    const [timestamp, entry] = record;
+    const count = counts.get(entry.title);
+    if (count === 1) {
+      result.push([timestamp, entry]);
+      continue;
+    }
+    counts.set(entry.title, (count ?? 0) - 1);
+    result.push([timestamp, { title: `${entry.title} #${count}` }]);
+  }
+  return result.reverse();
+};
+
 export const sort = (timeline: Timeline): Timeline => {
   return {
     ...timeline,
