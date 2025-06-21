@@ -24,12 +24,9 @@ test: node_modules
 	npm exec -- tsc
 	NODE_OPTIONS=--enable-source-maps TZ=UTC npm exec -- c8 --reporter=html-spa mocha lib/*.test.js
 
-run: node_modules
-	npm exec -- vite serve
-
 universe: lib output
 	node examples/universe.js > timelines/.universe.gv
-	dot -Tsvg:cairo timelines/.universe.gv > timelines/.universe.svg
+	dot -Tsvg timelines/.universe.gv > timelines/.universe.svg
 
 node_modules:
 ifneq "$(CI)" ""
@@ -42,7 +39,5 @@ lib: node_modules
 output: node_modules
 	@node build.js
 _site: universe
-	npm exec -- vite build
-
-preview: clean
-	npm exec -- vite preview
+	@mkdir _site 2>/dev/null || true
+	node build-site.js > _site/index.html

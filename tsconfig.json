@@ -22,7 +22,7 @@
     "sourceMap": true,
     "strict": true,
     "target": "ESNext",
-    "types": ["@types/node", "@types/web", "vite/client"],
+    "types": ["@types/node", "@types/web"],
     "useDefineForClassFields": true
   },
   "include": ["@types", "source"]
