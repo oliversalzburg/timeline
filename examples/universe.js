@@ -70,7 +70,7 @@ const dotGraph = render(
   ],
   {
     baseUnit: "week",
-    clusterYears: true,
+    clusterYears: false,
     now: NOW,
     origin: new Date(1983, 11, 25, 0, 0, 0, 0).valueOf(),
     scale: "logarithmic",

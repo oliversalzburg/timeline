@@ -30,7 +30,6 @@ run: node_modules
 universe: lib output
 	node examples/universe.js > timelines/.universe.gv
 	dot -Tsvg:cairo timelines/.universe.gv > timelines/.universe.svg
-	cp timelines/.universe.svg examples/universe.svg
 
 node_modules:
 	npm install
@@ -39,7 +38,7 @@ lib: node_modules
 	npm exec -- tsc
 output: node_modules
 	@node build.js
-_site:
+_site: universe
 	npm exec -- vite build
 
 preview: clean
