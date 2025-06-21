@@ -1,4 +1,3 @@
-import { time } from "console";
 import { expect } from "chai";
 import { describe, it } from "mocha";
 import { analyze } from "./analyzer.js";
