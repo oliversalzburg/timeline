@@ -1,11 +1,6 @@
 import { expect } from "chai";
 import { describe, it } from "mocha";
-import { MILLISECONDS } from "./constants.js";
 import { dot } from "./dot.js";
-import { random, withConflict } from "./fixtures/documents.js";
-import { interval, recurringYearly } from "./generator.js";
-import { load } from "./loader.js";
-import type { TimelineDocument } from "./types.js";
 
 /**
  * The DOT module provides a helper to render DOT graphs, which are authored in plaintext.

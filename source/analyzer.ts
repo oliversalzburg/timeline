@@ -2,11 +2,11 @@ import { mustExist } from "@oliversalzburg/js-utils/data/nil.js";
 import type { TimelineMetrics, TimelineRecord } from "./types.js";
 
 export const analyze = (timeline: Array<TimelineRecord>): TimelineMetrics => {
-  let earliest;
-  let latest;
-  let shortest;
-  let longest;
-  let previous;
+  let earliest: number | undefined;
+  let latest: number | undefined;
+  let shortest: number | undefined;
+  let longest: number | undefined;
+  let previous: number | undefined;
   for (const [timestamp, _] of timeline) {
     if (earliest === undefined) {
       earliest = timestamp;

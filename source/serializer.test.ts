@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { expect } from "chai";
 import { describe, it } from "mocha";
 import { serialize } from "./serializer.js";
-import type { Timeline, TimelineDocument } from "./types.js";
+import type { Timeline } from "./types.js";
 
 /**
  * Serializer

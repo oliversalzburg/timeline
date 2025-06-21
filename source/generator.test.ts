@@ -1,10 +1,7 @@
 import { expect } from "chai";
 import { describe, it } from "mocha";
 import { MILLISECONDS } from "./constants.js";
-import { random, withConflict } from "./fixtures/documents.js";
 import { interval, recurringYearly } from "./generator.js";
-import { load } from "./loader.js";
-import type { TimelineDocument } from "./types.js";
 
 /**
  * The Generator provides convenience mechanisms to generate timeline data.

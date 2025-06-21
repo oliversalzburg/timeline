@@ -1,17 +1,14 @@
 #!/bin/env node
 
-import { mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
-import { basename, join } from "node:path";
-import { mustExist } from "@oliversalzburg/js-utils/data/nil.js";
-import { errorToString, unknownToError } from "@oliversalzburg/js-utils/errors/error-serializer.js";
+import { readdirSync, readFileSync } from "node:fs";
+import { basename } from "node:path";
 import { parse } from "yaml";
 import { analyze } from "../lib/analyzer.js";
 import { MILLISECONDS } from "../lib/constants.js";
 import { recurringYearly } from "../lib/generator.js";
 import { load } from "../lib/loader.js";
-import { add, concat, joinDuringPeriod, sort, uniquify } from "../lib/operator.js";
+import { add, sort, uniquify } from "../lib/operator.js";
 import { render } from "../lib/renderer.js";
-import { serialize } from "../lib/serializer.js";
 
 const NOW = Date.now();
 
@@ -63,7 +60,7 @@ data.set("timelines/.decoration.nye", {
 });
 
 // Inject the "universe" graph.
-process.stderr.write(`Rendering universe...\n`);
+process.stderr.write("Rendering universe...\n");
 const dotGraph = render(
   [
     ...data
@@ -81,5 +78,5 @@ const dotGraph = render(
 );
 
 // Write DOT graph to stdout.
-process.stderr.write(`Writing DOT graph for universe...` + "\n");
+process.stderr.write("Writing DOT graph for universe..." + "\n");
 process.stdout.write(dotGraph);

@@ -2,13 +2,12 @@
 
 default: build
 
-build: lib output
+build: lib output _site
 
 clean:
-	rm --force --recursive lib node_modules output tsconfig.tsbuildinfo
+	rm --force --recursive _site lib node_modules output tsconfig.tsbuildinfo
 
-docs:
-	@echo "No documentation included by default."
+docs: _site
 
 git-hook:
 	echo "make pretty" > .git/hooks/pre-commit; chmod +x .git/hooks/pre-commit
@@ -28,9 +27,7 @@ test: node_modules
 run: node_modules
 	npm exec -- vite serve
 
-universe:
-	$(MAKE) clean
-	$(MAKE) build
+universe: lib output
 	node examples/universe.js > timelines/.universe.gv
 	dot -Tsvg:cairo timelines/.universe.gv > timelines/.universe.svg
 
@@ -40,8 +37,9 @@ node_modules:
 lib: node_modules
 	npm exec -- tsc
 output: node_modules
-	npm exec -- vite build
 	@node build.js
+_site: universe
+	npm exec -- vite build
 
 preview: clean
 	npm exec -- vite preview

@@ -13,8 +13,8 @@ export const concat = (timeline: Timeline, records: Array<TimelineRecord>): Time
 
 export const deduplicateRecords = (records: Array<TimelineRecord>): Array<TimelineRecord> => {
   const unique = new Array<TimelineRecord>();
-  let previousTimestamp;
-  let previousEntry;
+  let previousTimestamp: number | undefined;
+  let previousEntry: string | undefined;
   for (const record of records) {
     const [timestamp, entry] = record;
     if (timestamp === previousTimestamp && entry.title === previousEntry) {

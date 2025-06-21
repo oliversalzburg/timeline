@@ -1,7 +1,5 @@
-import { isNil } from "@oliversalzburg/js-utils/data/nil.js";
 import { formatMilliseconds } from "@oliversalzburg/js-utils/format/milliseconds.js";
-import { clamp, roundTo } from "@oliversalzburg/js-utils/math/core.js";
-import { analyze } from "./analyzer.js";
+import { clamp } from "@oliversalzburg/js-utils/math/core.js";
 import { MILLISECONDS } from "./constants.js";
 import { dot, makeHtmlString } from "./dot.js";
 import { roundToDay } from "./operator.js";

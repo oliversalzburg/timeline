@@ -27,15 +27,7 @@
   },
   "files": {
     "ignoreUnknown": false,
-    "includes": [
-      "@types/**",
-      "data/**",
-      "!fixtures/**",
-      "!lib/**",
-      "source/**",
-      "*.*",
-      "!package.json"
-    ]
+    "includes": ["@types/**", "examples/**", "!fixtures/**", "!lib/**", "source/**", "*.*"]
   },
   "formatter": {
     "attributePosition": "auto",
@@ -92,7 +84,6 @@
   },
   "linter": {
     "enabled": true,
-    "includes": ["package.json"],
     "rules": {
       "complexity": {
         "noArguments": "error",
