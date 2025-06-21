@@ -141,7 +141,7 @@ const makePropertyString = (properties: Record<string, boolean | number | string
  * Transforms a multi-line string into an HTML-like construct to be rendered by GraphViz.
  */
 export const makeHtmlString = (_: string) =>
-  `<TABLE ALIGN="CENTER" BORDER="0" CELLBORDER="0" CELLPADDING="0" CELLSPACING="0"><TR><TD ALIGN="TEXT" CELLPADDING="0" CELLSPACING="0">${_.replaceAll(/\n|\\n/g, `<BR ALIGN="CENTER"/>`).replaceAll(/&/g, "&amp;")}</TD></TR></TABLE>`;
+  `<FONT POINT-SIZE="10">${_.replaceAll(/\n|\\n/g, `<BR ALIGN="CENTER"/>`).replaceAll(/&/g, "&amp;")}</FONT>`;
 
 /**
  * Provides helper constructs to render DOT graphs.

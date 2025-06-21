@@ -24,7 +24,7 @@ describe("DOT", () => {
 
     expect(d.toString()).to.equal(
       "digraph {\n" +
-        '    1 [color="red"; label=<<TABLE ALIGN="CENTER" BORDER="0" CELLBORDER="0" CELLPADDING="0" CELLSPACING="0"><TR><TD ALIGN="TEXT" CELLPADDING="0" CELLSPACING="0">DOT is great</TD></TR></TABLE>>;];\n' +
+        '    1 [color="red"; label=<<FONT POINT-SIZE="10">DOT is great</FONT>>;];\n' +
         "}",
       "The DOT helper produced unexpected output.",
     );

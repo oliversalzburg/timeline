@@ -11,6 +11,16 @@ export const concat = (timeline: Timeline, records: Array<TimelineRecord>): Time
   };
 };
 
+export const map = (
+  timeline: Timeline,
+  fn: (record: TimelineRecord) => TimelineRecord,
+): Timeline => {
+  return {
+    ...timeline,
+    records: timeline.records.map(record => fn(record)),
+  };
+};
+
 export const deduplicateRecords = (records: Array<TimelineRecord>): Array<TimelineRecord> => {
   const unique = new Array<TimelineRecord>();
   let previousTimestamp: number | undefined;

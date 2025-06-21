@@ -7,7 +7,7 @@ import { analyze } from "../lib/analyzer.js";
 import { MILLISECONDS } from "../lib/constants.js";
 import { recurringYearly } from "../lib/generator.js";
 import { load } from "../lib/loader.js";
-import { add, sort, uniquify } from "../lib/operator.js";
+import { add, map, sort, uniquify } from "../lib/operator.js";
 import { render } from "../lib/renderer.js";
 
 const NOW = Date.now();
@@ -58,6 +58,13 @@ data.set("timelines/.decoration.nye", {
     ),
   ],
 });
+data.set(
+  "timelines/mediacontrol-top1-singles.yml",
+  map(data.get("timelines/mediacontrol-top1-singles.yml"), record => [
+    record[0],
+    { title: record[1].title.replace(" - ", "\n") },
+  ]),
+);
 
 // Inject the "universe" graph.
 process.stderr.write("Rendering universe...\n");

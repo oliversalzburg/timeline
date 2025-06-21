@@ -41,9 +41,10 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
   d.raw("digraph {");
   //const FONT_NODES = "Simple Plan";
   //const FONT_EDGES = "Master Photograph";
-  d.raw(`node [fontname="${FONTS_SYSTEM}";]`);
-  d.raw(`edge [fontname="${FONTS_SYSTEM}";]`);
+  d.raw(`node [fontname="${FONTS_SYSTEM}"; fontsize="10pt";]`);
+  d.raw(`edge [fontname="${FONTS_SYSTEM}"; fontsize="10pt";]`);
   d.raw(`fontname="${FONTS_SYSTEM}"`);
+  d.raw('fontsize="10"');
   d.raw("layout=dot");
   d.raw(`rankdir="TD"`);
 
