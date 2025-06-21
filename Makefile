@@ -29,7 +29,7 @@ run: node_modules
 
 universe: lib output
 	node examples/universe.js > timelines/.universe.gv
-	dot -Tsvg:cairo timelines/.universe.gv > timelines/.universe.svg
+	dot -Tsvg timelines/.universe.gv > timelines/.universe.svg
 
 node_modules:
 	npm install

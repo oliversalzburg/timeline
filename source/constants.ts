@@ -7,3 +7,6 @@ export const MILLISECONDS = {
   ONE_YEAR: 1000 * 60 * 60 * 24 * 7 * 52.25,
   ONE_MONTH: (1000 * 60 * 60 * 24 * 7 * 52.25) / 12,
 };
+
+export const FONTS_SYSTEM =
+  "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif";

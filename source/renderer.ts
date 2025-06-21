@@ -1,6 +1,6 @@
 import { formatMilliseconds } from "@oliversalzburg/js-utils/format/milliseconds.js";
 import { clamp } from "@oliversalzburg/js-utils/math/core.js";
-import { MILLISECONDS } from "./constants.js";
+import { FONTS_SYSTEM, MILLISECONDS } from "./constants.js";
 import { dot, makeHtmlString } from "./dot.js";
 import { roundToDay } from "./operator.js";
 import type { Timeline, TimelineEntry } from "./types.js";
@@ -39,12 +39,11 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
     color === "" ? color : `${color}${opacity.toString(16)}`;
 
   d.raw("digraph {");
-  let fontname =
-    "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif";
-  fontname = "Simple Plan";
-  d.raw(`node [fontname="${fontname}";]`);
-  d.raw(`edge [fontname="Master Photograph";]`);
-  d.raw(`fontname="${fontname}"`);
+  //const FONT_NODES = "Simple Plan";
+  //const FONT_EDGES = "Master Photograph";
+  d.raw(`node [fontname="${FONTS_SYSTEM}";]`);
+  d.raw(`edge [fontname="${FONTS_SYSTEM}";]`);
+  d.raw(`fontname="${FONTS_SYSTEM}"`);
   d.raw("layout=dot");
   d.raw(`rankdir="TD"`);
 
