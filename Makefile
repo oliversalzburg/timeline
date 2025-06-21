@@ -32,6 +32,9 @@ universe: lib output
 	dot -Tsvg:cairo timelines/.universe.gv > timelines/.universe.svg
 
 node_modules:
+ifneq "$(CI)" ""
+	sudo apt-get update; sudo apt-get install graphviz
+endif
 	npm install
 
 lib: node_modules
