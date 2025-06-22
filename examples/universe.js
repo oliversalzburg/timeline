@@ -62,7 +62,7 @@ data.set(
   "timelines/mediacontrol-top1-singles.yml",
   map(data.get("timelines/mediacontrol-top1-singles.yml"), record => [
     record[0],
-    { title: record[1].title.replace(" - ", "\n") },
+    { title: record[1].title.split(" - ").reverse().join("\n") },
   ]),
 );
 
@@ -78,6 +78,10 @@ const dotGraph = render(
   {
     baseUnit: "week",
     clusterYears: false,
+    dateRenderer: date => {
+      const _ = new Date(date);
+      return `${["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"][_.getDay()]}, ${_.getDate().toFixed(0).padStart(2, "0")}.${(_.getMonth() + 1).toFixed(0).padStart(2, "0")}.${_.getFullYear()}`;
+    },
     now: NOW,
     origin: new Date(1983, 11, 25, 0, 0, 0, 0).valueOf(),
     scale: "logarithmic",

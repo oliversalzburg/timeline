@@ -101,18 +101,23 @@ export interface LinkProperties {
   arrowtail: Arrow;
   color: Color;
   constraint: boolean;
+  edgetooltip: string;
   fillcolor: Color;
   fontcolor: Color;
   fontname: string;
   fontsize: number;
   headport: PortPos;
+  headtooltip: string;
   label: string;
+  labeltooltip: string;
   labelfontcolor: Color;
   minlen: number;
   penwidth: number;
   style: "bold" | "dashed" | "dotted" | "invis" | "solid" | "tapered";
   tailclip: boolean;
   tailport: PortPos;
+  tailtooltip: string;
+  tooltip: string;
   weight: number;
 }
 export interface NodeProperties {
@@ -127,6 +132,7 @@ export interface NodeProperties {
   penwidth: number;
   shape: Shape;
   style: NodeStyle | string;
+  tooltip: string;
   width: number;
 }
 
@@ -141,7 +147,7 @@ const makePropertyString = (properties: Record<string, boolean | number | string
  * Transforms a multi-line string into an HTML-like construct to be rendered by GraphViz.
  */
 export const makeHtmlString = (_: string) =>
-  `<FONT POINT-SIZE="10">${_.replaceAll(/\n|\\n/g, `<BR ALIGN="CENTER"/>`).replaceAll(/&/g, "&amp;")}</FONT>`;
+  `${_.replaceAll(/\n|\\n/g, `<BR ALIGN="CENTER"/>`).replaceAll(/&/g, "&amp;")}`;
 
 /**
  * Provides helper constructs to render DOT graphs.

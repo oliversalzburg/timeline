@@ -8,6 +8,7 @@ import type { Timeline, TimelineEntry } from "./types.js";
 export interface RendererOptions {
   baseUnit: "week" | "month";
   clusterYears: boolean;
+  dateRenderer: (date: number) => string;
   now: number;
   origin: number;
   scale: "linear" | "logarithmic";
@@ -39,13 +40,14 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
     color === "" ? color : `${color}${opacity.toString(16)}`;
 
   d.raw("digraph {");
+  const FONT_SIZE = 12;
   //const FONT_NODES = "Simple Plan";
   //const FONT_EDGES = "Master Photograph";
-  d.raw(`node [fontname="${FONTS_SYSTEM}"; fontsize="10pt";]`);
-  d.raw(`edge [fontname="${FONTS_SYSTEM}"; fontsize="10pt";]`);
+  d.raw(`node [fontname="${FONTS_SYSTEM}"; fontsize="${FONT_SIZE}";]`);
+  d.raw(`edge [fontname="${FONTS_SYSTEM}"; fontsize="${FONT_SIZE}";]`);
   d.raw(`fontname="${FONTS_SYSTEM}"`);
-  d.raw('fontsize="10"');
-  d.raw("layout=dot");
+  d.raw(`fontsize="${FONT_SIZE}"`);
+  d.raw('layout="dot"');
   d.raw(`rankdir="TD"`);
 
   const TIME_BASE = options.baseUnit === "week" ? MILLISECONDS.ONE_WEEK : MILLISECONDS.ONE_MONTH;
@@ -53,6 +55,9 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
 
   const now = options?.now ?? Date.now();
   const origin = options?.origin ?? timestampsUnique[0];
+  const originString = options?.dateRenderer
+    ? options.dateRenderer(origin)
+    : new Date(origin).toDateString();
   let previousYear: number | undefined;
   const firstNodeAlreadySeen = new Set<Timeline>();
   let nextEventIndex = 0;
@@ -104,16 +109,19 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
       }
 
       const penWidth = firstNodeAlreadySeen.has(timeline) ? 1 : 3;
+      const dateString = options?.dateRenderer
+        ? options.dateRenderer(timestamp)
+        : new Date(timestamp).toDateString();
       d.node(entry.title, {
         color,
-        fillcolor: colorsFill !== "" ? colorsFill : undefined,
-        fontsize: 20,
+        fillcolor: colorsFill !== "" ? colorsFill : appendOpacity(color),
         label: makeHtmlString(
-          `${(prefixes !== "" ? `${prefixes} ` : "") + entry.title}\\n${new Date(timestamp).toDateString()}\\n${formatMilliseconds(timePassedSinceStart)}\\n${formatMilliseconds(timePassedSinceThen * -1)}`,
+          `${(prefixes !== "" ? `${prefixes} ` : "") + entry.title}\\n${dateString}`,
         ),
         penwidth: penWidth,
         shape: 0 < merges ? "ellipse" : "box",
-        style: 0 < merges ? "wedged" : "rounded",
+        style: 0 < merges ? "wedged" : "filled,rounded",
+        tooltip: `${formatMilliseconds(timePassedSinceStart)} since ${originString}\\n${formatMilliseconds(timePassedSinceThen)} ago`,
       });
 
       firstNodeAlreadySeen.add(timeline);
@@ -173,7 +181,7 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
 
           d.link(previousEntry.title, entry.title, {
             color: timeline.meta?.color,
-            //label: `${formatMilliseconds(timePassed)} +${formatMilliseconds(remainder)}`,
+            tooltip: `${formatMilliseconds(timePassed)} +${formatMilliseconds(remainder)}`,
             minlen: linkLength,
             penwidth: 0.5,
             style: timeline.meta?.link !== false ? "solid" : "invis",

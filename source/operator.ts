@@ -59,7 +59,7 @@ export const uniquifyRecords = (records: Array<TimelineRecord>): Array<TimelineR
       continue;
     }
     counts.set(entry.title, (count ?? 0) - 1);
-    result.push([timestamp, { title: `${entry.title} #${count}` }]);
+    result.push([timestamp, { title: `${entry.title} 🔁${(count ?? 0) - 1}` }]);
   }
   return result.reverse();
 };
@@ -114,9 +114,12 @@ export const mergeDuringPeriod = (start: number, end: number, guests: Array<Time
   }
 };
 
+export const roundDateToDay = (date: number): number =>
+  new Date(date).setHours(0, 0, 0, 0).valueOf();
+
 export const roundToDay = (timeline: Timeline): Timeline => {
   for (const _ of timeline.records) {
-    _[0] = new Date(_[0]).setHours(0, 0, 0, 0).valueOf();
+    _[0] = roundDateToDay(_[0]);
   }
   return timeline;
 };
