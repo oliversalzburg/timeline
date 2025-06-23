@@ -6,7 +6,7 @@ import { roundToDay } from "./operator.js";
 import type { Timeline, TimelineEntry } from "./types.js";
 
 export interface RendererOptions {
-  baseUnit: "week" | "month";
+  baseUnit: "day" | "week" | "month";
   clusterYears: boolean;
   dateRenderer: (date: number) => string;
   now: number;
@@ -50,7 +50,12 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
   d.raw('layout="dot"');
   d.raw(`rankdir="TD"`);
 
-  const TIME_BASE = options.baseUnit === "week" ? MILLISECONDS.ONE_WEEK : MILLISECONDS.ONE_MONTH;
+  const TIME_BASE =
+    options.baseUnit === "week"
+      ? MILLISECONDS.ONE_WEEK
+      : options.baseUnit === "month"
+        ? MILLISECONDS.ONE_MONTH
+        : MILLISECONDS.ONE_DAY;
   const TIME_SCALE = 1 / TIME_BASE;
 
   const now = options?.now ?? Date.now();

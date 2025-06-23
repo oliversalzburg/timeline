@@ -76,8 +76,7 @@ const dotGraph = render(
       .map(([_, timeline]) => uniquify(sort(add(timeline, [NOW, { title: "Now" }])))),
   ],
   {
-    baseUnit: "week",
-    clusterYears: false,
+    baseUnit: "day",
     dateRenderer: date => {
       const _ = new Date(date);
       return `${["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"][_.getDay()]}, ${_.getDate().toFixed(0).padStart(2, "0")}.${(_.getMonth() + 1).toFixed(0).padStart(2, "0")}.${_.getFullYear()}`;
