@@ -26,12 +26,18 @@ timeline:
   1994-10-10: |-
     Doom II
     id Software
+  1994-12-29: |-
+    Heretic
+    Raven Software
   1994-11-15: |-
     Warcaft: Orcs & Humans
     Blizzard Entertainment
   1995-09-26: |-
     Command & Conquer
     Westwood Studios
+  1995-10-30: |-
+    Hexen: Beyond Heretic
+    Raven Software
   1995-11-01: |-
     Simon the Sorcerer II
     Adventure Soft
@@ -62,6 +68,15 @@ timeline:
   1997-03-01: |-
     Duke Nukem 3D - Duke It Out In D.C.
     Sunstorm Interactive
+  1997-03-05: |-
+    Quake: Scourge of Armagon
+    Hipnotic Interactive
+  1997-03-19: |-
+    Quake: Dissolution of Eternity
+    Rogue Entertainment
+  1997-09-11: |-
+    Hexen II
+    Raven Software
   1997-10-10: |-
     Fallout
     Interplay Productions
@@ -80,9 +95,21 @@ timeline:
   1998-03-31: |-
     StarCraft
     Blizzard Entertainment
+  1998-05-22: |-
+    Unreal
+    Epic Megagames
+  1998-05-27: |-
+    Quake II: The Reckoning
+    Xatrix Entertainment
+  1998-09-11: |-
+    Quake II: Ground Zero
+    Rogue Entertainment
   1998-10-29: |-
     Fallout 2
     Black Isle Studios
+  1998-11-24: |-
+    Heretic II
+    Raven Software
   1998-11-19: |-
     Half-Life
     Valve
@@ -95,12 +122,21 @@ timeline:
   1999-11-19: |-
     Half-Life: Opposing Force
     Gearbox Software
+  1999-11-22: |-
+    Unreal Tournament
+    Epic Games
   1999-12-02: |-
     Quake III Arena
     id Software
   2000-02-04: |-
     The Sims
     Maxis
+  2000-03-28: |-
+    Soldier of Fortune
+    Raven Software
+  2000-04-07: |-
+    Daikatana
+    Ion Storm
   2000-06-28: |-
     Diablo II
     Blizzard Entertainment
@@ -116,21 +152,42 @@ timeline:
   2001-06-12: |-
     Half-Life: Blue Shift
     Gearbox Software
+  2001-11-20: |-
+    Return to Castle Wolfenstein
+    Gray Matter Studios
   2002-05-21: |-
     Grand Theft Auto III
     DMA Design
+  2002-05-21 01:00: |-
+    Soldier of Fortune II: Double Helix
+    Raven Software
   2002-07-03: |-
     Warcaft III: Reign of Chaos
     Blizzard Entertainment
+  2002-09-30: |-
+    Unreal Tournament 2003
+    Epic Games
+  2003-02-04: |-
+    Unreal II: The Awakening
+    Legend Entertainment
   2003-05-13: |-
     Grand Theft Auto: Vice City
     Rockstar North
+  2003-10-29: |-
+    Call of Duty
+    Infinity Ward
+  2004-03-16: |-
+    Unreal Tournament 2004
+    Epic Games
   2004-03-23: |-
     Counter-Strike: Condition Zero
     Ritual Entertainment / Turtle Rock Studios / Valve
   2004-08-03: |-
     Doom III
     id Software
+  2004-09-14: |-
+    The Sims 2
+    Maxis Redwood Shores
   2004-10-07: |-
     Counter-Strike: Source
     Turtle Rock Studios / Valve
@@ -158,12 +215,18 @@ timeline:
   2006-06-01: |-
     Half-Life 2: Episode One
     Valve
+  2006-07-11: |-
+    Prey
+    Human Head Studios
   2006-08-29: |-
     Saints Row
     Volition
   2006-10-24: |-
     F.E.A.R Extraction Point
     TimeGate Studios
+  2007-06-26: |-
+    Overlord
+    Triumph Studios
   2007-09-10: |-
     Half-Life 2: Episode Two
     Valve
@@ -174,6 +237,15 @@ timeline:
   2007-11-07: |-
     F.E.A.R Perseus Mandate
     TimeGate Studios
+  2007-11-19: |-
+    Unreal Tournament 3
+    Epic Games
+  2008-02-15: |-
+    Overlord: Raising Hell
+    Triumph Studios
+  2008-10-14: |-
+    Saints Row 2
+    Volition
   2008-10-28: |-
     Fallout 3
     Bethesda Game Studios
@@ -198,6 +270,12 @@ timeline:
   2009-05-17: |-
     Minecraft First Public Alpha
     Notch
+  2009-06-02: |-
+    The Sims 3
+    Maxis Redwood Shores
+  2009-06-23: |-
+    Overlord II
+    Triumph Studios
   2009-08-03: |-
     Fallout 3: Mothership Zeta
     Bethesda Game Studios
@@ -210,6 +288,9 @@ timeline:
   2009-11-17: |-
     Left 4 Dead 2
     Valve
+  2010-08-06: |-
+    Quake Live
+    id Software
   2010-10-19: |-
     Fallout: New Vegas
     Obsidian Entertainment
@@ -222,6 +303,12 @@ timeline:
   2011-06-21: |-
     F.E.A.R 3
     Day 1 Studios
+  2011-09-04: |-
+    Rage
+    id Software
+  2011-11-15: |-
+    Saints Row: The Third
+    Volition
   2011-11-18: |-
     Minecraft
     Mojang Studios
@@ -234,12 +321,21 @@ timeline:
   2012-09-18: |-
     Borderlands 2
     Gearbox Software
+  2013-08-20: |-
+    Saints Row IV
+    Volition
   2013-12-13: |-
     SteamOS Initial Release
     Valve
   2014-03-11: |-
     Hearthstone
     Blizzard Entertainment
+  2014-09-02: |-
+    The Sims 4
+    Maxis
+  2015-01-20: |-
+    Saints Row: Gat out of Hell
+    Volition
   2015-04-14: |-
     Grand Theft Auto V
     Rockstar North
@@ -250,7 +346,7 @@ timeline:
     Fallout 4
     Bethesda Game Studios
   2016-04-13: |-
-    Doom (Remake)
+    Doom (2016)
     id Software
   2019-09-13: |-
     Borderlands 3
@@ -264,12 +360,18 @@ timeline:
   2020-03-23: |-
     Half-Life: Alyx
     Valve
+  2022-08-23: |-
+    Saints Row (2022)
+    Volition
   2022-08-18: |-
     Quake Champions
     id Software
   2023-09-27: |-
     Counter-Strike 2
     Valve
+  2025-05-15: |-
+    Doom: The Dark Ages
+    id Software
   2025-09-12: |-
     Borderlands 4
     Gearbox Software
