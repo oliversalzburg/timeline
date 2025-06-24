@@ -26,9 +26,9 @@ test: node_modules
 
 universe: lib output
 	node examples/universe.js > timelines/.universe.gv
-	@echo Rendering SVG. Please wait several minutes...
+	@echo "Rendering SVG image. This can take several minutes! Please wait..."
 	dot -O -Tsvg timelines/.universe.gv
-	@echo Done.
+	@echo "SVG image rendered successfully."
 
 node_modules:
 ifneq "$(CI)" ""
@@ -42,4 +42,6 @@ output: node_modules
 	@node build.js
 _site: universe
 	@mkdir _site 2>/dev/null || true
+	@echo "Generating '_site/index.html'..."
 	node build-site.js > _site/index.html
+	@echo "'_site/index.html' generated successfully."

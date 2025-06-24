@@ -36,10 +36,17 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
   //process.stderr.write(JSON.stringify(metrics, undefined, 2) + "\n");
   //const timeMaps = timelines.map(t => new Map(t.records));
 
-  const palette = hslPalette(timelines.length, 0, 0.4, 0.75);
-  timelines.forEach((_, index) => {
-    _.meta.color = `#${palette[index].map(x => x.toString(16).padStart(2, "0")).join("")}`;
-  });
+  const palettePen = hslPalette(timelines.length, 0, 0.4, 0.7);
+  const paletteFill = hslPalette(timelines.length, 0, 0.4, 0.9);
+  const colors = new Map(
+    timelines.map((_, index) => [
+      _,
+      {
+        fill: `#${paletteFill[index].map(x => x.toString(16).padStart(2, "0")).join("")}`,
+        pen: `#${palettePen[index].map(x => x.toString(16).padStart(2, "0")).join("")}`,
+      },
+    ]),
+  );
 
   const d = dot();
 
@@ -100,8 +107,8 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
     ) {
       const [, timeline, entry] = timelineGlobal[nextEventIndex++];
 
-      let color = timeline.meta?.color ?? "";
-      let colorsFill = timeline.meta?.color ?? "";
+      let color = colors.get(timeline)?.pen ?? timeline.meta?.color ?? "";
+      let colorsFill = colors.get(timeline)?.fill ?? timeline.meta?.color ?? "";
       let prefixes = timeline.meta?.prefix ?? "";
       let merges = 0;
       if (nextEventIndex < timelineGlobal.length) {
@@ -151,11 +158,14 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
   let timePassed = 0;
   let remainder = 0;
   for (const timeline of timelines) {
+    const color = colors.get(timeline)?.pen ?? timeline.meta?.color;
+
     let previousTimestamp: number | undefined;
     let allPrevious = new Array<TimelineEntry>();
     let timePassed = 0;
     let remainder = 0;
     nextEventIndex = 0;
+
     for (const [timestamp] of timeline.records) {
       if (previousTimestamp && timestamp <= previousTimestamp) {
         continue;
@@ -192,7 +202,7 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
           );
 
           d.link(previousEntry.title, entry.title, {
-            color: timeline.meta?.color,
+            color,
             tooltip: `${formatMilliseconds(timePassed)} +${formatMilliseconds(remainder)}`,
             minlen: linkLength,
             penwidth: 0.5,
