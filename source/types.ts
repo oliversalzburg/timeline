@@ -11,7 +11,7 @@ export interface TimelineEntry {
 }
 export type TimelineRecord = [number, TimelineEntry];
 export type Timeline = {
-  meta?: {
+  meta: {
     color?: string;
     link?: boolean;
     prefix?: string;

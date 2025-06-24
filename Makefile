@@ -26,7 +26,9 @@ test: node_modules
 
 universe: lib output
 	node examples/universe.js > timelines/.universe.gv
-	dot -Tsvg timelines/.universe.gv > timelines/.universe.svg
+	@echo Rendering SVG. Please wait several minutes...
+	dot -O -Tsvg timelines/.universe.gv
+	@echo Done.
 
 node_modules:
 ifneq "$(CI)" ""

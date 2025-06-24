@@ -90,3 +90,4 @@ const dotGraph = render(
 // Write DOT graph to stdout.
 process.stderr.write("Writing DOT graph for universe..." + "\n");
 process.stdout.write(dotGraph);
+process.stderr.write("Done.\n");

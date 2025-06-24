@@ -19,6 +19,7 @@ describe("Serializer", () => {
   it("should merge records with same timestamp into array", () => {
     const fixture = readFileSync("source/fixtures/serializer-merge.yml", "utf-8");
     const timeline: Timeline = {
+      meta: {},
       records: [
         [100, { title: "one" }],
         [100, { title: "two" }],

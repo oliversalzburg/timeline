@@ -1,4 +1,5 @@
 import { formatMilliseconds } from "@oliversalzburg/js-utils/format/milliseconds.js";
+import { hslPalette } from "@oliversalzburg/js-utils/graphics/palette.js";
 import { clamp } from "@oliversalzburg/js-utils/math/core.js";
 import { FONTS_SYSTEM, MILLISECONDS } from "./constants.js";
 import { dot, makeHtmlString } from "./dot.js";
@@ -35,16 +36,21 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
   //process.stderr.write(JSON.stringify(metrics, undefined, 2) + "\n");
   //const timeMaps = timelines.map(t => new Map(t.records));
 
+  const palette = hslPalette(timelines.length, 0, 0.4, 0.75);
+  timelines.forEach((_, index) => {
+    _.meta.color = `#${palette[index].map(x => x.toString(16).padStart(2, "0")).join("")}`;
+  });
+
   const d = dot();
-  const appendOpacity = (color: string, opacity = 35): string =>
-    color === "" ? color : `${color}${opacity.toString(16)}`;
 
   d.raw("digraph {");
+  const FONT_COLOR = "#000000";
   const FONT_SIZE = 12;
   //const FONT_NODES = "Simple Plan";
   //const FONT_EDGES = "Master Photograph";
-  d.raw(`node [fontname="${FONTS_SYSTEM}"; fontsize="${FONT_SIZE}";]`);
-  d.raw(`edge [fontname="${FONTS_SYSTEM}"; fontsize="${FONT_SIZE}";]`);
+  d.raw(`node [fontcolor="${FONT_COLOR}"; fontname="${FONTS_SYSTEM}"; fontsize="${FONT_SIZE}";]`);
+  d.raw(`edge [fontcolor="${FONT_COLOR}"; fontname="${FONTS_SYSTEM}"; fontsize="${FONT_SIZE}";]`);
+  d.raw(`fontcolor="${FONT_COLOR}"`);
   d.raw(`fontname="${FONTS_SYSTEM}"`);
   d.raw(`fontsize="${FONT_SIZE}"`);
   d.raw('layout="dot"');
@@ -95,7 +101,7 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
       const [, timeline, entry] = timelineGlobal[nextEventIndex++];
 
       let color = timeline.meta?.color ?? "";
-      let colorsFill = appendOpacity(timeline.meta?.color ?? "");
+      let colorsFill = timeline.meta?.color ?? "";
       let prefixes = timeline.meta?.prefix ?? "";
       let merges = 0;
       if (nextEventIndex < timelineGlobal.length) {
@@ -106,8 +112,8 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
           colorsFill =
             timelineNext.meta?.link !== false && timelineNext.meta?.color
               ? colorsFill === ""
-                ? appendOpacity(timelineNext.meta?.color ?? "")
-                : `${colorsFill}:${appendOpacity(timelineNext.meta.color)}`
+                ? (timelineNext.meta?.color ?? "")
+                : `${colorsFill}:${timelineNext.meta.color}`
               : colorsFill;
           prefixes += timelineNext.meta?.prefix ?? "";
           [, timelineNext, entryNext] = timelineGlobal[++nextEventIndex];
@@ -120,7 +126,7 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
         : new Date(timestamp).toDateString();
       d.node(entry.title, {
         color,
-        fillcolor: colorsFill !== "" ? colorsFill : appendOpacity(color),
+        fillcolor: colorsFill !== "" ? colorsFill : color,
         label: makeHtmlString(
           `${(prefixes !== "" ? `${prefixes} ` : "") + entry.title}\\n${dateString}`,
         ),
