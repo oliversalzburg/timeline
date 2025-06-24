@@ -7,7 +7,7 @@ import { analyze } from "../lib/analyzer.js";
 import { MILLISECONDS } from "../lib/constants.js";
 import { recurringYearly } from "../lib/generator.js";
 import { load } from "../lib/loader.js";
-import { add, map, sort, uniquify } from "../lib/operator.js";
+import { map, sort, uniquify } from "../lib/operator.js";
 import { render } from "../lib/renderer.js";
 
 const NOW = Date.now();
@@ -68,24 +68,27 @@ data.set(
 
 // Inject the "universe" graph.
 process.stderr.write("Rendering universe...\n");
-const dotGraph = render(
-  [
-    ...data
-      .entries()
-      .filter(([filename]) => !basename(filename).startsWith("_"))
-      .map(([_, timeline]) => uniquify(sort(add(timeline, [NOW, { title: "Now" }])))),
-  ],
-  {
-    baseUnit: "day",
-    dateRenderer: date => {
-      const _ = new Date(date);
-      return `${["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"][_.getDay()]}, ${_.getDate().toFixed(0).padStart(2, "0")}.${(_.getMonth() + 1).toFixed(0).padStart(2, "0")}.${_.getFullYear()}`;
-    },
-    now: NOW,
-    origin: new Date(1983, 11, 25, 0, 0, 0, 0).valueOf(),
-    scale: "logarithmic",
-  },
+const finalTimelines = [
+  ...data
+    .entries()
+    .filter(([filename]) => !basename(filename).startsWith("_"))
+    .map(([_, timeline]) => uniquify(sort(timeline /*add(timeline, [NOW, { title: "Now" }])*/))),
+];
+const finalEntryCount = finalTimelines.reduce(
+  (previous, timeline) => previous + timeline.records.length,
+  0,
 );
+process.stderr.write(`  Universe has ${finalEntryCount} entries.\n`);
+const dotGraph = render(finalTimelines, {
+  baseUnit: "day",
+  dateRenderer: date => {
+    const _ = new Date(date);
+    return `${["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"][_.getDay()]}, ${_.getDate().toFixed(0).padStart(2, "0")}.${(_.getMonth() + 1).toFixed(0).padStart(2, "0")}.${_.getFullYear()}`;
+  },
+  now: NOW,
+  origin: new Date(1983, 11, 25, 0, 0, 0, 0).valueOf(),
+  scale: "logarithmic",
+});
 
 // Write DOT graph to stdout.
 process.stderr.write("Writing DOT graph for universe..." + "\n");
