@@ -36,7 +36,7 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
   //process.stderr.write(JSON.stringify(metrics, undefined, 2) + "\n");
   //const timeMaps = timelines.map(t => new Map(t.records));
 
-  const palettePen = hslPalette(timelines.length, 0, 0.4, 0.7);
+  const palettePen = hslPalette(timelines.length, 0, 0.4, 0.6);
   const paletteFill = hslPalette(timelines.length, 0, 0.4, 0.9);
   const colors = new Map(
     timelines.map((_, index) => [
