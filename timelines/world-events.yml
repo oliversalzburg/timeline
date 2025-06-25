@@ -3,6 +3,7 @@ color: "#000000"
 link: false
 prefix: 🌍
 timeline:
+  1970-01-01: UNIX Time Epoch starts 00:00 UTC
   1978-10-16: Pope St John Paul II
   1979-12-25: Soviet-Afghan War
   1980-01-06: |-
