@@ -95,7 +95,7 @@ timeline:
   1994-03-01: |-
     UFO: Enemy Unknown
     Mythos Games / Microprose
-  1994-06-01: |-
+  1994-06-01:
     - Die Siedler
       Blue Byte
     - Theme Park
@@ -118,10 +118,11 @@ timeline:
   1995-05-19: |-
     Full Throttle
     LucasArts
-  1995-06-01: |-
+  1995-06-01:
     - Biing!
       reline Software
-    - X-COM: Terror from the Deep
+    - |-
+      X-COM: Terror from the Deep
       Microprose
   1995-09-26: |-
     Command & Conquer
@@ -204,7 +205,7 @@ timeline:
   1997-09-11: |-
     Hexen II
     Raven Software
-  1997-10-03: |-
+  1997-10-03:
     - Age of Empires
       Ensemble Studios
     - Constructor
@@ -350,7 +351,7 @@ timeline:
   2002-02-02: |-
     Serious Sam: The Second Encounter
     Croteam
-  2002-03-28: |-
+  2002-03-28:
     - Might and Magic IX
       New World Computing
     - Heroes of Might and Magic IV
@@ -358,10 +359,11 @@ timeline:
   2002-03-29: |-
     Tony Hawk's Pro Skater 3
     Neversoft
-  2002-05-21: |-
+  2002-05-21:
     - Grand Theft Auto III
       DMA Design
-    - Soldier of Fortune II: Double Helix
+    - |-
+      Soldier of Fortune II: Double Helix
       Raven Software
   2002-07-03: |-
     Warcaft III: Reign of Chaos
