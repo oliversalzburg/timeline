@@ -3,13 +3,20 @@ color: "#787de8"
 prefix: 🎮
 timeline:
   1981-08-12: Microsoft MS-DOS
+  1983-10-01: Microsoft MS-DOS 2.0
+  1985-04-01: Microsoft MS-DOS 3.0
   1985-11-20: Microsoft Windows 1.0 RTM
   1987-12-09: Microsoft Windows 2.0 RTM
   1988-05-27: Microsoft Windows 2.1 RTM
+  1988-10-01: Microsoft MS-DOS 4
   1990-05-22: Microsoft Windows 3.0 RTM
+  1991-06-01: Microsoft MS-DOS 5
   1992-04-06: Microsoft Windows 3.1 RTM
   1993-07-27: Microsoft Windows NT 3.1 RTM
+  1993-03-01: Microsoft MS-DOS 6
   1993-11-08: Microsoft Windows 3.11
+  1994-03-01: Microsoft MS-DOS 6.21
+  1994-04-01: Microsoft MS-DOS 6.22
   1994-09-21: Microsoft Windows NT 3.5 GA
   1995-05-30: Microsoft Windows NT 3.51 GA
   1995-08-24: Microsoft Windows 95 GA

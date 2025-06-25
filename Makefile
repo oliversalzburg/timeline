@@ -27,7 +27,7 @@ test: node_modules
 universe: lib output
 	node examples/universe.js > timelines/.universe.gv
 	@echo "Rendering SVG image. This can take several minutes! Please wait..."
-	dot -O -Tsvg timelines/.universe.gv
+	dot -v5 -O -Tsvg timelines/.universe.gv
 	@echo "SVG image rendered successfully."
 
 node_modules:
