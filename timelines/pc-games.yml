@@ -2,24 +2,66 @@
 color: "#ffbe00"
 prefix: 🎮
 timeline:
+  1980-03-01: |-
+    Space Invaders (Atari 2600)
+    Atari, Inc.
+  1981-07-01: |-
+    Asteroids (Atari 2600)
+    Atari, Inc.
+  1982-03-16: |-
+    Pac-Man (Atari 2600)
+    Atari, Inc.
+  1982-07-01: |-
+    Donkey Kong (Atari 2600)
+    Coleco
+  1982-08-01: |-
+    Frogger (Atari 2600)
+    Parker Brothers
+  1982-09-01: |-
+    Pitfall! (Atari 2600)
+    Activision
+  1984-03-01: |-
+    Pitfall! (Atari 5200)
+    Activision
+  1986-11-01: |-
+    Labyrinth: The Computer Game
+    Lucasfilm Games
   1988-03-12: |-
     Maniac Mansion
+    Lucasfilm Games
+  1988-10-01: |-
+    Zak McKracken and the Alien Mindbenders
     Lucasfilm Games
   1989-02-01: |-
     SimCity
     Maxis
+  1989-07-01: |-
+    Indiana Jones and the Last Crusade: The Graphic Adventure
+    Lucasfilm Games
+  1990-01-01: |-
+    Loom
+    Lucasfilm Games
+  1990-10-01: |-
+    The Secret of Monkey Island
+    Lucasfilm Games
   1990-12-14: |-
     Commander Keen 1
     id Software
   1991-10-01: |-
     Might and Magic III: Isles of Terra
     New World Computing
+  1991-12-01: |-
+    Monkey Island 2: LeChuck's Revenge
+    Lucasfilm Games
   1991-12-15: |-
     Commander Keen 3
     id Software
   1992-05-05: |-
     Wolfenstein 3D
     id Software
+  1991-06-26: |-
+    Indiana Jones and the Fate of Atlantis
+    LucasArts
   1992-10-01: |-
     Might and Magic IV: Clouds of Xeen
     New World Computing
@@ -41,6 +83,9 @@ timeline:
   1993-09-30: |-
     Myst
     Cyan
+  1993-11-01: |-
+    Sam & Max Hit the Road
+    LucasArts
   1993-12-10: |-
     Doom
     id Software
@@ -70,6 +115,9 @@ timeline:
   1994-12-01: |-
     Magic Carpet
     Bullfrog Productions
+  1995-05-19: |-
+    Full Throttle
+    LucasArts
   1995-06-01: |-
     - Biing!
       reline Software
@@ -87,12 +135,18 @@ timeline:
   1995-11-01: |-
     Simon the Sorcerer II
     Adventure Soft
+  1995-11-24: |-
+    The Dig
+    LucasArts
   1995-12-05: |-
     Warcaft II: Tides of Darkness
     Blizzard Entertainment
   1996-01-29: |-
     Duke Nukem 3D Shareware
     3D Realms
+  1996-04-01: |-
+    Destruction Derby
+    Reflections Interactive
   1996-04-17: |-
     Die Siedler II
     Blue Byte
@@ -108,6 +162,12 @@ timeline:
   1996-11-16: |-
     Heroes of Might and Magic II
     New World Computing
+  1996-11-20: |-
+    SimCopter
+    Maxis
+  1996-11-21: |-
+    Destruction Derby 2
+    Reflections Interactive
   1996-11-22: |-
     Command & Conquer: Red Alert
     Westwood Studios
@@ -120,6 +180,9 @@ timeline:
   1997-03-01: |-
     Duke Nukem 3D - Duke It Out In D.C.
     Sunstorm Interactive
+  1997-03-07: |-
+    Blood Shareware
+    Monolith Productions
   1997-03-05: |-
     Quake: Scourge of Armagon
     Hipnotic Interactive
@@ -129,6 +192,9 @@ timeline:
   1997-03-28: |-
     Theme Hospital
     Bullfrog Productions
+  1997-05-21: |-
+    Blood Registered
+    Monolith Productions
   1997-06-15: |-
     X-COM: Apocalypse
     Mythos Games
@@ -139,11 +205,16 @@ timeline:
     Hexen II
     Raven Software
   1997-10-03: |-
-    Age of Empires
-    Ensemble Studios
+    - Age of Empires
+      Ensemble Studios
+    - Constructor
+      System 3
   1997-10-10: |-
     Fallout
     Interplay Productions
+  1997-11-11: |-
+    The Curse of Monkey Island
+    LucasArts
   1997-11-13: |-
     Blade Runner
     Westwood Studios
@@ -180,15 +251,24 @@ timeline:
   1998-10-29: |-
     Fallout 2
     Black Isle Studios
+  1998-10-30: |-
+    Grim Fandango
+    LucasArts
+  1998-11-05: |-
+    SiN
+    Ritual Entertainment
+  1998-11-19: |-
+    Half-Life
+    Valve
   1998-11-20: |-
     Die Siedler III
     Blue Byte
   1998-11-24: |-
     Heretic II
     Raven Software
-  1998-11-19: |-
-    Half-Life
-    Valve
+  1998-11-25: |-
+    Blood II: The Chosen
+    Monolith Productions
   1999-02-01: |-
     SimCity 3000
     Maxis
@@ -237,9 +317,15 @@ timeline:
   2000-06-28: |-
     Diablo II
     Blizzard Entertainment
+  2000-10-24: |-
+    Tony Hawk's Pro Skater 2
+    Neversoft
   2000-10-25: |-
     Command & Conquer: Red Alert 2
     Westwood Studios
+  2000-11-06: |-
+    Escape from Monkey Island
+    LucasArts
   2000-11-09: |-
     Counter-Strike
     Valve
@@ -269,6 +355,9 @@ timeline:
       New World Computing
     - Heroes of Might and Magic IV
       New World Computing
+  2002-03-29: |-
+    Tony Hawk's Pro Skater 3
+    Neversoft
   2002-05-21: |-
     - Grand Theft Auto III
       DMA Design
