@@ -57,6 +57,7 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
   //const FONT_EDGES = "Master Photograph";
   d.raw(`node [fontcolor="${FONT_COLOR}"; fontname="${FONTS_SYSTEM}"; fontsize="${FONT_SIZE}";]`);
   d.raw(`edge [fontcolor="${FONT_COLOR}"; fontname="${FONTS_SYSTEM}"; fontsize="${FONT_SIZE}";]`);
+  d.raw('comment=""');
   d.raw(`fontcolor="${FONT_COLOR}"`);
   d.raw(`fontname="${FONTS_SYSTEM}"`);
   d.raw(`fontsize="${FONT_SIZE}"`);
@@ -66,12 +67,12 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
   d.raw(`tooltip=""`);
 
   const TIME_BASE =
-    options.baseUnit === "week"
+    (options.baseUnit === "week"
       ? MILLISECONDS.ONE_WEEK
       : options.baseUnit === "month"
         ? MILLISECONDS.ONE_MONTH
-        : MILLISECONDS.ONE_DAY;
-  const TIME_SCALE = 1 / TIME_BASE;
+        : MILLISECONDS.ONE_DAY) - 1;
+  const TIME_SCALE = 10 / TIME_BASE;
 
   const now = options?.now ?? Date.now();
   const origin = options?.origin ?? timestampsUnique[0];
@@ -157,14 +158,12 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
 
   // Link items in timelines together.
   let timePassed = 0;
-  let remainder = 0;
   for (const timeline of timelines) {
     const color = colors.get(timeline)?.pen ?? timeline.meta?.color;
 
     let previousTimestamp: number | undefined;
-    let allPrevious = new Array<TimelineEntry>();
+    let previousEntries = new Array<TimelineEntry>();
     let timePassed = 0;
-    let remainder = 0;
     nextEventIndex = 0;
 
     for (const [timestamp] of timeline.records) {
@@ -173,47 +172,39 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
       }
 
       timePassed = previousTimestamp ? Math.max(1, timestamp - previousTimestamp) : 0;
-      const nextPrevious = new Array<TimelineEntry>();
+      const previousEntriesNext = new Array<TimelineEntry>();
 
       while (
         nextEventIndex < timeline.records.length &&
         timeline.records[nextEventIndex][0] === timestamp
       ) {
         const [, entry] = timeline.records[nextEventIndex++];
-        nextPrevious.push(entry);
-        if (0 === allPrevious.length) {
+        previousEntriesNext.push(entry);
+        if (0 === previousEntries.length) {
           continue;
         }
 
-        for (const previousEntry of allPrevious) {
-          let adjustedTime = timePassed;
-          if (remainder !== 0 && TIME_BASE < timePassed) {
-            adjustedTime += remainder;
-            remainder = 0;
-          } else if (timePassed < TIME_BASE) {
-            remainder += timePassed;
-          }
-
+        for (const previousEntry of previousEntries) {
           const linkLength = clamp(
-            options?.scale === "logarithmic"
-              ? Math.log(adjustedTime * TIME_SCALE)
-              : adjustedTime * TIME_SCALE,
+            10 < timePassed * TIME_SCALE && options?.scale === "logarithmic"
+              ? Math.log(timePassed * TIME_SCALE)
+              : timePassed * TIME_SCALE,
             0.01,
             1000,
           );
 
           d.link(previousEntry.title, entry.title, {
             color,
-            tooltip: `${formatMilliseconds(timePassed)} +${formatMilliseconds(remainder)}`,
             minlen: linkLength,
             penwidth: 0.5,
             style: timeline.meta?.link !== false ? "solid" : "invis",
+            //tooltip: `${formatMilliseconds(timePassed)} (${linkLength}: ${timePassed} * ${TIME_SCALE} = ${timePassed * TIME_SCALE})`,
           });
         }
       }
 
       previousTimestamp = timestamp;
-      allPrevious = nextPrevious;
+      previousEntries = previousEntriesNext;
     }
   }
 
@@ -221,7 +212,6 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
   let previousTimestamp: number | undefined;
   let allPrevious = new Array<TimelineEntry>();
   timePassed = 0;
-  remainder = 0;
   nextEventIndex = 0;
   for (const timestamp of timestampsUnique) {
     timePassed = previousTimestamp ? Math.max(1, timestamp - previousTimestamp) : 0;
@@ -247,18 +237,10 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
       }
 
       for (const previousEntry of allPrevious) {
-        let adjustedTime = timePassed;
-        if (remainder !== 0 && TIME_BASE < timePassed) {
-          adjustedTime += remainder;
-          remainder = 0;
-        } else if (timePassed < TIME_BASE) {
-          remainder += timePassed;
-        }
-
         const linkLength = clamp(
-          options?.scale === "logarithmic"
-            ? Math.log(adjustedTime * TIME_SCALE)
-            : adjustedTime * TIME_SCALE,
+          10 < timePassed * TIME_SCALE && options?.scale === "logarithmic"
+            ? Math.log(timePassed * TIME_SCALE)
+            : timePassed * TIME_SCALE,
           0.01,
           1000,
         );
@@ -267,12 +249,9 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
         // This forces all entries into linear global order.
         //d.link(previous[1].title, entry.title, { minlen:0.5, style: "dashed", weight:0.5 });
         d.link(previousEntry.title, entry.title, {
-          arrowhead: "empty",
-          color: "#000000",
-          //label: `${formatMilliseconds(timePassed)} +${formatMilliseconds(remainder)}`,
           minlen: linkLength,
-          penwidth: 0.5,
-          style: "invis",
+          style: "dashed",
+          //tooltip: `${formatMilliseconds(timePassed)} (${linkLength}: ${timePassed} * ${TIME_SCALE} = ${timePassed * TIME_SCALE})`,
         });
       }
     }
