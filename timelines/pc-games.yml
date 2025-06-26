@@ -38,6 +38,9 @@ timeline:
   1989-07-01: |-
     Indiana Jones and the Last Crusade: The Graphic Adventure
     Lucasfilm Games
+  1989-12-01: |-
+    MechWarrior
+    Dynamix
   1990-01-01: |-
     Loom
     Lucasfilm Games
@@ -124,6 +127,9 @@ timeline:
     - |-
       X-COM: Terror from the Deep
       Microprose
+  1995-07-24: |-
+    MechWarrior 2: 31st Century Combar
+    Activision
   1995-09-26: |-
     Command & Conquer
     Westwood Studios
@@ -279,6 +285,9 @@ timeline:
   1999-03-22: |-
     RollerCoaster Tycoon
     Chris Sawyer
+  1999-06-01: |-
+    MechWarrior 3
+    Zipper Interactive
   1999-06-08: |-
     Might and Magic VII: For Blood and Honor
     New World Computing
@@ -333,6 +342,9 @@ timeline:
   2000-11-21: |-
     Gunman Chronicles
     Rewolf Software / Valve
+  2000-11-22: |-
+    MechWarrior 4: Vengeance
+    FASA Interactive
   2001-02-05: |-
     Die Siedler IV
     Blue Byte
@@ -383,21 +395,30 @@ timeline:
   2003-05-13: |-
     Grand Theft Auto: Vice City
     Rockstar North
+  2003-08-14: |-
+    Tony Hawk's Pro Skater 4
+    Neversoft
   2003-10-29: |-
     Call of Duty
     Infinity Ward
   2004-03-16: |-
     Unreal Tournament 2004
     Epic Games
-  2004-03-23: |-
-    Counter-Strike: Condition Zero
-    Ritual Entertainment / Turtle Rock Studios / Valve
+  2004-03-23:
+    - |-
+      Counter-Strike: Condition Zero
+      Ritual Entertainment / Turtle Rock Studios / Valve
+    - Far Cry
+      Crytek
   2004-08-03: |-
     Doom III
     id Software
   2004-09-14: |-
     The Sims 2
     Maxis Redwood Shores
+  2004-10-04: |-
+    Tony Hawk's Underground 2
+    Neversoft
   2004-10-07: |-
     Counter-Strike: Source
     Turtle Rock Studios / Valve
@@ -438,6 +459,9 @@ timeline:
   2005-10-27: |-
     Half-Life 2: Lost Coast
     Valve
+  2006-02-06: |-
+    Tony Hawk's American Wasteland
+    Neversoft
   2006-02-14: |-
     Marc Ecko's Getting Up
     The Collective
@@ -478,18 +502,30 @@ timeline:
   2007-11-07: |-
     F.E.A.R Perseus Mandate
     TimeGate Studios
+  2007-11-13: |-
+    Crysis
+    Crytek
   2007-11-19: |-
     Unreal Tournament 3
     Epic Games
   2008-02-15: |-
     Overlord: Raising Hell
     Triumph Studios
+  2008-04-08: |-
+    Assassin's Creed
+    Ubisoft Montreal
   2008-09-04: |-
     Spore
     Maxis
+  2008-09-16: |-
+    Crysis Warhead
+    Crytek Budapest
   2008-10-14: |-
     Saints Row 2
     Volition
+  2008-10-21: |-
+    Far Cry 2
+    Ubisoft Montreal
   2008-10-28: |-
     Fallout 3
     Bethesda Game Studios
@@ -508,9 +544,12 @@ timeline:
   2009-03-24: |-
     Fallout 3: The Pitt
     Bethesda Game Studios
-  2009-05-05: |-
-    Fallout 3: Broken Steel
-    Bethesda Game Studios
+  2009-05-05:
+    - |-
+      Fallout 3: Broken Steel
+      Bethesda Game Studios
+    - Plants vs. Zombies
+      PopCap Games
   2009-05-17: |-
     Minecraft First Public Alpha
     Notch
@@ -535,6 +574,9 @@ timeline:
   2009-11-17: |-
     Left 4 Dead 2
     Valve
+  2010-03-04: |-
+    Assassin's Creed II
+    Ubisoft Montreal
   2010-03-25: |-
     Die Siedler 7
     Blue Byte
@@ -544,6 +586,15 @@ timeline:
   2010-10-19: |-
     Fallout: New Vegas
     Obsidian Entertainment
+  2010-11-16: |-
+    Assassin's Creed: Brotherhood
+    Ubisoft Montreal
+  2010-11-24: |-
+    The Humble Bundle
+    Wolfire Games
+  2011-03-22: |-
+    Crysis 2
+    Crytek
   2011-04-18: |-
     Portal 2
     Valve
@@ -559,9 +610,12 @@ timeline:
   2011-10-13: |-
     Might & Magic Heroes VI
     Black Hole Entertainment
-  2011-11-15: |-
-    Saints Row: The Third
-    Volition
+  2011-11-15:
+    - |-
+      Saints Row: The Third
+      Volition
+    - Assassin's Creed Revelations
+      Ubisoft Montreal
   2011-11-18: |-
     Minecraft
     Mojang Studios
@@ -580,12 +634,24 @@ timeline:
   2012-09-20: |-
     Torchlight II
     Runic Games
+  2012-10-30: |-
+    Assassin's Creed III
+    Ubisoft Montreal
+  2012-11-29: |-
+    Far Cry 3
+    Ubisoft Montreal
+  2013-02-19: |-
+    Crysis 3
+    Crytek
   2013-03-06: |-
     SimCity (2013)
     Maxis
   2013-08-20: |-
     Saints Row IV
     Volition
+  2013-10-29: |-
+    Assassin's Creed IV: Black Flag
+    Ubisoft Montreal
   2013-12-13: |-
     SteamOS Initial Release
     Valve
@@ -598,27 +664,56 @@ timeline:
   2014-09-02: |-
     The Sims 4
     Maxis
+  2014-10-14: |-
+    Borderlands: The Pre-Sequel
+    2K Australia / Gearbox Software
+  2014-11-11: |-
+    Assassin's Creed Unity
+    Ubisoft Montreal
+  2014-11-18: |-
+    Far Cry 4
+    Ubisoft Montreal
   2015-01-20: |-
     Saints Row: Gat out of Hell
     Volition
+  2015-03-10: |-
+    Assassin's Creed Rogue
+    Ubisoft Sofia
   2015-04-14: |-
     Grand Theft Auto V
     Rockstar North
   2015-05-01: |-
     Black Mesa Early-Access
     Crowbar Collective
-  2015-09-29: |-
-    Might & Magic Heroes VII
-    Limbic Entertainment
+  2015-09-29:
+    - Might & Magic Heroes VII
+      Limbic Entertainment
+    - Tony Hawk's Pro Skater 5
+      Robomodo / Disruptive Games
   2015-11-11: |-
     Fallout 4
     Bethesda Game Studios
+  2015-11-19: |-
+    Assassin's Creed Syndicate
+    Ubisoft Quebec
   2016-04-13: |-
     Doom (2016)
     id Software
+  2017-10-27: |-
+    Assassin's Creed Origins
+    Ubisoft Montreal
+  2018-03-27: |-
+    Far Cry 5
+    Ubisoft Montreal / Toronto
+  2018-10-05: |-
+    Assassin's Creed Odyssey
+    Ubisoft Quebec
   2019-09-13: |-
     Borderlands 3
     Gearbox Software
+  2019-12-10: |-
+    MechWarrior 5: Mercenaries
+    Piranha Games
   2020-03-06: |-
     Black Mesa Full Version
     Crowbar Collective
@@ -634,6 +729,12 @@ timeline:
   2020-10-13: |-
     Torchlight III
     Echtra Games
+  2020-11-10: |-
+    Assassin's Creed Valhalla
+    Ubisoft Montreal
+  2021-10-07: |-
+    Far Cry 6
+    Ubisoft Toronto
   2021-10-28: |-
     Age of Empires IV
     Relic Entertainment / World's Edge
@@ -649,6 +750,12 @@ timeline:
   2023-09-27: |-
     Counter-Strike 2
     Valve
+  2023-10-05: |-
+    Assassin's Creed Mirage
+    Ubisoft Bordeaux
+  2025-03-20: |-
+    Assassin's Creed Shadows
+    Ubisoft Quebec
   2025-05-15: |-
     Doom: The Dark Ages
     id Software
