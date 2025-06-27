@@ -59,10 +59,9 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
   d.raw(`fontname="${FONTS_SYSTEM}"`);
   d.raw(`fontsize="${FONT_SIZE}"`);
   d.raw('label="Universe"');
-  d.raw('layout="dot"');
   d.raw(`rankdir="TD"`);
   d.raw(`ranksep="0.1"`);
-  d.raw(`tooltip=""`);
+  d.raw(`tooltip=" "`);
 
   const TIME_BASE =
     options.baseUnit === "week"

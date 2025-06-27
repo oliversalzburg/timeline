@@ -52,7 +52,7 @@ lib: node_modules
 	npm exec -- tsc
 output: node_modules
 	@node build.js
-_site:
+_site: render-preview
 	@mkdir _site 2>/dev/null || true
 	@echo "Generating '_site/index.html'..."
 	node build-site.js > _site/index.html

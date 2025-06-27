@@ -80,7 +80,7 @@ const finalEntryCount = finalTimelines.reduce(
 );
 process.stderr.write(`  Universe has ${finalEntryCount} entries.\n`);
 
-const PREVIEW = true;
+const PREVIEW = false;
 const CONFIG_QUALITY_PREVIEW = {
   baseUnit: "week",
   preview: true,
