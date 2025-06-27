@@ -26,7 +26,19 @@ test: node_modules
 
 universe: lib output
 	node examples/universe.js > timelines/.universe.gv
-	@echo "Rendering SVG image. This can take several minutes! Please wait..."
+
+render-smoke: universe
+	@echo "Trying to render ANY visible SVG image with dot. This shouldn't take long..."
+	dot -Gnslimit=0.1 -Gnslimit1=0.1 -Gsplines=none -O -Tsvg timelines/.universe.gv
+	@echo "SVG image rendered successfully."
+
+render-preview: universe
+	@echo "Rendering preview SVG image with dot. This can take several minutes! Please wait..."
+	dot -Gnslimit=1 -Gnslimit1=1 -Gsplines=line -O -Tsvg timelines/.universe.gv
+	@echo "SVG image rendered successfully."
+
+render-hq: universe
+	@echo "Rendering HQ SVG image with dot. This can take from several minutes up to hours! Please wait..."
 	dot -v5 -O -Tsvg timelines/.universe.gv
 	@echo "SVG image rendered successfully."
 
@@ -40,7 +52,7 @@ lib: node_modules
 	npm exec -- tsc
 output: node_modules
 	@node build.js
-_site: universe
+_site:
 	@mkdir _site 2>/dev/null || true
 	@echo "Generating '_site/index.html'..."
 	node build-site.js > _site/index.html

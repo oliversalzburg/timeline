@@ -12,6 +12,7 @@ export interface RendererOptions {
   dateRenderer: (date: number) => string;
   now: number;
   origin: number;
+  preview: boolean;
   scale: "linear" | "logarithmic";
 }
 
@@ -32,10 +33,6 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
       a - b !== 0 ? a - b : aentry.title.localeCompare(bentry.title),
     );
 
-  //const metrics = analyze(timeline);
-  //process.stderr.write(JSON.stringify(metrics, undefined, 2) + "\n");
-  //const timeMaps = timelines.map(t => new Map(t.records));
-
   const palettePen = hslPalette(timelines.length, 0, 0.4, 0.6);
   const paletteFill = hslPalette(timelines.length, 0, 0.4, 0.9);
   const colors = new Map(
@@ -50,29 +47,30 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
 
   const d = dot();
 
-  d.raw("digraph {");
+  d.raw("digraph universe {");
   const FONT_COLOR = "#000000";
   const FONT_SIZE = 12;
   //const FONT_NODES = "Simple Plan";
   //const FONT_EDGES = "Master Photograph";
   d.raw(`node [fontcolor="${FONT_COLOR}"; fontname="${FONTS_SYSTEM}"; fontsize="${FONT_SIZE}";]`);
   d.raw(`edge [fontcolor="${FONT_COLOR}"; fontname="${FONTS_SYSTEM}"; fontsize="${FONT_SIZE}";]`);
-  d.raw('comment=""');
+  d.raw('comment="The Universe"');
   d.raw(`fontcolor="${FONT_COLOR}"`);
   d.raw(`fontname="${FONTS_SYSTEM}"`);
   d.raw(`fontsize="${FONT_SIZE}"`);
-  d.raw('label=""');
+  d.raw('label="Universe"');
   d.raw('layout="dot"');
   d.raw(`rankdir="TD"`);
+  d.raw(`ranksep="0.1"`);
   d.raw(`tooltip=""`);
 
   const TIME_BASE =
-    (options.baseUnit === "week"
+    options.baseUnit === "week"
       ? MILLISECONDS.ONE_WEEK
       : options.baseUnit === "month"
         ? MILLISECONDS.ONE_MONTH
-        : MILLISECONDS.ONE_DAY) - 1;
-  const TIME_SCALE = 10 / TIME_BASE;
+        : MILLISECONDS.ONE_DAY;
+  const TIME_SCALE = 1 / TIME_BASE;
 
   const now = options?.now ?? Date.now();
   const origin = options?.origin ?? timestampsUnique[0];
@@ -141,7 +139,7 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
         ),
         penwidth: penWidth,
         shape: 0 < merges ? "ellipse" : "box",
-        style: 0 < merges ? "wedged" : "filled,rounded",
+        style: 0 < merges ? "wedged" : `filled${options.preview !== true ? ",rounded" : ""}`,
         tooltip: `${formatMilliseconds(timePassedSinceStart)} since ${originString}\\n${formatMilliseconds(timePassedSinceThen)} ago`,
       });
 
@@ -156,13 +154,16 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
     d.raw("}");
   }
 
-  // Link items in timelines together.
+  // Link items in their individual timelines together.
   let timePassed = 0;
   for (const timeline of timelines) {
     const color = colors.get(timeline)?.pen ?? timeline.meta?.color;
 
+    // The timestamp we looked at during the last iteration.
     let previousTimestamp: number | undefined;
+    // The entries at the previous timestamp.
     let previousEntries = new Array<TimelineEntry>();
+    // How many milliseconds passed since the previous timestamp.
     let timePassed = 0;
     nextEventIndex = 0;
 
@@ -185,19 +186,24 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
         }
 
         for (const previousEntry of previousEntries) {
-          const linkLength = clamp(
-            10 < timePassed * TIME_SCALE && options?.scale === "logarithmic"
-              ? Math.log(timePassed * TIME_SCALE)
-              : timePassed * TIME_SCALE,
-            0.01,
-            1000,
-          );
+          const linkLength =
+            timePassed < TIME_BASE
+              ? // Derived from minimum value for ranksep.
+                0.02
+              : clamp(
+                  options?.scale === "logarithmic"
+                    ? Math.log(timePassed * TIME_SCALE * 10)
+                    : timePassed * TIME_SCALE,
+                  0.02,
+                  // Likely to just introduce rasterization issues, if larger.
+                  1000,
+                );
 
           d.link(previousEntry.title, entry.title, {
             color,
             minlen: linkLength,
             penwidth: 0.5,
-            style: timeline.meta?.link !== false ? "solid" : "invis",
+            style: options.preview !== true && timeline.meta?.link !== false ? "solid" : "invis",
             //tooltip: `${formatMilliseconds(timePassed)} (${linkLength}: ${timePassed} * ${TIME_SCALE} = ${timePassed * TIME_SCALE})`,
           });
         }
@@ -237,21 +243,33 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
       }
 
       for (const previousEntry of allPrevious) {
-        const linkLength = clamp(
-          10 < timePassed * TIME_SCALE && options?.scale === "logarithmic"
-            ? Math.log(timePassed * TIME_SCALE)
-            : timePassed * TIME_SCALE,
-          0.01,
-          1000,
-        );
+        // This link length is ultimately the strictest control on the distance between events.
+        // If we have a "time base" of 1 day, we want all events that appear within the same day,
+        // to be grouped in one row. For simplicity, we focus on time distances larger than 24 hours,
+        // instead of strict date changes.
+        // For any distance smaller than 1 day, we want to ensure a link length < 1, to keep the node
+        // on the same row as the previous one.
+        // For any distances of 1 day or longer, we want to ensure the link length is also >= 1.
+        const linkLength =
+          timePassed < TIME_BASE
+            ? // Derived from minimum value for ranksep.
+              0.02
+            : clamp(
+                options?.scale === "logarithmic"
+                  ? Math.log(timePassed * TIME_SCALE * 10)
+                  : timePassed * TIME_SCALE,
+                0.02,
+                // Likely to just introduce rasterization issues, if larger.
+                1000,
+              );
 
         // Draw force-directing link between merged timeline entries.
         // This forces all entries into linear global order.
         //d.link(previous[1].title, entry.title, { minlen:0.5, style: "dashed", weight:0.5 });
         d.link(previousEntry.title, entry.title, {
           minlen: linkLength,
-          style: "dashed",
-          //tooltip: `${formatMilliseconds(timePassed)} (${linkLength}: ${timePassed} * ${TIME_SCALE} = ${timePassed * TIME_SCALE})`,
+          style: options.preview ? "dashed" : "invis",
+          tooltip: `${formatMilliseconds(timePassed)} (${linkLength}: ${timePassed} * ${TIME_SCALE} = ${timePassed * TIME_SCALE})`,
         });
       }
     }

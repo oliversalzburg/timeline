@@ -79,15 +79,27 @@ const finalEntryCount = finalTimelines.reduce(
   0,
 );
 process.stderr.write(`  Universe has ${finalEntryCount} entries.\n`);
-const dotGraph = render(finalTimelines, {
+
+const PREVIEW = true;
+const CONFIG_QUALITY_PREVIEW = {
+  baseUnit: "week",
+  preview: true,
+  scale: "logarithmic",
+};
+const CONFIG_QUALITY_ULTRA = {
   baseUnit: "day",
+  preview: false,
+  scale: "linear",
+};
+
+const dotGraph = render(finalTimelines, {
   dateRenderer: date => {
     const _ = new Date(date);
     return `${["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"][_.getDay()]}, ${_.getDate().toFixed(0).padStart(2, "0")}.${(_.getMonth() + 1).toFixed(0).padStart(2, "0")}.${_.getFullYear()}`;
   },
   now: NOW,
   origin: new Date(1983, 11, 25, 0, 0, 0, 0).valueOf(),
-  scale: "logarithmic",
+  ...(PREVIEW ? CONFIG_QUALITY_PREVIEW : CONFIG_QUALITY_ULTRA),
 });
 
 // Write DOT graph to stdout.
