@@ -32,3 +32,29 @@ export const random: TimelineDocument = Object.freeze({
     "1987-04-09 23:13:18": "545008398000",
   },
 });
+
+export const history: TimelineDocument = Object.freeze({
+  timeline: {
+    "99-12-31": "Start of the 2nd Century",
+    "199-12-31": "Start of the 3rd Century",
+    "299-12-31": "Start of the 4th Century",
+    "399-12-31": "Start of the 5th Century",
+    "499-12-31": "Start of the 6th Century",
+    "599-12-31": "Start of the 7th Century",
+    "699-12-31": "Start of the 8th Century",
+    "799-12-31": "Start of the 9th Century",
+    "899-12-31": "Start of the 10th Century",
+    "999-12-31": "Start of the 11th Century",
+    "1099-12-31": "Start of the 12th Century",
+    "1199-12-31": "Start of the 13th Century",
+    "1299-12-31": "Start of the 14th Century",
+    "1399-12-31": "Start of the 15th Century",
+    "1499-12-31": "Start of the 16th Century",
+    "1599-12-31": "Start of the 17th Century",
+    "1699-12-31": "Start of the 18th Century",
+    "1799-12-31": "Start of the 19th Century",
+    "1899-12-31": "Start of the 20th Century",
+    "1999-12-31": "Start of the 21st Century",
+    "2099-12-31": "Start of the 22nd Century",
+  },
+});

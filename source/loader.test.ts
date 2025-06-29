@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import { describe, it } from "mocha";
-import { random, withConflict } from "./fixtures/documents.js";
+import { history, random, withConflict } from "./fixtures/documents.js";
 import { load } from "./loader.js";
 import type { TimelineDocument } from "./types.js";
 
@@ -43,8 +43,18 @@ describe("Loader", () => {
     }
   });
 
-  it("should produce an ordered list of records", () => {
+  it("should produce an ordered list of records (fixture 1)", () => {
     const document: TimelineDocument = { ...random };
+    const timeline = load(document);
+    let previousTimestamp = timeline.records[0][0];
+    for (let recordIndex = 1; recordIndex < timeline.records.length; ++recordIndex) {
+      expect(timeline.records[recordIndex][0]).to.be.greaterThanOrEqual(previousTimestamp);
+      previousTimestamp = timeline.records[recordIndex][0];
+    }
+  });
+
+  it("should produce an ordered list of records (fixture 3)", () => {
+    const document: TimelineDocument = { ...history };
     const timeline = load(document);
     let previousTimestamp = timeline.records[0][0];
     for (let recordIndex = 1; recordIndex < timeline.records.length; ++recordIndex) {
