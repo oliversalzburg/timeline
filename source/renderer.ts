@@ -268,7 +268,7 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
         d.link(previousEntry.title, entry.title, {
           minlen: linkLength,
           style: options.preview ? "dashed" : "invis",
-          tooltip: `${formatMilliseconds(timePassed)} (${linkLength}: ${timePassed} * ${TIME_SCALE} = ${timePassed * TIME_SCALE})`,
+          //tooltip: `${formatMilliseconds(timePassed)} (${linkLength}: ${timePassed} * ${TIME_SCALE} = ${timePassed * TIME_SCALE})`,
         });
       }
     }
