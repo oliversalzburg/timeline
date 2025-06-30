@@ -24,17 +24,20 @@ test: node_modules
 	npm exec -- tsc
 	NODE_OPTIONS=--enable-source-maps TZ=UTC npm exec -- c8 --reporter=html-spa mocha lib/*.test.js
 
+universe-preview: lib output
+	node --enable-source-maps examples/universe.js --preview $(shell ls timelines/* ~/timelines/*.yml) > timelines/.universe.gv
+
 universe: lib output
 	node examples/universe.js > timelines/.universe.gv
 
-render-smoke: universe
+render-smoke: universe-preview
 	@echo "Trying to render ANY visible SVG image with dot. This shouldn't take long..."
 	dot -Gnslimit=0.1 -Gnslimit1=0.1 -Gsplines=none -O -Tsvg timelines/.universe.gv
 	@echo "SVG image rendered successfully."
 
-render-preview: universe
+render-preview: universe-preview
 	@echo "Rendering preview SVG image with dot. This can take several minutes! Please wait..."
-	dot -Gnslimit=1 -Gnslimit1=1 -Gsplines=line -O -Tsvg timelines/.universe.gv
+	dot -Gnslimit=1 -Gnslimit1=1 -Gsplines=ortho -O -Tsvg timelines/.universe.gv
 	@echo "SVG image rendered successfully."
 
 render-hq: universe

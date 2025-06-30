@@ -12,13 +12,30 @@ import { render } from "../lib/renderer.js";
 
 const NOW = Date.now();
 
+// Parse potential switches.
+const args = process.argv
+  .slice(2)
+  .filter(_ => _.startsWith("--"))
+  .reduce((args, _) => {
+    args[_.substring(2)] = true;
+    return args;
+  }, {});
+
 // Read raw data from input files.
 const files =
   2 < process.argv.length
-    ? [process.argv[2]]
+    ? process.argv.slice(2).filter(_ => !_.startsWith("--"))
     : readdirSync("timelines/")
         .filter(_ => _.endsWith(".yml"))
         .map(_ => `timelines/${_}`);
+
+if (files.length === 0) {
+  process.stderr.write("No files provided.\n");
+  process.exit(0);
+}
+
+process.stderr.write(`Processing:\n${files.map(_ => `  ${_}\n`).join("")}`);
+
 const rawData = new Map(files.map(_ => [_, readFileSync(_, "utf-8")]));
 
 // Parse raw data with appropriate parser.
@@ -72,7 +89,7 @@ const finalTimelines = [
   ...data
     .entries()
     .filter(([filename]) => !basename(filename).startsWith("_"))
-    .map(([_, timeline]) => uniquify(sort(timeline /*add(timeline, [NOW, { title: "Now" }])*/))),
+    .map(([_, timeline]) => uniquify(sort(timeline))),
 ];
 const finalEntryCount = finalTimelines.reduce(
   (previous, timeline) => previous + timeline.records.length,
@@ -80,10 +97,10 @@ const finalEntryCount = finalTimelines.reduce(
 );
 process.stderr.write(`  Universe has ${finalEntryCount} entries.\n`);
 
-const PREVIEW = false;
+const PREVIEW = Boolean(args.preview);
 const CONFIG_QUALITY_PREVIEW = {
   baseUnit: "week",
-  preview: true,
+  preview: false,
   scale: "logarithmic",
 };
 const CONFIG_QUALITY_ULTRA = {
