@@ -47,20 +47,20 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
 
   const d = dot();
 
-  d.raw("digraph universe {");
+  d.raw("digraph timeline {");
   const FONT_COLOR = "#000000";
   const FONT_SIZE = 12;
   //const FONT_NODES = "Simple Plan";
   //const FONT_EDGES = "Master Photograph";
   d.raw(`node [fontcolor="${FONT_COLOR}"; fontname="${FONTS_SYSTEM}"; fontsize="${FONT_SIZE}";]`);
   d.raw(`edge [fontcolor="${FONT_COLOR}"; fontname="${FONTS_SYSTEM}"; fontsize="${FONT_SIZE}";]`);
-  d.raw('comment="The Universe"');
+  d.raw('comment=" "');
   d.raw(`fontcolor="${FONT_COLOR}"`);
   d.raw(`fontname="${FONTS_SYSTEM}"`);
   d.raw(`fontsize="${FONT_SIZE}"`);
-  d.raw('label="Universe"');
+  d.raw('label=" "');
   d.raw(`rankdir="TD"`);
-  d.raw(`ranksep="0.1"`);
+  //d.raw(`ranksep="0.1"`);
   d.raw(`tooltip=" "`);
 
   const TIME_BASE =
