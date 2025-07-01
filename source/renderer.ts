@@ -62,7 +62,7 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
   d.raw(`fontsize="${FONT_SIZE}"`);
   d.raw('label=" "');
   d.raw(`rankdir="TD"`);
-  //d.raw(`ranksep="0.1"`);
+  d.raw(`ranksep="0.5"`);
   d.raw(`tooltip=" "`);
 
   const TIME_BASE =
@@ -107,17 +107,17 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
       d.raw(`style="dashed,rounded"`);
     }
 
-    const colorsConfigured = new Set<string>();
-    const colorsGeneratedFill = new Set<string>();
-    const colorsGeneratedPen = new Set<string>();
-    const prefixes = new Set<string>();
     let timestampHasRoots = false;
-    let merges = -1;
 
     while (
       nextEventIndex < timelineGlobal.length &&
       timelineGlobal[nextEventIndex][0] === timestamp
     ) {
+      const colorsConfigured = new Set<string>();
+      const colorsGeneratedFill = new Set<string>();
+      const colorsGeneratedPen = new Set<string>();
+      const prefixes = new Set<string>();
+      let merges = -1;
       let [timestampActual, timeline, entry] = timelineGlobal[nextEventIndex];
       do {
         /**
@@ -158,8 +158,8 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
         color: 0 < colorsConfigured.size ? [...colorsConfigured][0] : [...colorsGeneratedPen][0],
         fillcolor:
           0 < colorsConfigured.size
-            ? [...colorsConfigured].join(",")
-            : [...colorsGeneratedFill].join(","),
+            ? [...colorsConfigured].join(":")
+            : [...colorsGeneratedFill].join(":"),
         label: makeHtmlString(
           `${(0 < prefixes.size ? `${[...prefixes].join("")} ` : "") + entry.title}\\n${dateString}`,
         ),
