@@ -7,7 +7,7 @@ build: lib output _site
 clean:
 	rm --force --recursive _site lib node_modules output tsconfig.tsbuildinfo
 
-docs: _site
+docs: render-hq _site
 
 git-hook:
 	echo "make pretty" > .git/hooks/pre-commit; chmod +x .git/hooks/pre-commit
@@ -55,7 +55,7 @@ lib: node_modules
 	npm exec -- tsc
 output: node_modules
 	@node build.js
-_site: render-preview
+_site: render-hq
 	@mkdir _site 2>/dev/null || true
 	@echo "Generating '_site/index.html'..."
 	node build-site.js > _site/index.html

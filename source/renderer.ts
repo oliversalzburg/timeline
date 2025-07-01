@@ -156,16 +156,13 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
         : new Date(timestamp).toDateString();
       d.node(entry.title, {
         color: 0 < colorsConfigured.size ? [...colorsConfigured][0] : [...colorsGeneratedPen][0],
-        fillcolor:
-          0 < colorsConfigured.size
-            ? [...colorsConfigured].join(":")
-            : [...colorsGeneratedFill].join(":"),
+        fillcolor: [...colorsGeneratedFill].join(":"),
         label: makeHtmlString(
           `${(0 < prefixes.size ? `${[...prefixes].join("")} ` : "") + entry.title}\\n${dateString}`,
         ),
         penwidth: timestampHasRoots ? 3 : 1,
         shape: 0 < merges ? "ellipse" : "box",
-        style: 0 < merges ? "wedged" : `filled${options.preview !== true ? ",rounded" : ""}`,
+        style: `filled${merges <= 0 ? ",rounded" : ""}`,
         tooltip: `${formatMilliseconds(timePassedSinceOrigin)} since ${originString}\\n${formatMilliseconds(timePassedSinceThen)} ago`,
       });
     }
@@ -181,7 +178,7 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
   // Link items in their individual timelines together.
   let timePassed = 0;
   for (const timeline of timelines) {
-    const color = colors.get(timeline)?.pen ?? timeline.meta?.color;
+    const color = timeline.meta?.color ?? mustExist(colors.get(timeline)).pen;
 
     // The timestamp we looked at during the last iteration.
     let previousTimestamp: number | undefined;
