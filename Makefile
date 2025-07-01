@@ -2,12 +2,12 @@
 
 default: build
 
-build: lib output _site
+build: lib output
 
 clean:
 	rm --force --recursive _site lib node_modules output tsconfig.tsbuildinfo
 
-docs: render-hq _site
+docs: _site
 
 git-hook:
 	echo "make pretty" > .git/hooks/pre-commit; chmod +x .git/hooks/pre-commit
