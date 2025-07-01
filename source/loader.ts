@@ -26,8 +26,14 @@ export const load = (document: TimelineDocument): Timeline => {
   for (const [timestampRaw, entry] of Object.entries(document.timeline)) {
     const subjects = Array.isArray(entry) ? entry : [entry];
     for (const entryElement of subjects) {
+      const timestampAsNumber = Number.parseInt(timestampRaw, 10);
+      const timestampBackToString = timestampAsNumber.toFixed(0);
+      const isUnixTimestamp =
+        timestampRaw === timestampBackToString &&
+        (timestampAsNumber < 199 || 2999 < timestampAsNumber);
+
       timelineEntries.push([
-        new Date(timestampRaw).valueOf(),
+        isUnixTimestamp ? timestampAsNumber : Date.parse(timestampRaw),
         ["number", "string"].includes(typeof entryElement)
           ? { title: entryElement.toString() }
           : voidInvalidEntry(entryElement),
