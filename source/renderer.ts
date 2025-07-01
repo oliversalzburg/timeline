@@ -1,3 +1,5 @@
+import { isNil, mustExist } from "@oliversalzburg/js-utils/data/nil.js";
+import { InvalidOperationError } from "@oliversalzburg/js-utils/errors/InvalidOperationError.js";
 import { formatMilliseconds } from "@oliversalzburg/js-utils/format/milliseconds.js";
 import { hslPalette } from "@oliversalzburg/js-utils/graphics/palette.js";
 import { clamp } from "@oliversalzburg/js-utils/math/core.js";
@@ -79,14 +81,19 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
   let previousYear: number | undefined;
   const firstNodeAlreadySeen = new Set<Timeline>();
   let nextEventIndex = 0;
+
+  /**
+   * We iterate over each unique timestamp that exists globally.
+   * For each unique timestamp, we want to look at all global events that
+   * exist at this timestamp.
+   */
   for (const timestamp of timestampsUnique) {
+    // Convert the timestamp to a Date for API features.
     const date = new Date(timestamp);
+    // We need the current year to support the "cluster years" feature.
     const currentYear = date.getFullYear();
 
-    // Force at least 1ms gap between events, regardless of input.
-    //timePassed = previous ? Math.max(1, timestamp - previous[0]) : 0;
-
-    const timePassedSinceStart = timestamp - origin;
+    const timePassedSinceOrigin = timestamp - origin;
     const timePassedSinceThen = now - timestamp;
 
     if (options.clusterYears && currentYear !== previousYear) {
@@ -100,49 +107,67 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
       d.raw(`style="dashed,rounded"`);
     }
 
+    const colorsConfigured = new Set<string>();
+    const colorsGeneratedFill = new Set<string>();
+    const colorsGeneratedPen = new Set<string>();
+    const prefixes = new Set<string>();
+    let timestampHasRoots = false;
+    let merges = -1;
+
     while (
       nextEventIndex < timelineGlobal.length &&
       timelineGlobal[nextEventIndex][0] === timestamp
     ) {
-      const [, timeline, entry] = timelineGlobal[nextEventIndex++];
-
-      let color = colors.get(timeline)?.pen ?? timeline.meta?.color ?? "";
-      let colorsFill = colors.get(timeline)?.fill ?? timeline.meta?.color ?? "";
-      let prefixes = timeline.meta?.prefix ?? "";
-      let merges = 0;
-      if (nextEventIndex < timelineGlobal.length) {
-        let [, timelineNext, entryNext] = timelineGlobal[nextEventIndex];
-        while (nextEventIndex < timelineGlobal.length && entryNext.title === entry.title) {
-          ++merges;
-          color ??= timelineNext.meta?.color ?? color;
-          colorsFill =
-            timelineNext.meta?.link !== false && timelineNext.meta?.color
-              ? colorsFill === ""
-                ? (timelineNext.meta?.color ?? "")
-                : `${colorsFill}:${timelineNext.meta.color}`
-              : colorsFill;
-          prefixes += timelineNext.meta?.prefix ?? "";
-          [, timelineNext, entryNext] = timelineGlobal[++nextEventIndex];
+      let [timestampActual, timeline, entry] = timelineGlobal[nextEventIndex];
+      do {
+        /**
+         * We know that `timelineGlobal[nextEventIndex]` points to an event at `timestamp`,
+         * because we handle _all_ timestamps in an ordered series, and we always consume
+         * all events from the previous timestamp.
+         */
+        [timestampActual, timeline, entry] = timelineGlobal[nextEventIndex];
+        if (timestamp !== timestampActual) {
+          throw new InvalidOperationError("This should not happen :(");
         }
-      }
 
-      const penWidth = firstNodeAlreadySeen.has(timeline) ? 1 : 3;
+        timestampHasRoots = timestampHasRoots || !firstNodeAlreadySeen.has(timeline);
+        firstNodeAlreadySeen.add(timeline);
+
+        colorsGeneratedFill.add(mustExist(colors.get(timeline)).fill);
+        colorsGeneratedPen.add(mustExist(colors.get(timeline)).pen);
+
+        if (!isNil(timeline.meta.color)) {
+          colorsConfigured.add(timeline.meta.color);
+        }
+        if (!isNil(timeline.meta.prefix)) {
+          prefixes.add(timeline.meta.prefix);
+        }
+
+        ++merges;
+        ++nextEventIndex;
+      } while (
+        nextEventIndex < timelineGlobal.length - 1 &&
+        timelineGlobal[nextEventIndex][0] === timestamp &&
+        timelineGlobal[nextEventIndex][2].title === entry.title
+      );
+
       const dateString = options?.dateRenderer
         ? options.dateRenderer(timestamp)
         : new Date(timestamp).toDateString();
       d.node(entry.title, {
-        color,
-        fillcolor: colorsFill !== "" ? colorsFill : color,
+        color: 0 < colorsConfigured.size ? [...colorsConfigured][0] : [...colorsGeneratedPen][0],
+        fillcolor:
+          0 < colorsConfigured.size
+            ? [...colorsConfigured].join(",")
+            : [...colorsGeneratedFill].join(","),
         label: makeHtmlString(
-          `${(prefixes !== "" ? `${prefixes} ` : "") + entry.title}\\n${dateString}`,
+          `${(0 < prefixes.size ? `${[...prefixes].join("")} ` : "") + entry.title}\\n${dateString}`,
         ),
-        penwidth: penWidth,
+        penwidth: timestampHasRoots ? 3 : 1,
         shape: 0 < merges ? "ellipse" : "box",
         style: 0 < merges ? "wedged" : `filled${options.preview !== true ? ",rounded" : ""}`,
-        tooltip: `${formatMilliseconds(timePassedSinceStart)} since ${originString}\\n${formatMilliseconds(timePassedSinceThen)} ago`,
+        tooltip: `${formatMilliseconds(timePassedSinceOrigin)} since ${originString}\\n${formatMilliseconds(timePassedSinceThen)} ago`,
       });
-
-      firstNodeAlreadySeen.add(timeline);
     }
 
     previousYear = date.getFullYear();

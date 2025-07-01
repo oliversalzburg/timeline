@@ -1,19 +1,6 @@
 import type { TimelineDocument } from "../types.js";
 
 /**
- * This timeline is sneaky.
- * It provides two unique values in the input, that map to the exact same timestamp.
- * This timeline is ORDERED.
- */
-export const withConflict: TimelineDocument = Object.freeze({
-  timeline: {
-    "1999-12-31 24:00:00": 946684800000,
-    "2000": 946684800000,
-    "2025-06-03 13:51:30": 1748958690000,
-  },
-});
-
-/**
  * The timestamps in this timeline were randomly generated, using `contrib/random-timestamp.js`.
  */
 export const random: TimelineDocument = Object.freeze({
@@ -30,6 +17,19 @@ export const random: TimelineDocument = Object.freeze({
     "2021-07-26 18:49:50": "1627325390000",
     "2018-11-12 10:54:40": "1542020080000",
     "1987-04-09 23:13:18": "545008398000",
+  },
+});
+
+/**
+ * This timeline is sneaky.
+ * It provides two unique values in the input, that map to the exact same timestamp.
+ * This timeline is ORDERED.
+ */
+export const withConflict: TimelineDocument = Object.freeze({
+  timeline: {
+    "1999-12-31 24:00:00": 946684800000,
+    "2000": 946684800000,
+    "2025-06-03 13:51:30": 1748958690000,
   },
 });
 
@@ -57,5 +57,16 @@ export const history: TimelineDocument = Object.freeze({
     "1899-12-31": "Start of the 20th Century",
     "1999-12-31": "Start of the 21st Century",
     "2099-12-31": "Start of the 22nd Century",
+  },
+});
+
+export const beforeUnix: TimelineDocument = Object.freeze({
+  timeline: {
+    "0000-01-01T00:00:00Z": "Start of the 1st Century",
+    "0099-12-31T24:00:00Z": "Start of the 2nd Century",
+    "1899-12-31": "Start of the 20th Century",
+    "0": "Start of the UNIX Epoch",
+    "-219373200000": "Negative Epoch",
+    "411778800000": "Positive Epoch",
   },
 });
