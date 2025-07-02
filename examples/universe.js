@@ -100,7 +100,7 @@ process.stderr.write(`  Universe has ${finalEntryCount} entries.\n`);
 const PREVIEW = Boolean(args.preview);
 const CONFIG_QUALITY_PREVIEW = {
   baseUnit: "week",
-  preview: false,
+  preview: true,
   scale: "logarithmic",
 };
 const CONFIG_QUALITY_ULTRA = {

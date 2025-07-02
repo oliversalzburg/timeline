@@ -37,11 +37,11 @@ render-smoke: universe-preview
 
 render-preview: universe-preview
 	@echo "Rendering preview SVG image with dot. This can take several minutes! Please wait..."
-	dot -Gnslimit=1 -Gnslimit1=1 -Gsplines=ortho -O -Tsvg timelines/.universe.gv
+	dot -v -O -Tsvg timelines/.universe.gv
 	@echo "SVG image rendered successfully."
 
 render-hq: universe
-	@echo "Rendering HQ SVG image with dot. This can take from several minutes up to hours! Please wait..."
+	@echo "Rendering HQ SVG image with dot. This can take from several hours up to days! You are not supposed to run this on your local machine! Please wait..."
 	dot -v5 -O -Tsvg timelines/.universe.gv
 	@echo "SVG image rendered successfully."
 
@@ -55,7 +55,7 @@ lib: node_modules
 	npm exec -- tsc
 output: node_modules
 	@node build.js
-_site: render-hq
+_site: render-preview
 	@mkdir _site 2>/dev/null || true
 	@echo "Generating '_site/index.html'..."
 	node build-site.js > _site/index.html

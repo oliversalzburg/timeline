@@ -194,14 +194,16 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
       }
 
       timePassed = previousTimestamp ? Math.max(1, timestamp - previousTimestamp) : 0;
-      const previousEntriesNext = new Array<TimelineEntry>();
+
+      // We need to remember these for the next timestamp iteration.
+      const processedEntries = new Array<TimelineEntry>();
 
       while (
         nextEventIndex < timeline.records.length &&
         timeline.records[nextEventIndex][0] === timestamp
       ) {
         const [, entry] = timeline.records[nextEventIndex++];
-        previousEntriesNext.push(entry);
+        processedEntries.push(entry);
         if (0 === previousEntries.length) {
           continue;
         }
@@ -224,14 +226,14 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
             color,
             minlen: options.preview !== true ? linkLength : undefined,
             penwidth: 0.5,
-            style: options.preview !== true && timeline.meta?.link !== false ? "solid" : "invis",
+            style: timeline.meta?.link !== false ? "solid" : "invis",
             //tooltip: `${formatMilliseconds(timePassed)} (${linkLength}: ${timePassed} * ${TIME_SCALE} = ${timePassed * TIME_SCALE})`,
           });
         }
       }
 
       previousTimestamp = timestamp;
-      previousEntries = previousEntriesNext;
+      previousEntries = processedEntries;
     }
   }
 
