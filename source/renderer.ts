@@ -12,6 +12,7 @@ export interface RendererOptions {
   baseUnit: "day" | "week" | "month";
   clusterYears: boolean;
   dateRenderer: (date: number) => string;
+  debug: boolean;
   now: number;
   origin: number;
   preview: boolean;
@@ -299,7 +300,7 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
         //d.link(previous[1].title, entry.title, { minlen:0.5, style: "dashed", weight:0.5 });
         d.link(previousEntry.title, entry.title, {
           minlen: options.preview !== true ? linkLength : undefined,
-          style: options.preview ? "dashed" : "invis",
+          style: options.debug ? "dashed" : "invis",
           //tooltip: `${formatMilliseconds(timePassed)} (${linkLength}: ${timePassed} * ${TIME_SCALE} = ${timePassed * TIME_SCALE})`,
         });
       }
