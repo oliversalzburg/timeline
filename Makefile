@@ -28,7 +28,7 @@ universe-preview: lib output
 	node --enable-source-maps examples/universe.js --preview $(shell ls timelines/* ~/timelines/*.yml) > timelines/.universe.gv
 
 universe: lib output
-	node examples/universe.js > timelines/.universe.gv
+	node examples/universe.js $(shell ls timelines/* ~/timelines/*.yml) > timelines/.universe.gv
 
 render-smoke: universe-preview
 	@echo "Trying to render ANY visible SVG image with dot. This shouldn't take long..."
