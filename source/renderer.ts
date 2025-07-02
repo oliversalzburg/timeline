@@ -237,12 +237,20 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
 
   // Link up all entries in a single time chain.
   let previousTimestamp: number | undefined;
-  let allPrevious = new Array<TimelineEntry>();
+  let previousTimestampEntries = new Array<TimelineEntry>();
+  let remainder = 0;
   timePassed = 0;
   nextEventIndex = 0;
   for (const timestamp of timestampsUnique) {
     timePassed = previousTimestamp ? Math.max(1, timestamp - previousTimestamp) : 0;
-    const nextPrevious = new Array<TimelineEntry>();
+    if (TIME_BASE < remainder + timePassed) {
+      timePassed += remainder;
+      remainder = timePassed % TIME_BASE;
+      timePassed -= remainder;
+    }
+
+    // We need to remember these for the next timestamp iteration.
+    const processedEntries = new Array<TimelineEntry>();
 
     while (
       nextEventIndex < timelineGlobal.length &&
@@ -250,40 +258,40 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
     ) {
       const [, , entry] = timelineGlobal[nextEventIndex++];
 
-      if (nextPrevious.find(_ => _.title === entry.title)) {
+      if (processedEntries.find(_ => _.title === entry.title)) {
         process.stderr.write(
           `+ Events in multiple timelines share time and title. '${entry.title}'\n  Items will be merged automatically.\n`,
         );
         continue;
       }
 
-      nextPrevious.push(entry);
+      processedEntries.push(entry);
 
-      if (0 === allPrevious.length) {
+      if (0 === previousTimestampEntries.length) {
         continue;
       }
 
-      for (const previousEntry of allPrevious) {
-        // This link length is ultimately the strictest control on the distance between events.
-        // If we have a "time base" of 1 day, we want all events that appear within the same day,
-        // to be grouped in one row. For simplicity, we focus on time distances larger than 24 hours,
-        // instead of strict date changes.
-        // For any distance smaller than 1 day, we want to ensure a link length < 1, to keep the node
-        // on the same row as the previous one.
-        // For any distances of 1 day or longer, we want to ensure the link length is also >= 1.
-        const linkLength =
-          timePassed < TIME_BASE
-            ? // Derived from minimum value for ranksep.
-              0.02
-            : clamp(
-                options?.scale === "logarithmic"
-                  ? Math.log(timePassed * TIME_SCALE * 10)
-                  : timePassed * TIME_SCALE,
-                0.02,
-                // Likely to just introduce rasterization issues, if larger.
-                1000,
-              );
+      // This link length is ultimately the strictest control on the distance between events.
+      // If we have a "time base" of 1 day, we want all events that appear within the same day,
+      // to be grouped in one row. For simplicity, we focus on time distances larger than 24 hours,
+      // instead of strict date changes.
+      // For any distance smaller than 1 day, we want to ensure a link length < 1, to keep the node
+      // on the same row as the previous one.
+      // For any distances of 1 day or longer, we want to ensure the link length is also >= 1.
+      const linkLength = Math.trunc(
+        timePassed < TIME_BASE
+          ? 0
+          : clamp(
+              options?.scale === "logarithmic"
+                ? Math.log(timePassed * TIME_SCALE * 10)
+                : timePassed * TIME_SCALE,
+              0,
+              // Arbitrarily chosen as "sane" limit.
+              1000,
+            ),
+      );
 
+      for (const previousEntry of previousTimestampEntries) {
         // Draw force-directing link between merged timeline entries.
         // This forces all entries into linear global order.
         //d.link(previous[1].title, entry.title, { minlen:0.5, style: "dashed", weight:0.5 });
@@ -296,7 +304,7 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
     }
 
     previousTimestamp = timestamp;
-    allPrevious = nextPrevious;
+    previousTimestampEntries = processedEntries;
   }
 
   d.raw("}");
