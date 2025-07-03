@@ -2,6 +2,7 @@
 
 import { readdirSync, readFileSync } from "node:fs";
 import { basename } from "node:path";
+import { mustExist } from "@oliversalzburg/js-utils/data/nil.js";
 import { parse } from "yaml";
 import { analyze } from "../lib/analyzer.js";
 import { MILLISECONDS } from "../lib/constants.js";
@@ -10,16 +11,21 @@ import { load } from "../lib/loader.js";
 import { map, sort, uniquify } from "../lib/operator.js";
 import { render } from "../lib/renderer.js";
 
+/** @import {RendererOptions} from "../lib/renderer.js" */
+
 const NOW = Date.now();
 
 // Parse potential switches.
 const args = process.argv
   .slice(2)
   .filter(_ => _.startsWith("--"))
-  .reduce((args, _) => {
-    args[_.substring(2)] = true;
-    return args;
-  }, {});
+  .reduce(
+    (args, _) => {
+      args[_.substring(2)] = true;
+      return args;
+    },
+    /** @type {Record<string,boolean>} */ ({}),
+  );
 
 // Read raw data from input files.
 const files =
@@ -77,7 +83,7 @@ data.set("timelines/.decoration.nye", {
 });
 data.set(
   "timelines/mediacontrol-top1-singles.yml",
-  map(data.get("timelines/mediacontrol-top1-singles.yml"), record => [
+  map(mustExist(data.get("timelines/mediacontrol-top1-singles.yml")), record => [
     record[0],
     { title: record[1].title.split(" - ").reverse().join("\n") },
   ]),
@@ -98,11 +104,14 @@ const finalEntryCount = finalTimelines.reduce(
 process.stderr.write(`  Universe has ${finalEntryCount} entries.\n`);
 
 const PREVIEW = Boolean(args.preview);
+
+/** @type {Partial<RendererOptions>} */
 const CONFIG_QUALITY_PREVIEW = {
   baseUnit: "week",
   preview: true,
   scale: "logarithmic",
 };
+/** @type {Partial<RendererOptions>} */
 const CONFIG_QUALITY_ULTRA = {
   baseUnit: "day",
   preview: false,
