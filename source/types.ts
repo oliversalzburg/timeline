@@ -2,6 +2,7 @@ export interface TimelineDocument {
   color?: string;
   link?: boolean;
   prefix?: string;
+  rank?: number;
   timeline: TimelineFlexibleInput;
 }
 export interface TimelineFlexibleInput
@@ -15,6 +16,7 @@ export type Timeline = {
     color?: string;
     link?: boolean;
     prefix?: string;
+    rank?: number;
   };
   records: Array<TimelineRecord>;
 };

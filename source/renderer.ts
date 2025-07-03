@@ -117,6 +117,9 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
       const colorsConfigured = new Set<string>();
       const colorsGeneratedFill = new Set<string>();
       const colorsGeneratedPen = new Set<string>();
+      const colorsFill = new Set<string>();
+      let colorPen: string | undefined;
+      let colorPenRank = -1;
       const prefixes = new Set<string>();
       let merges = -1;
       let [timestampActual, timeline, entry] = timelineGlobal[nextEventIndex];
@@ -134,15 +137,25 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
         timestampHasRoots = timestampHasRoots || !firstNodeAlreadySeen.has(timeline);
         firstNodeAlreadySeen.add(timeline);
 
-        colorsGeneratedFill.add(mustExist(colors.get(timeline)).fill);
-        colorsGeneratedPen.add(mustExist(colors.get(timeline)).pen);
-
         if (!isNil(timeline.meta.color)) {
           colorsConfigured.add(timeline.meta.color);
+          colorsFill.add(timeline.meta.color);
+
+          // We can only have a single pen color.
+          // We pick the color from the timeline with the largest rank.
+          // For timelines with equal rank, the behavior is undefined.
+          if (colorPenRank < (timeline.meta.rank ?? 0)) {
+            colorPenRank = timeline.meta.rank ?? 0;
+            colorPen = timeline.meta.color;
+          }
         }
         if (!isNil(timeline.meta.prefix)) {
           prefixes.add(timeline.meta.prefix);
         }
+
+        colorsFill.add(mustExist(colors.get(timeline)).fill);
+        colorsGeneratedFill.add(mustExist(colors.get(timeline)).fill);
+        colorsGeneratedPen.add(mustExist(colors.get(timeline)).pen);
 
         ++merges;
         ++nextEventIndex;
@@ -156,8 +169,8 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
         ? options.dateRenderer(timestamp)
         : new Date(timestamp).toDateString();
       d.node(entry.title, {
-        color: 0 < colorsConfigured.size ? [...colorsConfigured][0] : [...colorsGeneratedPen][0],
-        fillcolor: [...colorsGeneratedFill].join(":"),
+        color: colorPen,
+        fillcolor: [...colorsFill].join(":"),
         label: makeHtmlString(
           `${(0 < prefixes.size ? `${[...prefixes].join("")} ` : "") + entry.title}\\n${dateString}`,
         ),
@@ -227,7 +240,7 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
             color,
             minlen: options.preview !== true ? linkLength : undefined,
             penwidth: 0.5,
-            style: timeline.meta?.link !== false ? "solid" : "invis",
+            style: 0 < (timeline.meta?.rank ?? 0) ? "solid" : "invis",
             tooltip: `${formatMilliseconds(timePassed)} (${linkLength} ranks)`,
           });
         }

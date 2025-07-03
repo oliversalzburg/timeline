@@ -42,7 +42,12 @@ export const load = (document: TimelineDocument): Timeline => {
   }
 
   return {
-    meta: { color: document.color, link: document.link, prefix: document.prefix },
+    meta: {
+      color: document.color,
+      link: document.link,
+      prefix: document.prefix,
+      rank: document.rank,
+    },
     records: sortRecords(timelineEntries),
   };
 };
