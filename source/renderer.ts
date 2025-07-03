@@ -262,9 +262,8 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
       const [, , entry] = timelineGlobal[nextEventIndex++];
 
       if (processedEntries.find(_ => _.title === entry.title)) {
-        process.stderr.write(
-          `+ Events in multiple timelines share time and title. '${entry.title}'\n  Items will be merged automatically.\n`,
-        );
+        // Events in multiple timelines share time and title.
+        // By skipping here, we automatically end up with only a single node with that identity.
         continue;
       }
 
