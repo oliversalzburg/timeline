@@ -22,7 +22,7 @@ lint: node_modules
 
 test: node_modules
 	npm exec -- tsc
-	NODE_OPTIONS=--enable-source-maps TZ=UTC npm exec -- c8 --reporter=html-spa mocha lib/*.test.js
+	NODE_OPTIONS=--enable-source-maps TZ=UTC npm exec -- c8 --reporter=html-spa mocha --reporter-option maxDiffSize=16000 lib/*.test.js
 
 universe-preview: lib output
 	node --enable-source-maps examples/universe.js --preview $(shell ls timelines/* ~/timelines/*.yml) > timelines/.universe.gv

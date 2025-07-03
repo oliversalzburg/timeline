@@ -228,7 +228,7 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
             minlen: options.preview !== true ? linkLength : undefined,
             penwidth: 0.5,
             style: timeline.meta?.link !== false ? "solid" : "invis",
-            //tooltip: `${formatMilliseconds(timePassed)} (${linkLength}: ${timePassed} * ${TIME_SCALE} = ${timePassed * TIME_SCALE})`,
+            tooltip: `${formatMilliseconds(timePassed)} (${linkLength} ranks)`,
           });
         }
       }
@@ -294,13 +294,12 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
       );
 
       for (const previousEntry of previousTimestampEntries) {
-        // Draw force-directing link between merged timeline entries.
-        // This forces all entries into linear global order.
-        //d.link(previous[1].title, entry.title, { minlen:0.5, style: "dashed", weight:0.5 });
+        // Draw rank-forcing link between merged timeline entries.
+        // This forces all entries into a globally linear order.
         d.link(previousEntry.title, entry.title, {
           minlen: options.preview !== true ? linkLength : undefined,
           style: options.debug ? "dashed" : "invis",
-          //tooltip: `${formatMilliseconds(timePassed)} (${linkLength}: ${timePassed} * ${TIME_SCALE} = ${timePassed * TIME_SCALE})`,
+          tooltip: `${formatMilliseconds(timePassed)} (carrying ${remainder})`,
         });
       }
     }
