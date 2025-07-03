@@ -1,7 +1,8 @@
 /** biome-ignore-all lint/style/noUnusedTemplateLiteral: Consistency overrules */
+
 import { expect } from "chai";
 import { describe, it } from "mocha";
-import { history, random } from "./fixtures/documents.js";
+import { history, random, snapshotHasRegression, snapshotIdentity } from "./fixtures/documents.js";
 import { load } from "./loader.js";
 import { render } from "./renderer.js";
 import type { TimelineDocument } from "./types.js";
@@ -18,450 +19,55 @@ describe("Renderer", () => {
     );
   });
 
-  it("should render timelines correctly (fixture 1)", () => {
+  it("should render timelines correctly (fixture 1)", function () {
     const document: TimelineDocument = { ...random };
     const now = Date.UTC(2025, 5, 15);
     const timeline = load(document);
     const artifact = render([timeline], { now });
-    const snapshot = [
-      `digraph timeline {`,
-      `    node [fontcolor="#000000"; fontname="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"; fontsize="12";];`,
-      `    edge [fontcolor="#000000"; fontname="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"; fontsize="12";];`,
-      `    comment=" ";`,
-      `    fontcolor="#000000";`,
-      `    fontname="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif";`,
-      `    fontsize="12";`,
-      `    label=" ";`,
-      `    rankdir="TD";`,
-      `    ranksep="0.5";`,
-      `    tooltip=" ";`,
-      `    1 [color="#c17070"; fillcolor="#efdbdb"; label=<545008398000<BR ALIGN="CENTER"/>Thu Apr 09 1987>; penwidth="3"; shape="box"; style="filled,rounded"; tooltip="0ms since Thu Apr 09 1987\\n38y 77d ago";];`,
-      `    2 [color="#c17070"; fillcolor="#efdbdb"; label=<699753484000<BR ALIGN="CENTER"/>Wed Mar 04 1992>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="4y 331d since Thu Apr 09 1987\\n33y 111d ago";];`,
-      `    3 [color="#c17070"; fillcolor="#efdbdb"; label=<1028920992000<BR ALIGN="CENTER"/>Fri Aug 09 2002>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="15y 126d since Thu Apr 09 1987\\n22y 316d ago";];`,
-      `    4 [color="#c17070"; fillcolor="#efdbdb"; label=<1192726333000<BR ALIGN="CENTER"/>Thu Oct 18 2007>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="20y 197d since Thu Apr 09 1987\\n17y 245d ago";];`,
-      `    5 [color="#c17070"; fillcolor="#efdbdb"; label=<1322304821000<BR ALIGN="CENTER"/>Sat Nov 26 2011>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="24y 237d since Thu Apr 09 1987\\n13y 205d ago";];`,
-      `    6 [color="#c17070"; fillcolor="#efdbdb"; label=<1499590423000<BR ALIGN="CENTER"/>Sun Jul 09 2017>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="30y 99d since Thu Apr 09 1987\\n7y 343d ago";];`,
-      `    7 [color="#c17070"; fillcolor="#efdbdb"; label=<1504468829000<BR ALIGN="CENTER"/>Sun Sep 03 2017>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="30y 155d since Thu Apr 09 1987\\n7y 287d ago";];`,
-      `    8 [color="#c17070"; fillcolor="#efdbdb"; label=<1542020080000<BR ALIGN="CENTER"/>Mon Nov 12 2018>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="31y 225d since Thu Apr 09 1987\\n6y 217d ago";];`,
-      `    9 [color="#c17070"; fillcolor="#efdbdb"; label=<1613021905000<BR ALIGN="CENTER"/>Thu Feb 11 2021>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="33y 317d since Thu Apr 09 1987\\n4y 125d ago";];`,
-      `    10 [color="#c17070"; fillcolor="#efdbdb"; label=<1627325390000<BR ALIGN="CENTER"/>Mon Jul 26 2021>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="34y 117d since Thu Apr 09 1987\\n3y 325d ago";];`,
-      `    11 [color="#c17070"; fillcolor="#efdbdb"; label=<1663585657000<BR ALIGN="CENTER"/>Mon Sep 19 2022>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="35y 172d since Thu Apr 09 1987\\n2y 270d ago";];`,
-      `    12 [color="#c17070"; fillcolor="#efdbdb"; label=<1834828906000<BR ALIGN="CENTER"/>Tue Feb 22 2028>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="40y 329d since Thu Apr 09 1987\\n-2y -252d ago";];`,
-      `    1 -> 2 [color="#c17070"; minlen="1000"; penwidth="0.5"; style="solid"; tooltip="4y 331d (1000 ranks)";];`,
-      `    2 -> 3 [color="#c17070"; minlen="1000"; penwidth="0.5"; style="solid"; tooltip="10y 160d (1000 ranks)";];`,
-      `    3 -> 4 [color="#c17070"; minlen="1000"; penwidth="0.5"; style="solid"; tooltip="5y 71d (1000 ranks)";];`,
-      `    4 -> 5 [color="#c17070"; minlen="1000"; penwidth="0.5"; style="solid"; tooltip="4y 40d (1000 ranks)";];`,
-      `    5 -> 6 [color="#c17070"; minlen="1000"; penwidth="0.5"; style="solid"; tooltip="5y 227d (1000 ranks)";];`,
-      `    6 -> 7 [color="#c17070"; minlen="56"; penwidth="0.5"; style="solid"; tooltip="56d (56 ranks)";];`,
-      `    7 -> 8 [color="#c17070"; minlen="435"; penwidth="0.5"; style="solid"; tooltip="1y 70d (435 ranks)";];`,
-      `    8 -> 9 [color="#c17070"; minlen="822"; penwidth="0.5"; style="solid"; tooltip="2y 92d (822 ranks)";];`,
-      `    9 -> 10 [color="#c17070"; minlen="165"; penwidth="0.5"; style="solid"; tooltip="165d (165 ranks)";];`,
-      `    10 -> 11 [color="#c17070"; minlen="420"; penwidth="0.5"; style="solid"; tooltip="1y 55d (420 ranks)";];`,
-      `    11 -> 12 [color="#c17070"; minlen="1000"; penwidth="0.5"; style="solid"; tooltip="5y 157d (1000 ranks)";];`,
-      `    1 -> 2 [minlen="1000"; style="invis"; tooltip="4y 331d (carrying 0)";];`,
-      `    2 -> 3 [minlen="1000"; style="invis"; tooltip="10y 160d (carrying 0)";];`,
-      `    3 -> 4 [minlen="1000"; style="invis"; tooltip="5y 71d (carrying 0)";];`,
-      `    4 -> 5 [minlen="1000"; style="invis"; tooltip="4y 40d (carrying 0)";];`,
-      `    5 -> 6 [minlen="1000"; style="invis"; tooltip="5y 227d (carrying 0)";];`,
-      `    6 -> 7 [minlen="56"; style="invis"; tooltip="56d (carrying 0)";];`,
-      `    7 -> 8 [minlen="435"; style="invis"; tooltip="1y 70d (carrying 0)";];`,
-      `    8 -> 9 [minlen="822"; style="invis"; tooltip="2y 92d (carrying 0)";];`,
-      `    9 -> 10 [minlen="165"; style="invis"; tooltip="165d (carrying 0)";];`,
-      `    10 -> 11 [minlen="420"; style="invis"; tooltip="1y 55d (carrying 0)";];`,
-      `    11 -> 12 [minlen="1000"; style="invis"; tooltip="5y 157d (carrying 0)";];`,
-      `}`,
-    ].join("\n");
-
-    expect(artifact).to.equal(snapshot);
+    expect(snapshotHasRegression(snapshotIdentity(this, ".gv"), artifact)).to.be.false;
   });
 
-  it("should render timelines correctly (fixture 3)", () => {
+  it("should render timelines correctly (fixture 3)", function () {
     const document: TimelineDocument = { ...history };
     const now = Date.UTC(2025, 5, 15);
     const timeline = load(document);
     const artifact = render([timeline], { now });
-    const snapshot = [
-      `digraph timeline {`,
-      `    node [fontcolor="#000000"; fontname="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"; fontsize="12";];`,
-      `    edge [fontcolor="#000000"; fontname="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"; fontsize="12";];`,
-      `    comment=" ";`,
-      `    fontcolor="#000000";`,
-      `    fontname="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif";`,
-      `    fontsize="12";`,
-      `    label=" ";`,
-      `    rankdir="TD";`,
-      `    ranksep="0.5";`,
-      `    tooltip=" ";`,
-      `    1 [color="#c17070"; fillcolor="#efdbdb"; label=<Start of the 1st Century<BR ALIGN="CENTER"/>Sat Jan 01 0000>; penwidth="3"; shape="box"; style="filled,rounded"; tooltip="0ms since Sat Jan 01 0000\\n2026y 292d ago";];`,
-      `    2 [color="#c17070"; fillcolor="#efdbdb"; label=<Start of the 2nd Century<BR ALIGN="CENTER"/>Fri Jan 01 0100>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="100y 25d since Sat Jan 01 0000\\n1926y 267d ago";];`,
-      `    3 [color="#c17070"; fillcolor="#efdbdb"; label=<Start of the 3rd Century<BR ALIGN="CENTER"/>Tue Dec 31 0199>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="200y 48d since Sat Jan 01 0000\\n1826y 244d ago";];`,
-      `    4 [color="#c17070"; fillcolor="#efdbdb"; label=<Start of the 4th Century<BR ALIGN="CENTER"/>Sun Dec 31 0299>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="300y 72d since Sat Jan 01 0000\\n1726y 220d ago";];`,
-      `    5 [color="#c17070"; fillcolor="#efdbdb"; label=<Start of the 5th Century<BR ALIGN="CENTER"/>Fri Dec 31 0399>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="400y 96d since Sat Jan 01 0000\\n1626y 196d ago";];`,
-      `    6 [color="#c17070"; fillcolor="#efdbdb"; label=<Start of the 6th Century<BR ALIGN="CENTER"/>Thu Dec 31 0499>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="500y 121d since Sat Jan 01 0000\\n1526y 171d ago";];`,
-      `    7 [color="#c17070"; fillcolor="#efdbdb"; label=<Start of the 7th Century<BR ALIGN="CENTER"/>Tue Dec 31 0599>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="600y 145d since Sat Jan 01 0000\\n1426y 147d ago";];`,
-      `    8 [color="#c17070"; fillcolor="#efdbdb"; label=<Start of the 8th Century<BR ALIGN="CENTER"/>Sun Dec 31 0699>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="700y 169d since Sat Jan 01 0000\\n1326y 123d ago";];`,
-      `    9 [color="#c17070"; fillcolor="#efdbdb"; label=<Start of the 9th Century<BR ALIGN="CENTER"/>Fri Dec 31 0799>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="800y 193d since Sat Jan 01 0000\\n1226y 99d ago";];`,
-      `    10 [color="#c17070"; fillcolor="#efdbdb"; label=<Start of the 10th Century<BR ALIGN="CENTER"/>Thu Dec 31 0899>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="900y 218d since Sat Jan 01 0000\\n1126y 74d ago";];`,
-      `    11 [color="#c17070"; fillcolor="#efdbdb"; label=<Start of the 11th Century<BR ALIGN="CENTER"/>Tue Dec 31 0999>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="1000y 242d since Sat Jan 01 0000\\n1026y 50d ago";];`,
-      `    12 [color="#c17070"; fillcolor="#efdbdb"; label=<Start of the 12th Century<BR ALIGN="CENTER"/>Sun Dec 31 1099>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="1100y 266d since Sat Jan 01 0000\\n926y 26d ago";];`,
-      `    13 [color="#c17070"; fillcolor="#efdbdb"; label=<Start of the 13th Century<BR ALIGN="CENTER"/>Fri Dec 31 1199>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="1200y 290d since Sat Jan 01 0000\\n826y 2d ago";];`,
-      `    14 [color="#c17070"; fillcolor="#efdbdb"; label=<Start of the 14th Century<BR ALIGN="CENTER"/>Thu Dec 31 1299>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="1300y 315d since Sat Jan 01 0000\\n725y 342d ago";];`,
-      `    15 [color="#c17070"; fillcolor="#efdbdb"; label=<Start of the 15th Century<BR ALIGN="CENTER"/>Tue Dec 31 1399>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="1400y 339d since Sat Jan 01 0000\\n625y 318d ago";];`,
-      `    16 [color="#c17070"; fillcolor="#efdbdb"; label=<Start of the 16th Century<BR ALIGN="CENTER"/>Sun Dec 31 1499>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="1500y 363d since Sat Jan 01 0000\\n525y 294d ago";];`,
-      `    17 [color="#c17070"; fillcolor="#efdbdb"; label=<Start of the 17th Century<BR ALIGN="CENTER"/>Fri Dec 31 1599>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="1601y 22d since Sat Jan 01 0000\\n425y 270d ago";];`,
-      `    18 [color="#c17070"; fillcolor="#efdbdb"; label=<Start of the 18th Century<BR ALIGN="CENTER"/>Thu Dec 31 1699>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="1701y 47d since Sat Jan 01 0000\\n325y 245d ago";];`,
-      `    19 [color="#c17070"; fillcolor="#efdbdb"; label=<Start of the 19th Century<BR ALIGN="CENTER"/>Tue Dec 31 1799>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="1801y 71d since Sat Jan 01 0000\\n225y 221d ago";];`,
-      `    20 [color="#c17070"; fillcolor="#efdbdb"; label=<Start of the 20th Century<BR ALIGN="CENTER"/>Sun Dec 31 1899>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="1901y 95d since Sat Jan 01 0000\\n125y 197d ago";];`,
-      `    21 [color="#c17070"; fillcolor="#efdbdb"; label=<Start of the 21st Century<BR ALIGN="CENTER"/>Fri Dec 31 1999>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="2001y 119d since Sat Jan 01 0000\\n25y 173d ago";];`,
-      `    22 [color="#c17070"; fillcolor="#efdbdb"; label=<Start of the 22nd Century<BR ALIGN="CENTER"/>Thu Dec 31 2099>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="2101y 144d since Sat Jan 01 0000\\n-74y -217d ago";];`,
-      `    1 -> 2 [color="#c17070"; minlen="1000"; penwidth="0.5"; style="solid"; tooltip="100y 25d (1000 ranks)";];`,
-      `    2 -> 3 [color="#c17070"; minlen="1000"; penwidth="0.5"; style="solid"; tooltip="100y 23d (1000 ranks)";];`,
-      `    3 -> 4 [color="#c17070"; minlen="1000"; penwidth="0.5"; style="solid"; tooltip="100y 24d (1000 ranks)";];`,
-      `    4 -> 5 [color="#c17070"; minlen="1000"; penwidth="0.5"; style="solid"; tooltip="100y 24d (1000 ranks)";];`,
-      `    5 -> 6 [color="#c17070"; minlen="1000"; penwidth="0.5"; style="solid"; tooltip="100y 25d (1000 ranks)";];`,
-      `    6 -> 7 [color="#c17070"; minlen="1000"; penwidth="0.5"; style="solid"; tooltip="100y 24d (1000 ranks)";];`,
-      `    7 -> 8 [color="#c17070"; minlen="1000"; penwidth="0.5"; style="solid"; tooltip="100y 24d (1000 ranks)";];`,
-      `    8 -> 9 [color="#c17070"; minlen="1000"; penwidth="0.5"; style="solid"; tooltip="100y 24d (1000 ranks)";];`,
-      `    9 -> 10 [color="#c17070"; minlen="1000"; penwidth="0.5"; style="solid"; tooltip="100y 25d (1000 ranks)";];`,
-      `    10 -> 11 [color="#c17070"; minlen="1000"; penwidth="0.5"; style="solid"; tooltip="100y 24d (1000 ranks)";];`,
-      `    11 -> 12 [color="#c17070"; minlen="1000"; penwidth="0.5"; style="solid"; tooltip="100y 24d (1000 ranks)";];`,
-      `    12 -> 13 [color="#c17070"; minlen="1000"; penwidth="0.5"; style="solid"; tooltip="100y 24d (1000 ranks)";];`,
-      `    13 -> 14 [color="#c17070"; minlen="1000"; penwidth="0.5"; style="solid"; tooltip="100y 25d (1000 ranks)";];`,
-      `    14 -> 15 [color="#c17070"; minlen="1000"; penwidth="0.5"; style="solid"; tooltip="100y 24d (1000 ranks)";];`,
-      `    15 -> 16 [color="#c17070"; minlen="1000"; penwidth="0.5"; style="solid"; tooltip="100y 24d (1000 ranks)";];`,
-      `    16 -> 17 [color="#c17070"; minlen="1000"; penwidth="0.5"; style="solid"; tooltip="100y 24d (1000 ranks)";];`,
-      `    17 -> 18 [color="#c17070"; minlen="1000"; penwidth="0.5"; style="solid"; tooltip="100y 25d (1000 ranks)";];`,
-      `    18 -> 19 [color="#c17070"; minlen="1000"; penwidth="0.5"; style="solid"; tooltip="100y 24d (1000 ranks)";];`,
-      `    19 -> 20 [color="#c17070"; minlen="1000"; penwidth="0.5"; style="solid"; tooltip="100y 24d (1000 ranks)";];`,
-      `    20 -> 21 [color="#c17070"; minlen="1000"; penwidth="0.5"; style="solid"; tooltip="100y 24d (1000 ranks)";];`,
-      `    21 -> 22 [color="#c17070"; minlen="1000"; penwidth="0.5"; style="solid"; tooltip="100y 25d (1000 ranks)";];`,
-      `    1 -> 2 [minlen="1000"; style="invis"; tooltip="100y 25d (carrying 0)";];`,
-      `    2 -> 3 [minlen="1000"; style="invis"; tooltip="100y 23d (carrying 0)";];`,
-      `    3 -> 4 [minlen="1000"; style="invis"; tooltip="100y 24d (carrying 0)";];`,
-      `    4 -> 5 [minlen="1000"; style="invis"; tooltip="100y 24d (carrying 0)";];`,
-      `    5 -> 6 [minlen="1000"; style="invis"; tooltip="100y 25d (carrying 0)";];`,
-      `    6 -> 7 [minlen="1000"; style="invis"; tooltip="100y 24d (carrying 0)";];`,
-      `    7 -> 8 [minlen="1000"; style="invis"; tooltip="100y 24d (carrying 0)";];`,
-      `    8 -> 9 [minlen="1000"; style="invis"; tooltip="100y 24d (carrying 0)";];`,
-      `    9 -> 10 [minlen="1000"; style="invis"; tooltip="100y 25d (carrying 0)";];`,
-      `    10 -> 11 [minlen="1000"; style="invis"; tooltip="100y 24d (carrying 0)";];`,
-      `    11 -> 12 [minlen="1000"; style="invis"; tooltip="100y 24d (carrying 0)";];`,
-      `    12 -> 13 [minlen="1000"; style="invis"; tooltip="100y 24d (carrying 0)";];`,
-      `    13 -> 14 [minlen="1000"; style="invis"; tooltip="100y 25d (carrying 0)";];`,
-      `    14 -> 15 [minlen="1000"; style="invis"; tooltip="100y 24d (carrying 0)";];`,
-      `    15 -> 16 [minlen="1000"; style="invis"; tooltip="100y 24d (carrying 0)";];`,
-      `    16 -> 17 [minlen="1000"; style="invis"; tooltip="100y 24d (carrying 0)";];`,
-      `    17 -> 18 [minlen="1000"; style="invis"; tooltip="100y 25d (carrying 0)";];`,
-      `    18 -> 19 [minlen="1000"; style="invis"; tooltip="100y 24d (carrying 0)";];`,
-      `    19 -> 20 [minlen="1000"; style="invis"; tooltip="100y 24d (carrying 0)";];`,
-      `    20 -> 21 [minlen="1000"; style="invis"; tooltip="100y 24d (carrying 0)";];`,
-      `    21 -> 22 [minlen="1000"; style="invis"; tooltip="100y 25d (carrying 0)";];`,
-      `}`,
-    ].join("\n");
-
-    expect(artifact).to.equal(snapshot);
+    expect(snapshotHasRegression(snapshotIdentity(this, ".gv"), artifact)).to.be.false;
   });
 
-  it("should render timelines correctly (fixture 1+3)", () => {
+  it("should render timelines correctly (fixture 1+3)", function () {
     const documents: Array<TimelineDocument> = [{ ...random }, { ...history }];
     const now = Date.UTC(2025, 5, 15);
     const timelines = documents.map(_ => load(_));
     const artifact = render(timelines, { now });
-    const snapshot = [
-      `digraph timeline {`,
-      `    node [fontcolor="#000000"; fontname="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"; fontsize="12";];`,
-      `    edge [fontcolor="#000000"; fontname="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"; fontsize="12";];`,
-      `    comment=" ";`,
-      `    fontcolor="#000000";`,
-      `    fontname="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif";`,
-      `    fontsize="12";`,
-      `    label=" ";`,
-      `    rankdir="TD";`,
-      `    ranksep="0.5";`,
-      `    tooltip=" ";`,
-      `    1 [color="#70c1c1"; fillcolor="#dbefef"; label=<Start of the 1st Century<BR ALIGN="CENTER"/>Sat Jan 01 0000>; penwidth="3"; shape="box"; style="filled,rounded"; tooltip="0ms since Sat Jan 01 0000\\n2026y 292d ago";];`,
-      `    2 [color="#70c1c1"; fillcolor="#dbefef"; label=<Start of the 2nd Century<BR ALIGN="CENTER"/>Fri Jan 01 0100>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="100y 25d since Sat Jan 01 0000\\n1926y 267d ago";];`,
-      `    3 [color="#70c1c1"; fillcolor="#dbefef"; label=<Start of the 3rd Century<BR ALIGN="CENTER"/>Tue Dec 31 0199>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="200y 48d since Sat Jan 01 0000\\n1826y 244d ago";];`,
-      `    4 [color="#70c1c1"; fillcolor="#dbefef"; label=<Start of the 4th Century<BR ALIGN="CENTER"/>Sun Dec 31 0299>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="300y 72d since Sat Jan 01 0000\\n1726y 220d ago";];`,
-      `    5 [color="#70c1c1"; fillcolor="#dbefef"; label=<Start of the 5th Century<BR ALIGN="CENTER"/>Fri Dec 31 0399>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="400y 96d since Sat Jan 01 0000\\n1626y 196d ago";];`,
-      `    6 [color="#70c1c1"; fillcolor="#dbefef"; label=<Start of the 6th Century<BR ALIGN="CENTER"/>Thu Dec 31 0499>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="500y 121d since Sat Jan 01 0000\\n1526y 171d ago";];`,
-      `    7 [color="#70c1c1"; fillcolor="#dbefef"; label=<Start of the 7th Century<BR ALIGN="CENTER"/>Tue Dec 31 0599>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="600y 145d since Sat Jan 01 0000\\n1426y 147d ago";];`,
-      `    8 [color="#70c1c1"; fillcolor="#dbefef"; label=<Start of the 8th Century<BR ALIGN="CENTER"/>Sun Dec 31 0699>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="700y 169d since Sat Jan 01 0000\\n1326y 123d ago";];`,
-      `    9 [color="#70c1c1"; fillcolor="#dbefef"; label=<Start of the 9th Century<BR ALIGN="CENTER"/>Fri Dec 31 0799>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="800y 193d since Sat Jan 01 0000\\n1226y 99d ago";];`,
-      `    10 [color="#70c1c1"; fillcolor="#dbefef"; label=<Start of the 10th Century<BR ALIGN="CENTER"/>Thu Dec 31 0899>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="900y 218d since Sat Jan 01 0000\\n1126y 74d ago";];`,
-      `    11 [color="#70c1c1"; fillcolor="#dbefef"; label=<Start of the 11th Century<BR ALIGN="CENTER"/>Tue Dec 31 0999>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="1000y 242d since Sat Jan 01 0000\\n1026y 50d ago";];`,
-      `    12 [color="#70c1c1"; fillcolor="#dbefef"; label=<Start of the 12th Century<BR ALIGN="CENTER"/>Sun Dec 31 1099>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="1100y 266d since Sat Jan 01 0000\\n926y 26d ago";];`,
-      `    13 [color="#70c1c1"; fillcolor="#dbefef"; label=<Start of the 13th Century<BR ALIGN="CENTER"/>Fri Dec 31 1199>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="1200y 290d since Sat Jan 01 0000\\n826y 2d ago";];`,
-      `    14 [color="#70c1c1"; fillcolor="#dbefef"; label=<Start of the 14th Century<BR ALIGN="CENTER"/>Thu Dec 31 1299>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="1300y 315d since Sat Jan 01 0000\\n725y 342d ago";];`,
-      `    15 [color="#70c1c1"; fillcolor="#dbefef"; label=<Start of the 15th Century<BR ALIGN="CENTER"/>Tue Dec 31 1399>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="1400y 339d since Sat Jan 01 0000\\n625y 318d ago";];`,
-      `    16 [color="#70c1c1"; fillcolor="#dbefef"; label=<Start of the 16th Century<BR ALIGN="CENTER"/>Sun Dec 31 1499>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="1500y 363d since Sat Jan 01 0000\\n525y 294d ago";];`,
-      `    17 [color="#70c1c1"; fillcolor="#dbefef"; label=<Start of the 17th Century<BR ALIGN="CENTER"/>Fri Dec 31 1599>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="1601y 22d since Sat Jan 01 0000\\n425y 270d ago";];`,
-      `    18 [color="#70c1c1"; fillcolor="#dbefef"; label=<Start of the 18th Century<BR ALIGN="CENTER"/>Thu Dec 31 1699>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="1701y 47d since Sat Jan 01 0000\\n325y 245d ago";];`,
-      `    19 [color="#70c1c1"; fillcolor="#dbefef"; label=<Start of the 19th Century<BR ALIGN="CENTER"/>Tue Dec 31 1799>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="1801y 71d since Sat Jan 01 0000\\n225y 221d ago";];`,
-      `    20 [color="#70c1c1"; fillcolor="#dbefef"; label=<Start of the 20th Century<BR ALIGN="CENTER"/>Sun Dec 31 1899>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="1901y 95d since Sat Jan 01 0000\\n125y 197d ago";];`,
-      `    21 [color="#c17070"; fillcolor="#efdbdb"; label=<545008398000<BR ALIGN="CENTER"/>Thu Apr 09 1987>; penwidth="3"; shape="box"; style="filled,rounded"; tooltip="1988y 215d since Sat Jan 01 0000\\n38y 77d ago";];`,
-      `    22 [color="#c17070"; fillcolor="#efdbdb"; label=<699753484000<BR ALIGN="CENTER"/>Wed Mar 04 1992>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="1993y 181d since Sat Jan 01 0000\\n33y 111d ago";];`,
-      `    23 [color="#70c1c1"; fillcolor="#dbefef"; label=<Start of the 21st Century<BR ALIGN="CENTER"/>Fri Dec 31 1999>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="2001y 119d since Sat Jan 01 0000\\n25y 173d ago";];`,
-      `    24 [color="#c17070"; fillcolor="#efdbdb"; label=<1028920992000<BR ALIGN="CENTER"/>Fri Aug 09 2002>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="2003y 341d since Sat Jan 01 0000\\n22y 316d ago";];`,
-      `    25 [color="#c17070"; fillcolor="#efdbdb"; label=<1192726333000<BR ALIGN="CENTER"/>Thu Oct 18 2007>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="2009y 47d since Sat Jan 01 0000\\n17y 245d ago";];`,
-      `    26 [color="#c17070"; fillcolor="#efdbdb"; label=<1322304821000<BR ALIGN="CENTER"/>Sat Nov 26 2011>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="2013y 87d since Sat Jan 01 0000\\n13y 205d ago";];`,
-      `    27 [color="#c17070"; fillcolor="#efdbdb"; label=<1499590423000<BR ALIGN="CENTER"/>Sun Jul 09 2017>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="2018y 314d since Sat Jan 01 0000\\n7y 343d ago";];`,
-      `    28 [color="#c17070"; fillcolor="#efdbdb"; label=<1504468829000<BR ALIGN="CENTER"/>Sun Sep 03 2017>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="2019y 5d since Sat Jan 01 0000\\n7y 287d ago";];`,
-      `    29 [color="#c17070"; fillcolor="#efdbdb"; label=<1542020080000<BR ALIGN="CENTER"/>Mon Nov 12 2018>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="2020y 75d since Sat Jan 01 0000\\n6y 217d ago";];`,
-      `    30 [color="#c17070"; fillcolor="#efdbdb"; label=<1613021905000<BR ALIGN="CENTER"/>Thu Feb 11 2021>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="2022y 167d since Sat Jan 01 0000\\n4y 125d ago";];`,
-      `    31 [color="#c17070"; fillcolor="#efdbdb"; label=<1627325390000<BR ALIGN="CENTER"/>Mon Jul 26 2021>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="2022y 332d since Sat Jan 01 0000\\n3y 325d ago";];`,
-      `    32 [color="#c17070"; fillcolor="#efdbdb"; label=<1663585657000<BR ALIGN="CENTER"/>Mon Sep 19 2022>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="2024y 22d since Sat Jan 01 0000\\n2y 270d ago";];`,
-      `    33 [color="#c17070"; fillcolor="#efdbdb"; label=<1834828906000<BR ALIGN="CENTER"/>Tue Feb 22 2028>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="2029y 179d since Sat Jan 01 0000\\n-2y -252d ago";];`,
-      `    34 [color="#70c1c1"; fillcolor="#dbefef"; label=<Start of the 22nd Century<BR ALIGN="CENTER"/>Thu Dec 31 2099>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="2101y 144d since Sat Jan 01 0000\\n-74y -217d ago";];`,
-      `    21 -> 22 [color="#c17070"; minlen="1000"; penwidth="0.5"; style="solid"; tooltip="4y 331d (1000 ranks)";];`,
-      `    22 -> 24 [color="#c17070"; minlen="1000"; penwidth="0.5"; style="solid"; tooltip="10y 160d (1000 ranks)";];`,
-      `    24 -> 25 [color="#c17070"; minlen="1000"; penwidth="0.5"; style="solid"; tooltip="5y 71d (1000 ranks)";];`,
-      `    25 -> 26 [color="#c17070"; minlen="1000"; penwidth="0.5"; style="solid"; tooltip="4y 40d (1000 ranks)";];`,
-      `    26 -> 27 [color="#c17070"; minlen="1000"; penwidth="0.5"; style="solid"; tooltip="5y 227d (1000 ranks)";];`,
-      `    27 -> 28 [color="#c17070"; minlen="56"; penwidth="0.5"; style="solid"; tooltip="56d (56 ranks)";];`,
-      `    28 -> 29 [color="#c17070"; minlen="435"; penwidth="0.5"; style="solid"; tooltip="1y 70d (435 ranks)";];`,
-      `    29 -> 30 [color="#c17070"; minlen="822"; penwidth="0.5"; style="solid"; tooltip="2y 92d (822 ranks)";];`,
-      `    30 -> 31 [color="#c17070"; minlen="165"; penwidth="0.5"; style="solid"; tooltip="165d (165 ranks)";];`,
-      `    31 -> 32 [color="#c17070"; minlen="420"; penwidth="0.5"; style="solid"; tooltip="1y 55d (420 ranks)";];`,
-      `    32 -> 33 [color="#c17070"; minlen="1000"; penwidth="0.5"; style="solid"; tooltip="5y 157d (1000 ranks)";];`,
-      `    1 -> 2 [color="#70c1c1"; minlen="1000"; penwidth="0.5"; style="solid"; tooltip="100y 25d (1000 ranks)";];`,
-      `    2 -> 3 [color="#70c1c1"; minlen="1000"; penwidth="0.5"; style="solid"; tooltip="100y 23d (1000 ranks)";];`,
-      `    3 -> 4 [color="#70c1c1"; minlen="1000"; penwidth="0.5"; style="solid"; tooltip="100y 24d (1000 ranks)";];`,
-      `    4 -> 5 [color="#70c1c1"; minlen="1000"; penwidth="0.5"; style="solid"; tooltip="100y 24d (1000 ranks)";];`,
-      `    5 -> 6 [color="#70c1c1"; minlen="1000"; penwidth="0.5"; style="solid"; tooltip="100y 25d (1000 ranks)";];`,
-      `    6 -> 7 [color="#70c1c1"; minlen="1000"; penwidth="0.5"; style="solid"; tooltip="100y 24d (1000 ranks)";];`,
-      `    7 -> 8 [color="#70c1c1"; minlen="1000"; penwidth="0.5"; style="solid"; tooltip="100y 24d (1000 ranks)";];`,
-      `    8 -> 9 [color="#70c1c1"; minlen="1000"; penwidth="0.5"; style="solid"; tooltip="100y 24d (1000 ranks)";];`,
-      `    9 -> 10 [color="#70c1c1"; minlen="1000"; penwidth="0.5"; style="solid"; tooltip="100y 25d (1000 ranks)";];`,
-      `    10 -> 11 [color="#70c1c1"; minlen="1000"; penwidth="0.5"; style="solid"; tooltip="100y 24d (1000 ranks)";];`,
-      `    11 -> 12 [color="#70c1c1"; minlen="1000"; penwidth="0.5"; style="solid"; tooltip="100y 24d (1000 ranks)";];`,
-      `    12 -> 13 [color="#70c1c1"; minlen="1000"; penwidth="0.5"; style="solid"; tooltip="100y 24d (1000 ranks)";];`,
-      `    13 -> 14 [color="#70c1c1"; minlen="1000"; penwidth="0.5"; style="solid"; tooltip="100y 25d (1000 ranks)";];`,
-      `    14 -> 15 [color="#70c1c1"; minlen="1000"; penwidth="0.5"; style="solid"; tooltip="100y 24d (1000 ranks)";];`,
-      `    15 -> 16 [color="#70c1c1"; minlen="1000"; penwidth="0.5"; style="solid"; tooltip="100y 24d (1000 ranks)";];`,
-      `    16 -> 17 [color="#70c1c1"; minlen="1000"; penwidth="0.5"; style="solid"; tooltip="100y 24d (1000 ranks)";];`,
-      `    17 -> 18 [color="#70c1c1"; minlen="1000"; penwidth="0.5"; style="solid"; tooltip="100y 25d (1000 ranks)";];`,
-      `    18 -> 19 [color="#70c1c1"; minlen="1000"; penwidth="0.5"; style="solid"; tooltip="100y 24d (1000 ranks)";];`,
-      `    19 -> 20 [color="#70c1c1"; minlen="1000"; penwidth="0.5"; style="solid"; tooltip="100y 24d (1000 ranks)";];`,
-      `    20 -> 23 [color="#70c1c1"; minlen="1000"; penwidth="0.5"; style="solid"; tooltip="100y 24d (1000 ranks)";];`,
-      `    23 -> 34 [color="#70c1c1"; minlen="1000"; penwidth="0.5"; style="solid"; tooltip="100y 25d (1000 ranks)";];`,
-      `    1 -> 2 [minlen="1000"; style="invis"; tooltip="100y 25d (carrying 0)";];`,
-      `    2 -> 3 [minlen="1000"; style="invis"; tooltip="100y 23d (carrying 0)";];`,
-      `    3 -> 4 [minlen="1000"; style="invis"; tooltip="100y 24d (carrying 0)";];`,
-      `    4 -> 5 [minlen="1000"; style="invis"; tooltip="100y 24d (carrying 0)";];`,
-      `    5 -> 6 [minlen="1000"; style="invis"; tooltip="100y 25d (carrying 0)";];`,
-      `    6 -> 7 [minlen="1000"; style="invis"; tooltip="100y 24d (carrying 0)";];`,
-      `    7 -> 8 [minlen="1000"; style="invis"; tooltip="100y 24d (carrying 0)";];`,
-      `    8 -> 9 [minlen="1000"; style="invis"; tooltip="100y 24d (carrying 0)";];`,
-      `    9 -> 10 [minlen="1000"; style="invis"; tooltip="100y 25d (carrying 0)";];`,
-      `    10 -> 11 [minlen="1000"; style="invis"; tooltip="100y 24d (carrying 0)";];`,
-      `    11 -> 12 [minlen="1000"; style="invis"; tooltip="100y 24d (carrying 0)";];`,
-      `    12 -> 13 [minlen="1000"; style="invis"; tooltip="100y 24d (carrying 0)";];`,
-      `    13 -> 14 [minlen="1000"; style="invis"; tooltip="100y 25d (carrying 0)";];`,
-      `    14 -> 15 [minlen="1000"; style="invis"; tooltip="100y 24d (carrying 0)";];`,
-      `    15 -> 16 [minlen="1000"; style="invis"; tooltip="100y 24d (carrying 0)";];`,
-      `    16 -> 17 [minlen="1000"; style="invis"; tooltip="100y 24d (carrying 0)";];`,
-      `    17 -> 18 [minlen="1000"; style="invis"; tooltip="100y 25d (carrying 0)";];`,
-      `    18 -> 19 [minlen="1000"; style="invis"; tooltip="100y 24d (carrying 0)";];`,
-      `    19 -> 20 [minlen="1000"; style="invis"; tooltip="100y 24d (carrying 0)";];`,
-      `    20 -> 21 [minlen="1000"; style="invis"; tooltip="87y 120d (carrying 0)";];`,
-      `    21 -> 22 [minlen="1000"; style="invis"; tooltip="4y 331d (carrying 0)";];`,
-      `    22 -> 23 [minlen="1000"; style="invis"; tooltip="7y 303d (carrying 0)";];`,
-      `    23 -> 24 [minlen="952"; style="invis"; tooltip="2y 222d (carrying 0)";];`,
-      `    24 -> 25 [minlen="1000"; style="invis"; tooltip="5y 71d (carrying 0)";];`,
-      `    25 -> 26 [minlen="1000"; style="invis"; tooltip="4y 40d (carrying 0)";];`,
-      `    26 -> 27 [minlen="1000"; style="invis"; tooltip="5y 227d (carrying 0)";];`,
-      `    27 -> 28 [minlen="56"; style="invis"; tooltip="56d (carrying 0)";];`,
-      `    28 -> 29 [minlen="435"; style="invis"; tooltip="1y 70d (carrying 0)";];`,
-      `    29 -> 30 [minlen="822"; style="invis"; tooltip="2y 92d (carrying 0)";];`,
-      `    30 -> 31 [minlen="165"; style="invis"; tooltip="165d (carrying 0)";];`,
-      `    31 -> 32 [minlen="420"; style="invis"; tooltip="1y 55d (carrying 0)";];`,
-      `    32 -> 33 [minlen="1000"; style="invis"; tooltip="5y 157d (carrying 0)";];`,
-      `    33 -> 34 [minlen="1000"; style="invis"; tooltip="71y 330d (carrying 0)";];`,
-      `}`,
-    ].join("\n");
-
-    expect(artifact).to.equal(snapshot);
+    expect(snapshotHasRegression(snapshotIdentity(this, ".gv"), artifact)).to.be.false;
   });
 
-  it("should merge timelines correctly (fixture 1a)", () => {
+  it("should merge timelines correctly (fixture 1a)", function () {
     const document: TimelineDocument = { ...random };
     const now = Date.UTC(2025, 5, 15);
     const timeline = load(document);
     const artifact = render([timeline, { meta: {}, records: timeline.records.slice(0, 1) }], {
       now,
     });
-    /**
-     * As the second timeline contains only the first item from the first timeline,
-     * we expect the first node in the rendered graph to reflect this event, and be
-     * in a "merged" state.
-     */
-    const snapshot = [
-      `digraph timeline {`,
-      `    node [fontcolor="#000000"; fontname="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"; fontsize="12";];`,
-      `    edge [fontcolor="#000000"; fontname="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"; fontsize="12";];`,
-      `    comment=" ";`,
-      `    fontcolor="#000000";`,
-      `    fontname="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif";`,
-      `    fontsize="12";`,
-      `    label=" ";`,
-      `    rankdir="TD";`,
-      `    ranksep="0.5";`,
-      `    tooltip=" ";`,
-      `    1 [color="#c17070"; fillcolor="#efdbdb:#dbefef"; label=<545008398000<BR ALIGN="CENTER"/>Thu Apr 09 1987>; penwidth="3"; shape="ellipse"; style="filled"; tooltip="0ms since Thu Apr 09 1987\\n38y 77d ago";];`,
-      `    2 [color="#c17070"; fillcolor="#efdbdb"; label=<699753484000<BR ALIGN="CENTER"/>Wed Mar 04 1992>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="4y 331d since Thu Apr 09 1987\\n33y 111d ago";];`,
-      `    3 [color="#c17070"; fillcolor="#efdbdb"; label=<1028920992000<BR ALIGN="CENTER"/>Fri Aug 09 2002>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="15y 126d since Thu Apr 09 1987\\n22y 316d ago";];`,
-      `    4 [color="#c17070"; fillcolor="#efdbdb"; label=<1192726333000<BR ALIGN="CENTER"/>Thu Oct 18 2007>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="20y 197d since Thu Apr 09 1987\\n17y 245d ago";];`,
-      `    5 [color="#c17070"; fillcolor="#efdbdb"; label=<1322304821000<BR ALIGN="CENTER"/>Sat Nov 26 2011>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="24y 237d since Thu Apr 09 1987\\n13y 205d ago";];`,
-      `    6 [color="#c17070"; fillcolor="#efdbdb"; label=<1499590423000<BR ALIGN="CENTER"/>Sun Jul 09 2017>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="30y 99d since Thu Apr 09 1987\\n7y 343d ago";];`,
-      `    7 [color="#c17070"; fillcolor="#efdbdb"; label=<1504468829000<BR ALIGN="CENTER"/>Sun Sep 03 2017>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="30y 155d since Thu Apr 09 1987\\n7y 287d ago";];`,
-      `    8 [color="#c17070"; fillcolor="#efdbdb"; label=<1542020080000<BR ALIGN="CENTER"/>Mon Nov 12 2018>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="31y 225d since Thu Apr 09 1987\\n6y 217d ago";];`,
-      `    9 [color="#c17070"; fillcolor="#efdbdb"; label=<1613021905000<BR ALIGN="CENTER"/>Thu Feb 11 2021>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="33y 317d since Thu Apr 09 1987\\n4y 125d ago";];`,
-      `    10 [color="#c17070"; fillcolor="#efdbdb"; label=<1627325390000<BR ALIGN="CENTER"/>Mon Jul 26 2021>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="34y 117d since Thu Apr 09 1987\\n3y 325d ago";];`,
-      `    11 [color="#c17070"; fillcolor="#efdbdb"; label=<1663585657000<BR ALIGN="CENTER"/>Mon Sep 19 2022>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="35y 172d since Thu Apr 09 1987\\n2y 270d ago";];`,
-      `    12 [color="#c17070"; fillcolor="#efdbdb"; label=<1834828906000<BR ALIGN="CENTER"/>Tue Feb 22 2028>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="40y 329d since Thu Apr 09 1987\\n-2y -252d ago";];`,
-      `    1 -> 2 [color="#c17070"; minlen="1000"; penwidth="0.5"; style="solid"; tooltip="4y 331d (1000 ranks)";];`,
-      `    2 -> 3 [color="#c17070"; minlen="1000"; penwidth="0.5"; style="solid"; tooltip="10y 160d (1000 ranks)";];`,
-      `    3 -> 4 [color="#c17070"; minlen="1000"; penwidth="0.5"; style="solid"; tooltip="5y 71d (1000 ranks)";];`,
-      `    4 -> 5 [color="#c17070"; minlen="1000"; penwidth="0.5"; style="solid"; tooltip="4y 40d (1000 ranks)";];`,
-      `    5 -> 6 [color="#c17070"; minlen="1000"; penwidth="0.5"; style="solid"; tooltip="5y 227d (1000 ranks)";];`,
-      `    6 -> 7 [color="#c17070"; minlen="56"; penwidth="0.5"; style="solid"; tooltip="56d (56 ranks)";];`,
-      `    7 -> 8 [color="#c17070"; minlen="435"; penwidth="0.5"; style="solid"; tooltip="1y 70d (435 ranks)";];`,
-      `    8 -> 9 [color="#c17070"; minlen="822"; penwidth="0.5"; style="solid"; tooltip="2y 92d (822 ranks)";];`,
-      `    9 -> 10 [color="#c17070"; minlen="165"; penwidth="0.5"; style="solid"; tooltip="165d (165 ranks)";];`,
-      `    10 -> 11 [color="#c17070"; minlen="420"; penwidth="0.5"; style="solid"; tooltip="1y 55d (420 ranks)";];`,
-      `    11 -> 12 [color="#c17070"; minlen="1000"; penwidth="0.5"; style="solid"; tooltip="5y 157d (1000 ranks)";];`,
-      `    1 -> 2 [minlen="1000"; style="invis"; tooltip="4y 331d (carrying 0)";];`,
-      `    2 -> 3 [minlen="1000"; style="invis"; tooltip="10y 160d (carrying 0)";];`,
-      `    3 -> 4 [minlen="1000"; style="invis"; tooltip="5y 71d (carrying 0)";];`,
-      `    4 -> 5 [minlen="1000"; style="invis"; tooltip="4y 40d (carrying 0)";];`,
-      `    5 -> 6 [minlen="1000"; style="invis"; tooltip="5y 227d (carrying 0)";];`,
-      `    6 -> 7 [minlen="56"; style="invis"; tooltip="56d (carrying 0)";];`,
-      `    7 -> 8 [minlen="435"; style="invis"; tooltip="1y 70d (carrying 0)";];`,
-      `    8 -> 9 [minlen="822"; style="invis"; tooltip="2y 92d (carrying 0)";];`,
-      `    9 -> 10 [minlen="165"; style="invis"; tooltip="165d (carrying 0)";];`,
-      `    10 -> 11 [minlen="420"; style="invis"; tooltip="1y 55d (carrying 0)";];`,
-      `    11 -> 12 [minlen="1000"; style="invis"; tooltip="5y 157d (carrying 0)";];`,
-      `}`,
-    ].join("\n");
-
-    expect(artifact).to.equal(snapshot);
+    expect(snapshotHasRegression(snapshotIdentity(this, ".gv"), artifact)).to.be.false;
   });
-  it("should merge timelines correctly (fixture 1b)", () => {
+  it("should merge timelines correctly (fixture 1b)", function () {
     const document: TimelineDocument = { ...random };
     const now = Date.UTC(2025, 5, 15);
     const timeline = load(document);
     const artifact = render([timeline, { meta: {}, records: timeline.records.slice(1, 2) }], {
       now,
     });
-    const snapshot = [
-      `digraph timeline {`,
-      `    node [fontcolor="#000000"; fontname="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"; fontsize="12";];`,
-      `    edge [fontcolor="#000000"; fontname="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"; fontsize="12";];`,
-      `    comment=" ";`,
-      `    fontcolor="#000000";`,
-      `    fontname="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif";`,
-      `    fontsize="12";`,
-      `    label=" ";`,
-      `    rankdir="TD";`,
-      `    ranksep="0.5";`,
-      `    tooltip=" ";`,
-      `    1 [color="#c17070"; fillcolor="#efdbdb"; label=<545008398000<BR ALIGN="CENTER"/>Thu Apr 09 1987>; penwidth="3"; shape="box"; style="filled,rounded"; tooltip="0ms since Thu Apr 09 1987\\n38y 77d ago";];`,
-      `    2 [color="#c17070"; fillcolor="#efdbdb:#dbefef"; label=<699753484000<BR ALIGN="CENTER"/>Wed Mar 04 1992>; penwidth="3"; shape="ellipse"; style="filled"; tooltip="4y 331d since Thu Apr 09 1987\\n33y 111d ago";];`,
-      `    3 [color="#c17070"; fillcolor="#efdbdb"; label=<1028920992000<BR ALIGN="CENTER"/>Fri Aug 09 2002>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="15y 126d since Thu Apr 09 1987\\n22y 316d ago";];`,
-      `    4 [color="#c17070"; fillcolor="#efdbdb"; label=<1192726333000<BR ALIGN="CENTER"/>Thu Oct 18 2007>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="20y 197d since Thu Apr 09 1987\\n17y 245d ago";];`,
-      `    5 [color="#c17070"; fillcolor="#efdbdb"; label=<1322304821000<BR ALIGN="CENTER"/>Sat Nov 26 2011>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="24y 237d since Thu Apr 09 1987\\n13y 205d ago";];`,
-      `    6 [color="#c17070"; fillcolor="#efdbdb"; label=<1499590423000<BR ALIGN="CENTER"/>Sun Jul 09 2017>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="30y 99d since Thu Apr 09 1987\\n7y 343d ago";];`,
-      `    7 [color="#c17070"; fillcolor="#efdbdb"; label=<1504468829000<BR ALIGN="CENTER"/>Sun Sep 03 2017>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="30y 155d since Thu Apr 09 1987\\n7y 287d ago";];`,
-      `    8 [color="#c17070"; fillcolor="#efdbdb"; label=<1542020080000<BR ALIGN="CENTER"/>Mon Nov 12 2018>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="31y 225d since Thu Apr 09 1987\\n6y 217d ago";];`,
-      `    9 [color="#c17070"; fillcolor="#efdbdb"; label=<1613021905000<BR ALIGN="CENTER"/>Thu Feb 11 2021>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="33y 317d since Thu Apr 09 1987\\n4y 125d ago";];`,
-      `    10 [color="#c17070"; fillcolor="#efdbdb"; label=<1627325390000<BR ALIGN="CENTER"/>Mon Jul 26 2021>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="34y 117d since Thu Apr 09 1987\\n3y 325d ago";];`,
-      `    11 [color="#c17070"; fillcolor="#efdbdb"; label=<1663585657000<BR ALIGN="CENTER"/>Mon Sep 19 2022>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="35y 172d since Thu Apr 09 1987\\n2y 270d ago";];`,
-      `    12 [color="#c17070"; fillcolor="#efdbdb"; label=<1834828906000<BR ALIGN="CENTER"/>Tue Feb 22 2028>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="40y 329d since Thu Apr 09 1987\\n-2y -252d ago";];`,
-      `    1 -> 2 [color="#c17070"; minlen="1000"; penwidth="0.5"; style="solid"; tooltip="4y 331d (1000 ranks)";];`,
-      `    2 -> 3 [color="#c17070"; minlen="1000"; penwidth="0.5"; style="solid"; tooltip="10y 160d (1000 ranks)";];`,
-      `    3 -> 4 [color="#c17070"; minlen="1000"; penwidth="0.5"; style="solid"; tooltip="5y 71d (1000 ranks)";];`,
-      `    4 -> 5 [color="#c17070"; minlen="1000"; penwidth="0.5"; style="solid"; tooltip="4y 40d (1000 ranks)";];`,
-      `    5 -> 6 [color="#c17070"; minlen="1000"; penwidth="0.5"; style="solid"; tooltip="5y 227d (1000 ranks)";];`,
-      `    6 -> 7 [color="#c17070"; minlen="56"; penwidth="0.5"; style="solid"; tooltip="56d (56 ranks)";];`,
-      `    7 -> 8 [color="#c17070"; minlen="435"; penwidth="0.5"; style="solid"; tooltip="1y 70d (435 ranks)";];`,
-      `    8 -> 9 [color="#c17070"; minlen="822"; penwidth="0.5"; style="solid"; tooltip="2y 92d (822 ranks)";];`,
-      `    9 -> 10 [color="#c17070"; minlen="165"; penwidth="0.5"; style="solid"; tooltip="165d (165 ranks)";];`,
-      `    10 -> 11 [color="#c17070"; minlen="420"; penwidth="0.5"; style="solid"; tooltip="1y 55d (420 ranks)";];`,
-      `    11 -> 12 [color="#c17070"; minlen="1000"; penwidth="0.5"; style="solid"; tooltip="5y 157d (1000 ranks)";];`,
-      `    1 -> 2 [minlen="1000"; style="invis"; tooltip="4y 331d (carrying 0)";];`,
-      `    2 -> 3 [minlen="1000"; style="invis"; tooltip="10y 160d (carrying 0)";];`,
-      `    3 -> 4 [minlen="1000"; style="invis"; tooltip="5y 71d (carrying 0)";];`,
-      `    4 -> 5 [minlen="1000"; style="invis"; tooltip="4y 40d (carrying 0)";];`,
-      `    5 -> 6 [minlen="1000"; style="invis"; tooltip="5y 227d (carrying 0)";];`,
-      `    6 -> 7 [minlen="56"; style="invis"; tooltip="56d (carrying 0)";];`,
-      `    7 -> 8 [minlen="435"; style="invis"; tooltip="1y 70d (carrying 0)";];`,
-      `    8 -> 9 [minlen="822"; style="invis"; tooltip="2y 92d (carrying 0)";];`,
-      `    9 -> 10 [minlen="165"; style="invis"; tooltip="165d (carrying 0)";];`,
-      `    10 -> 11 [minlen="420"; style="invis"; tooltip="1y 55d (carrying 0)";];`,
-      `    11 -> 12 [minlen="1000"; style="invis"; tooltip="5y 157d (carrying 0)";];`,
-      `}`,
-    ].join("\n");
-
-    expect(artifact).to.equal(snapshot);
+    expect(snapshotHasRegression(snapshotIdentity(this, ".gv"), artifact)).to.be.false;
   });
-  it("should merge timelines correctly (fixture 1c)", () => {
+  it("should merge timelines correctly (fixture 1c)", function () {
     const document: TimelineDocument = { ...random };
     const now = Date.UTC(2025, 5, 15);
     const timeline = load(document);
     const artifact = render([timeline, { meta: {}, records: timeline.records.slice(0, 2) }], {
       now,
     });
-    const snapshot = [
-      `digraph timeline {`,
-      `    node [fontcolor="#000000"; fontname="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"; fontsize="12";];`,
-      `    edge [fontcolor="#000000"; fontname="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"; fontsize="12";];`,
-      `    comment=" ";`,
-      `    fontcolor="#000000";`,
-      `    fontname="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif";`,
-      `    fontsize="12";`,
-      `    label=" ";`,
-      `    rankdir="TD";`,
-      `    ranksep="0.5";`,
-      `    tooltip=" ";`,
-      `    1 [color="#c17070"; fillcolor="#efdbdb:#dbefef"; label=<545008398000<BR ALIGN="CENTER"/>Thu Apr 09 1987>; penwidth="3"; shape="ellipse"; style="filled"; tooltip="0ms since Thu Apr 09 1987\\n38y 77d ago";];`,
-      `    2 [color="#c17070"; fillcolor="#efdbdb:#dbefef"; label=<699753484000<BR ALIGN="CENTER"/>Wed Mar 04 1992>; penwidth="1"; shape="ellipse"; style="filled"; tooltip="4y 331d since Thu Apr 09 1987\\n33y 111d ago";];`,
-      `    3 [color="#c17070"; fillcolor="#efdbdb"; label=<1028920992000<BR ALIGN="CENTER"/>Fri Aug 09 2002>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="15y 126d since Thu Apr 09 1987\\n22y 316d ago";];`,
-      `    4 [color="#c17070"; fillcolor="#efdbdb"; label=<1192726333000<BR ALIGN="CENTER"/>Thu Oct 18 2007>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="20y 197d since Thu Apr 09 1987\\n17y 245d ago";];`,
-      `    5 [color="#c17070"; fillcolor="#efdbdb"; label=<1322304821000<BR ALIGN="CENTER"/>Sat Nov 26 2011>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="24y 237d since Thu Apr 09 1987\\n13y 205d ago";];`,
-      `    6 [color="#c17070"; fillcolor="#efdbdb"; label=<1499590423000<BR ALIGN="CENTER"/>Sun Jul 09 2017>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="30y 99d since Thu Apr 09 1987\\n7y 343d ago";];`,
-      `    7 [color="#c17070"; fillcolor="#efdbdb"; label=<1504468829000<BR ALIGN="CENTER"/>Sun Sep 03 2017>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="30y 155d since Thu Apr 09 1987\\n7y 287d ago";];`,
-      `    8 [color="#c17070"; fillcolor="#efdbdb"; label=<1542020080000<BR ALIGN="CENTER"/>Mon Nov 12 2018>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="31y 225d since Thu Apr 09 1987\\n6y 217d ago";];`,
-      `    9 [color="#c17070"; fillcolor="#efdbdb"; label=<1613021905000<BR ALIGN="CENTER"/>Thu Feb 11 2021>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="33y 317d since Thu Apr 09 1987\\n4y 125d ago";];`,
-      `    10 [color="#c17070"; fillcolor="#efdbdb"; label=<1627325390000<BR ALIGN="CENTER"/>Mon Jul 26 2021>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="34y 117d since Thu Apr 09 1987\\n3y 325d ago";];`,
-      `    11 [color="#c17070"; fillcolor="#efdbdb"; label=<1663585657000<BR ALIGN="CENTER"/>Mon Sep 19 2022>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="35y 172d since Thu Apr 09 1987\\n2y 270d ago";];`,
-      `    12 [color="#c17070"; fillcolor="#efdbdb"; label=<1834828906000<BR ALIGN="CENTER"/>Tue Feb 22 2028>; penwidth="1"; shape="box"; style="filled,rounded"; tooltip="40y 329d since Thu Apr 09 1987\\n-2y -252d ago";];`,
-      `    1 -> 2 [color="#c17070"; minlen="1000"; penwidth="0.5"; style="solid"; tooltip="4y 331d (1000 ranks)";];`,
-      `    2 -> 3 [color="#c17070"; minlen="1000"; penwidth="0.5"; style="solid"; tooltip="10y 160d (1000 ranks)";];`,
-      `    3 -> 4 [color="#c17070"; minlen="1000"; penwidth="0.5"; style="solid"; tooltip="5y 71d (1000 ranks)";];`,
-      `    4 -> 5 [color="#c17070"; minlen="1000"; penwidth="0.5"; style="solid"; tooltip="4y 40d (1000 ranks)";];`,
-      `    5 -> 6 [color="#c17070"; minlen="1000"; penwidth="0.5"; style="solid"; tooltip="5y 227d (1000 ranks)";];`,
-      `    6 -> 7 [color="#c17070"; minlen="56"; penwidth="0.5"; style="solid"; tooltip="56d (56 ranks)";];`,
-      `    7 -> 8 [color="#c17070"; minlen="435"; penwidth="0.5"; style="solid"; tooltip="1y 70d (435 ranks)";];`,
-      `    8 -> 9 [color="#c17070"; minlen="822"; penwidth="0.5"; style="solid"; tooltip="2y 92d (822 ranks)";];`,
-      `    9 -> 10 [color="#c17070"; minlen="165"; penwidth="0.5"; style="solid"; tooltip="165d (165 ranks)";];`,
-      `    10 -> 11 [color="#c17070"; minlen="420"; penwidth="0.5"; style="solid"; tooltip="1y 55d (420 ranks)";];`,
-      `    11 -> 12 [color="#c17070"; minlen="1000"; penwidth="0.5"; style="solid"; tooltip="5y 157d (1000 ranks)";];`,
-      `    1 -> 2 [color="#70c1c1"; minlen="1000"; penwidth="0.5"; style="solid"; tooltip="4y 331d (1000 ranks)";];`,
-      `    1 -> 2 [minlen="1000"; style="invis"; tooltip="4y 331d (carrying 0)";];`,
-      `    2 -> 3 [minlen="1000"; style="invis"; tooltip="10y 160d (carrying 0)";];`,
-      `    3 -> 4 [minlen="1000"; style="invis"; tooltip="5y 71d (carrying 0)";];`,
-      `    4 -> 5 [minlen="1000"; style="invis"; tooltip="4y 40d (carrying 0)";];`,
-      `    5 -> 6 [minlen="1000"; style="invis"; tooltip="5y 227d (carrying 0)";];`,
-      `    6 -> 7 [minlen="56"; style="invis"; tooltip="56d (carrying 0)";];`,
-      `    7 -> 8 [minlen="435"; style="invis"; tooltip="1y 70d (carrying 0)";];`,
-      `    8 -> 9 [minlen="822"; style="invis"; tooltip="2y 92d (carrying 0)";];`,
-      `    9 -> 10 [minlen="165"; style="invis"; tooltip="165d (carrying 0)";];`,
-      `    10 -> 11 [minlen="420"; style="invis"; tooltip="1y 55d (carrying 0)";];`,
-      `    11 -> 12 [minlen="1000"; style="invis"; tooltip="5y 157d (carrying 0)";];`,
-      `}`,
-    ].join("\n");
-
-    expect(artifact).to.equal(snapshot);
+    expect(snapshotHasRegression(snapshotIdentity(this, ".gv"), artifact)).to.be.false;
   });
 });

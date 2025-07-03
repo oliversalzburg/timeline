@@ -1,4 +1,37 @@
+/** biome-ignore-all lint/style/noUnusedTemplateLiteral: Consistency overrules */
+
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { basename } from "node:path";
+import { mustExist } from "@oliversalzburg/js-utils/data/nil.js";
 import type { TimelineDocument } from "../types.js";
+
+export const snapshotIdentity = (_: Mocha.Context, suffix = ""): string => {
+  const test = mustExist(_.test);
+  const file = mustExist(test.file);
+  return `${basename(file)}-${test
+    .fullTitle()
+    .replaceAll(/[^A-Za-z0-9_-]/g, "_")
+    .replaceAll(/_+/g, "_")}.snapshot${suffix}`;
+};
+
+export const snapshotHasRegression = (id: string, artifact: string) => {
+  const snapshotFilename = `fixtures/snapshot-${id}`;
+  if (!existsSync(snapshotFilename)) {
+    process.stderr.write(`Request for MISSING SNAPSHOT '${id}'.\n`);
+    process.stderr.write(`Snapshot will be generated and test will be marked as failed!\n`);
+    writeFileSync(snapshotFilename, artifact);
+    return true;
+  }
+
+  const truth = readFileSync(snapshotFilename, "utf8");
+  const hasRegression = truth !== artifact;
+  if (hasRegression) {
+    process.stderr.write(`Snapshot regressed: '${id}'!\n`);
+    writeFileSync(snapshotFilename, artifact);
+  }
+
+  return hasRegression;
+};
 
 /**
  * The timestamps in this timeline were randomly generated, using `contrib/random-timestamp.js`.

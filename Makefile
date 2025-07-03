@@ -1,4 +1,4 @@
-.PHONY: default build clean docs git-hook pretty lint test run
+.PHONY: default build clean docs git-hook pretty lint test universe-preview render-smoke render-preview render-hq
 
 default: build
 
@@ -44,6 +44,7 @@ render-hq: universe
 	@echo "Rendering HQ SVG image with dot. This can take from several hours up to days! You are not supposed to run this on your local machine! Please wait..."
 	dot -v5 -O -Tsvg timelines/.universe.gv
 	@echo "SVG image rendered successfully."
+
 
 node_modules:
 ifneq "$(CI)" ""
