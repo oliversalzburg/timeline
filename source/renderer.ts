@@ -148,12 +148,14 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
             colorPenRank = timeline.meta.rank ?? 0;
             colorPen = timeline.meta.color;
           }
+        } else {
+          colorsFill.add(mustExist(colors.get(timeline)).fill);
         }
+
         if (!isNil(timeline.meta.prefix)) {
           prefixes.add(timeline.meta.prefix);
         }
 
-        colorsFill.add(mustExist(colors.get(timeline)).fill);
         colorsGeneratedFill.add(mustExist(colors.get(timeline)).fill);
         colorsGeneratedPen.add(mustExist(colors.get(timeline)).pen);
 
@@ -193,6 +195,7 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
   let timePassed = 0;
   for (const timeline of timelines) {
     const color = timeline.meta?.color ?? mustExist(colors.get(timeline)).pen;
+    const rank = timeline.meta?.rank ?? 0;
 
     // The timestamp we looked at during the last iteration.
     let previousTimestamp: number | undefined;
@@ -239,8 +242,8 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
           d.link(previousEntry.title, entry.title, {
             color,
             minlen: options.preview !== true ? linkLength : undefined,
-            penwidth: 0.5,
-            style: 0 < (timeline.meta?.rank ?? 0) ? "solid" : "invis",
+            penwidth: rank / 2,
+            style: 0 < rank ? "solid" : "invis",
             tooltip: `${formatMilliseconds(timePassed)} (${linkLength} ranks)`,
           });
         }

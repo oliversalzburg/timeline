@@ -47,27 +47,36 @@ describe("Renderer", () => {
     const document: TimelineDocument = { ...random };
     const now = Date.UTC(2025, 5, 15);
     const timeline = load(document);
-    const artifact = render([timeline, { meta: {}, records: timeline.records.slice(0, 1) }], {
-      now,
-    });
+    const artifact = render(
+      [timeline, { meta: { rank: 1 }, records: timeline.records.slice(0, 1) }],
+      {
+        now,
+      },
+    );
     expect(snapshotHasRegression(snapshotIdentity(this, ".gv"), artifact)).to.be.false;
   });
   it("should merge timelines correctly (fixture 1b)", function () {
     const document: TimelineDocument = { ...random };
     const now = Date.UTC(2025, 5, 15);
     const timeline = load(document);
-    const artifact = render([timeline, { meta: {}, records: timeline.records.slice(1, 2) }], {
-      now,
-    });
+    const artifact = render(
+      [timeline, { meta: { rank: 1 }, records: timeline.records.slice(1, 2) }],
+      {
+        now,
+      },
+    );
     expect(snapshotHasRegression(snapshotIdentity(this, ".gv"), artifact)).to.be.false;
   });
   it("should merge timelines correctly (fixture 1c)", function () {
     const document: TimelineDocument = { ...random };
     const now = Date.UTC(2025, 5, 15);
     const timeline = load(document);
-    const artifact = render([timeline, { meta: {}, records: timeline.records.slice(0, 2) }], {
-      now,
-    });
+    const artifact = render(
+      [timeline, { meta: { rank: 1 }, records: timeline.records.slice(0, 2) }],
+      {
+        now,
+      },
+    );
     expect(snapshotHasRegression(snapshotIdentity(this, ".gv"), artifact)).to.be.false;
   });
 });
