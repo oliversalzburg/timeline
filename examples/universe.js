@@ -119,7 +119,7 @@ const dotGraph = render(finalTimelines, {
   ...(PREVIEW ? CONFIG_QUALITY_PREVIEW : CONFIG_QUALITY_ULTRA),
 });
 
-// Write DOT graph to stdout.
-process.stderr.write("Writing DOT graph for universe..." + "\n");
+// Write GraphViz graph to stdout.
+process.stderr.write("Writing GraphViz graph for universe..." + "\n");
 process.stdout.write(dotGraph);
-process.stderr.write("DOT graph for universe written successfully.\n");
+process.stderr.write("GraphViz graph for universe written successfully.\n");

@@ -150,9 +150,9 @@ export const makeHtmlString = (_: string) =>
   `${_.replaceAll(/\n|\\n/g, `<BR ALIGN="CENTER"/>`).replaceAll(/&/g, "&amp;")}`;
 
 /**
- * Provides helper constructs to render DOT graphs.
+ * Provides helper constructs to render GraphViz graphs.
  */
-export const dot = () => {
+export const gv = () => {
   const buffer = new Array<string>();
   const nodeIds = new Map<string, number>();
 

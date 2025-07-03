@@ -4,7 +4,7 @@ import { formatMilliseconds } from "@oliversalzburg/js-utils/format/milliseconds
 import { hslPalette } from "@oliversalzburg/js-utils/graphics/palette.js";
 import { clamp } from "@oliversalzburg/js-utils/math/core.js";
 import { FONTS_SYSTEM, MILLISECONDS } from "./constants.js";
-import { dot, makeHtmlString } from "./dot.js";
+import { gv, makeHtmlString } from "./gv.js";
 import { roundToDay } from "./operator.js";
 import type { Timeline, TimelineEntry } from "./types.js";
 
@@ -20,7 +20,7 @@ export interface RendererOptions {
 }
 
 /**
- * The Renderer in the reference implementation generates a DOT graph containing all passed
+ * The Renderer in the reference implementation generates a GraphViz graph containing all passed
  * timelines. How these timelines are merged, and rendered, is opinionated. It should serve
  * as an example of how to further utilize recorded timeline data.
  * Readers are encouraged to write their own Renderer implementation.
@@ -48,7 +48,7 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
     ]),
   );
 
-  const d = dot();
+  const d = gv();
 
   d.raw("digraph timeline {");
   const FONT_COLOR = "#000000";
