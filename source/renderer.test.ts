@@ -37,7 +37,10 @@ describe("Renderer", () => {
     const now = Date.UTC(2025, 5, 15);
     const timeline = load(document);
     const artifact = render([timeline], { now });
-    expect(snapshotHasRegression(snapshotIdentity(this, ".gv"), artifact)).to.be.false;
+    expect(
+      snapshotHasRegression(snapshotIdentity(this, ".gv"), artifact),
+      "Snapshot regression detected.",
+    ).to.be.false;
   });
 
   it("should render timelines correctly (fixture 3)", function () {
@@ -45,7 +48,10 @@ describe("Renderer", () => {
     const now = Date.UTC(2025, 5, 15);
     const timeline = load(document);
     const artifact = render([timeline], { now });
-    expect(snapshotHasRegression(snapshotIdentity(this, ".gv"), artifact)).to.be.false;
+    expect(
+      snapshotHasRegression(snapshotIdentity(this, ".gv"), artifact),
+      "Snapshot regression detected.",
+    ).to.be.false;
   });
 
   it("should render timelines correctly (fixture 1+3)", function () {
@@ -53,7 +59,10 @@ describe("Renderer", () => {
     const now = Date.UTC(2025, 5, 15);
     const timelines = documents.map(_ => load(_));
     const artifact = render(timelines, { now });
-    expect(snapshotHasRegression(snapshotIdentity(this, ".gv"), artifact)).to.be.false;
+    expect(
+      snapshotHasRegression(snapshotIdentity(this, ".gv"), artifact),
+      "Snapshot regression detected.",
+    ).to.be.false;
   });
 
   it("should merge timelines correctly (fixture 1a)", function () {
@@ -66,7 +75,10 @@ describe("Renderer", () => {
         now,
       },
     );
-    expect(snapshotHasRegression(snapshotIdentity(this, ".gv"), artifact)).to.be.false;
+    expect(
+      snapshotHasRegression(snapshotIdentity(this, ".gv"), artifact),
+      "Snapshot regression detected.",
+    ).to.be.false;
   });
   it("should merge timelines correctly (fixture 1b)", function () {
     const document: TimelineDocument = { ...random };
@@ -78,7 +90,10 @@ describe("Renderer", () => {
         now,
       },
     );
-    expect(snapshotHasRegression(snapshotIdentity(this, ".gv"), artifact)).to.be.false;
+    expect(
+      snapshotHasRegression(snapshotIdentity(this, ".gv"), artifact),
+      "Snapshot regression detected.",
+    ).to.be.false;
   });
   it("should merge timelines correctly (fixture 1c)", function () {
     const document: TimelineDocument = { ...random };
@@ -90,6 +105,9 @@ describe("Renderer", () => {
         now,
       },
     );
-    expect(snapshotHasRegression(snapshotIdentity(this, ".gv"), artifact)).to.be.false;
+    expect(
+      snapshotHasRegression(snapshotIdentity(this, ".gv"), artifact),
+      "Snapshot regression detected.",
+    ).to.be.false;
   });
 });
