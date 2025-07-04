@@ -1,6 +1,6 @@
-import { readFileSync } from "node:fs";
 import { expect } from "chai";
 import { describe, it } from "mocha";
+import { snapshotHasRegression, snapshotIdentity } from "./fixtures/documents.js";
 import { serialize } from "./serializer.js";
 import type { Timeline } from "./types.js";
 
@@ -16,16 +16,15 @@ describe("Serializer", () => {
     );
   });
 
-  it("should merge records with same timestamp into array", () => {
-    const fixture = readFileSync("source/fixtures/serializer-merge.yml", "utf-8");
+  it("should merge records with same timestamp into array", function () {
     const timeline: Timeline = {
-      meta: {},
+      meta: { id: "test" },
       records: [
         [100, { title: "one" }],
         [100, { title: "two" }],
       ],
     };
     const document = serialize(timeline);
-    expect(document).to.equal(fixture, "The timeline was not serialized as expected.");
+    expect(snapshotHasRegression(snapshotIdentity(this, ".yml"), document)).to.be.false;
   });
 });

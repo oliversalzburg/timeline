@@ -37,6 +37,7 @@ export const snapshotHasRegression = (id: string, artifact: string) => {
  * The timestamps in this timeline were randomly generated, using `contrib/random-timestamp.js`.
  */
 export const random: TimelineDocument = Object.freeze({
+  id: "random",
   rank: 1,
   timeline: {
     "2017-07-09 08:53:43": "1499590423000",
@@ -60,6 +61,7 @@ export const random: TimelineDocument = Object.freeze({
  * This timeline is ORDERED.
  */
 export const withConflict: TimelineDocument = Object.freeze({
+  id: "withConflict",
   rank: 1,
   timeline: {
     "1999-12-31 24:00:00": 946684800000,
@@ -69,6 +71,7 @@ export const withConflict: TimelineDocument = Object.freeze({
 });
 
 export const history: TimelineDocument = Object.freeze({
+  id: "history",
   rank: 1,
   timeline: {
     "0000-01-01T00:00:00Z": "Start of the 1st Century",
@@ -97,6 +100,7 @@ export const history: TimelineDocument = Object.freeze({
 });
 
 export const beforeUnix: TimelineDocument = Object.freeze({
+  id: "beforeUnix",
   rank: 1,
   timeline: {
     "0000-01-01T00:00:00Z": "Start of the 1st Century",

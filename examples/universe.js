@@ -48,7 +48,9 @@ const rawData = new Map(files.map(_ => [_, readFileSync(_, "utf-8")]));
 const plainData = new Map(rawData.entries().map(([filename, data]) => [filename, parse(data)]));
 
 // Load raw data to normalized model.
-const data = new Map(plainData.entries().map(([filename, data]) => [filename, load(data)]));
+const data = new Map(
+  plainData.entries().map(([filename, data]) => [filename, load(data, filename)]),
+);
 
 const metrics = new Map(
   data.entries().map(([filename, timeline]) => [filename, analyze(timeline.records)]),
@@ -69,8 +71,7 @@ const globalLatest = metrics
 const yearEarliest = new Date(globalEarliest).getFullYear();
 data.set("timelines/.decoration.nye", {
   meta: {
-    color: "#808080",
-    link: false,
+    color: "#FFFFFF",
     prefix: "🎆",
   },
   records: [

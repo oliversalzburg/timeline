@@ -1,4 +1,5 @@
 export interface TimelineDocument {
+  id: string;
   color?: string;
   link?: boolean;
   prefix?: string;
@@ -13,6 +14,7 @@ export interface TimelineEntry {
 export type TimelineRecord = [number, TimelineEntry];
 export type Timeline = {
   meta: {
+    id: string;
     color?: string;
     link?: boolean;
     prefix?: string;

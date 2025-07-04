@@ -9,7 +9,7 @@ export const voidInvalidEntry = (entry?: unknown) => {
   return { title: "Entry is malformed. Please check input document." };
 };
 
-export const load = (document: TimelineDocument): Timeline => {
+export const load = (document: TimelineDocument, assignId?: string): Timeline => {
   if (!("timeline" in document)) {
     throw new InvalidOperationError(
       "The provided document does not contain a 'timeline' property! This document can not be loaded.",
@@ -43,6 +43,7 @@ export const load = (document: TimelineDocument): Timeline => {
 
   return {
     meta: {
+      id: assignId ?? document.id,
       color: document.color,
       link: document.link,
       prefix: document.prefix,
