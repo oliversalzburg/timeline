@@ -104,9 +104,11 @@ timeline:
     UFO: Enemy Unknown
     Mythos Games / Microprose
   1994-06-01:
-    - Die Siedler
+    - |-
+      Die Siedler
       Blue Byte
-    - Theme Park
+    - |-
+      Theme Park
       Bullfrog Productions
   1994-07-20: |-
     Star Wars: TIE Fighter
@@ -127,7 +129,8 @@ timeline:
     Full Throttle
     LucasArts
   1995-06-01:
-    - Biing!
+    - |-
+      Biing!
       reline Software
     - |-
       X-COM: Terror from the Deep
@@ -217,9 +220,11 @@ timeline:
     Hexen II
     Raven Software
   1997-10-03:
-    - Age of Empires
+    - |-
+      Age of Empires
       Ensemble Studios
-    - Constructor
+    - |-
+      Constructor
       System 3
   1997-10-10: |-
     Fallout
@@ -369,15 +374,18 @@ timeline:
     Serious Sam: The Second Encounter
     Croteam
   2002-03-28:
-    - Might and Magic IX
+    - |-
+      Might and Magic IX
       New World Computing
-    - Heroes of Might and Magic IV
+    - |-
+      Heroes of Might and Magic IV
       New World Computing
   2002-03-29: |-
     Tony Hawk's Pro Skater 3
     Neversoft
   2002-05-21:
-    - Grand Theft Auto III
+    - |-
+      Grand Theft Auto III
       DMA Design
     - |-
       Soldier of Fortune II: Double Helix
@@ -413,7 +421,8 @@ timeline:
     - |-
       Counter-Strike: Condition Zero
       Ritual Entertainment / Turtle Rock Studios / Valve
-    - Far Cry
+    - |-
+      Far Cry
       Crytek
   2004-08-03: |-
     Doom III
@@ -455,11 +464,14 @@ timeline:
     Serious Sam 2
     Croteam
   2005-10-18:
-    - Age of Empires III
+    - |-
+      Age of Empires III
       Ensemble Studios
-    - F.E.A.R First Encounter Assault Recon
+    - |-
+      F.E.A.R First Encounter Assault Recon
       Monolith Productions
-    - Quake 4
+    - |-
+      Quake 4
       Raven Software
   2005-10-27: |-
     Half-Life 2: Lost Coast
@@ -619,7 +631,8 @@ timeline:
     - |-
       Saints Row: The Third
       Volition
-    - Assassin's Creed Revelations
+    - |-
+      Assassin's Creed Revelations
       Ubisoft Montreal
   2011-11-18: |-
     Minecraft
@@ -691,9 +704,11 @@ timeline:
     Black Mesa Early-Access
     Crowbar Collective
   2015-09-29:
-    - Might & Magic Heroes VII
+    - |-
+      Might & Magic Heroes VII
       Limbic Entertainment
-    - Tony Hawk's Pro Skater 5
+    - |-
+      Tony Hawk's Pro Skater 5
       Robomodo / Disruptive Games
   2015-11-11: |-
     Fallout 4
