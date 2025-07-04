@@ -1,7 +1,7 @@
 import { isNil, mustExist } from "@oliversalzburg/js-utils/data/nil.js";
 import { InvalidOperationError } from "@oliversalzburg/js-utils/errors/InvalidOperationError.js";
 import { formatMilliseconds } from "@oliversalzburg/js-utils/format/milliseconds.js";
-import { rgb2hsl } from "@oliversalzburg/js-utils/graphics/color.js";
+import { hsl2rgb, rgb2hsl } from "@oliversalzburg/js-utils/graphics/color.js";
 import { hslPalette } from "@oliversalzburg/js-utils/graphics/palette.js";
 import { clamp } from "@oliversalzburg/js-utils/math/core.js";
 import { FONTS_SYSTEM, MILLISECONDS } from "./constants.js";
@@ -26,6 +26,37 @@ export const fontColorForFill = (fillColor: string): string => {
   );
   const hsl = rgb2hsl(components[0], components[1], components[2]);
   return hsl[2] < 180 ? "#ffffff" : "#000000";
+};
+
+export const matchLuminance = (toAdjust: string, target: string): string => {
+  if (toAdjust === target) {
+    return toAdjust;
+  }
+
+  const componentsBase = mustExist(toAdjust.substring(1).match(/../g)).map(x =>
+    Number.parseInt(x, 16),
+  );
+  const componentsTarget = mustExist(target.substring(1).match(/../g)).map(x =>
+    Number.parseInt(x, 16),
+  );
+  const hslBase = rgb2hsl(
+    componentsBase[0] / 255,
+    componentsBase[1] / 255,
+    componentsBase[2] / 255,
+  );
+  const hslTarget = rgb2hsl(
+    componentsTarget[0] / 255,
+    componentsTarget[1] / 255,
+    componentsTarget[2] / 255,
+  );
+
+  return `#${hsl2rgb(hslBase[0], hslBase[1], hslTarget[2])
+    .map(x =>
+      Math.floor(x * 255)
+        .toString(16)
+        .padStart(2, "0"),
+    )
+    .join("")}`;
 };
 
 /**
@@ -127,6 +158,7 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
       const colorsGeneratedFill = new Set<string>();
       const colorsGeneratedPen = new Set<string>();
       const colorsFill = new Set<string>();
+      let colorLuminanceSource: string | undefined;
       let colorPen: string | undefined;
       let colorPenRank = -1;
       const prefixes = new Set<string>();
@@ -154,11 +186,14 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
           // We pick the color from the timeline with the largest rank.
           // For timelines with equal rank, the behavior is undefined.
           if (colorPenRank < (timeline.meta.rank ?? 0)) {
+            colorLuminanceSource = timeline.meta.color;
             colorPenRank = timeline.meta.rank ?? 0;
             colorPen = timeline.meta.color;
           }
         } else {
-          colorsFill.add(mustExist(colors.get(timeline)).fill);
+          const fill = mustExist(colors.get(timeline)).fill;
+          colorsFill.add(fill);
+          colorLuminanceSource ??= fill;
         }
 
         if (!isNil(timeline.meta.prefix)) {
@@ -179,7 +214,9 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
       const dateString = options?.dateRenderer
         ? options.dateRenderer(timestamp)
         : new Date(timestamp).toDateString();
-      const colorsFillPalette = [...colorsFill];
+      const colorsFillPalette = [...colorsFill].map(_ =>
+        matchLuminance(_, mustExist(colorLuminanceSource)),
+      );
 
       const nodeProperties: Partial<NodeProperties> = {
         color: colorPen,
