@@ -4,7 +4,7 @@ import { expect } from "chai";
 import { describe, it } from "mocha";
 import { history, random, snapshotHasRegression, snapshotIdentity } from "./fixtures/documents.js";
 import { load } from "./loader.js";
-import { render } from "./renderer.js";
+import { fontColorForFill, render } from "./renderer.js";
 import type { TimelineDocument } from "./types.js";
 
 /**
@@ -17,6 +17,19 @@ describe("Renderer", () => {
       0,
       "The test suite must be executed in the UTC time zone.",
     );
+  });
+
+  it("should produce the expected font colors", () => {
+    const colors = {
+      "#004db9": "#ffffff",
+    };
+    Object.entries(colors).forEach(([fill, font]) => {
+      const generated = fontColorForFill(fill);
+      expect(generated).to.equal(
+        font,
+        `Generated font color '${generated}' doesn't match expected font color '${font}'.`,
+      );
+    });
   });
 
   it("should render timelines correctly (fixture 1)", function () {

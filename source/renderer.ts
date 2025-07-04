@@ -25,7 +25,7 @@ export const fontColorForFill = (fillColor: string): string => {
     Number.parseInt(x, 16),
   );
   const hsl = rgb2hsl(components[0], components[1], components[2]);
-  return hsl[2] < 0.5 ? "#ffffff" : "#000000";
+  return hsl[2] < 180 ? "#ffffff" : "#000000";
 };
 
 /**
