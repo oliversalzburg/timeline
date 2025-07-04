@@ -1,10 +1,11 @@
 import { isNil, mustExist } from "@oliversalzburg/js-utils/data/nil.js";
 import { InvalidOperationError } from "@oliversalzburg/js-utils/errors/InvalidOperationError.js";
 import { formatMilliseconds } from "@oliversalzburg/js-utils/format/milliseconds.js";
+import { rgb2hsl } from "@oliversalzburg/js-utils/graphics/color.js";
 import { hslPalette } from "@oliversalzburg/js-utils/graphics/palette.js";
 import { clamp } from "@oliversalzburg/js-utils/math/core.js";
 import { FONTS_SYSTEM, MILLISECONDS } from "./constants.js";
-import { gv, makeHtmlString } from "./gv.js";
+import { gv, makeHtmlString, type NodeProperties } from "./gv.js";
 import { roundToDay } from "./operator.js";
 import type { Timeline, TimelineEntry } from "./types.js";
 
@@ -18,6 +19,14 @@ export interface RendererOptions {
   preview: boolean;
   scale: "linear" | "logarithmic";
 }
+
+export const fontColorForFill = (fillColor: string): string => {
+  const components = mustExist(fillColor.substring(1).match(/../g)).map(x =>
+    Number.parseInt(x, 16),
+  );
+  const hsl = rgb2hsl(components[0], components[1], components[2]);
+  return hsl[2] < 0.5 ? "#ffffff" : "#000000";
+};
 
 /**
  * The Renderer in the reference implementation generates a GraphViz graph containing all passed
@@ -170,17 +179,21 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
       const dateString = options?.dateRenderer
         ? options.dateRenderer(timestamp)
         : new Date(timestamp).toDateString();
-      d.node(entry.title, {
+      const colorsFillPalette = [...colorsFill];
+
+      const nodeProperties: Partial<NodeProperties> = {
         color: colorPen,
-        fillcolor: [...colorsFill].join(":"),
+        fillcolor: colorsFillPalette.join(":"),
+        fontcolor: fontColorForFill(colorsFillPalette[0]),
         label: makeHtmlString(
           `${(0 < prefixes.size ? `${[...prefixes].join("")} ` : "") + entry.title}\\n${dateString}`,
         ),
-        penwidth: timestampHasRoots ? 3 : 1,
+        penwidth: 0 < (timeline.meta.rank ?? 0) && timestampHasRoots ? 3 : 1,
         shape: 0 < merges ? "ellipse" : "box",
         style: `filled${merges <= 0 ? ",rounded" : ""}`,
         tooltip: `${formatMilliseconds(timePassedSinceOrigin)} since ${originString}\\n${formatMilliseconds(timePassedSinceThen)} ago`,
-      });
+      };
+      d.node(entry.title, nodeProperties);
     }
 
     previousYear = date.getFullYear();
