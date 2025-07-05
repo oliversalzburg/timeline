@@ -194,6 +194,7 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
           const fill = mustExist(colors.get(timeline)).fill;
           colorsFill.add(fill);
           colorLuminanceSource ??= fill;
+          colorPen ??= timeline.meta.color ?? colors.get(timeline)?.pen;
         }
 
         if (!isNil(timeline.meta.prefix)) {
