@@ -148,21 +148,32 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
       d.raw(`style="dashed,rounded"`);
     }
 
-    let timestampHasRoots = false;
-
+    // We now iterate over all global events at the current timestamp.
     while (
       nextEventIndex < timelineGlobal.length &&
       timelineGlobal[nextEventIndex][0] === timestamp
     ) {
+      // Collect all colors that were configured in the timeline documents.
       const colorsConfigured = new Set<string>();
+      // Collect all generated fill colors for all timelines.
       const colorsGeneratedFill = new Set<string>();
+      // Collect all generated pen colors for all timelines.
       const colorsGeneratedPen = new Set<string>();
+      // Collect all colors to be ultimately used to fill the node.
       const colorsFill = new Set<string>();
+      // Color that will dictate the luminance of gradient fills of nodes for merged events.
       let colorLuminanceSource: string | undefined;
+      // Color to be ultimately used for the pen.
       let colorPen: string | undefined;
+      // The rank of the timeline that dictates the pen color so far.
       let colorPenRank = -1;
+      // The prefixes configured in all timeline documents.
       const prefixes = new Set<string>();
+      // How many events were merged into a single node?
       let merges = -1;
+      let timestampHasRoots = false;
+
+      // We now further iterate over all global events at this timestamp which share the same title.
       let [timestampActual, timeline, entry] = timelineGlobal[nextEventIndex];
       do {
         /**
@@ -175,7 +186,9 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
           throw new InvalidOperationError("This should not happen :(");
         }
 
-        timestampHasRoots = timestampHasRoots || !firstNodeAlreadySeen.has(timeline);
+        // We want to know if any of the events we're looking at, are the first event in their respective
+        // source timeline. We want to highlight such nodes, to indicate the start of a document.
+        timestampHasRoots ||= !firstNodeAlreadySeen.has(timeline);
         firstNodeAlreadySeen.add(timeline);
 
         if (!isNil(timeline.meta.color)) {
