@@ -240,8 +240,8 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
           `${(0 < prefixes.size ? `${[...prefixes].join("")} ` : "") + entry.title}\\n${dateString}`,
         ),
         penwidth: 0 < (timeline.meta.rank ?? 0) && timestampHasRoots ? 3 : 1,
-        shape: 0 < merges ? "ellipse" : "box",
-        style: `filled${merges <= 0 ? ",rounded" : ""}`,
+        shape: "box",
+        style: "filled,rounded",
         tooltip: `${formatMilliseconds(timePassedSinceOrigin)} since ${originString}\\n${formatMilliseconds(timePassedSinceThen)} ago`,
       };
       d.node(entry.title, nodeProperties);
