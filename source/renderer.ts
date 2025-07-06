@@ -18,6 +18,7 @@ export interface RendererOptions {
   origin: number;
   preview: boolean;
   scale: "linear" | "logarithmic";
+  theme: "dark" | "light";
 }
 
 export const fontColorForFill = (fillColor: string): string => {
@@ -76,8 +77,8 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
       a - b !== 0 ? a - b : aentry.title.localeCompare(bentry.title),
     );
 
-  const palettePen = hslPalette(timelines.length, 0, 0.4, 0.6);
-  const paletteFill = hslPalette(timelines.length, 0, 0.4, 0.9);
+  const palettePen = hslPalette(timelines.length, 0, 0.4, options.theme === "light" ? 0.6 : 0.4);
+  const paletteFill = hslPalette(timelines.length, 0, 0.4, options.theme === "light" ? 0.9 : 0.1);
   const colors = new Map(
     timelines.map((_, index) => [
       _,
@@ -97,6 +98,7 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
   //const FONT_EDGES = "Master Photograph";
   d.raw(`node [fontcolor="${FONT_COLOR}"; fontname="${FONTS_SYSTEM}"; fontsize="${FONT_SIZE}";]`);
   d.raw(`edge [fontcolor="${FONT_COLOR}"; fontname="${FONTS_SYSTEM}"; fontsize="${FONT_SIZE}";]`);
+  d.raw('bgcolor="transparent"');
   d.raw('comment=" "');
   d.raw(`fontcolor="${FONT_COLOR}"`);
   d.raw(`fontname="${FONTS_SYSTEM}"`);
