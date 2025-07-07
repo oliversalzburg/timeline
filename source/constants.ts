@@ -10,3 +10,5 @@ export const MILLISECONDS = {
 
 export const FONTS_SYSTEM =
   "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif";
+
+export const TRANSPARENT = "transparent";

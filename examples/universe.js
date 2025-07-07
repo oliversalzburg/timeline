@@ -5,7 +5,7 @@ import { basename } from "node:path";
 import { mustExist } from "@oliversalzburg/js-utils/data/nil.js";
 import { parse } from "yaml";
 import { analyze } from "../lib/analyzer.js";
-import { MILLISECONDS } from "../lib/constants.js";
+import { MILLISECONDS, TRANSPARENT } from "../lib/constants.js";
 import { recurringYearly } from "../lib/generator.js";
 import { load } from "../lib/loader.js";
 import { map, sort, uniquify } from "../lib/operator.js";
@@ -71,7 +71,8 @@ const globalLatest = metrics
 const yearEarliest = new Date(globalEarliest).getFullYear();
 data.set("timelines/.decoration.nye", {
   meta: {
-    color: "#FFFFFF",
+    color: TRANSPARENT,
+    id: "nye",
     prefix: "🎆",
   },
   records: [

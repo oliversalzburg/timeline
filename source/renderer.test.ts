@@ -1,11 +1,12 @@
 /** biome-ignore-all lint/style/noUnusedTemplateLiteral: Consistency overrules */
 
+import { mustExist } from "@oliversalzburg/js-utils/data/nil.js";
 import { expect } from "chai";
 import { describe, it } from "mocha";
 import { history, random, snapshotHasRegression, snapshotIdentity } from "./fixtures/documents.js";
 import { load } from "./loader.js";
-import { fontColorForFill, render } from "./renderer.js";
-import type { TimelineDocument } from "./types.js";
+import { matchFontColorTo, render } from "./renderer.js";
+import type { RGBTuple, TimelineDocument } from "./types.js";
 
 /**
  * Renderer
@@ -24,7 +25,10 @@ describe("Renderer", () => {
       "#004db9": "#ffffff",
     };
     Object.entries(colors).forEach(([fill, font]) => {
-      const generated = fontColorForFill(fill);
+      const rgb = mustExist(fill.substring(1).match(/../g)).map(x =>
+        Number.parseInt(x, 16),
+      ) as RGBTuple;
+      const generated = matchFontColorTo(rgb);
       expect(generated).to.equal(
         font,
         `Generated font color '${generated}' doesn't match expected font color '${font}'.`,

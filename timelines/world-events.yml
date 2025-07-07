@@ -1,5 +1,5 @@
 ---
-color: "#FFFFFF"
+color: transparent
 prefix: 🌍
 timeline:
   1970-01-01: UNIX Time Epoch starts 00:00 UTC

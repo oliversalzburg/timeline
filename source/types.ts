@@ -29,3 +29,6 @@ export interface TimelineMetrics {
   timeEarliest: number;
   timeLatest: number;
 }
+export type RGBTuple = [number, number, number];
+export type RGBATuple = [number, number, number, number];
+export type RenderMode = "dark" | "light";
