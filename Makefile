@@ -37,12 +37,12 @@ render-smoke: universe-preview
 
 render-preview: universe-preview
 	@echo "Rendering preview SVG image with dot. This can take several minutes! Please wait..."
-	dot -v -O -Tsvg timelines/.universe.gv
+	dot -O -Tsvg:cairo timelines/.universe.gv
 	@echo "SVG image rendered successfully."
 
 render-hq: universe
 	@echo "Rendering HQ SVG image with dot. This can take from several hours up to days! You are not supposed to run this on your local machine! Please wait..."
-	dot -v5 -O -Tsvg timelines/.universe.gv
+	dot -v5 -O -Tsvg:cairo timelines/.universe.gv
 	@echo "SVG image rendered successfully."
 
 
