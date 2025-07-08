@@ -8,12 +8,14 @@ timeline:
   1962-12-11: Lawrence of Arabia
   1972-01-11: A Clockwork Orange
   1972-03-14: The Godfather
+  1973-08-01: The Real George Carlin
   1973-12-25: The Sting
   1974-12-20: The Godfather II
   1975-04-03: Monty Python and the Holy Grail
   1975-09-21: Dog Day Afternoon
   1976-02-09: Taxi Driver
   1977-11-27: The Hobbit
+  1978-09-08: "George Carlin: Again!"
   1978-11-15: The Lord of the Rings
   1979-05-28: Alien
   1979-09-26: Apocalypse Now
@@ -42,6 +44,7 @@ timeline:
   1984-06-08:
     - Ghostbusters
     - Gremlins
+  1984-06-22: "George Carlin: Carlin on Campus"
   1984-10-26: The Terminator
   1985-03-25: |-
     🏆 Amadeus
@@ -52,6 +55,7 @@ timeline:
   1986-03-24: |-
     🏆 Out of Africa
     58th Academy Awards Best Picture
+  1986-06-14: "George Carlin: Playin' with Your Head"
   1987-03-06: Lethal Weapon
   1987-03-30: |-
     🏆 Platoon
@@ -62,6 +66,7 @@ timeline:
   1987-06-26: Full Metal Jacket
   1987-11-25: "Eddie Murphy: Raw"
   1988-03-18: Police Academy 5
+  1988-04-08: "George Carlin: What Am I Doing in New Jersey?"
   1988-04-11: |-
     🏆 The Last Emperor
     60th Academy Awards Best Picture
@@ -79,6 +84,7 @@ timeline:
     🏆 Driving Miss Daisy
     62nd Academy Awards Best Picture
   1990-05-25: Back to the Future Part III
+  1990-06-02: "George Carlin: Doin' It Again"
   1990-06-15: Gremlins 2
   1990-07-03: Die Hard 2
   1990-09-12: GoodFellas
@@ -93,6 +99,7 @@ timeline:
   1992-03-30: |-
     🏆 The Silence of the Lambs
     64th Academy Awards Best Picture
+  1992-04-25: "George Carlin: Jammin' in New York"
   1992-05-15: Lethal Weapon 3
   1992-08-13: Braindead
   1992-09-02: Reservoir Dogs
@@ -135,10 +142,13 @@ timeline:
   1996-03-25: |-
     🏆 Braveheart
     68th Academy Awards Best Picture
+  1996-03-30: "George Carlin: Back in Town"
   1996-04-05: Fargo
   1996-06-25: Independence Day
   1996-09-20: Last Man Standing
   1996-12-12: Basquiat
+  1997-02-23: "George Carlin: Personal Favorites"
+  1997-02-28: "George Carlin: 40 Years of Comedy"
   1997-02-27: Donnie Brasco
   1997-03-06: Kleines Arschloch - Der Film
   1997-03-24: |-
@@ -163,6 +173,7 @@ timeline:
   1998-07-11: Cube
   1998-07-24: Saving Private Ryan
   1998-08-20: Run Lola Run
+  1999-02-06: "George Carlin: You Are All Diseased"
   1999-02-19: Office Space
   1999-02-26: 8MM
   1999-03-21: |-
@@ -205,6 +216,7 @@ timeline:
   2001-06-08: Swordfish
   2001-10-05: Training Day
   2001-11-01: Monsters, Inc.
+  2001-11-17: "George Carlin: Complaints & Grievances"
   2001-12-18: "The Lord of the Rings: The Fellowship of the Ring"
   2002-03-14: Ice Age
   2002-03-24: |-
@@ -252,73 +264,290 @@ timeline:
   2004-09-16: Downfall
   2004-09-24: The Machinist
   2004-09-30: Layer Cake
+  2004-10-07: Pure Hate
   2004-10-22: The Grudge
   2004-10-27: The Incredibles
   2004-11-09: District B13
   2004-12-25: The Aviator
+  2005-01-26: March of the Penguins
+  2005-02-02: Unleashed
+  2005-02-08: Constantine
   2005-02-27: |-
     🏆 Million Dollar Baby
     77th Academy Awards Best Picture
+  2005-04-01: Sin City
+  2005-04-14: The Amityville Horror
+  2005-05-25: Madagascar
+  2005-06-15: Batman Begins
+  2005-07-08: The Descent
+  2005-07-21: The Island
+  2005-08-19: "Louis C.K.: One Night Stand"
+  2005-09-14: Kiss Kiss Bang Bang
+  2005-09-16:
+    - Lord of War
+    - "Bill Burr: One Night Stand"
+  2005-09-30: A History of Violence
+  2005-11-05: "George Carlin: Life Is Worth Losing"
+  2006-02-24: Lucky Number Slevin
   2006-03-05: |-
     🏆 Crash
     78th Academy Awards Best Picture
+  2006-03-23: The Lives of Others
   2006-04-07: Feuer über Deutschland
+  2006-06-30: An Inconvenient Truth
+  2006-07-06: "Pirates of the Caribbean: Dead Man's Chest"
+  2006-07-07: A Scanner Darkly
+  2006-07-27: The Host
+  2006-08-31: Crank
+  2006-09-01: Idiocracy
+  2006-09-13: "Perfume: The Story of a Murderer"
+  2006-10-04: The Departed
+  2006-10-17: The Prestige
+  2006-11-22: Déjà Vu
+  2006-12-09: Smokin' Aces
+  2007-01-13: "Louis C.K.: Shameless"
+  2007-02-06: Hannibal Rising
+  2007-02-14: Hot Fuzz
+  2007-02-16: The Bridge
   2007-02-25: |-
     🏆 The Departed
     79th Academy Awards Best Picture
+  2007-03-07: "300"
+  2007-03-22: The Counterfeiters
+  2007-03-29: Black Sheep
+  2007-05-01: Spider-Man 3
+  2007-05-19: "Pirates of the Caribbean: At World's End"
+  2007-06-05: Ocean's Thirteen
+  2007-06-20: Live Free or Die Hard
+  2007-06-27: Transformers
+  2007-06-28: Ratatouille
+  2007-07-25: The Simpsons Movie
+  2007-09-01: Encounters at the End of the World
+  2007-09-12: Helvetica
+  2007-09-18: Gone Baby Gone
   2007-09-28: Feuer über Deutschland 2
+  2007-11-23: "[REC]"
+  2008-01-04: There Will Be Blood
+  2008-01-15: Cloverfield
   2008-02-24: |-
     🏆 No Country for Old Men
     80th Academy Awards Best Picture
+  2008-02-28: The Bank Job
+  2008-02-29: In Bruges
+  2008-03-01: "George Carlin: It's Bad for Ya!"
+  2008-03-13: The Wave
+  2008-04-02: "Futurama: Bender's Big Score"
+  2008-04-30: Iron Man
+  2008-06-12: Martyrs
+  2008-06-22: WALL-E
+  2008-06-24: "Futurama: The Beast with a Billion Backs"
+  2008-07-16: The Dark Knight
+  2008-08-23: "Bill Burr: Why Do I Do This?"
+  2008-09-25: The Baader Meinhof Complex
+  2008-09-27: "Chris Rock: Kill the Messenger"
+  2008-10-01: "Louis C.K.: Chewed Up"
   2008-10-24: Feuer über Deutschland 3
+  2008-10-20: "Madagascar: Escape 2 Africa"
+  2008-11-03: "Futurama: Bender's Game"
+  2008-12-05: Slumdog Millionaire
   2009-02-22: |-
     🏆 Slumdog Millionaire
     81st Academy Awards Best Picture
+  2009-02-03: "Futurama: Into the Wild Green Yonder"
+  2009-03-13: Bronson
+  2009-04-16: "Crank: High Voltage"
+  2009-05-20: Terminator Salvation
+  2009-05-22: Objectified
+  2009-05-28: Up
+  2009-06-19: "Transformers: Revenge of the Fallen"
+  2009-07-31: The Cove
+  2009-08-05: District 9
+  2009-08-19: Inglourious Basterds
+  2009-09-18: The Informant!
+  2009-09-24: The White Ribbon
+  2009-10-10: "2012"
+  2009-10-14: "The Descent: Part 2"
+  2009-11-25: The Road
+  2009-12-15: Avatar
+  2010-01-26: "Louis C.K.: Hilarious"
+  2010-02-14: Shutter Island
+  2010-03-05: Exit Through the Gift Shop
   2010-03-07: |-
     🏆 The Hurt Locker
     82nd Academy Awards Best Picture
+  2010-04-28: Iron Man 2
+  2010-06-16: Toy Story 3
+  2010-07-15: Inception
+  2010-09-18: "Bill Burr: Let It Go"
+  2010-10-08: Inside Job
+  2010-10-12: "Bomb Berlin: Special"
   2011-02-27: |-
     🏆 The King's Speech
     83rd Academy Awards Best Picture
+  2011-05-15: "Pirates of the Caribbean: On Stranger Tides"
+  2011-06-28: "Transformers: Dark of the Moon"
+  2011-07-22: "Captain America: The First Avenger"
+  2011-09-09: Urbanized
+  2011-12-07: New Kids Nitro
+  2011-12-12: 1UP - One United Power
   2012-02-26: |-
     🏆 The Artist
     84th Academy Awards Best Picture
+  2012-03-30: "[REC]³ Genesis"
+  2012-04-12: The Cabin in the Woods
+  2012-05-23: Men in Black 3
+  2012-05-30: Prometheus
+  2012-06-06: "Madagascar 3: Europe's Most Wanted"
+  2012-06-13: The Hunt
+  2012-07-06: The Queen of Versailles
+  2012-07-17: The Dark Knight Rises
+  2012-08-16: "Bill Burr: You People Are All The Same"
+  2012-09-26: Looper
+  2012-11-01: The Act of Killing
+  2012-12-12: "The Hobbit: An Unexpected Journey"
+  2012-12-25: Django Unchained
+  2013-02-06: A Good Day to Die Hard
+  2013-02-08: "TPB AFK: The Pirate Bay - Away from Keyboard"
   2013-02-24: |-
     🏆 Argo
     85th Academy Awards Best Picture
+  2013-04-13: "Louis C.K.: Oh My God"
+  2013-04-18: Iron Man 3
+  2013-06-12: Man of Steel
+  2013-06-19:
+    - Monsters University
+    - World War Z
+  2013-12-11: "The Hobbit: The Desolation of Smaug"
+  2013-12-18: "Anchorman 2: The Legend Continues"
+  2013-12-25: The Wolf of Wall Street
   2014-03-02: |-
     🏆 12 Years a Slave
     86th Academy Awards Best Picture
+  2014-03-20: "Captain America: The Winter Soldier"
+  2014-03-21: "Todd Barry: The Crowd Work Tour"
+  2014-04-10: Locke
+  2014-06-25: "Transformers: Age of Extinction"
+  2014-10-01: Wolume. 2 - A Vandals Way of Life
+  2014-10-22: John Wick
+  2014-11-05: Interstellar
+  2014-11-17: Banksy Does New York
+  2014-12-05: "Bill Burr: I'm Sorry You Feel That Way"
+  2014-12-10: "The Hobbit: The Battle of the Five Armies"
+  2015-01-27: "Louis C.K.: Live at The Comedy Store"
   2015-02-22: |-
     🏆 Birdman or (The Unexpected Virtue of Ignorance)
     87th Academy Awards Best Picture
+  2015-06-11: Son of Saul
+  2015-06-17: Inside Out
+  2015-06-23: Terminator Genisys
+  2015-07-14: Ant-Man
+  2015-09-30: The Martian
+  2015-10-08: Look Who's Back
+  2015-11-25: The Good Dinosaur
+  2015-12-30: The Hateful Eight
+  2016-01-06: The Revenant
+  2016-02-11: Zootopia
+  2016-02-27: Girl Power
   2016-02-28: |-
     🏆 Spotlight
     88th Academy Awards Best Picture
+  2016-04-27: "Captain America: Civil War"
+  2016-05-26: Tickled
+  2016-06-16: Finding Dory
+  2016-06-22: "Independence Day: Resurgence"
+  2016-06-24: Wall Writers
+  2016-11-04: Off the Rails
+  2017-01-31: "Bill Burr: Walk Your Way Out"
+  2017-02-08:
+    - "Grifters Code 6: Über Freaks"
+    - "John Wick: Chapter 2"
+  2017-02-15: "March of the Penguins 2: The Next Step"
   2017-02-26: |-
     🏆 Moonlight
     89th Academy Awards Best Picture
+  2017-04-04: Louis C.K. 2017
+  2017-05-09: "Alien: Covenant"
+  2017-05-23: "Pirates of the Caribbean: Dead Men Tell No Tales"
+  2017-06-16: "Transformers: The Last Knight"
+  2017-07-28: "An Inconvenient Sequel: Truth to Power"
+  2017-08-02: A Taxi Driver
+  2017-11-11: Obey Giant
+  2017-12-17: "Berlin Kidz: Fuck The System"
+  2018-02-14: "Chris Rock: Tamborine"
   2018-03-04: |-
     🏆 The Shape of Water
     90th Academy Awards Best Picture
+  2018-03-13: "Ricky Gervais: Humanity"
+  2018-05-10: Abducted in Plain Sight
+  2018-06-14: Incredibles 2
+  2018-06-29: Three Identical Strangers
+  2018-07-04: Ant-Man and the Wasp
+  2018-09-28: Venom
+  2018-12-14: Free Solo
   2019-02-24: |-
     🏆 Green Book
     91st Academy Awards Best Picture
+  2019-05-15: "John Wick: Chapter 3 - Parabellum"
+  2019-05-30: Parasite
+  2019-06-19: Toy Story 4
+  2019-09-10: "Bill Burr: Paper Tiger"
+  2019-10-18: Tell Me Who I Am
+  2019-10-23: "Terminator: Dark Fate"
   2020-02-09: |-
     🏆 Parasite
     92nd Academy Awards Best Picture
+  2020-04-04: Sincerely Louis C.K.
+  2020-04-23: La folie art brut
+  2020-09-24: Another Round
   2021-04-25: |-
     🏆 Nomadland
     93rd Academy Awards Best Picture
+  2021-09-30: "Venom: Let There Be Carnage"
+  2021-06-29: Decision to Leave
+  2021-11-25: "South Park: Post COVID"
+  2021-12-10: "Louis C.K.: Live at the Beacon Theater"
+  2021-12-16: "South Park: Post COVID: The Return of COVID"
+  2021-12-18: "Louis C.K.: Sorry"
   2022-03-27: |-
     🏆 CODA
     94th Academy Awards Best Picture
+  2022-05-24: "Ricky Gervais: SuperNature"
+  2022-06-01: South Park the Streaming Wars
+  2022-06-06: "Bill Burr Presents: Friends Who Kill"
+  2022-07-12: "Bill Burr: Live at Red Rocks"
+  2022-07-13: South Park the Streaming Wars Part 2
+  2022-11-10: Mister Organ
+  2022-12-14: "Avatar: The Way of Water"
+  2023-01-28: "Louis C.K.: Back to the Garden"
+  2023-03-04: "Chris Rock: Selective Outrage"
   2023-03-12: |-
     🏆 Everything Everywhere All at Once
     95th Academy Awards Best Picture
+  2023-03-22: "John Wick: Chapter 4"
+  2023-08-23: Anatomy of a Fall
+  2023-09-08: The Contestant
+  2023-10-27: "South Park: Joining the Panderverse"
+  2023-12-15: The Zone of Interest
+  2023-12-20: South Park (Not Suitable for Children)
+  2023-12-25: "Ricky Gervais: Armageddon"
   2024-03-10: |-
     🏆 Oppenheimer
     96th Academy Awards Best Picture
+  2024-06-11: Inside Out 2
+  2024-08-29: Flow
+  2024-09-18: The Substance
+  2024-10-22: "Venom: The Last Dance"
+  2024-10-25: Conclave
+  2024-10-31: Absolution
+  2024-12-25: Nosferatu
+  2025-01-23: The Brutalist
+  2025-01-28: Companion
   2025-03-02: |-
     🏆 Anora
     97th Academy Awards Best Picture
+  2025-03-14: "Bill Burr: Drop Dead Years"
+  2025-05-23: The Phoenician Scheme
+  2025-11-26: Zootopia 2
+  2025-12-17: "Avatar: Fire and Ash"
+  2029-12-19: "Avatar 4"
+  2031-12-17: "Avatar 5"
