@@ -2,6 +2,24 @@
 color: transparent
 prefix: 🌍
 timeline:
+  1945-02-04: Yalta Conference
+  1945-05-08: Germany Unconditionally Surrenders
+  1945-07-17: Potsdam Conference
+  1945-08-01: Potsdam Agreement
+  1945-08-06: USA drops Atomic Bomb on Hiroshima
+  1945-08-09: USA drops Atomic Bomb on Nagasaki
+  1945-08-15: Japan announces Unconditional Surrender
+  1945-09-02: End of World War II
+  1945-11-20: Start of Nuremberg War Crimes Tribunal
+  1946-04-21: Formation of Socialist Unity Party of Germany (SED)
+  1946-07-29: Start of Paris Peace Conference
+  1949-09-07: |-
+    Formation of German Democratic Republic
+    Deutsche Demokratische Republik
+  1952-05-26: Special Regime at Demarcation Line (GDR)
+  1955-05-05: End of Occupation of West Germany
+  1961-08-31: Construction of Berlin Wall (GDR)
+  1967-09-01: Modern Frontier (GDR)
   1970-01-01: UNIX Time Epoch starts 00:00 UTC
   1978-10-16: Pope St John Paul II
   1979-12-25: Soviet-Afghan War
@@ -43,6 +61,7 @@ timeline:
   1989-02-25: GNU General Public License, version 1
   1989-06-05: Tank Man Photograph
   1989-11-09: Mauerfall
+  1990-09-12: Treaty on the Final Settlement with Respect to Germany
   1990-08-02: USA invades Iraq (Operation Desert Shield)
   1991-01-17: USA invades Iraq (Operation Desert Storm)
   1991-04-02: 1991 VEI6 Eruption of Mount Pinatubo
