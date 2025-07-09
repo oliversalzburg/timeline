@@ -3,13 +3,64 @@ color: hacking
 prefix: 🧨
 rank: 1
 timeline:
+  1936-06-06: |-
+    ~ Konrad Zuse Begins Construction of Z1
+    16-word floating point memory
+  1941-05-12: |-
+    Konrad Zuse Completes Construction of Z3
+    64 words, 22 bit Memory
+  1943-02-04: Ken Thompson Born
+  1944-03-29: Harvard Mark 1 Operational
+  1945-02-01: |-
+    Z4 Completed at Aerodynamische Versuchsanstalt
+    64 words, 32 bit Memory
+  1948-06-21: |-
+    Machester Baby Operational
+    1,024 bits Memory
+  1948-07-01: |-
+    Intelligent Machinery
+    Alan Mathison Turing
+  1949-04-01: Manchester Mark 1 Operational
+  1950-08-11: Stephen Gary Wozniak Born
+  1950-10-01: |-
+    Computing Machinery and Intelligence
+    Alan Mathison Turing
+  1950-12-30: Bjarne Stroustrup Born
+  1951-02-01: 1st Ferranti Mark 1 Operational
+  1951-12-18: Radia Joy Perlman Born
+  1952-03-31: |-
+    Alan Mathison Turing Convicted for Being Homosexual
+    Injected 1 Year with Oestrogen as Punishment
+  1952-08-14: |-
+    The Chemical Basis of Morphogenesis
+    Alan Mathison Turing
+  1954-06-07: |-
+    ☠️ Alan Mathison Turing
+    Assumed Suicide
+  1954-09-27: Larry Wall Born
+  1959-08-29: Stephen Wolfram Born
+  1963-05-23: Paul Vixie Born
+  1964-12-13: |-
+    🏅 Werner von Siemens Ring
+    Konrad Ernst Otto Zuse
+  1973-03-09: |-
+    🎖️ Großes Bundesverdienstkreuz
+    Konrad Ernst Otto Zuse
+  1974-10-09: |-
+    ICL 2900 Series Mainframe
+    Konrad Ernst Otto Zuse
+  1987-12-01: |-
+    🏅 Wilhelm-Leuschner-Medaille
+    Konrad Ernst Otto Zuse
   1983-05-19: WarGames
   1984-12-27: Chaos Communication Congress 1984
   1985-12-27: Chaos Communication Congress 1985
   1986-12-27: Chaos Communication Congress 1986
   1987-12-27: Chaos Communication Congress 1987
   1988-12-27: Chaos Communication Congress 1988
-  1989-05-23: ☠️ Karl Koch
+  1989-05-23: |-
+    ☠️ Karl Koch
+    Assumed Suicide
   1989-12-27: Chaos Communication Congress 1989
   1990-12-27: Chaos Communication Congress 1990
   1991-12-27: Chaos Communication Congress 1991
@@ -20,23 +71,32 @@ timeline:
   1994-12-27: Chaos Communication Congress 1994
   1995-08-04: DEF CON 3
   1995-09-15: Hackers
+  1995-12-18: |-
+    ☠️ Konrad Ernst Otto Zuse
+    Natural Causes
   1995-12-27: Chaos Communication Congress 1995
   1996-07-26: DEF CON 4
   1996-12-27: Chaos Communication Congress 1996
+  1997-04-21: Winamp 1.0
   1997-07-09: The Black Hat Briefings
   1997-07-11: DEF CON 5
   1997-12-27: Chaos Communication Congress 1997
   1998-07-02: 23 - Nichts ist so wie es scheint
   1998-07-29: The Black Hat Briefings '98
   1998-07-31: DEF CON 6
+  1998-09-08: Winamp 2.0
   1998-12-27: Chaos Communication Congress 1998
   1999-03-31: The Matrix
+  1999-06-01: Napster Launches
   1999-07-07: The Black Hat Briefings '99
   1999-07-09: DEF CON 7
   1999-12-27: 16C3
+  2000-05-03: LimeWire Launches
+  2000-09-06: eDonkey2000 Launches
   2000-07-26: The Black Hat Briefings '00
   2000-07-28: DEF CON 8
   2000-12-27: 17C3
+  2001-03-01: Kazaa Launches
   2001-07-11: The Black Hat Briefings '01
   2001-07-30: DEF CON 9
   2001-12-27: 18C3
@@ -44,6 +104,7 @@ timeline:
   2002-08-02: DEF CON 10
   2002-12-27: 19C3
   2003-08-01: DEF CON 11
+  2003-09-15: The Pirate Bay Launches
   2003-12-27: 20C3
   2004-07-30: DEF CON 12
   2004-12-27: 21C3
@@ -80,8 +141,12 @@ timeline:
   2019-08-08: DEF CON 27
   2019-12-27: 36C3
   2020-08-06: DEF CON 28 (cancelled)
+  2021-06-23: |-
+    Alan Mathison Turing Portrait
+    Bank of England £50 Note
   2021-08-05: DEF CON 29
   2022-08-11: DEF CON 30
+  2023-04-26: Winamp 5.9.2
   2023-08-10: DEF CON 31
   2023-12-27: 37C3
   2024-08-08: DEF CON 32

@@ -1,8 +1,103 @@
 ---
 color: transparent
 timeline:
+  1985-03-25: Beginn Osterferien 1985
+  1985-04-13: Ende Osterferien 1985
+  1985-05-28: Pfingstferien 1985
+  1985-07-11: Beginn Sommerferien 1985
+  1985-08-21: Ende Sommerferien 1985
+  1985-10-07: Beginn Herbstferien 1985
+  1985-10-12: Ende Herbstferien 1985
+  1985-12-12: Beginn Weihnachtsferien 1985/1986
+  1986-01-11: Ende Weihnachtsferien 1985/1986
+  1986-03-24: Beginn Osterferien 1986
+  1986-04-12: Ende Osterferien 1986
+  1986-05-17: Beginn Pfingstferien 1986
+  1986-05-20: Ende Pfingstferien 1986
+  1986-06-26: Beginn Sommerferien 1986
+  1986-08-06: Ende Sommerferien 1986
+  1986-10-06: Beginn Herbstferien 1986
+  1986-10-17: Ende Herbstferien 1986
+  1986-12-22: Beginn Weihnachtsferien 1986/1987
+  1987-01-10: Ende Weihnachtsferien 1986/1987
+  1987-04-03: Beginn Osterferien 1987
+  1987-04-21: Ende Osterferien 1987
+  1987-05-09: Pfingstferien 1987
+  1987-06-19: Beginn Sommerferien 1987
+  1987-07-31: Ende Sommerferien 1987
+  1987-10-05: Beginn Herbstferien 1987
+  1987-10-09: Ende Herbstferien 1987
+  1987-12-21: Beginn Weihnachtsferien 1987/1988
+  1988-01-08: Ende Weihnachtsferien 1987/1988
+  1988-03-26: Beginn Osterferien 1988
+  1988-04-16: Ende Osterferien 1988
+  1988-05-21: Beginn Pfingstferien 1988
+  1988-05-24: Ende Pfingstferien 1988
+  1988-07-25: Beginn Sommerferien 1988
+  1988-09-02: Ende Sommerferien 1988
+  1988-10-22: Beginn Herbstferien 1988
+  1988-10-28: Ende Herbstferien 1988
+  1988-12-23: Beginn Weihnachtsferien 1988/1989
+  1989-01-14: Ende Weihnachtsferien 1988/1989
+  1989-03-20: Beginn Osterferien 1989
+  1989-04-07: Ende Osterferien 1989
+  1989-05-13: Beginn Pfingstferien 1989
+  1989-05-16: Ende Pfingstferien 1989
+  1989-07-17: Beginn Sommerferien 1989
+  1989-08-26: Ende Sommerferien 1989
+  1989-10-16: Beginn Herbstferien 1989
+  1989-10-28: Ende Herbstferien 1989
+  1989-12-23: Beginn Weihnachtsferien 1989/1990
+  1990-01-13: Ende Weihnachtsferien 1989/1990
+  1990-03-23: Beginn Osterferien 1990
+  1990-04-13: Ende Osterferien 1990
+  1990-05-18: Beginn Pfingstferien 1990
+  1990-05-21: Ende Pfingstferien 1990
+  1990-07-01: Beginn Sommerferien 1990
+  1990-08-10: Ende Sommerferien 1990
+  1990-10-04: Beginn Herbstferien 1990
+  1990-10-18: Ende Herbstferien 1990
+  1990-12-23: Beginn Weihnachtsferien 1990/1991
+  1991-01-11: Ende Weihnachtsferien 1990/1991
+  1991-03-23: Beginn Osterferien 1991
+  1991-04-13: Ende Osterferien 1991
+  1991-05-18: Beginn Pfingstferien 1991
+  1991-05-21: Ende Pfingstferien 1991
+  1991-07-01: Beginn Sommerferien 1991
+  1991-08-10: Ende Sommerferien 1991
+  1991-10-04: Beginn Herbstferien 1991
+  1991-10-18: Ende Herbstferien 1991
+  1991-12-23: Beginn Weihnachtsferien 1991/1992
+  1992-01-11: Ende Weihnachtsferien 1991/1992
+  1992-04-03: Beginn Osterferien 1992
+  1992-04-22: Ende Osterferien 1992
+  1992-06-22: Beginn Sommerferien 1992
+  1992-07-31: Ende Sommerferien 1992
+  1992-10-05: Beginn Herbstferien 1992
+  1992-10-16: Ende Herbstferien 1992
+  1992-12-23: Beginn Weihnachtsferien 1992/1993
+  1993-01-08: Ende Weihnachtsferien 1992/1993
+  1993-04-05: Beginn Osterferien 1993
+  1993-04-23: Ende Osterferien 1993
+  1993-07-26: Beginn Sommerferien 1993
+  1993-09-03: Ende Sommerferien 1993
+  1993-10-25: Beginn Herbstferien 1993
+  1993-10-29: Ende Herbstferien 1993
+  1993-12-23: Beginn Weihnachtsferien 1993/1994
+  1994-01-14: Ende Weihnachtsferien 1993/1994
+  1994-03-28: Beginn Osterferien 1994
+  1994-04-15: Ende Osterferien 1994
+  1994-05-24: Beginn Pfingstferien 1994
+  1994-05-25: Ende Pfingstferien 1994
+  1994-07-18: Beginn Sommerferien 1994
+  1994-08-26: Ende Sommerferien 1994
+  1994-10-17: Beginn Herbstferien 1994
+  1994-10-28: Ende Herbstferien 1994
+  1994-12-23: Beginn Weihnachtsferien 1994/1995
+  1995-01-11: Ende Weihnachtsferien 1994/1995
+
   1998-12-24: Beginn Weihnachtsferien 1998/1999
-  1999-01-08: Beginn Weihnachtsferien 1998/1999
+  1999-01-08: Ende Weihnachtsferien 1998/1999
   1999-02-01: Bewegl. Ferientag 1/1999
   1999-05-14: Bewegl. Ferientag 2/1999
   1999-05-25: Bewegl. Ferientag 3/1999
