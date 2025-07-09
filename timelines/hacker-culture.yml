@@ -4,16 +4,26 @@ prefix: 🧨
 rank: 1
 timeline:
   1936-06-06: |-
-    ~ Konrad Zuse Begins Construction of Z1
+    ~ Konrad Zuse (aged 26) Begins Construction of Z1
     16-word floating point memory
+  1938-06-06: |-
+    ~ Z1 Destroyed During Air Raid
+  1904-06-06: |-
+    ~ Konrad Zuse Completes Construction of Z2
   1941-05-12: |-
     Konrad Zuse Completes Construction of Z3
+    Theoretically Turing-Complete
     64 words, 22 bit Memory
+  1942-06-06: |-
+    ~ Konrad Zuse Begins Design of Plankalkül
   1943-02-04: Ken Thompson Born
   1944-03-29: Harvard Mark 1 Operational
   1945-02-01: |-
     Z4 Completed at Aerodynamische Versuchsanstalt
     64 words, 32 bit Memory
+  1945-12-10: |-
+    Electronic Numerical Integrator and Computer (ENIAC)
+    1st Proven Turing-Complete Machine
   1948-06-21: |-
     Machester Baby Operational
     1,024 bits Memory
@@ -34,6 +44,8 @@ timeline:
   1952-08-14: |-
     The Chemical Basis of Morphogenesis
     Alan Mathison Turing
+  1953-07-01: |-
+    ~ Konrad Zuse Completes Construction of Z5
   1954-06-07: |-
     ☠️ Alan Mathison Turing
     Assumed Suicide
@@ -76,6 +88,7 @@ timeline:
     Natural Causes
   1995-12-27: Chaos Communication Congress 1995
   1996-07-26: DEF CON 4
+  1996-11-15: ICQ Launches
   1996-12-27: Chaos Communication Congress 1996
   1997-04-21: Winamp 1.0
   1997-07-09: The Black Hat Briefings
