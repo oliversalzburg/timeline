@@ -1,15 +1,15 @@
 import { expect } from "chai";
 import { describe, it } from "mocha";
-import { gv } from "./gv.js";
+import { dot } from "./dot.js";
 
 /**
- * The GV module provides a helper to render GraphViz graphs, which are authored in plaintext.
+ * The DOT module provides a helper to render GraphViz graphs, which are authored in plaintext.
  * Inside the reference implementation it only serves as a helper construct for the renderer.
  */
 
-describe("GraphViz", () => {
+describe("DOT", () => {
   it("should render a simple graph", () => {
-    const d = gv();
+    const d = dot();
     d.raw("digraph {");
     d.raw("}");
 
@@ -20,7 +20,7 @@ describe("GraphViz", () => {
   });
 
   it("should render nodes", () => {
-    const d = gv();
+    const d = dot();
     d.raw("digraph {");
     d.node("GraphViz is great", { color: "red" });
     d.raw("}");

@@ -5,7 +5,8 @@ import { expect } from "chai";
 import { describe, it } from "mocha";
 import { history, random, snapshotHasRegression, snapshotIdentity } from "./fixtures/documents.js";
 import { load } from "./loader.js";
-import { matchFontColorTo, render } from "./renderer.js";
+import { matchFontColorTo } from "./palette.js";
+import { render } from "./renderer.js";
 import type { RGBTuple, TimelineDocument } from "./types.js";
 
 /**

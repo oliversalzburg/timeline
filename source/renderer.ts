@@ -1,13 +1,12 @@
 import { mustExist } from "@oliversalzburg/js-utils/data/nil.js";
 import { InvalidOperationError } from "@oliversalzburg/js-utils/errors/InvalidOperationError.js";
 import { formatMilliseconds } from "@oliversalzburg/js-utils/format/milliseconds.js";
-import { hsl2rgb, rgb2hsl } from "@oliversalzburg/js-utils/graphics/color.js";
-import { hslPalette } from "@oliversalzburg/js-utils/graphics/palette.js";
 import { clamp } from "@oliversalzburg/js-utils/math/core.js";
 import { FONTS_SYSTEM, MILLISECONDS, TRANSPARENT } from "./constants.js";
-import { gv, makeHtmlString, type NodeProperties } from "./gv.js";
+import { dot, makeHtmlString, type NodeProperties } from "./dot.js";
 import { roundToDay } from "./operator.js";
-import type { RenderMode, RGBATuple, RGBTuple, Timeline, TimelineEntry } from "./types.js";
+import { matchLuminance, palette } from "./palette.js";
+import type { RenderMode, Timeline, TimelineEntry } from "./types.js";
 
 export interface RendererOptions {
   baseUnit: "day" | "week" | "month";
@@ -20,129 +19,6 @@ export interface RendererOptions {
   scale: "linear" | "logarithmic";
   theme: RenderMode;
 }
-
-export const rgbaToString = (rgba: RGBATuple): string =>
-  `#${rgba.map(_ => _.toString(16).padStart(2, "0")).join("")}`;
-
-export const fillColorForPen = (color: RGBATuple): string => {
-  return rgbaToString([color[0], color[1], color[2], Math.floor(color[3] / 2)]);
-};
-export const matchFontColorTo = (color: RGBTuple | RGBATuple): string => {
-  const hsl = rgb2hsl(color[0], color[1], color[2]);
-  return hsl[2] < 180 ? "#ffffff" : "#000000";
-};
-
-export const matchLuminance = (toAdjust: string, target: string): string => {
-  if (toAdjust === target) {
-    return toAdjust;
-  }
-
-  const componentsBase = mustExist(toAdjust.substring(1).match(/../g)).map(x =>
-    Number.parseInt(x, 16),
-  );
-  const componentsTarget = mustExist(target.substring(1).match(/../g)).map(x =>
-    Number.parseInt(x, 16),
-  );
-  const hslBase = rgb2hsl(
-    componentsBase[0] / 255,
-    componentsBase[1] / 255,
-    componentsBase[2] / 255,
-  );
-  const hslTarget = rgb2hsl(
-    componentsTarget[0] / 255,
-    componentsTarget[1] / 255,
-    componentsTarget[2] / 255,
-  );
-
-  return rgbaToString([
-    ...(hsl2rgb(hslBase[0], hslBase[1], hslTarget[2]).map(x => Math.floor(x * 255)) as RGBTuple),
-    255,
-  ]);
-};
-
-export const colorizer = (theme: RenderMode) => {
-  const colors = new Set<string | undefined>();
-  // The user-defined colors in the timeline documents.
-  const entries = new Map<Timeline, string | undefined>();
-  const colorReferences = new Map<string, Set<Timeline>>();
-  const baseColorValues = new Map<Timeline, RGBATuple | undefined>();
-
-  const register = (timeline: Timeline) => {
-    colors.add(timeline.meta.color);
-    entries.set(timeline, timeline.meta.color);
-    // If the timeline uses a named color, register that named color.
-    if (
-      timeline.meta.color !== undefined &&
-      timeline.meta.color !== TRANSPARENT &&
-      !timeline.meta.color.startsWith("#")
-    ) {
-      if (!colorReferences.has(timeline.meta.color)) {
-        colorReferences.set(timeline.meta.color, new Set<Timeline>());
-      }
-      const referenceSet = mustExist(colorReferences.get(timeline.meta.color));
-      referenceSet.add(timeline);
-    }
-    if (timeline.meta.color === undefined) {
-      baseColorValues.set(timeline, undefined);
-    }
-    if (timeline.meta.color === TRANSPARENT) {
-      baseColorValues.set(timeline, [0, 0, 0, 0]);
-    }
-    if (timeline.meta.color?.startsWith("#")) {
-      const components = mustExist(timeline.meta.color.substring(1).match(/../g)).map(x =>
-        Number.parseInt(x, 16),
-      );
-      if (components.length === 3) {
-        baseColorValues.set(timeline, [...(components as RGBTuple), 255]);
-      } else if (components.length === 4) {
-        baseColorValues.set(timeline, components as RGBATuple);
-      } else {
-        baseColorValues.set(timeline, undefined);
-      }
-    }
-  };
-
-  const predictDemand = () => {
-    const requiredToFillReferences = colorReferences.size;
-    const requiredToFillUndefined = [...entries.values().filter(_ => _ === undefined)].length;
-    return requiredToFillReferences + requiredToFillUndefined;
-  };
-
-  const toPalette = () => {
-    const demand = predictDemand();
-    const extraColorValues = hslPalette(demand, 0, 0.4, 0.5);
-    for (const [, references] of colorReferences) {
-      const color = mustExist(extraColorValues.pop());
-      for (const timeline of references) {
-        baseColorValues.set(timeline, [...color, 255]);
-      }
-    }
-    for (const [timeline, color] of baseColorValues) {
-      if (color === undefined) {
-        const color = mustExist(extraColorValues.pop());
-        baseColorValues.set(timeline, [...color, 255]);
-      }
-    }
-    return new Map<Timeline, { fill: string; font: string; pen: string }>(
-      entries.entries().map(([_]) => [
-        _,
-        _.meta.color === TRANSPARENT
-          ? {
-              fill: "transparent",
-              font: matchFontColorTo(theme === "light" ? [255, 255, 255] : [0, 0, 0]),
-              pen: "transparent",
-            }
-          : {
-              fill: fillColorForPen(mustExist(baseColorValues.get(_))),
-              font: matchFontColorTo(mustExist(baseColorValues.get(_))),
-              pen: rgbaToString(mustExist(baseColorValues.get(_))),
-            },
-      ]),
-    );
-  };
-
-  return { predictDemand, register, toPalette };
-};
 
 /**
  * The Renderer in the reference implementation generates a GraphViz graph containing all passed
@@ -163,25 +39,30 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
 
   // We default to dark, as the assume the default output media to be a display.
   // For printing use cases, we'd prefer to use light.
-  const c = colorizer(options.theme ?? "dark");
+  const p = palette<Timeline>(options.theme ?? "dark");
 
   for (const timeline of timelines) {
-    c.register(timeline);
+    p.add(timeline, timeline.meta.color);
   }
 
   // Dump palette for debugging purposes.
   process.stderr.write(
-    `Generated palette for universe (${c.predictDemand()} colors auto-filled):\n`,
+    `Generated palette for universe (${p.predictDemand()} colors auto-filled):\n`,
   );
-  const palette = c.toPalette();
-  for (const [timeline, timelinePalette] of palette) {
-    process.stderr.write(`- ${timeline.meta.id}\n`);
+  const paletteMeta = p.toPalette();
+  const colors = paletteMeta.lookup;
+
+  for (const [color, timelines] of paletteMeta.assignments) {
+    const timelinePalette = mustExist(colors.get(timelines[0]));
     process.stderr.write(
-      `  Pen: ${timelinePalette.pen} Fill: ${timelinePalette.fill} Font: ${timelinePalette.font}\n`,
+      `- ${color} -> Pen: ${timelinePalette.pen} Fill: ${timelinePalette.fill} Font: ${timelinePalette.font}\n`,
     );
+    for (const timeline of timelines) {
+      process.stderr.write(`  ${timeline.meta.id}\n`);
+    }
   }
 
-  const d = gv();
+  const d = dot();
 
   d.raw("digraph timeline {");
   const FONT_SIZE = 12;
@@ -283,20 +164,20 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
         ? options.dateRenderer(timestamp)
         : new Date(timestamp).toDateString();
 
-      const color = mustExist(palette.get(mustExist(leader))).pen;
+      const color = mustExist(colors.get(mustExist(leader))).pen;
       const fillcolor = contributors
         .values()
-        .reduce((colors, timeline) => {
-          const fill = mustExist(palette.get(timeline)).fill;
-          colors.push(
+        .reduce((fillColors, timeline) => {
+          const fill = mustExist(colors.get(timeline)).fill;
+          fillColors.push(
             timeline === leader
               ? fill
-              : matchLuminance(fill, mustExist(palette.get(mustExist(leader))).fill),
+              : matchLuminance(fill, mustExist(colors.get(mustExist(leader))).fill),
           );
-          return colors;
+          return fillColors;
         }, new Array<string>())
         .join(":");
-      const fontcolor = mustExist(palette.get(mustExist(leader))).font;
+      const fontcolor = mustExist(colors.get(mustExist(leader))).font;
       const prefixes = contributors
         .values()
         .reduce((_, timeline) => _ + (timeline.meta.prefix ?? ""), "");
@@ -327,7 +208,7 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
   // Link items in their individual timelines together.
   let timePassed = 0;
   for (const timeline of timelines) {
-    const color = mustExist(palette.get(timeline)).fill;
+    const color = mustExist(colors.get(timeline)).fill;
     const rank = timeline.meta?.rank ?? 0;
 
     // The timestamp we looked at during the last iteration.

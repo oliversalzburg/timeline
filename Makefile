@@ -5,7 +5,9 @@ default: build
 build: lib output
 
 clean:
-	rm --force --recursive _site lib node_modules output tsconfig.tsbuildinfo
+	rm --force --recursive _site lib output tsconfig.tsbuildinfo
+purge: clean
+	rm --force --recursive node_modules
 
 docs: _site
 
@@ -55,8 +57,12 @@ endif
 
 lib: node_modules
 	npm exec -- tsc
+
 output: node_modules
-	@node build.js
+	@echo "Building timeline.js bundle..."
+	node build.js
+	@echo "Building timeline.js bundle complete."
+
 _site: render-preview
 	@mkdir _site 2>/dev/null || true
 	@echo "Generating '_site/index.html'..."
@@ -64,3 +70,8 @@ _site: render-preview
 	@echo "Generating '_site/system.html'..."
 	node build-site.js timelines/.universe.gv.svg > _site/system.html
 	@echo "HTML documents generated successfully."
+
+stage0: lib
+	@echo "Generating DOT source for universe graph..."
+	node --enable-source-maps examples/universe.js --preview $(shell ls timelines/* ~/timelines/*.yml) > timelines/.universe.gv
+	@echo "Generating DOT source for universe graph complete."

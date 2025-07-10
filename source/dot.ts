@@ -162,7 +162,7 @@ export const makeHtmlString = (_: string) =>
 /**
  * Provides helper constructs to render GraphViz graphs.
  */
-export const gv = () => {
+export const dot = () => {
   const buffer = new Array<string>();
   const nodeIds = new Map<string, number>();
 
