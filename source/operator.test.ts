@@ -2,7 +2,7 @@ import { expect } from "chai";
 import { describe, it } from "mocha";
 import { random } from "./fixtures/documents.js";
 import { load } from "./loader.js";
-import { add, concat } from "./operator.js";
+import { add, concat, map, sort } from "./operator.js";
 import type { TimelineDocument } from "./types.js";
 
 /**
@@ -45,5 +45,43 @@ describe("Operator - concat", () => {
     expect(expanded.records.length).to.equal(timeline.records.length + 2);
     expect(expanded.records[timeline.records.length + 0]).to.eql([0, { title: "0" }]);
     expect(expanded.records[timeline.records.length + 1]).to.eql([1, { title: "1" }]);
+  });
+});
+
+describe("Operator - map", () => {
+  it("should create a new timeline with adjusted events", () => {
+    const document: TimelineDocument = { ...random };
+    const timeline = load(document);
+    const adjusted = map(timeline, ([timestamp]) => [timestamp, { title: "changed" }]);
+    expect(timeline).not.to.equal(
+      adjusted,
+      "The adjusted timeline should be an entirely new timeline. The original timeline must remain untouched.",
+    );
+    expect(adjusted.records.length).to.equal(timeline.records.length);
+    for (let index = 0; index < timeline.records.length; ++index) {
+      expect(timeline.records[index][1].title).not.to.equal("changed");
+      expect(adjusted.records[index][1].title).to.equal("changed");
+    }
+  });
+});
+
+describe("Operator - sort", () => {
+  it("should create a new timeline with sorted events", () => {
+    const document: TimelineDocument = { ...random };
+    const timeline = load(document);
+    const adjusted = sort(timeline);
+    expect(timeline).not.to.equal(
+      adjusted,
+      "The adjusted timeline should be an entirely new timeline. The original timeline must remain untouched.",
+    );
+    expect(adjusted.records.length).to.equal(timeline.records.length);
+    let previous = Number.NEGATIVE_INFINITY;
+    for (let index = 0; index < timeline.records.length; ++index) {
+      expect(adjusted.records[index][0]).to.be.greaterThan(
+        previous,
+        "The previous entry should have appeared before this one in the timeline.",
+      );
+      previous = adjusted.records[index][0];
+    }
   });
 });

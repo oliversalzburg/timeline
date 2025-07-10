@@ -27,7 +27,7 @@
   },
   "files": {
     "ignoreUnknown": false,
-    "includes": ["@types/**", "examples/**", "!fixtures/**", "!lib/**", "source/**", "*.*"]
+    "includes": ["@types/**", "!fixtures/**", "!lib/**", "source/**", "*.*"]
   },
   "formatter": {
     "attributePosition": "auto",
