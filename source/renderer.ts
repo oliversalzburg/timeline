@@ -207,7 +207,7 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
         }
 
         contributors.add(timeline);
-        if (leader?.meta.rank ?? -1 < (timeline.meta.rank ?? 0)) {
+        if ((leader?.meta.rank ?? -1) < (timeline.meta.rank ?? 0)) {
           leader = timeline;
         }
 
