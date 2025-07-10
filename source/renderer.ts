@@ -50,6 +50,67 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
   const paletteMeta = p.toPalette();
   const colors = paletteMeta.lookup;
 
+  type Style = {
+    fill: boolean;
+    outline: boolean;
+    link: boolean;
+    penwidth: number;
+  };
+  const DEFAULT_STYLES: Array<Style> = [
+    {
+      fill: false,
+      outline: false,
+      link: false,
+      penwidth: 0,
+    },
+    {
+      fill: false,
+      outline: true,
+      link: false,
+      penwidth: 1,
+    },
+    {
+      fill: false,
+      outline: true,
+      link: true,
+      penwidth: 1,
+    },
+    {
+      fill: true,
+      outline: true,
+      link: true,
+      penwidth: 1,
+    },
+  ];
+  const ranks = [
+    ...timelines.reduce((_, timeline) => {
+      _.add(timeline.meta.rank ?? 0);
+      return _;
+    }, new Set<number>()),
+  ].sort();
+  const styles =
+    ranks.length <= DEFAULT_STYLES.length
+      ? DEFAULT_STYLES.slice(ranks.length * -1)
+      : [
+          ...DEFAULT_STYLES,
+          ...new Array(ranks.length - DEFAULT_STYLES.length)
+            .fill(
+              DEFAULT_STYLES[DEFAULT_STYLES.length - 1],
+              0,
+              ranks.length - DEFAULT_STYLES.length,
+            )
+            .map((style, index) => {
+              style.penwidth += (index + 1) * 0.5;
+              return style;
+            }),
+        ];
+
+  const styleSheet = new Map<number, Style>(
+    styles.map((style, index) => [ranks[index], style] as [number, Style]),
+  );
+  process.stderr.write(JSON.stringify(ranks, undefined, 2));
+  process.stderr.write(JSON.stringify(styles, undefined, 2));
+
   const d = dot();
 
   d.raw("digraph timeline {");
@@ -166,6 +227,7 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
         ? options.dateRenderer(timestamp)
         : new Date(timestamp).toDateString();
 
+      const style = mustExist(styleSheet.get(mustExist(leader).meta.rank ?? 0));
       const color = mustExist(colors.get(mustExist(leader).meta.id)).pen;
       const fillcolor = contributors
         .values()
@@ -193,7 +255,7 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
         ),
         penwidth: 0 < (timeline.meta.rank ?? 0) && timestampHasRoots ? 3 : 1,
         shape: "box",
-        style: "filled,rounded",
+        style: style.fill ? "filled,rounded" : "rounded",
         tooltip: `${formatMilliseconds(timePassedSinceOrigin)} since ${originString}\\n${formatMilliseconds(timePassedSinceThen)} ago`,
       };
       d.node(entry.title, nodeProperties);
@@ -210,7 +272,7 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
   // Link items in their individual timelines together.
   let timePassed = 0;
   for (const timeline of timelines) {
-    const color = mustExist(colors.get(timeline.meta.id)).fill;
+    const color = mustExist(colors.get(timeline.meta.id)).pen;
     const rank = timeline.meta?.rank ?? 0;
 
     // The timestamp we looked at during the last iteration.
