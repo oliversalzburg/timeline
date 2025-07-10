@@ -40,7 +40,7 @@ if (files.length === 0) {
   process.exit(0);
 }
 
-process.stderr.write(`Processing:\n${files.map(_ => `  ${_}\n`).join("")}`);
+// process.stderr.write(`Processing:\n${files.map(_ => `  ${_}\n`).join("")}`);
 
 const rawData = new Map(files.map(_ => [_, readFileSync(_, "utf-8")]));
 
@@ -128,7 +128,7 @@ const dotGraph = render(finalTimelines, {
   now: NOW,
   origin: new Date(1983, 11, 25, 0, 0, 0, 0).valueOf(),
   ...(PREVIEW ? CONFIG_QUALITY_PREVIEW : CONFIG_QUALITY_ULTRA),
-  skipBefore: new Date("2020-01-01").valueOf(),
+  skipAfter: new Date("1999-12-31").valueOf(),
 });
 
 // Write GraphViz graph to stdout.

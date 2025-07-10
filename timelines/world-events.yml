@@ -2,6 +2,7 @@
 color: transparent
 prefix: 🌍
 timeline:
+  1939-09-01: Start of World War II
   1945-02-04: Yalta Conference
   1945-05-08: Germany Unconditionally Surrenders
   1945-07-17: Potsdam Conference
@@ -30,6 +31,9 @@ timeline:
   1952-05-26: Special Regime at Demarcation Line (GDR)
   1954-11-16: Bundestagspräsident Eugen Gerstenmaier
   1955-05-05: End of Occupation of West Germany
+  1957-06-18: |-
+    Gesetz über die Gleichberechtigung von Mann
+    und Frau auf dem Gebiet des bürgerlichen Rechts
   1959-09-13: Bundespräsident Heinrich Lübke
   1961-08-31: Construction of Berlin Wall (GDR)
   1963-10-16: Bundeskanzler Ludwig Erhard
@@ -111,6 +115,7 @@ timeline:
   1995-04-19: Oklahoma City Bombing (Timothy McVeigh)
   1997-01-20: Bill Clinton 2nd Term
   1997-06-11: First Cell-Phone Picture
+  1997-07-01: § 177 StGB Vergewaltigung in der Ehe
   1998-10-26: Bundestagspräsident Wolfgang Thierse
   1998-10-27: Bundeskanzler Gerhard Schröder
   1999-04-01: |-
