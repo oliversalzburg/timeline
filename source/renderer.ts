@@ -41,10 +41,10 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
 
   // We default to dark, as the assume the default output media to be a display.
   // For printing use cases, we'd prefer to use light.
-  const p = palette<Timeline>(options.theme ?? "dark");
+  const p = palette<string>(options.theme ?? "dark");
 
   for (const timeline of timelines) {
-    p.add(timeline, timeline.meta.color);
+    p.add(timeline.meta.id, timeline.meta.color);
   }
 
   // Dump palette for debugging purposes.
@@ -59,8 +59,8 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
     process.stderr.write(
       `- ${color} -> Pen: ${timelinePalette.pen} Fill: ${timelinePalette.fill} Font: ${timelinePalette.font}\n`,
     );
-    for (const timeline of timelines) {
-      process.stderr.write(`  ${timeline.meta.id}\n`);
+    for (const id of timelines) {
+      process.stderr.write(`  ${id}\n`);
     }
   }
 
@@ -180,20 +180,20 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
         ? options.dateRenderer(timestamp)
         : new Date(timestamp).toDateString();
 
-      const color = mustExist(colors.get(mustExist(leader))).pen;
+      const color = mustExist(colors.get(mustExist(leader).meta.id)).pen;
       const fillcolor = contributors
         .values()
         .reduce((fillColors, timeline) => {
-          const fill = mustExist(colors.get(timeline)).fill;
+          const fill = mustExist(colors.get(timeline.meta.id)).fill;
           fillColors.push(
             timeline === leader
               ? fill
-              : matchLuminance(fill, mustExist(colors.get(mustExist(leader))).fill),
+              : matchLuminance(fill, mustExist(colors.get(mustExist(leader).meta.id)).fill),
           );
           return fillColors;
         }, new Array<string>())
         .join(":");
-      const fontcolor = mustExist(colors.get(mustExist(leader))).font;
+      const fontcolor = mustExist(colors.get(mustExist(leader).meta.id)).font;
       const prefixes = contributors
         .values()
         .reduce((_, timeline) => _ + (timeline.meta.prefix ?? ""), "");
@@ -224,7 +224,7 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
   // Link items in their individual timelines together.
   let timePassed = 0;
   for (const timeline of timelines) {
-    const color = mustExist(colors.get(timeline)).fill;
+    const color = mustExist(colors.get(timeline.meta.id)).fill;
     const rank = timeline.meta?.rank ?? 0;
 
     // The timestamp we looked at during the last iteration.
