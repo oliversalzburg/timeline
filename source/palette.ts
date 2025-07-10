@@ -92,7 +92,9 @@ export const palette = <T>(theme: RenderMode) => {
         .filter(([, color]) => color === TRANSPARENT)
         .map(([timeline]) => timeline),
     ];
-    assignments.set(TRANSPARENT, transparents);
+    if (0 < transparents.length) {
+      assignments.set(TRANSPARENT, transparents);
+    }
     return {
       assignments,
       lookup: new Map<T, PaletteEntry>(
