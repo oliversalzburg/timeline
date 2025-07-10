@@ -24,7 +24,7 @@ const args = process.argv
       args[_.substring(2)] = true;
       return args;
     },
-    /** @type {Record<string,boolean>} */ ({}),
+    /** @type {Record<string,boolean>} */({}),
   );
 
 // Read raw data from input files.
@@ -32,8 +32,8 @@ const files =
   2 < process.argv.length
     ? process.argv.slice(2).filter(_ => !_.startsWith("--"))
     : readdirSync("timelines/")
-        .filter(_ => _.endsWith(".yml"))
-        .map(_ => `timelines/${_}`);
+      .filter(_ => _.endsWith(".yml"))
+      .map(_ => `timelines/${_}`);
 
 if (files.length === 0) {
   process.stderr.write("No files provided.\n");
@@ -103,7 +103,10 @@ const finalEntryCount = finalTimelines.reduce(
   (previous, timeline) => previous + timeline.records.length,
   0,
 );
-process.stderr.write(`  Universe has ${finalEntryCount} entries.\n`);
+
+process.stderr.write(`  Universe has ${finalEntryCount} individual entries from ${data.size} timelines.\n`);
+process.stderr.write(`  Horizon spans from ${new Date(globalEarliest).toLocaleDateString()} to ${new Date(globalLatest).toLocaleDateString()}.\n`);
+process.stderr.write(`  Averaging ~${finalEntryCount / ((globalLatest - globalEarliest) / MILLISECONDS.ONE_DAY)} events per day.\n`);
 
 const PREVIEW = Boolean(args.preview);
 
@@ -120,6 +123,9 @@ const CONFIG_QUALITY_ULTRA = {
   scale: "linear",
 };
 
+// Write GraphViz graph to stdout.
+process.stderr.write("Writing GraphViz graph for universe..." + "\n");
+
 const dotGraph = render(finalTimelines, {
   dateRenderer: date => {
     const _ = new Date(date);
@@ -131,7 +137,21 @@ const dotGraph = render(finalTimelines, {
   skipAfter: new Date("1999-12-31").valueOf(),
 });
 
-// Write GraphViz graph to stdout.
-process.stderr.write("Writing GraphViz graph for universe..." + "\n");
-process.stdout.write(dotGraph);
+// Dump palette for debugging purposes.
+process.stderr.write(
+  `Generated palette for universe:\n`,
+);
+const paletteMeta = dotGraph.palette;
+const colors = paletteMeta.lookup;
+for (const [color, timelines] of paletteMeta.assignments) {
+  const timelinePalette = mustExist(colors.get(timelines[0]));
+  process.stderr.write(
+    `- ${color} -> Pen: ${timelinePalette.pen} Fill: ${timelinePalette.fill} Font: ${timelinePalette.font}\n`,
+  );
+  for (const id of timelines) {
+    process.stderr.write(`  ${id}\n`);
+  }
+}
+
+process.stdout.write(dotGraph.graph);
 process.stderr.write("GraphViz graph for universe written successfully.\n");

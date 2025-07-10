@@ -47,22 +47,8 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
     p.add(timeline.meta.id, timeline.meta.color);
   }
 
-  // Dump palette for debugging purposes.
-  process.stderr.write(
-    `Generated palette for universe (${p.predictDemand()} colors auto-filled):\n`,
-  );
   const paletteMeta = p.toPalette();
   const colors = paletteMeta.lookup;
-
-  for (const [color, timelines] of paletteMeta.assignments) {
-    const timelinePalette = mustExist(colors.get(timelines[0]));
-    process.stderr.write(
-      `- ${color} -> Pen: ${timelinePalette.pen} Fill: ${timelinePalette.fill} Font: ${timelinePalette.font}\n`,
-    );
-    for (const id of timelines) {
-      process.stderr.write(`  ${id}\n`);
-    }
-  }
 
   const d = dot();
 
@@ -387,5 +373,5 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
 
   d.raw("}");
 
-  return d.toString();
+  return { graph: d.toString(), palette: paletteMeta };
 };

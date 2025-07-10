@@ -43,7 +43,7 @@ describe("Renderer", () => {
     const timeline = load(document);
     const artifact = render([timeline], { now });
     expect(
-      snapshotHasRegression(snapshotIdentity(this, ".gv"), artifact),
+      snapshotHasRegression(snapshotIdentity(this, ".gv"), artifact.graph),
       "Snapshot regression detected.",
     ).to.be.false;
   });
@@ -54,7 +54,7 @@ describe("Renderer", () => {
     const timeline = load(document);
     const artifact = render([timeline], { now });
     expect(
-      snapshotHasRegression(snapshotIdentity(this, ".gv"), artifact),
+      snapshotHasRegression(snapshotIdentity(this, ".gv"), artifact.graph),
       "Snapshot regression detected.",
     ).to.be.false;
   });
@@ -65,7 +65,7 @@ describe("Renderer", () => {
     const timelines = documents.map(_ => load(_));
     const artifact = render(timelines, { now });
     expect(
-      snapshotHasRegression(snapshotIdentity(this, ".gv"), artifact),
+      snapshotHasRegression(snapshotIdentity(this, ".gv"), artifact.graph),
       "Snapshot regression detected.",
     ).to.be.false;
   });
@@ -81,7 +81,7 @@ describe("Renderer", () => {
       },
     );
     expect(
-      snapshotHasRegression(snapshotIdentity(this, ".gv"), artifact),
+      snapshotHasRegression(snapshotIdentity(this, ".gv"), artifact.graph),
       "Snapshot regression detected.",
     ).to.be.false;
   });
@@ -96,7 +96,7 @@ describe("Renderer", () => {
       },
     );
     expect(
-      snapshotHasRegression(snapshotIdentity(this, ".gv"), artifact),
+      snapshotHasRegression(snapshotIdentity(this, ".gv"), artifact.graph),
       "Snapshot regression detected.",
     ).to.be.false;
   });
@@ -111,7 +111,7 @@ describe("Renderer", () => {
       },
     );
     expect(
-      snapshotHasRegression(snapshotIdentity(this, ".gv"), artifact),
+      snapshotHasRegression(snapshotIdentity(this, ".gv"), artifact.graph),
       "Snapshot regression detected.",
     ).to.be.false;
   });
