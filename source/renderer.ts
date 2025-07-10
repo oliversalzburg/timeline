@@ -55,31 +55,36 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
     outline: boolean;
     link: boolean;
     penwidth: number;
+    style: string;
   };
   const DEFAULT_STYLES: Array<Style> = [
     {
       fill: false,
-      outline: false,
+      outline: true,
       link: false,
-      penwidth: 0,
+      penwidth: 0.5,
+      style: "dashed,rounded",
     },
     {
       fill: false,
       outline: true,
       link: false,
       penwidth: 1,
+      style: "rounded,solid",
     },
     {
       fill: false,
       outline: true,
       link: true,
       penwidth: 1,
+      style: "rounded,solid",
     },
     {
       fill: true,
       outline: true,
       link: true,
       penwidth: 1,
+      style: "filled,rounded,solid",
     },
   ];
   const ranks = [
@@ -94,13 +99,10 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
       : [
           ...DEFAULT_STYLES,
           ...new Array(ranks.length - DEFAULT_STYLES.length)
-            .fill(
-              DEFAULT_STYLES[DEFAULT_STYLES.length - 1],
-              0,
-              ranks.length - DEFAULT_STYLES.length,
-            )
-            .map((style, index) => {
-              style.penwidth += (index + 1) * 0.5;
+            .fill(null, 0, ranks.length - DEFAULT_STYLES.length)
+            .map((_, index) => {
+              const style = { ...DEFAULT_STYLES[DEFAULT_STYLES.length - 1] };
+              style.penwidth += index + 1;
               return style;
             }),
         ];
@@ -255,7 +257,7 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
         ),
         penwidth: style.outline ? style.penwidth + (timestampHasRoots ? 2 : 0) : 0,
         shape: "box",
-        style: style.fill ? "filled,rounded" : "rounded",
+        style: style.style,
         tooltip: `${formatMilliseconds(timePassedSinceOrigin)} since ${originString}\\n${formatMilliseconds(timePassedSinceThen)} ago`,
       };
       d.node(entry.title, nodeProperties);
@@ -274,6 +276,7 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
   for (const timeline of timelines) {
     const color = mustExist(colors.get(timeline.meta.id)).pen;
     const rank = timeline.meta?.rank ?? 0;
+    const style = mustExist(styleSheet.get(rank));
 
     // The timestamp we looked at during the last iteration.
     let previousTimestamp: number | undefined;
@@ -334,10 +337,11 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
           d.link(previousEntry.title, entry.title, {
             color,
             minlen: options.preview !== true ? linkLength : undefined,
-            penwidth: rank / 2,
-            style: 0 < rank ? "solid" : "invis",
-            tooltip:
-              0 < rank ? `${formatMilliseconds(timePassed)} (${linkLength} ranks)` : undefined,
+            penwidth: style.link ? (style.outline ? style.penwidth : 0) : undefined,
+            style: style.link ? "solid" : "invis",
+            tooltip: style.link
+              ? `${formatMilliseconds(timePassed)} (${linkLength} ranks)`
+              : undefined,
           });
         }
       }
