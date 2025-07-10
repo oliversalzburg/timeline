@@ -134,7 +134,7 @@ const dotGraph = render(finalTimelines, {
   now: NOW,
   origin: new Date(1983, 11, 25, 0, 0, 0, 0).valueOf(),
   ...(PREVIEW ? CONFIG_QUALITY_PREVIEW : CONFIG_QUALITY_ULTRA),
-  skipAfter: new Date("1989-12-31").valueOf(),
+  skipBefore: new Date("1999-12-31").valueOf(),
 });
 
 // Dump palette for debugging purposes.
