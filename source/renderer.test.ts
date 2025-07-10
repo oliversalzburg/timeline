@@ -23,7 +23,7 @@ describe("Renderer", () => {
 
   it("should produce the expected font colors", () => {
     const colors = {
-      "#004db9": "#ffffff",
+      "#004db9": "#FFFFFFFF",
     };
     Object.entries(colors).forEach(([fill, font]) => {
       const rgb = mustExist(fill.substring(1).match(/../g)).map(x =>
