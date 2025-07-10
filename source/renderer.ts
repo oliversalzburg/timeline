@@ -17,6 +17,8 @@ export interface RendererOptions {
   origin: number;
   preview: boolean;
   scale: "linear" | "logarithmic";
+  skipAfter: number;
+  skipBefore: number;
   theme: RenderMode;
 }
 
@@ -102,6 +104,20 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
    * exist at this timestamp.
    */
   for (const timestamp of timestampsUnique) {
+    // Fast-forward through skip section.
+    if (
+      timestamp < (options.skipBefore ?? Number.NEGATIVE_INFINITY) ||
+      (options.skipAfter ?? Number.POSITIVE_INFINITY) < timestamp
+    ) {
+      while (
+        nextEventIndex < timelineGlobal.length &&
+        timelineGlobal[nextEventIndex][0] === timestamp
+      ) {
+        ++nextEventIndex;
+      }
+      continue;
+    }
+
     // Convert the timestamp to a Date for API features.
     const date = new Date(timestamp);
     // We need the current year to support the "cluster years" feature.
@@ -220,6 +236,20 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
     nextEventIndex = 0;
 
     for (const [timestamp] of timeline.records) {
+      // Fast-forward through skip section.
+      if (
+        timestamp < (options.skipBefore ?? Number.NEGATIVE_INFINITY) ||
+        (options.skipAfter ?? Number.POSITIVE_INFINITY) < timestamp
+      ) {
+        do {
+          ++nextEventIndex;
+        } while (
+          nextEventIndex < timelineGlobal.length &&
+          timelineGlobal[nextEventIndex][0] === timestamp
+        );
+        continue;
+      }
+
       if (previousTimestamp && timestamp <= previousTimestamp) {
         continue;
       }
@@ -258,7 +288,8 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
             minlen: options.preview !== true ? linkLength : undefined,
             penwidth: rank / 2,
             style: 0 < rank ? "solid" : "invis",
-            tooltip: `${formatMilliseconds(timePassed)} (${linkLength} ranks)`,
+            tooltip:
+              0 < rank ? `${formatMilliseconds(timePassed)} (${linkLength} ranks)` : undefined,
           });
         }
       }
@@ -275,6 +306,20 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
   timePassed = 0;
   nextEventIndex = 0;
   for (const timestamp of timestampsUnique) {
+    // Fast-forward through skip section.
+    if (
+      timestamp < (options.skipBefore ?? Number.NEGATIVE_INFINITY) ||
+      (options.skipAfter ?? Number.POSITIVE_INFINITY) < timestamp
+    ) {
+      while (
+        nextEventIndex < timelineGlobal.length &&
+        timelineGlobal[nextEventIndex][0] === timestamp
+      ) {
+        ++nextEventIndex;
+      }
+      continue;
+    }
+
     timePassed = previousTimestamp ? Math.max(1, timestamp - previousTimestamp) : 0;
     if (TIME_BASE < remainder + timePassed) {
       timePassed += remainder;
@@ -329,7 +374,9 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
         d.link(previousEntry.title, entry.title, {
           minlen: options.preview !== true ? linkLength : undefined,
           style: options.debug ? "dashed" : "invis",
-          tooltip: `${formatMilliseconds(timePassed)} (carrying ${remainder})`,
+          tooltip: options.debug
+            ? `${formatMilliseconds(timePassed)} (carrying ${remainder})`
+            : undefined,
         });
       }
     }

@@ -128,6 +128,7 @@ const dotGraph = render(finalTimelines, {
   now: NOW,
   origin: new Date(1983, 11, 25, 0, 0, 0, 0).valueOf(),
   ...(PREVIEW ? CONFIG_QUALITY_PREVIEW : CONFIG_QUALITY_ULTRA),
+  skipBefore: new Date("2020-01-01").valueOf(),
 });
 
 // Write GraphViz graph to stdout.
