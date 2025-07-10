@@ -17,12 +17,19 @@ export const rgbaToString = (rgba: RGBATuple): string =>
     .join("")
     .toUpperCase()}`;
 
-export const fillColorForPen = (color: RGBATuple): string => {
-  return rgbaToString([color[0], color[1], color[2], Math.floor(color[3] / 2)]);
+export const fillColorForPen = (color: RGBTuple | RGBATuple, theme: RenderMode): string => {
+  const hsl = rgb2hsl(color[0] / 255, color[1] / 255, color[2] / 255);
+  const rgb = hsl2rgb(hsl[0], hsl[1], hsl[2] * (theme === "light" ? 2 : 0.5));
+  return rgbaToString([
+    Math.trunc(rgb[0] * 255),
+    Math.trunc(rgb[1] * 255),
+    Math.trunc(rgb[2] * 255),
+    255,
+  ]);
 };
 export const matchFontColorTo = (color: RGBTuple | RGBATuple): string => {
-  const hsl = rgb2hsl(color[0], color[1], color[2]);
-  return hsl[2] < 180 ? "#ffffff" : "#000000";
+  const hsl = rgb2hsl(color[0] / 255, color[1] / 255, color[2] / 255);
+  return hsl[2] < 180 ? "#FFFFFFFF" : "#000000FF";
 };
 
 export const palette = <T>(theme: RenderMode) => {
@@ -108,7 +115,7 @@ export const palette = <T>(theme: RenderMode) => {
                 source: color,
               }
             : {
-                fill: fillColorForPen(mustExist(baseColorValues.get(_))),
+                fill: fillColorForPen(mustExist(baseColorValues.get(_)), theme),
                 font: matchFontColorTo(mustExist(baseColorValues.get(_))),
                 pen: rgbaToString(mustExist(baseColorValues.get(_))),
                 source: color,
