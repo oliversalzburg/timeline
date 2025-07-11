@@ -4,14 +4,153 @@ prefix: 🏅
 rank: 1
 timeline:
   1958-12-10:
-    - |-
-      Nobel Prize in Physiology or Medicine
-      George Wells Beadle & Edward Lawrie Tatum
-      "for their discovery that genes act by
-      regulating definite chemical events"
-    - |-
-      Nobel Prize in Physiology or Medicine
-      Joshua Lederberg
-      "for his discoveries concerning genetic
-      recombination and the organization of the
-      genetic material of bacteria"
+    - title: |-
+        Nobel Prize in Physiology or Medicine
+        George Wells Beadle & Edward Lawrie Tatum
+      notes: for their discovery that genes act by regulating definite chemical events
+    - title: |-
+        Nobel Prize in Physiology or Medicine
+        Joshua Lederberg
+      notes: for his discoveries concerning genetic recombination and the organization of the genetic material of bacteria
+  1999-12-10:
+    - title: |-
+        Nobel Prize in Physiology or Medicine
+        Günter Blobel
+      notes: for the discovery that proteins have intrinsic signals that govern their transport and localization in the cell
+  2000-12-10:
+    - title: |-
+        Nobel Prize in Physiology or Medicine
+        Arvid Carlsson, Paul Greengard & Eric Kandel
+      notes: for their discoveries concerning signal transduction in the nervous system
+  2001-12-10:
+    - title: |-
+        Nobel Prize in Physiology or Medicine
+        Leland H. Hartwell, Tim Hunt & Paul M. Nurse
+      notes: for their discoveries of key regulators of the cell cycle
+  2002-12-10:
+    - title: |-
+        Nobel Prize in Physiology or Medicine
+        Sydney Brenner, H. Robert Horvitz & John E. Sulston
+      notes: for their discoveries concerning 'genetic regulation of organ development and programmed cell death'
+  2003-12-10:
+    - title: |-
+        Nobel Prize in Physiology or Medicine
+        Paul Lauterbur & Peter Mansfield
+      notes: for their discoveries concerning magnetic resonance imaging
+  2004-12-10:
+    - title: |-
+        Nobel Prize in Physiology or Medicine
+        Richard Axel & Linda B. Buck
+      notes: for their discoveries of odorant receptors and the organization of the olfactory system
+  2005-12-10:
+    - title: |-
+        Nobel Prize in Physiology or Medicine
+        Barry J. Marshall & J. Robin Warren
+      notes: for their discovery of the bacterium Helicobacter pylori and its role in gastritis and peptic ulcer disease
+  2006-12-10:
+    - title: |-
+        Nobel Prize in Physiology or Medicine
+        Andrew Z. Fire & Craig C. Mello
+      notes: for their discovery of RNA interference - gene silencing by double-stranded RNA
+  2007-12-10:
+    - title: |-
+        Nobel Prize in Physiology or Medicine
+        Mario R. Capecchi, Martin Evans & Oliver Smithies
+      notes: for their discoveries of principles for introducing specific gene modifications in mice by the use of embryonic stem cells
+  2008-12-10:
+    - title: |-
+        Nobel Prize in Physiology or Medicine
+        Harald zur Hausen
+      notes: for his discovery of human papilloma viruses causing cervical cancer
+    - title: |-
+        Nobel Prize in Physiology or Medicine
+        Françoise Barré-Sinoussi & Luc Montagnier
+      notes: for their discovery of human immunodeficiency virus
+  2009-12-10:
+    - title: |-
+        Nobel Prize in Physiology or Medicine
+        Elizabeth H. Blackburn, Carol W. Greider & Jack W. Szostak
+      notes: for the discovery of how chromosomes are protected by telomeres and the enzyme telomerase
+  2010-12-10:
+    - title: |-
+        Nobel Prize in Physiology or Medicine
+        Robert G. Edwards
+      notes: for the development of in vitro fertilization
+  2011-12-10:
+    - title: |-
+        Nobel Prize in Physiology or Medicine
+        Bruce A. Beutler & Jules A. Hoffmann
+      notes: for their discoveries concerning the activation of innate immunity
+    - title: |-
+        Nobel Prize in Physiology or Medicine
+        Ralph M. Steinman
+      notes: for his discovery of the dendritic cell and its role in adaptive immunity
+  2012-12-10:
+    - title: |-
+        Nobel Prize in Physiology or Medicine
+        John B. Gurdon & Shinya Yamanaka
+      notes: for the discovery that mature cells can be reprogrammed to become pluripotent
+  2013-12-10:
+    - title: |-
+        Nobel Prize in Physiology or Medicine
+        James E. Rothman, Randy W. Schekman & Thomas C. Südhof
+      notes: for their discoveries of machinery regulating vesicle traffic, a major transport system in our cells
+  2014-12-10:
+    - title: |-
+        Nobel Prize in Physiology or Medicine
+        John O'Keefe, May-Britt Moser & Edvard I. Moser
+      notes: for their discoveries of cells that constitute a positioning system in the brain
+  2015-12-10:
+    - title: |-
+        Nobel Prize in Physiology or Medicine
+        William C. Campbell, Satoshi Ōmura, Tu Youyou
+      notes: for their discoveries concerning a novel therapy against infections caused by roundworm parasites
+    - title: |-
+        Nobel Prize in Physiology or Medicine
+        Tu Youyou
+      notes: for her discoveries concerning a novel therapy against malaria
+  2016-12-10:
+    - title: |-
+        Nobel Prize in Physiology or Medicine
+        Yoshinori Ohsumi
+      notes: for his discoveries of mechanisms for autophagy
+  2017-12-10:
+    - title: |-
+        Nobel Prize in Physiology or Medicine
+        Jeffrey C. Hall, Michael Rosbash & Michael W. Young
+      notes: for their discoveries of molecular mechanisms controlling the circadian rhythm
+  2018-12-10:
+    - title: |-
+        Nobel Prize in Physiology or Medicine
+        James P. Allison & Tasuku Honjo
+      notes: for their discovery of cancer therapy by inhibition of negative immune regulation
+  2019-12-10:
+    - title: |-
+        Nobel Prize in Physiology or Medicine
+        William Kaelin Jr., Peter J. Ratcliffe & 	Gregg L. Semenza
+      notes: for their discoveries of how cells sense and adapt to oxygen availability
+  2020-12-10:
+    - title: |-
+        Nobel Prize in Physiology or Medicine
+        Harvey J. Alter, Michael Houghton & Charles M. Rice
+      notes: for the discovery of Hepatitis C virus
+  2021-12-10:
+    - title: |-
+        Nobel Prize in Physiology or Medicine
+        David Julius & Ardem Patapoutian
+      notes: for the discovery of receptors for temperature and touch
+  2022-12-10:
+    - title: |-
+        Nobel Prize in Physiology or Medicine
+        Svante Pääbo
+      notes: for his discoveries concerning the genomes of extinct hominins and human evolution
+  2023-12-10:
+    - title: |-
+        Nobel Prize in Physiology or Medicine
+        Katalin Karikó & Drew Weissman
+      notes: for their discoveries concerning nucleoside base modifications that enabled the development of effective mRNA vaccines against COVID-19
+  2024-12-10:
+    - title: |-
+        Nobel Prize in Physiology or Medicine
+        Victor Ambros & Gary Ruvkun
+      notes: for the discovery of microRNA and its role in post-transcriptional gene regulation

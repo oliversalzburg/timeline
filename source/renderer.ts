@@ -255,7 +255,7 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
         label: makeHtmlString(
           `${(0 < prefixes.length ? `${prefixes} ` : "") + entry.title}\\n${dateString}`,
         ),
-        penwidth: style.outline ? style.penwidth + (timestampHasRoots ? 2 : 0) : 0,
+        penwidth: style.outline ? style.penwidth : 0,
         shape: "box",
         style: style.style,
         tooltip: `${formatMilliseconds(timePassedSinceOrigin)} since ${originString}\\n${formatMilliseconds(timePassedSinceThen)} ago`,

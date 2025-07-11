@@ -21,12 +21,12 @@ timeline:
     Turing Award: Charles Bachmann
   1974-06-23: |-
     Turing Award: Donald Knuth
-  1975-06-23:
-    - "Turing Award: Allen Newell"
-    - "Turing Award: Herbert A. Simon"
-  1976-06-23:
-    - "Turing Award: Michael O. Rabin"
-    - "Turing Award: Dana Scott"
+  1975-06-23: |-
+    Turing Award:
+    Allen Newell & Herbert A. Simon
+  1976-06-23: |-
+    Turing Award:
+    Michael O. Rabin & Dana Scott
   1977-06-23: |-
     Turing Award: John Backus
   1978-06-23: |-
@@ -39,16 +39,16 @@ timeline:
     Turing Award: Edgar F. Codd
   1982-06-23: |-
     Turing Award: Stephen Cook
-  1983-06-23:
-    - "Turing Award: Dennis Ritchie"
-    - "Turing Award: Ken Thompson"
+  1983-06-23: |-
+    Turing Award:
+    Dennis Ritchie & Ken Thompson
   1984-06-23: |-
     Turing Award: Niklaus Wirth
   1985-06-23: |-
     Turing Award: Richard M. Karp
-  1986-06-23:
-    - "Turing Award: John Hopcroft"
-    - "Turing Award: Robert Tarjan"
+  1986-06-23: |-
+    Turing Award:
+    John Hopcroft & Robert Tarjan
   1987-06-23: |-
     Turing Award: John Cocke
   1988-06-23: |-
@@ -61,12 +61,12 @@ timeline:
     Turing Award: Robin Milner
   1992-06-23: |-
     Turing Award: Butler Lampson
-  1993-06-23:
-    - "Turing Award: Juris Hartmanis"
-    - "Turing Award: Richard E. Stearns"
-  1994-06-23:
-    - "Turing Award: Edward Feigenbaum"
-    - "Turing Award: Raj Reddy"
+  1993-06-23: |-
+    Turing Award:
+    Juris Hartmanis & Richard E. Stearns
+  1994-06-23: |-
+    Turing Award:
+    Edward Feigenbaum & Raj Reddy
   1995-06-23: |-
     Turing Award: Manuel Blum
   1996-06-23: |-
@@ -79,26 +79,24 @@ timeline:
     Turing Award: Fred Brooks
   2000-06-23: |-
     Turing Award: Andrew Yao
-  2001-06-23:
-    - "Turing Award: Ole-Johan Dahl"
-    - "Turing Award: Kristen Nygaard"
-  2002-06-23:
-    - "Turing Award: Leonard Adleman"
-    - "Turing Award: Ron Rivest"
-    - "Turing Award: Adi Shamir"
+  2001-06-23: |-
+    Turing Award:
+    Ole-Johan Dahl & Kristen Nygaard
+  2002-06-23: |-
+    Turing Award:
+    Leonard Adleman, Ron Rivest & Adi Shamir
   2003-06-23: |-
     Turing Award: Alan Kay
-  2004-06-23:
-    - "Turing Award: Vint Cerf"
-    - "Turing Award: Bob Kahn"
+  2004-06-23: |-
+    Turing Award:
+    Vint Cerf & Bob Kahn
   2005-06-23: |-
     Turing Award: Peter Naur
   2006-06-23: |-
     Turing Award: Frances Allen
-  2007-06-23:
-    - "Turing Award: Edmund E. Clarke"
-    - "Turing Award: E. Allen Emerson"
-    - "Turing Award: Joseph Sifakis"
+  2007-06-23: |-
+    Turing Award:
+    Edmund E. Clarke, E. Allen Emerson & Joseph Sifakis
   2008-06-23: |-
     Turing Award: Barbara Liskov
   2009-06-23: |-
@@ -107,38 +105,36 @@ timeline:
     Turing Award: Leslie Valiant
   2011-06-23: |-
     Turing Award: Judea Pearl
-  2012-06-23:
-    - "Turing Award: Shafi Goldwasser"
-    - "Turing Award: Silvio Micali"
+  2012-06-23: |-
+    Turing Award:
+    Shafi Goldwasser & Silvio Micali
   2013-06-23: |-
     Turing Award: Leslie Lamport
   2014-06-23: |-
     Turing Award: Michael Stonebraker
-  2015-06-23:
-    - "Turing Award: Whitfield Diffie"
-    - "Turing Award: Martin Hellman"
+  2015-06-23: |-
+    Turing Award:
+    Whitfield Diffie & Martin Hellman
   2016-06-23: |-
     Turing Award: Tim Berners-Lee
-  2017-06-23:
-    - "Turing Award: John L. Hennessy"
-    - "Turing Award: David Patterson"
-  2018-06-23:
-    - "Turing Award: Yoshua Bengio"
-    - "Turing Award: Geoffrey Hinton"
-    - "Turing Award: Yann LeCun"
-  2019-06-23:
-    - "Turing Award: Edwin Catmull"
-    - "Turing Award: Pat Hanrahan"
-  2020-06-23:
-    - "Turing Award: Alfredo Aho"
-    - "Turing Award: Jeffrey Ullman"
-  2021-06-23: 
-    - |-
-      Turing Award: Jack Dongarra
+  2017-06-23: |-
+    Turing Award:
+    John L. Hennessy & David Patterson
+  2018-06-23: |
+    Turing Award:
+    Yoshua Bengio, Geoffrey Hinton & Yann LeCun
+  2019-06-23: |-
+    Turing Award:
+    Edwin Catmull & Pat Hanrahan
+  2020-06-23: |-
+    Turing Award:
+    Alfredo Aho & Jeffrey Ullman
+  2021-06-23: |-
+    Turing Award: Jack Dongarra
   2022-06-23: |-
     Turing Award: Robert Metcalfe
   2023-06-23: |-
     Turing Award: Avi Wigderson
-  2024-06-23:
-    - "Turing Award: Andrew Barto"
-    - "Turing Award: Richard S. Sutton"
+  2024-06-23: |-
+    Turing Award:
+    Andrew Barto & Richard S. Sutton

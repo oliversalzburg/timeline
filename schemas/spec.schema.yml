@@ -31,7 +31,9 @@ properties:
           - type: string
           - type: array
             items:
-              type: string
+              oneOf:
+                - $ref: '#/definitions/record'
+                - type: string
     type: object
 required:
   - timeline
