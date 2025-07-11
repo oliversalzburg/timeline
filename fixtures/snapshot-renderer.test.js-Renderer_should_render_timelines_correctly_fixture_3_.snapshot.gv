@@ -9,7 +9,7 @@ digraph timeline {
     rankdir="TD";
     ranksep="0.5";
     tooltip=" ";
-    1 [color="#B24C4CFF"; fillcolor="#592626FF"; fontcolor="#FFFFFFFF"; label=<Start of the 1st Century<BR ALIGN="CENTER"/>Sat Jan 01 0000>; penwidth="3"; shape="box"; style="filled,rounded,solid"; tooltip="0ms since Sat Jan 01 0000\n2026y 292d ago";];
+    1 [color="#B24C4CFF"; fillcolor="#592626FF"; fontcolor="#FFFFFFFF"; label=<Start of the 1st Century<BR ALIGN="CENTER"/>Sat Jan 01 0000>; penwidth="1"; shape="box"; style="filled,rounded,solid"; tooltip="0ms since Sat Jan 01 0000\n2026y 292d ago";];
     2 [color="#B24C4CFF"; fillcolor="#592626FF"; fontcolor="#FFFFFFFF"; label=<Start of the 2nd Century<BR ALIGN="CENTER"/>Fri Jan 01 0100>; penwidth="1"; shape="box"; style="filled,rounded,solid"; tooltip="100y 25d since Sat Jan 01 0000\n1926y 267d ago";];
     3 [color="#B24C4CFF"; fillcolor="#592626FF"; fontcolor="#FFFFFFFF"; label=<Start of the 3rd Century<BR ALIGN="CENTER"/>Tue Dec 31 0199>; penwidth="1"; shape="box"; style="filled,rounded,solid"; tooltip="200y 48d since Sat Jan 01 0000\n1826y 244d ago";];
     4 [color="#B24C4CFF"; fillcolor="#592626FF"; fontcolor="#FFFFFFFF"; label=<Start of the 4th Century<BR ALIGN="CENTER"/>Sun Dec 31 0299>; penwidth="1"; shape="box"; style="filled,rounded,solid"; tooltip="300y 72d since Sat Jan 01 0000\n1726y 220d ago";];

@@ -9,7 +9,7 @@ digraph timeline {
     rankdir="TD";
     ranksep="0.5";
     tooltip=" ";
-    1 [color="#B24C4CFF"; fillcolor="#592626FF"; fontcolor="#FFFFFFFF"; label=<Start of the 1st Century<BR ALIGN="CENTER"/>Sat Jan 01 0000>; penwidth="3"; shape="box"; style="filled,rounded,solid"; tooltip="0ms since Sat Jan 01 0000\n2026y 292d ago";];
+    1 [color="#B24C4CFF"; fillcolor="#592626FF"; fontcolor="#FFFFFFFF"; label=<Start of the 1st Century<BR ALIGN="CENTER"/>Sat Jan 01 0000>; penwidth="1"; shape="box"; style="filled,rounded,solid"; tooltip="0ms since Sat Jan 01 0000\n2026y 292d ago";];
     2 [color="#B24C4CFF"; fillcolor="#592626FF"; fontcolor="#FFFFFFFF"; label=<Start of the 2nd Century<BR ALIGN="CENTER"/>Fri Jan 01 0100>; penwidth="1"; shape="box"; style="filled,rounded,solid"; tooltip="100y 25d since Sat Jan 01 0000\n1926y 267d ago";];
     3 [color="#B24C4CFF"; fillcolor="#592626FF"; fontcolor="#FFFFFFFF"; label=<Start of the 3rd Century<BR ALIGN="CENTER"/>Tue Dec 31 0199>; penwidth="1"; shape="box"; style="filled,rounded,solid"; tooltip="200y 48d since Sat Jan 01 0000\n1826y 244d ago";];
     4 [color="#B24C4CFF"; fillcolor="#592626FF"; fontcolor="#FFFFFFFF"; label=<Start of the 4th Century<BR ALIGN="CENTER"/>Sun Dec 31 0299>; penwidth="1"; shape="box"; style="filled,rounded,solid"; tooltip="300y 72d since Sat Jan 01 0000\n1726y 220d ago";];
@@ -29,7 +29,7 @@ digraph timeline {
     18 [color="#B24C4CFF"; fillcolor="#592626FF"; fontcolor="#FFFFFFFF"; label=<Start of the 18th Century<BR ALIGN="CENTER"/>Thu Dec 31 1699>; penwidth="1"; shape="box"; style="filled,rounded,solid"; tooltip="1701y 47d since Sat Jan 01 0000\n325y 245d ago";];
     19 [color="#B24C4CFF"; fillcolor="#592626FF"; fontcolor="#FFFFFFFF"; label=<Start of the 19th Century<BR ALIGN="CENTER"/>Tue Dec 31 1799>; penwidth="1"; shape="box"; style="filled,rounded,solid"; tooltip="1801y 71d since Sat Jan 01 0000\n225y 221d ago";];
     20 [color="#B24C4CFF"; fillcolor="#592626FF"; fontcolor="#FFFFFFFF"; label=<Start of the 20th Century<BR ALIGN="CENTER"/>Sun Dec 31 1899>; penwidth="1"; shape="box"; style="filled,rounded,solid"; tooltip="1901y 95d since Sat Jan 01 0000\n125y 197d ago";];
-    21 [color="#4CB2B2FF"; fillcolor="#265959FF"; fontcolor="#FFFFFFFF"; label=<545008398000<BR ALIGN="CENTER"/>Thu Apr 09 1987>; penwidth="3"; shape="box"; style="filled,rounded,solid"; tooltip="1988y 215d since Sat Jan 01 0000\n38y 77d ago";];
+    21 [color="#4CB2B2FF"; fillcolor="#265959FF"; fontcolor="#FFFFFFFF"; label=<545008398000<BR ALIGN="CENTER"/>Thu Apr 09 1987>; penwidth="1"; shape="box"; style="filled,rounded,solid"; tooltip="1988y 215d since Sat Jan 01 0000\n38y 77d ago";];
     22 [color="#4CB2B2FF"; fillcolor="#265959FF"; fontcolor="#FFFFFFFF"; label=<699753484000<BR ALIGN="CENTER"/>Wed Mar 04 1992>; penwidth="1"; shape="box"; style="filled,rounded,solid"; tooltip="1993y 181d since Sat Jan 01 0000\n33y 111d ago";];
     23 [color="#B24C4CFF"; fillcolor="#592626FF"; fontcolor="#FFFFFFFF"; label=<Start of the 21st Century<BR ALIGN="CENTER"/>Fri Dec 31 1999>; penwidth="1"; shape="box"; style="filled,rounded,solid"; tooltip="2001y 119d since Sat Jan 01 0000\n25y 173d ago";];
     24 [color="#4CB2B2FF"; fillcolor="#265959FF"; fontcolor="#FFFFFFFF"; label=<1028920992000<BR ALIGN="CENTER"/>Fri Aug 09 2002>; penwidth="1"; shape="box"; style="filled,rounded,solid"; tooltip="2003y 341d since Sat Jan 01 0000\n22y 316d ago";];
