@@ -3,7 +3,7 @@
   "name": "timeline",
   "private": true,
   "version": "0.0.0",
-  "license": "MIT",
+  "license": "UNLICENSED",
   "author": "Oliver Salzburg <oliver.salzburg@gmail.com>",
   "type": "module",
   "exports": {
