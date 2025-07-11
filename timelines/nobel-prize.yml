@@ -2,7 +2,150 @@
 color: hacking
 prefix: 🏅
 rank: 1
+sources:
+  - 2025-07-11: https://en.wikipedia.org/wiki/List_of_Nobel_laureates_in_Physiology_or_Medicine
 timeline:
+  1930-12-10:
+    - title: |-
+        Nobel Prize in Physiology or Medicine
+        Karl Landsteiner
+      notes: for his discovery of human blood groups
+  1931-12-10:
+    - title: |-
+        Nobel Prize in Physiology or Medicine
+        Otto Heinrich Warburg
+      notes: for his discovery of the nature and mode of action of the respiratory enzyme
+  1932-12-10:
+    - title: |-
+        Nobel Prize in Physiology or Medicine
+        Charles Scott Sherrington & Edgar Adrian
+      notes: for their discoveries regarding the functions of neurons
+  1933-12-10:
+    - title: |-
+        Nobel Prize in Physiology or Medicine
+        Thomas Hunt Morgan
+      notes: for his discoveries concerning the role played by the chromosome in heredity
+  1934-12-10:
+    - title: |-
+        Nobel Prize in Physiology or Medicine
+        George Whipple, George Minot & William P. Murphy
+      notes: for their discoveries concerning liver therapy in cases of anaemia
+  1935-12-10:
+    - title: |-
+        Nobel Prize in Physiology or Medicine
+        Hilde Mangold (Hans Spemann)
+      notes: for her discovery of the effect now known as embryonic induction, an influence, exercised by various parts of the embryo, that directs the development of groups of cells into particular tissues and organs, the start of artificial cloning of organisms
+  1936-12-10:
+    - title: |-
+        Nobel Prize in Physiology or Medicine
+        Henry Hallett Dale & Otto Loewi
+      notes: for their discoveries relating to chemical transmission of nerve impulses
+  1937-12-10:
+    - title: |-
+        Nobel Prize in Physiology or Medicine
+        Albert Szent-Györgyi
+      notes: for his discoveries in connection with the biological combustion processes, with special reference to vitamin C and the catalysis of fumaric acid
+  1938-12-10:
+    - title: |-
+        Nobel Prize in Physiology or Medicine
+        Corneille Heymans
+      notes: for the discovery of the role played by the sinus and aortic mechanisms in the regulation of respiration
+  1939-12-10:
+    - title: |-
+        Nobel Prize in Physiology or Medicine
+        Gerhard Domagk
+      notes: for the discovery of the antibacterial effects of prontosil
+  1943-12-10:
+    - title: |-
+        Nobel Prize in Physiology or Medicine
+        Henrik Dam
+      notes: for his discovery of vitamin K
+    - title: |-
+        Nobel Prize in Physiology or Medicine
+        Edward Adelbert Doisy
+      notes: for his discovery of the chemical nature of vitamin K
+  1944-12-10:
+    - title: |-
+        Nobel Prize in Physiology or Medicine
+        Joseph Erlanger & Herbert Spencer Gasser
+      notes: for their discoveries relating to the highly differentiated functions of single nerve fibres
+  1945-12-10:
+    - title: |-
+        Nobel Prize in Physiology or Medicine
+        Alexander Fleming, Ernst Boris Chain & Howard Walter Florey
+      notes: for the discovery of penicillin and its curative effect in various infectious diseases
+  1946-12-10:
+    - title: |-
+        Nobel Prize in Physiology or Medicine
+        Hermann Joseph Muller
+      notes: for the discovery of the production of mutations by means of X-ray irradiation
+  1947-12-10:
+    - title: |-
+        Nobel Prize in Physiology or Medicine
+        Carl Ferdinand Cori & Gerty Theresa Cori, née Radnitz
+      notes: for their discovery of the course of the catalytic conversion of glycogen
+    - title: |-
+        Nobel Prize in Physiology or Medicine
+        Bernardo Alberto Houssay
+      notes: for his discovery of the part played by the hormone of the anterior pituitary lobe in the metabolism of sugar
+  1948-12-10:
+    - title: |-
+        Nobel Prize in Physiology or Medicine
+        Paul Hermann Müller
+      notes: for his discovery of the high efficiency of DDT as a contact poison against several arthropods
+  1949-12-10:
+    - title: |-
+        Nobel Prize in Physiology or Medicine
+        Walter Rudolf Hess
+      notes: for his discovery of the functional organization of the interbrain as a coordinator of the activities of the internal organs
+    - title: |-
+        Nobel Prize in Physiology or Medicine
+        António Caetano Egas Moniz
+      notes: for his discovery of the therapeutic value of leucotomy (lobotomy) in certain psychoses
+  1950-12-10:
+    - title: |-
+        Nobel Prize in Physiology or Medicine
+        Philip Showalter Hench, Edward Calvin Kendall & Tadeusz Reichstein
+      notes: for their discoveries relating to the hormones of the adrenal cortex, their structure and biological effects
+  1951-12-10:
+    - title: |-
+        Nobel Prize in Physiology or Medicine
+        Max Theiler
+      notes: for his discoveries concerning yellow fever and how to combat it
+  1952-12-10:
+    - title: |-
+        Nobel Prize in Physiology or Medicine
+        Selman Abraham Waksman
+      notes: for his discovery of streptomycin, the first antibiotic effective against tuberculosis
+  1953-12-10:
+    - title: |-
+        Nobel Prize in Physiology or Medicine
+        Fritz Albert Lipmann
+      notes: for his discovery of co-enzyme A and its importance for intermediary metabolism
+    - title: |-
+        Nobel Prize in Physiology or Medicine
+        Hans Adolf Krebs
+      notes: for his discovery of the citric acid cycle
+  1954-12-10:
+    - title: |-
+        Nobel Prize in Physiology or Medicine
+        John Franklin Enders, Frederick Chapman Robbins & Thomas Huckle Weller
+      notes: for their discovery of the ability of poliomyelitis viruses to grow in cultures of various types of tissue
+  1955-12-10:
+    - title: |-
+        Nobel Prize in Physiology or Medicine
+        Axel Hugo Theodor Theorell
+      notes: for his discoveries concerning the nature and mode of action of oxidation enzymes
+  1956-12-10:
+    - title: |-
+        Nobel Prize in Physiology or Medicine
+        André Frédéric Cournand, Werner Forssmann & Dickinson W. Richards
+      notes: for their discoveries concerning heart catheterization and pathological changes in the circulatory system
+  1957-12-10:
+    - title: |-
+        Nobel Prize in Physiology or Medicine
+        Daniel Bovet
+      notes: for his discoveries relating to synthetic compounds that inhibit the action of certain body substances, and especially their action on the vascular system and the skeletal muscles
   1958-12-10:
     - title: |-
         Nobel Prize in Physiology or Medicine

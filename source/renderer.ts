@@ -6,6 +6,7 @@ import { FONTS_SYSTEM, MILLISECONDS, TRANSPARENT } from "./constants.js";
 import { dot, makeHtmlString, type NodeProperties } from "./dot.js";
 import { roundToDay } from "./operator.js";
 import { matchLuminance, palette } from "./palette.js";
+import { styles } from "./styles.js";
 import type { RenderMode, Timeline, TimelineEntry } from "./types.js";
 
 export interface RendererOptions {
@@ -50,68 +51,7 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
   const paletteMeta = p.toPalette();
   const colors = paletteMeta.lookup;
 
-  type Style = {
-    fill: boolean;
-    outline: boolean;
-    link: boolean;
-    penwidth: number;
-    style: string;
-  };
-  const DEFAULT_STYLES: Array<Style> = [
-    {
-      fill: false,
-      outline: true,
-      link: false,
-      penwidth: 0.5,
-      style: "dashed,rounded",
-    },
-    {
-      fill: false,
-      outline: true,
-      link: false,
-      penwidth: 1,
-      style: "rounded,solid",
-    },
-    {
-      fill: false,
-      outline: true,
-      link: true,
-      penwidth: 1,
-      style: "rounded,solid",
-    },
-    {
-      fill: true,
-      outline: true,
-      link: true,
-      penwidth: 1,
-      style: "filled,rounded,solid",
-    },
-  ];
-  const ranks = [
-    ...timelines.reduce((_, timeline) => {
-      _.add(timeline.meta.rank ?? 0);
-      return _;
-    }, new Set<number>()),
-  ].sort();
-  const styles =
-    ranks.length <= DEFAULT_STYLES.length
-      ? DEFAULT_STYLES.slice(ranks.length * -1)
-      : [
-          ...DEFAULT_STYLES,
-          ...new Array(ranks.length - DEFAULT_STYLES.length)
-            .fill(null, 0, ranks.length - DEFAULT_STYLES.length)
-            .map((_, index) => {
-              const style = { ...DEFAULT_STYLES[DEFAULT_STYLES.length - 1] };
-              style.penwidth += index + 1;
-              return style;
-            }),
-        ];
-
-  const styleSheet = new Map<number, Style>(
-    styles.map((style, index) => [ranks[index], style] as [number, Style]),
-  );
-  process.stderr.write(JSON.stringify(ranks, undefined, 2));
-  process.stderr.write(JSON.stringify(styles, undefined, 2));
+  const styleSheet = styles(timelines.map(_ => _.meta.rank ?? 0)).toStyleSheet();
 
   const d = dot();
 
