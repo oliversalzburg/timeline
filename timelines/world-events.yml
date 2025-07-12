@@ -1,7 +1,9 @@
 ---
 prefix: 🌍
 timeline:
-  1939-09-01: Start of World War II
+  1939-09-01: |-
+    Start of World War II
+    Germany invades Poland
   1945-02-04: Yalta Conference
   1945-05-08: Germany Unconditionally Surrenders
   1945-07-17: Potsdam Conference
@@ -16,7 +18,7 @@ timeline:
   1947-12-22: |-
     Flick-Prozess
     Kriegsverbrecher Friedrich Flick
-  1949-09-07: 
+  1949-09-07:
     - |-
       Formation of German Democratic Republic
       Deutsche Demokratische Republik
