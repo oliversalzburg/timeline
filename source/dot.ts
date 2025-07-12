@@ -127,6 +127,7 @@ export interface NodeProperties {
   fontcolor: Color;
   fontname: string;
   fontsize: number;
+  id: string;
   label: string;
   margin: number;
   penwidth: number;
