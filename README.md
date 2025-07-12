@@ -1,4 +1,12 @@
-# OpenTimeline - Working Draft
+# Open Time-Travel Engine - Working Draft
+
+## Abstract
+
+The Open Time-Travel Engine is designed to allow for read-only access to the past.
+
+The engine has to be assembled, fueled, and operated by a single traveler. There is no support to share experiences from the journey with additional passengers.
+
+This repository contains all crucial parts for the engine. Ensure to assemble it out of sight.
 
 ## Goals
 
