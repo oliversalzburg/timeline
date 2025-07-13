@@ -1,9 +1,12 @@
+import type { Shape } from "./dot.js";
+
 export interface Style {
   fill: boolean;
   outline: boolean;
   link: boolean;
   penwidth: number;
-  style: string;
+  shape: Shape;
+  style?: string;
 }
 
 export const DEFAULT_STYLES: Array<Style> = [
@@ -12,13 +15,14 @@ export const DEFAULT_STYLES: Array<Style> = [
     outline: false,
     link: false,
     penwidth: 0,
-    style: "solid",
+    shape: "plaintext",
   },
   {
     fill: false,
     outline: true,
     link: false,
     penwidth: 0.5,
+    shape: "box",
     style: "dashed,rounded",
   },
   {
@@ -26,6 +30,7 @@ export const DEFAULT_STYLES: Array<Style> = [
     outline: true,
     link: false,
     penwidth: 1,
+    shape: "box",
     style: "rounded,solid",
   },
   {
@@ -33,6 +38,7 @@ export const DEFAULT_STYLES: Array<Style> = [
     outline: true,
     link: true,
     penwidth: 1,
+    shape: "box",
     style: "rounded,solid",
   },
   {
@@ -40,6 +46,7 @@ export const DEFAULT_STYLES: Array<Style> = [
     outline: true,
     link: true,
     penwidth: 1,
+    shape: "box",
     style: "filled,rounded,solid",
   },
 ];

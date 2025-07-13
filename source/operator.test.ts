@@ -19,7 +19,7 @@ before(() => {
 describe("Operator - add", () => {
   it("should create a new timeline with an additional event", () => {
     const document: TimelineDocument = { ...random };
-    const timeline = load(document);
+    const timeline = load(document, "document");
     const expanded = add(timeline, [0, { title: "0" }]);
     expect(timeline).not.to.equal(
       expanded,
@@ -33,7 +33,7 @@ describe("Operator - add", () => {
 describe("Operator - concat", () => {
   it("should create a new timeline with additional events", () => {
     const document: TimelineDocument = { ...random };
-    const timeline = load(document);
+    const timeline = load(document, "document");
     const expanded = concat(timeline, [
       [0, { title: "0" }],
       [1, { title: "1" }],
@@ -51,7 +51,7 @@ describe("Operator - concat", () => {
 describe("Operator - map", () => {
   it("should create a new timeline with adjusted events", () => {
     const document: TimelineDocument = { ...random };
-    const timeline = load(document);
+    const timeline = load(document, "document");
     const adjusted = map(timeline, ([timestamp]) => [timestamp, { title: "changed" }]);
     expect(timeline).not.to.equal(
       adjusted,
@@ -68,7 +68,7 @@ describe("Operator - map", () => {
 describe("Operator - sort", () => {
   it("should create a new timeline with sorted events", () => {
     const document: TimelineDocument = { ...random };
-    const timeline = load(document);
+    const timeline = load(document, "document");
     const adjusted = sort(timeline);
     expect(timeline).not.to.equal(
       adjusted,

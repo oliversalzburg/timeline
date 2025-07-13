@@ -1,27 +1,22 @@
 export interface TimelineDocument {
-  id: string;
-  color?: string;
-  link?: boolean;
-  prefix?: string;
-  rank?: number;
   timeline: TimelineFlexibleInput;
 }
+
 export interface TimelineFlexibleInput
   extends Record<string, string | number | Array<string | number | TimelineEntry>> {}
+
 export interface TimelineEntry {
   title: string;
+  notes?: string;
 }
 export type TimelineRecord = [number, TimelineEntry];
 export type Timeline = {
   meta: {
     id: string;
-    color?: string;
-    link?: boolean;
-    prefix?: string;
-    rank?: number;
-  };
+  } & Record<string, unknown>;
   records: Array<TimelineRecord>;
 };
+
 export interface TimelineMetrics {
   durationTotal: number;
   periodLongest: number;
@@ -32,3 +27,17 @@ export interface TimelineMetrics {
 export type RGBTuple = [number, number, number];
 export type RGBATuple = [number, number, number, number];
 export type RenderMode = "dark" | "light";
+
+export interface MetaSectionReferenceRenderer extends Record<string, unknown> {
+  color?: string;
+  prefix?: string;
+  rank?: number;
+  streams?: Array<string>;
+}
+export interface TimelineDocumentReferenceRenderer
+  extends TimelineDocument,
+    MetaSectionReferenceRenderer {}
+export interface TimelineReferenceRenderer extends Timeline {
+  meta: MetaSectionReferenceRenderer & { id: string };
+  records: Array<TimelineRecord>;
+}

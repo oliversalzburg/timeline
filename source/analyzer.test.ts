@@ -19,7 +19,7 @@ describe("Analyzer", () => {
 
   it("should produce the expected metrics (fixture 1)", () => {
     const document: TimelineDocument = { ...random };
-    const timeline = load(document);
+    const timeline = load(document, "document");
     const metrics = analyze(timeline.records);
 
     expect(metrics).to.eql({
@@ -33,7 +33,7 @@ describe("Analyzer", () => {
 
   it("should produce the expected metrics (fixture 2)", () => {
     const document: TimelineDocument = { ...withConflict };
-    const timeline = load(document);
+    const timeline = load(document, "document");
     const metrics = analyze(timeline.records);
 
     expect(metrics).to.eql({

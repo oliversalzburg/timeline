@@ -1,9 +1,9 @@
 _site/
-coverage/
-node_modules/
-lib/
-output/
-tsconfig.tsbuildinfo
 contrib/fonts/
+coverage/
+graphs/
+lib/
+node_modules/
+output/
 timelines/.*
-timelines/*.dump
+tsconfig.tsbuildinfo

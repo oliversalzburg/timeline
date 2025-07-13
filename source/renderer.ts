@@ -7,7 +7,7 @@ import { dot, makeHtmlString, type NodeProperties } from "./dot.js";
 import { roundToDay } from "./operator.js";
 import { matchLuminance, palette } from "./palette.js";
 import { styles } from "./styles.js";
-import type { RenderMode, Timeline, TimelineEntry } from "./types.js";
+import type { RenderMode, TimelineEntry, TimelineReferenceRenderer } from "./types.js";
 
 export interface RendererOptions {
   baseUnit: "day" | "week" | "month";
@@ -29,11 +29,14 @@ export interface RendererOptions {
  * as an example of how to further utilize recorded timeline data.
  * Readers are encouraged to write their own Renderer implementation.
  */
-export const render = (timelines: Array<Timeline>, options: Partial<RendererOptions> = {}) => {
+export const render = (
+  timelines: Array<TimelineReferenceRenderer>,
+  options: Partial<RendererOptions> = {},
+) => {
   const timestampsUnique = [
     ...new Set(timelines.flatMap(t => roundToDay(t).records.map(([time, _]) => time))),
   ].sort((a, b) => a - b);
-  type TimeTuple = [number, Timeline, TimelineEntry];
+  type TimeTuple = [number, TimelineReferenceRenderer, TimelineEntry];
   const timelineGlobal = timelines
     .flatMap(_ => roundToDay(_).records.map(r => [r[0], _, r[1]] as TimeTuple))
     .sort(([a, , aentry], [b, , bentry]) =>
@@ -84,7 +87,7 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
     ? options.dateRenderer(origin)
     : new Date(origin).toDateString();
   let previousYear: number | undefined;
-  const firstNodeAlreadySeen = new Set<Timeline>();
+  const firstNodeAlreadySeen = new Set<TimelineReferenceRenderer>();
   let nextEventIndex = 0;
 
   /**
@@ -132,8 +135,8 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
       timelineGlobal[nextEventIndex][0] === timestamp
     ) {
       let timestampHasRoots = false;
-      const contributors = new Set<Timeline>();
-      let leader: Timeline | undefined;
+      const contributors = new Set<TimelineReferenceRenderer>();
+      let leader: TimelineReferenceRenderer | undefined;
 
       // We now further iterate over all global events at this timestamp which share the same title.
       let [timestampActual, timeline, entry] = timelineGlobal[nextEventIndex];
@@ -196,7 +199,7 @@ export const render = (timelines: Array<Timeline>, options: Partial<RendererOpti
           `${(0 < prefixes.length ? `${prefixes} ` : "") + entry.title}\\n${dateString}`,
         ),
         penwidth: style.outline ? style.penwidth : 0,
-        shape: "box",
+        shape: style.shape,
         style: style.style,
         tooltip: `${formatMilliseconds(timePassedSinceOrigin)} since ${originString}\\n${formatMilliseconds(timePassedSinceThen)} ago`,
       };

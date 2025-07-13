@@ -40,7 +40,7 @@ describe("Renderer", () => {
   it("should render timelines correctly (fixture 1)", function () {
     const document: TimelineDocument = { ...random };
     const now = Date.UTC(2025, 5, 15);
-    const timeline = load(document);
+    const timeline = load(document, "document");
     const artifact = render([timeline], { now });
     expect(
       snapshotHasRegression(snapshotIdentity(this, ".gv"), artifact.graph),
@@ -51,7 +51,7 @@ describe("Renderer", () => {
   it("should render timelines correctly (fixture 3)", function () {
     const document: TimelineDocument = { ...history };
     const now = Date.UTC(2025, 5, 15);
-    const timeline = load(document);
+    const timeline = load(document, "document");
     const artifact = render([timeline], { now });
     expect(
       snapshotHasRegression(snapshotIdentity(this, ".gv"), artifact.graph),
@@ -62,7 +62,7 @@ describe("Renderer", () => {
   it("should render timelines correctly (fixture 1+3)", function () {
     const documents: Array<TimelineDocument> = [{ ...random }, { ...history }];
     const now = Date.UTC(2025, 5, 15);
-    const timelines = documents.map(_ => load(_));
+    const timelines = documents.map((_, index) => load(_, index.toFixed()));
     const artifact = render(timelines, { now });
     expect(
       snapshotHasRegression(snapshotIdentity(this, ".gv"), artifact.graph),
@@ -73,7 +73,7 @@ describe("Renderer", () => {
   it("should merge timelines correctly (fixture 1a)", function () {
     const document: TimelineDocument = { ...random };
     const now = Date.UTC(2025, 5, 15);
-    const timeline = load(document);
+    const timeline = load(document, "document");
     const artifact = render(
       [timeline, { meta: { id: "test", rank: 1 }, records: timeline.records.slice(0, 1) }],
       {
@@ -88,7 +88,7 @@ describe("Renderer", () => {
   it("should merge timelines correctly (fixture 1b)", function () {
     const document: TimelineDocument = { ...random };
     const now = Date.UTC(2025, 5, 15);
-    const timeline = load(document);
+    const timeline = load(document, "document");
     const artifact = render(
       [timeline, { meta: { id: "test", rank: 1 }, records: timeline.records.slice(1, 2) }],
       {
@@ -103,7 +103,7 @@ describe("Renderer", () => {
   it("should merge timelines correctly (fixture 1c)", function () {
     const document: TimelineDocument = { ...random };
     const now = Date.UTC(2025, 5, 15);
-    const timeline = load(document);
+    const timeline = load(document, "document");
     const artifact = render(
       [timeline, { meta: { id: "test", rank: 1 }, records: timeline.records.slice(0, 2) }],
       {

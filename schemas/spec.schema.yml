@@ -12,6 +12,9 @@ definitions:
       title:
         title: Title
         type: string
+      notes:
+        title: Notes
+        type: string
     required:
       - title
 
@@ -21,6 +24,18 @@ properties:
   color:
     title: Color
     type: string
+    examples:
+      - "#FF0000"
+      - transparent
+      - audio
+      - video
+  prefix:
+    title: Prefix
+    type: string
+  rank:
+    title: Rank
+    type: number
+    default: 0
   timeline:
     title: Timeline
     patternProperties:

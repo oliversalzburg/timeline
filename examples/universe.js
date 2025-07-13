@@ -21,10 +21,17 @@ const args = process.argv
   .filter(_ => _.startsWith("--"))
   .reduce(
     (args, _) => {
-      args[_.substring(2)] = true;
+      const argument = _.substring(2);
+      const parts = argument.match(/^(?<name>[^=]+)=?(?<value>.*)$/);
+      if (parts === null || parts.groups === undefined) {
+        return args;
+      }
+
+      args[parts.groups.name ?? parts.groups.value] = typeof parts.groups.value === "string" && parts.groups.value !== "" ? parts.groups.value : true;
+
       return args;
     },
-    /** @type {Record<string,boolean>} */({}),
+    /** @type {Record<string,boolean|string>} */({}),
   );
 
 // Read raw data from input files.
@@ -68,6 +75,7 @@ const globalLatest = metrics
     0,
   );
 
+// Generate New Year's Eve events.
 const yearEarliest = new Date(globalEarliest).getFullYear();
 data.set("timelines/.decoration.nye", {
   meta: {
@@ -83,6 +91,8 @@ data.set("timelines/.decoration.nye", {
     ),
   ],
 });
+
+// Adjust the titles in the data set.
 data.set(
   "timelines/mediacontrol-top1-singles.yml",
   map(mustExist(data.get("timelines/mediacontrol-top1-singles.yml")), record => [
@@ -134,8 +144,8 @@ const dotGraph = render(finalTimelines, {
   now: NOW,
   origin: new Date(1983, 11, 25, 0, 0, 0, 0).valueOf(),
   ...(PREVIEW ? CONFIG_QUALITY_PREVIEW : CONFIG_QUALITY_ULTRA),
-  //skipBefore: new Date("1980-12-31").valueOf(),
-  //skipAfter: new Date("2009-12-31").valueOf(),
+  skipBefore: args["skip-before"] ? new Date(args["skip-before"]).valueOf() : undefined,
+  skipAfter: args["skip-after"] ? new Date(args["skip-after"]).valueOf() : undefined,
 });
 
 // Dump palette for debugging purposes.

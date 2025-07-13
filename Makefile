@@ -1,6 +1,6 @@
 .PHONY: default build clean docs git-hook pretty lint test universe-preview render-smoke render-preview render-hq
 
-default: build
+default: | clean build
 
 build: lib output
 
@@ -75,3 +75,12 @@ stage0: lib
 	@echo "Generating DOT source for universe graph..."
 	node --enable-source-maps examples/universe.js --preview $(shell ls timelines/* ~/timelines/*.yml) > timelines/.universe.gv
 	@echo "Generating DOT source for universe graph complete."
+
+
+graphs:
+	mkdir graphs
+graphs/%.gv: graphs lib
+	node --enable-source-maps examples/universe.js --preview --skip-before=$*-01-01 --skip-after=$*-12-31 $(shell ls timelines/* ~/timelines/*.yml) > graphs/$*.gv
+.PHONY: 1930-2030
+1930-2030:
+	$(MAKE) $(shell seq --format='graphs/%0g.gv' 1930 2030)

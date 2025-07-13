@@ -23,7 +23,7 @@ describe("Loader", () => {
 
   it("should transform date strings to timestamps (fixture 1)", () => {
     const document: TimelineDocument = { ...random };
-    const timeline = load(document);
+    const timeline = load(document, "document");
     for (let recordIndex = 0; recordIndex < timeline.records.length; ++recordIndex) {
       expect(timeline.records[recordIndex][0]).to.equal(
         Number(timeline.records[recordIndex][1].title),
@@ -34,7 +34,7 @@ describe("Loader", () => {
 
   it("should transform date strings to timestamps (fixture 2)", () => {
     const document: TimelineDocument = { ...withConflict };
-    const timeline = load(document);
+    const timeline = load(document, "document");
     for (let recordIndex = 0; recordIndex < timeline.records.length; ++recordIndex) {
       expect(timeline.records[recordIndex][0]).to.equal(
         Number(timeline.records[recordIndex][1].title),
@@ -45,7 +45,7 @@ describe("Loader", () => {
 
   it("should produce an ordered list of records (fixture 1)", () => {
     const document: TimelineDocument = { ...random };
-    const timeline = load(document);
+    const timeline = load(document, "document");
     let previousTimestamp = timeline.records[0][0];
     for (let recordIndex = 1; recordIndex < timeline.records.length; ++recordIndex) {
       expect(timeline.records[recordIndex][0]).to.be.greaterThanOrEqual(previousTimestamp);
@@ -55,7 +55,7 @@ describe("Loader", () => {
 
   it("should produce an ordered list of records (fixture 3)", () => {
     const document: TimelineDocument = { ...history };
-    const timeline = load(document);
+    const timeline = load(document, "document");
     let previousTimestamp = timeline.records[0][0];
     for (let recordIndex = 1; recordIndex < timeline.records.length; ++recordIndex) {
       expect(timeline.records[recordIndex][0]).to.be.greaterThanOrEqual(previousTimestamp);
@@ -65,7 +65,7 @@ describe("Loader", () => {
 
   it("should produce an ordered list of records (fixture 4)", () => {
     const document: TimelineDocument = { ...beforeUnix };
-    const timeline = load(document);
+    const timeline = load(document, "document");
     let previousTimestamp = timeline.records[0][0];
     for (let recordIndex = 1; recordIndex < timeline.records.length; ++recordIndex) {
       expect(timeline.records[recordIndex][0]).to.be.greaterThanOrEqual(previousTimestamp);
