@@ -10,7 +10,7 @@ timeline:
   2025-06-13 00:00:00 +0700:
     - Final Fantasy (FIN)
   2025-04-11 00:00:00 +0700:
-    - 'Tarkir: Dragonstorm (TDM)'
+    - "Tarkir: Dragonstorm (TDM)"
   2025-02-14 00:00:00 +0700:
     - Aetherdrift (DFT)
   2025-01-24 00:00:00 +0700:
@@ -20,7 +20,7 @@ timeline:
   2024-11-15 00:00:00 +0700:
     - Foundations (FDN)
   2024-09-27 00:00:00 +0700:
-    - 'Duskmourn: House of Horror (DSK)'
+    - "Duskmourn: House of Horror (DSK)"
   2024-08-02 00:00:00 +0700:
     - Bloomburrow (BLB)
     - Mystery Booster 2 (MB2)
@@ -40,7 +40,7 @@ timeline:
   2023-08-01 00:00:00 +0700:
     - 2022 Heroes of the Realm (PH22)
   2023-05-12 00:00:00 +0700:
-    - 'March of the Machine: The Aftermath (MAT)'
+    - "March of the Machine: The Aftermath (MAT)"
   2023-04-21 00:00:00 +0700:
     - March of the Machine (MOM)
   2023-03-21 00:00:00 +0700:
@@ -49,7 +49,7 @@ timeline:
   2023-02-15 00:00:00 +0700:
     - Unknown Event (UNK)
   2023-02-03 00:00:00 +0700:
-    - 'Phyrexia: All Will Be One (ONE)'
+    - "Phyrexia: All Will Be One (ONE)"
   2023-01-13 00:00:00 +0700:
     - Dominaria Remastered (DMR)
   2022-11-18 00:00:00 +0700:
@@ -69,11 +69,11 @@ timeline:
   2022-03-03 00:00:00 +0700:
     - Universes Within (SLX)
   2022-02-18 00:00:00 +0700:
-    - 'Kamigawa: Neon Dynasty (NEO)'
+    - "Kamigawa: Neon Dynasty (NEO)"
   2021-11-19 00:00:00 +0700:
-    - 'Innistrad: Crimson Vow (VOW)'
+    - "Innistrad: Crimson Vow (VOW)"
   2021-09-24 00:00:00 +0700:
-    - 'Innistrad: Midnight Hunt (MID)'
+    - "Innistrad: Midnight Hunt (MID)"
   2021-08-20 00:00:00 +0700:
     - Mystery Booster Playtest Cards 2021 (CMB2)
   2021-08-01 00:00:00 +0700:
@@ -81,7 +81,7 @@ timeline:
   2021-07-23 00:00:00 +0700:
     - Adventures in the Forgotten Realms (AFR)
   2021-04-23 00:00:00 +0700:
-    - 'Strixhaven: School of Mages (STX)'
+    - "Strixhaven: School of Mages (STX)"
   2021-03-19 00:00:00 +0700:
     - Time Spiral Remastered (TSR)
   2021-02-05 00:00:00 +0700:
@@ -101,7 +101,7 @@ timeline:
   2020-07-03 00:00:00 +0700:
     - Core Set 2021 (M21)
   2020-04-24 00:00:00 +0700:
-    - 'Ikoria: Lair of Behemoths (IKO)'
+    - "Ikoria: Lair of Behemoths (IKO)"
   2020-02-29 00:00:00 +0700:
     - Unsanctioned (UND)
   2020-01-24 00:00:00 +0700:
@@ -109,7 +109,7 @@ timeline:
   2019-11-07 00:00:00 +0700:
     - Mystery Booster Playtest Cards 2019 (CMB1)
   2019-10-22 00:00:00 +0700:
-    - 'Ponies: The Galloping (PTG)'
+    - "Ponies: The Galloping (PTG)"
   2019-10-04 00:00:00 +0700:
     - Throne of Eldraine (ELD)
   2019-08-01 00:00:00 +0700:
@@ -261,7 +261,7 @@ timeline:
   2006-02-03 00:00:00 +0700:
     - Guildpact (GPT)
   2005-10-07 00:00:00 +0700:
-    - 'Ravnica: City of Guilds (RAV)'
+    - "Ravnica: City of Guilds (RAV)"
   2005-07-29 00:00:00 +0700:
     - Ninth Edition (9ED)
   2005-06-03 00:00:00 +0700:
