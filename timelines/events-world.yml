@@ -1,8 +1,8 @@
 ---
 prefix: 🌍
 timeline:
-  1936-12-11: 👑 King George VI Reigns
-  1937-05-12: 👑 King George VI Coronation
+  1914-07-28: Start of World War I
+  1918-11-11: End of World War I
   1939-09-01: |-
     Start of World War II
     Germany invades Poland
@@ -27,20 +27,12 @@ timeline:
   1945-08-15: Japan announces Unconditional Surrender
   1945-09-02: End of World War II
   1945-11-20: Start of Nuremberg War Crimes Tribunal
-  1946-04-21: Formation of Socialist Unity Party of Germany (SED)
   1946-07-29: Start of Paris Peace Conference
   1948-06-24: Start of Berlin Blockade
   1949-05-12: End of Berlin Blockade
-  1949-09-07:
-    - |-
-      Formation of German Democratic Republic
-      Deutsche Demokratische Republik
   1951-05-25: |-
     Donald Maclean & Guy Burgess Defect to Soviet Union
     Homosexual Tendencies Considered National Security Risk
-  1952-02-06: 👑 Queen Elizabeth II Reigns
-  1953-06-02: 👑 Queen Elizabeth II Coronation
-  1961-08-31: Construction of Berlin Wall (GDR)
   1962-09-16: Start of Cuban Misslie Crisis
   1962-09-28: End of Cuban Misslie Crisis
   1963-08-01: |-
@@ -175,11 +167,8 @@ timeline:
   2022-02-01: Nord Stream 2 Oil Pipeline cancelled
   2022-02-24: Russia invades Ukraine (Russian Invasion of Ukraine)
   2022-07-01: Russia stops Nord Stream 1
-  2022-09-08: 👑 King Charles III Reigns
   2022-09-26: Attack on Nord Stream 1
-  2023-05-06: 👑 King Charles III Coronation
   2024-02-16: Alexei Navalny Murdered in Prison
   2024-07-13: Attempted Assassination of Donald Trump in Pennsylvania
   2024-12-04: Luigi Mangione Assassinates Health Insurance CEO
   2025-01-20: Donald Trump 2nd Term Inauguration
-  2025-05-08: Pope Leo XIV
