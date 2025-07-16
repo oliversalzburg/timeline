@@ -86,19 +86,28 @@ export const palette = <T>(theme: RenderMode) => {
         baseColorValues.set(timeline, [...color, 255]);
       }
     }
-    for (const [timeline, color] of baseColorValues) {
-      if (color === undefined) {
-        const color = mustExist(extraColorValues.pop());
-        baseColorValues.set(timeline, [...color, 255]);
-        assignments.set(rgbaToString([...color, 255]), [timeline]);
-      }
-    }
+
     const transparents = [
       ...entries
         .entries()
         .filter(([, color]) => color === TRANSPARENT)
         .map(([timeline]) => timeline),
     ];
+    for (const [timeline, color] of baseColorValues) {
+      if (transparents.includes(timeline)) {
+        continue;
+      }
+
+      if (color === undefined) {
+        const color = mustExist(extraColorValues.pop());
+        baseColorValues.set(timeline, [...color, 255]);
+        assignments.set(rgbaToString([...color, 255]), [timeline]);
+        continue;
+      }
+
+      assignments.set(rgbaToString([...color]), [timeline]);
+    }
+
     if (0 < transparents.length) {
       assignments.set(TRANSPARENT, transparents);
     }

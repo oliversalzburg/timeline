@@ -6,7 +6,7 @@ export interface Style {
   link: boolean;
   penwidth: number;
   shape: Shape;
-  style?: string;
+  style?: Array<string>;
 }
 
 export const DEFAULT_STYLES: Array<Style> = [
@@ -23,7 +23,7 @@ export const DEFAULT_STYLES: Array<Style> = [
     link: false,
     penwidth: 0.5,
     shape: "box",
-    style: "dashed,rounded",
+    style: ["dashed", "rounded"],
   },
   {
     fill: false,
@@ -31,7 +31,15 @@ export const DEFAULT_STYLES: Array<Style> = [
     link: false,
     penwidth: 1,
     shape: "box",
-    style: "rounded,solid",
+    style: ["dashed", "rounded"],
+  },
+  {
+    fill: false,
+    outline: true,
+    link: false,
+    penwidth: 1,
+    shape: "box",
+    style: ["solid", "rounded"],
   },
   {
     fill: false,
@@ -39,7 +47,7 @@ export const DEFAULT_STYLES: Array<Style> = [
     link: true,
     penwidth: 1,
     shape: "box",
-    style: "rounded,solid",
+    style: ["solid", "rounded"],
   },
   {
     fill: true,
@@ -47,22 +55,25 @@ export const DEFAULT_STYLES: Array<Style> = [
     link: true,
     penwidth: 1,
     shape: "box",
-    style: "filled,rounded,solid",
+    style: ["solid", "rounded", "filled"],
   },
 ];
 export const STYLE_TRANSPARENT = 0;
-export const STYLE_INFO = 1;
-export const STYLE_NOTICE = 2;
-export const STYLE_FOLLOW = 3;
+export const STYLE_VISIBLE = 1;
+export const STYLE_INFO = 2;
+export const STYLE_NOTICE = 3;
+export const STYLE_FOLLOW = 4;
 export const STYLE_LEADER = DEFAULT_STYLES.length - 1;
 
 export const styles = (ranksUsed: Array<number>) => {
   const ranks = [
-    ...ranksUsed.reduce((_, rank) => {
-      _.add(rank ?? 0);
-      return _;
-    }, new Set<number>()),
-  ].sort();
+    ...ranksUsed
+      .reduce((_, rank) => {
+        _.add(rank ?? 0);
+        return _;
+      }, new Set<number>())
+      .values(),
+  ].sort((a, b) => a - b);
 
   const styles = new Array<Style>();
   switch (ranks.length) {
@@ -98,17 +109,28 @@ export const styles = (ranksUsed: Array<number>) => {
         DEFAULT_STYLES[STYLE_LEADER],
       );
       break;
-    default:
+    case 6:
       styles.push(
         DEFAULT_STYLES[STYLE_TRANSPARENT],
+        DEFAULT_STYLES[STYLE_VISIBLE],
         DEFAULT_STYLES[STYLE_INFO],
         DEFAULT_STYLES[STYLE_NOTICE],
         DEFAULT_STYLES[STYLE_FOLLOW],
         DEFAULT_STYLES[STYLE_LEADER],
       );
-      for (let extra = 5; extra < ranks.length; ++extra) {
+      break;
+    default:
+      styles.push(
+        DEFAULT_STYLES[STYLE_TRANSPARENT],
+        DEFAULT_STYLES[STYLE_VISIBLE],
+        DEFAULT_STYLES[STYLE_INFO],
+        DEFAULT_STYLES[STYLE_NOTICE],
+        DEFAULT_STYLES[STYLE_FOLLOW],
+        DEFAULT_STYLES[STYLE_LEADER],
+      );
+      for (let extra = 6; extra < ranks.length; ++extra) {
         const style = { ...DEFAULT_STYLES[STYLE_LEADER] };
-        style.penwidth += extra - 4;
+        style.penwidth += extra - 5;
         styles.push(style);
       }
   }

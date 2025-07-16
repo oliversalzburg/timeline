@@ -1,4 +1,4 @@
-import { mustExist } from "@oliversalzburg/js-utils/data/nil.js";
+import { isNil, type Maybe, mustExist } from "@oliversalzburg/js-utils/data/nil.js";
 import { InvalidOperationError } from "@oliversalzburg/js-utils/errors/InvalidOperationError.js";
 import { formatMilliseconds } from "@oliversalzburg/js-utils/format/milliseconds.js";
 import { clamp } from "@oliversalzburg/js-utils/math/core.js";
@@ -22,6 +22,12 @@ export interface RendererOptions {
   skipBefore: number;
   theme: RenderMode;
 }
+
+export const rank = (timeline: Maybe<TimelineReferenceRenderer>) => {
+  return isNil(timeline)
+    ? -1
+    : (timeline.meta.rank ?? (timeline.meta.color === TRANSPARENT ? -1 : 0));
+};
 
 /**
  * The Renderer in the reference implementation generates a GraphViz graph containing all passed
@@ -54,7 +60,8 @@ export const render = (
   const paletteMeta = p.toPalette();
   const colors = paletteMeta.lookup;
 
-  const styleSheet = styles(timelines.map(_ => _.meta.rank ?? 0)).toStyleSheet();
+  const ranks = new Map<TimelineReferenceRenderer, number>(timelines.map(_ => [_, rank(_)]));
+  const styleSheet = styles([...ranks.values()]).toStyleSheet();
 
   const d = dot();
 
@@ -152,7 +159,7 @@ export const render = (
         }
 
         contributors.add(timeline);
-        if ((leader?.meta.rank ?? -1) < (timeline.meta.rank ?? 0)) {
+        if (rank(leader) <= rank(timeline)) {
           leader = timeline;
         }
 
@@ -172,14 +179,20 @@ export const render = (
         ? options.dateRenderer(timestamp)
         : new Date(timestamp).toDateString();
 
-      const style = mustExist(styleSheet.get(mustExist(leader).meta.rank ?? 0));
+      const style = mustExist(styleSheet.get(rank(leader)));
       const color = mustExist(colors.get(mustExist(leader).meta.id)).pen;
       const fillcolor = contributors
         .values()
         .reduce((fillColors, timeline) => {
           const fill = mustExist(colors.get(timeline.meta.id)).fill;
+
+          // Whatever we want to draw, _one_ transparent fill should be enough.
+          if (fill === TRANSPARENT && fillColors.includes(TRANSPARENT)) {
+            return fillColors;
+          }
+
           fillColors.push(
-            timeline === leader
+            timeline === leader || fill === TRANSPARENT
               ? fill
               : matchLuminance(fill, mustExist(colors.get(mustExist(leader).meta.id)).fill),
           );
@@ -200,7 +213,7 @@ export const render = (
         ),
         penwidth: style.outline ? style.penwidth : 0,
         shape: style.shape,
-        style: style.style,
+        style: style.style?.join(","),
         tooltip: `${formatMilliseconds(timePassedSinceOrigin)} since ${originString}\\n${formatMilliseconds(timePassedSinceThen)} ago`,
       };
       d.node(entry.title, nodeProperties);
@@ -218,8 +231,7 @@ export const render = (
   let timePassed = 0;
   for (const timeline of timelines) {
     const color = mustExist(colors.get(timeline.meta.id)).pen;
-    const rank = timeline.meta?.rank ?? 0;
-    const style = mustExist(styleSheet.get(rank));
+    const style = mustExist(styleSheet.get(rank(timeline)));
 
     // The timestamp we looked at during the last iteration.
     let previousTimestamp: number | undefined;
@@ -382,5 +394,5 @@ export const render = (
 
   d.raw("}");
 
-  return { graph: d.toString(), palette: paletteMeta };
+  return { graph: d.toString(), palette: paletteMeta, ranks, styles: styleSheet };
 };

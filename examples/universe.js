@@ -154,15 +154,30 @@ process.stderr.write(
 );
 const paletteMeta = dotGraph.palette;
 const colors = paletteMeta.lookup;
+const ranks = new Map([...dotGraph.ranks.entries()].map(([timeline, rank]) => [timeline.meta.id, rank]));
+const styles = dotGraph.styles;
+const describeStyle = (style) => {
+  const dashedOrSolid = style.style?.filter(_ => ["dashed", "solid"].includes(_)) ?? ["solid"];
+  const parts = [
+    style.fill ? "filled" : "translucent",
+    style.link ? "linked" : "unlinked",
+    style.outline ? `${style.penwidth}pt ${dashedOrSolid[0]} outline` : "flat",
+  ];
+  return parts.join(", ");
+}
 for (const [color, timelines] of paletteMeta.assignments) {
   const timelinePalette = mustExist(colors.get(timelines[0]));
   process.stderr.write(
     `- ${color} -> Pen: ${timelinePalette.pen} Fill: ${timelinePalette.fill} Font: ${timelinePalette.font}\n`,
   );
   for (const id of timelines) {
-    process.stderr.write(`  ${id}\n`);
+    process.stderr.write(`  ${id} (ranked ${ranks.get(id)}: ${describeStyle(styles.get(ranks.get(id)))})\n`);
   }
+  process.stderr.write("\n");
 }
+
+const rankCount = new Set(ranks.values()).size;
+process.stderr.write(`Style sheet generated for ${rankCount} ranks.\n`);
 
 process.stdout.write(dotGraph.graph);
 process.stderr.write("GraphViz graph for universe written successfully.\n");
