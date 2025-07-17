@@ -31,7 +31,7 @@ const args = process.argv
 
       return args;
     },
-    /** @type {Record<string,boolean|string>} */({}),
+    /** @type {Record<string, boolean | string>} */({}),
   );
 
 // Read raw data from input files.
@@ -144,8 +144,8 @@ const dotGraph = render(finalTimelines, {
   now: NOW,
   origin: new Date(1983, 11, 25, 0, 0, 0, 0).valueOf(),
   ...(PREVIEW ? CONFIG_QUALITY_PREVIEW : CONFIG_QUALITY_ULTRA),
-  skipBefore: args["skip-before"] ? new Date(args["skip-before"]).valueOf() : undefined,
-  skipAfter: args["skip-after"] ? new Date(args["skip-after"]).valueOf() : undefined,
+  skipBefore: typeof args["skip-before"] === "string" ? new Date(args["skip-before"]).valueOf() : undefined,
+  skipAfter: typeof args["skip-after"] === "string" ? new Date(args["skip-after"]).valueOf() : undefined,
 });
 
 // Dump palette for debugging purposes.
@@ -156,7 +156,11 @@ const paletteMeta = dotGraph.palette;
 const colors = paletteMeta.lookup;
 const ranks = new Map([...dotGraph.ranks.entries()].map(([timeline, rank]) => [timeline.meta.id, rank]));
 const styles = dotGraph.styles;
-const describeStyle = (style) => {
+const describeStyle = (/** @type {import("../lib/styles.js").Style | undefined} */ style) => {
+  if (style === undefined) {
+    return "";
+  }
+
   const dashedOrSolid = style.style?.filter(_ => ["dashed", "solid"].includes(_)) ?? ["solid"];
   const parts = [
     style.fill ? "filled" : "translucent",
@@ -171,7 +175,7 @@ for (const [color, timelines] of paletteMeta.assignments) {
     `- ${color} -> Pen: ${timelinePalette.pen} Fill: ${timelinePalette.fill} Font: ${timelinePalette.font}\n`,
   );
   for (const id of timelines) {
-    process.stderr.write(`  ${id} (ranked ${ranks.get(id)}: ${describeStyle(styles.get(ranks.get(id)))})\n`);
+    process.stderr.write(`  ${id} (ranked ${ranks.get(id)}: ${describeStyle(styles.get(mustExist(ranks.get(id))))})\n`);
   }
   process.stderr.write("\n");
 }

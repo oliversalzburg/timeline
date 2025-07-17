@@ -5,7 +5,7 @@ default: | clean build
 build: lib output
 
 clean:
-	rm --force --recursive _site lib output tsconfig.tsbuildinfo
+	rm --force --recursive _site lib output
 purge: clean
 	rm --force --recursive node_modules
 
@@ -56,7 +56,7 @@ endif
 	npm install
 
 lib: node_modules
-	npm exec -- tsc
+	npm exec -- tsc --build
 
 output: node_modules
 	@echo "Building timeline.js bundle..."
