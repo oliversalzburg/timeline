@@ -33,5 +33,6 @@ const timeline = {
     ),
   ],
 }
+
 const serialized = serialize(timeline);
 process.stdout.write(serialized + "\n");

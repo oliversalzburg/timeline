@@ -48,6 +48,7 @@ export const palette = <T>(theme: RenderMode) => {
       }
       const referenceSet = mustExist(colorReferences.get(color));
       referenceSet.add(item);
+      return;
     }
     if (color === undefined) {
       baseColorValues.set(item, undefined);
@@ -79,11 +80,13 @@ export const palette = <T>(theme: RenderMode) => {
     const demand = predictDemand();
     const extraColorValues = hslPalette(demand, 0, 0.4, 0.5);
     const assignments = new Map<string, Array<T>>();
+    const assigned = new Set<T>();
     for (const [colorName, references] of colorReferences) {
       const color = mustExist(extraColorValues.pop());
       assignments.set(colorName, [...references]);
       for (const timeline of references) {
         baseColorValues.set(timeline, [...color, 255]);
+        assigned.add(timeline);
       }
     }
 
@@ -94,7 +97,12 @@ export const palette = <T>(theme: RenderMode) => {
         .map(([timeline]) => timeline),
     ];
     for (const [timeline, color] of baseColorValues) {
+      if (assigned.has(timeline)) {
+        continue;
+      }
+
       if (transparents.includes(timeline)) {
+        assigned.add(timeline);
         continue;
       }
 
@@ -111,6 +119,7 @@ export const palette = <T>(theme: RenderMode) => {
     if (0 < transparents.length) {
       assignments.set(TRANSPARENT, transparents);
     }
+
     return {
       assignments,
       lookup: new Map<T, PaletteEntry>(

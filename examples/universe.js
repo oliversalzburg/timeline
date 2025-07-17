@@ -76,6 +76,7 @@ const globalLatest = metrics
   );
 
 // Generate New Year's Eve events.
+/*
 const yearEarliest = new Date(globalEarliest).getFullYear();
 data.set("timelines/.decoration.nye", {
   meta: {
@@ -91,6 +92,7 @@ data.set("timelines/.decoration.nye", {
     ),
   ],
 });
+*/
 
 // Adjust the titles in the data set.
 data.set(
@@ -169,12 +171,12 @@ const describeStyle = (/** @type {import("../lib/styles.js").Style | undefined} 
   ];
   return parts.join(", ");
 }
-for (const [color, timelines] of paletteMeta.assignments) {
+for (const [color, timelines] of [...paletteMeta.assignments.entries()].sort(([a], [b]) => a.localeCompare(b))) {
   const timelinePalette = mustExist(colors.get(timelines[0]));
   process.stderr.write(
     `- ${color} -> Pen: ${timelinePalette.pen} Fill: ${timelinePalette.fill} Font: ${timelinePalette.font}\n`,
   );
-  for (const id of timelines) {
+  for (const id of timelines.sort((a, b) => a.localeCompare(b))) {
     process.stderr.write(`  ${id} (ranked ${ranks.get(id)}: ${describeStyle(styles.get(mustExist(ranks.get(id))))})\n`);
   }
   process.stderr.write("\n");
