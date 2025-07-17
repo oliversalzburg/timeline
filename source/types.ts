@@ -1,4 +1,4 @@
-export interface TimelineDocument {
+export interface TimelineDocument extends Record<string, unknown> {
   timeline: TimelineFlexibleInput;
 }
 
@@ -10,12 +10,15 @@ export interface TimelineEntry {
   notes?: string;
 }
 export type TimelineRecord = [number, TimelineEntry];
-export type Timeline = {
+export interface TimelinePlain {
+  meta?: unknown;
+  records: Array<TimelineRecord>;
+}
+export interface Timeline extends TimelinePlain {
   meta: {
     id: string;
   } & Record<string, unknown>;
-  records: Array<TimelineRecord>;
-};
+}
 
 export interface TimelineMetrics {
   durationTotal: number;
