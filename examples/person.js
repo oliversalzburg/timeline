@@ -13,8 +13,7 @@ const [birthYear, birthMonth, birthDay] = birthDate.map(Number);
 
 const age = ageOrLastYear < 150 ? ageOrLastYear : ageOrLastYear - birthYear;
 const endYear = birthYear + age;
-const endDate = [endYear, birthMonth, birthDay];
-const endday = endDate.join("-");
+const endday = [endYear.toFixed().padStart(4, "0"), birthMonth.toFixed().padStart(2, "0"), birthDay.toFixed().padStart(2, "0")].join("-");
 
 process.stderr.write(`Timeline for '${name}' (${birthday} - ${endday}):\n`)
 
@@ -25,6 +24,7 @@ const timeline = {
     rank: 100
   },
   records: [
+    [new Date(birthYear, birthMonth - 1, birthDay, 0, 0, 0, 0).valueOf(), { title: `Estimated Conception\n${name}` }],
     [new Date(birthYear, birthMonth - 1, birthDay, 0, 0, 0, 0).valueOf(), { title: `Geburt ${name}` }],
     ...recurringYearly(
       new Date(birthYear, birthMonth - 1, birthDay, 0, 0, 0, 0),
