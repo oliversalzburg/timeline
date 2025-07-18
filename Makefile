@@ -27,7 +27,7 @@ test: node_modules
 	NODE_OPTIONS=--enable-source-maps TZ=UTC npm exec -- c8 --reporter=html-spa mocha --reporter-option maxDiffSize=16000 lib/*.test.js
 
 universe-preview: lib output
-	node --enable-source-maps examples/universe.js --preview --skip-before=1900 --skip-after=1984 $(shell ls timelines/* ~/timelines/*.yml) > timelines/.universe.gv
+	node --enable-source-maps examples/universe.js --preview --skip-before=1800 --skip-after=1970 $(shell ls timelines/* ~/timelines/*.yml) > timelines/.universe.gv
 
 universe: lib output
 	node examples/universe.js $(shell ls timelines/* ~/timelines/*.yml) > timelines/.universe.gv

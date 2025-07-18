@@ -119,6 +119,9 @@ export const render = (
 
     // Convert the timestamp to a Date for API features.
     const date = new Date(timestamp);
+    let eventIndex = 0;
+    const makeId = () =>
+      `${date.getFullYear().toFixed().padStart(4, "0")}-${(date.getMonth() + 1).toFixed().padStart(2, "0")}-${date.getDate().toFixed().padStart(2, "0")}-${eventIndex++}`;
     // We need the current year to support the "cluster years" feature.
     const currentYear = date.getFullYear();
 
@@ -130,7 +133,8 @@ export const render = (
         d.raw("}");
       }
       d.raw(`subgraph cluster_${currentYear} {`);
-      d.raw(`fontname="Master Photograph"`);
+      d.raw(`fontname="${FONTS_SYSTEM}"`);
+      d.raw(`fontsize="${FONT_SIZE}"`);
       d.raw(`label="${currentYear}"`);
       d.raw(`penwidth="0.2"`);
       d.raw(`style="dashed,rounded"`);
@@ -141,7 +145,6 @@ export const render = (
       nextEventIndex < timelineGlobal.length &&
       timelineGlobal[nextEventIndex][0] === timestamp
     ) {
-      let timestampHasRoots = false;
       const contributors = new Set<TimelineReferenceRenderer>();
       let leader: TimelineReferenceRenderer | undefined;
 
@@ -170,17 +173,16 @@ export const render = (
         timelineGlobal[nextEventIndex][2].title === entry.title
       );
 
-      // We want to know if any of the events we're looking at, are the first event in their respective
-      // source timeline. We want to highlight such nodes, to indicate the start of a document.
-      timestampHasRoots = 0 < contributors.difference(firstNodeAlreadySeen).size;
       contributors.forEach(_ => firstNodeAlreadySeen.add(_));
 
+      const id = makeId();
       const dateString = options?.dateRenderer
         ? options.dateRenderer(timestamp)
         : new Date(timestamp).toDateString();
 
       const style = mustExist(styleSheet.get(rank(leader)));
       const color = mustExist(colors.get(mustExist(leader).meta.id)).pen;
+
       const fillcolor = contributors
         .values()
         .reduce((fillColors, timeline) => {
@@ -199,7 +201,9 @@ export const render = (
           return fillColors;
         }, new Array<string>())
         .join(":");
+
       const fontcolor = mustExist(colors.get(mustExist(leader).meta.id)).font;
+
       const prefixes = contributors
         .values()
         .reduce((_, timeline) => _ + (timeline.meta.prefix ?? ""), "");
@@ -208,6 +212,7 @@ export const render = (
         color,
         fillcolor,
         fontcolor,
+        id,
         label: makeHtmlString(
           `${(0 < prefixes.length ? `${prefixes} ` : "") + entry.title}\\n${dateString}`,
         ),
@@ -216,6 +221,7 @@ export const render = (
         style: style.style?.join(","),
         tooltip: `${formatMilliseconds(timePassedSinceOrigin)} since ${originString}\\n${formatMilliseconds(timePassedSinceThen)} ago`,
       };
+
       d.node(entry.title, nodeProperties);
     }
 

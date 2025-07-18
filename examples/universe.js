@@ -5,8 +5,7 @@ import { basename } from "node:path";
 import { mustExist } from "@oliversalzburg/js-utils/data/nil.js";
 import { parse } from "yaml";
 import { analyze } from "../lib/analyzer.js";
-import { MILLISECONDS, TRANSPARENT } from "../lib/constants.js";
-import { recurringYearly } from "../lib/generator.js";
+import { MILLISECONDS } from "../lib/constants.js";
 import { load } from "../lib/loader.js";
 import { map, sort, uniquify } from "../lib/operator.js";
 import { render } from "../lib/renderer.js";
@@ -27,11 +26,14 @@ const args = process.argv
         return args;
       }
 
-      args[parts.groups.name ?? parts.groups.value] = typeof parts.groups.value === "string" && parts.groups.value !== "" ? parts.groups.value : true;
+      args[parts.groups.name ?? parts.groups.value] =
+        typeof parts.groups.value === "string" && parts.groups.value !== ""
+          ? parts.groups.value
+          : true;
 
       return args;
     },
-    /** @type {Record<string, boolean | string>} */({}),
+    /** @type {Record<string, boolean | string>} */ ({}),
   );
 
 // Read raw data from input files.
@@ -39,8 +41,8 @@ const files =
   2 < process.argv.length
     ? process.argv.slice(2).filter(_ => !_.startsWith("--"))
     : readdirSync("timelines/")
-      .filter(_ => _.endsWith(".yml"))
-      .map(_ => `timelines/${_}`);
+        .filter(_ => _.endsWith(".yml"))
+        .map(_ => `timelines/${_}`);
 
 if (files.length === 0) {
   process.stderr.write("No files provided.\n");
@@ -116,9 +118,15 @@ const finalEntryCount = finalTimelines.reduce(
   0,
 );
 
-process.stderr.write(`  Universe has ${finalEntryCount} individual entries from ${data.size} timelines.\n`);
-process.stderr.write(`  Horizon spans from ${new Date(globalEarliest).toLocaleDateString()} to ${new Date(globalLatest).toLocaleDateString()}.\n`);
-process.stderr.write(`  Averaging ~${finalEntryCount / ((globalLatest - globalEarliest) / MILLISECONDS.ONE_DAY)} events per day.\n`);
+process.stderr.write(
+  `  Universe has ${finalEntryCount} individual entries from ${data.size} timelines.\n`,
+);
+process.stderr.write(
+  `  Horizon spans from ${new Date(globalEarliest).toLocaleDateString()} to ${new Date(globalLatest).toLocaleDateString()}.\n`,
+);
+process.stderr.write(
+  `  Averaging ~${finalEntryCount / ((globalLatest - globalEarliest) / MILLISECONDS.ONE_DAY)} events per day.\n`,
+);
 
 const PREVIEW = Boolean(args.preview);
 
@@ -144,19 +152,25 @@ const dotGraph = render(finalTimelines, {
     return `${["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"][_.getDay()]}, ${_.getDate().toFixed(0).padStart(2, "0")}.${(_.getMonth() + 1).toFixed(0).padStart(2, "0")}.${_.getFullYear()}`;
   },
   now: NOW,
-  origin: new Date(1983, 11, 25, 0, 0, 0, 0).valueOf(),
+  //origin: new Date(1983, 11, 25, 0, 0, 0, 0).valueOf(),
+  origin:
+    typeof args.origin === "number" || typeof args.origin === "string"
+      ? new Date(args.origin).valueOf()
+      : undefined,
   ...(PREVIEW ? CONFIG_QUALITY_PREVIEW : CONFIG_QUALITY_ULTRA),
-  skipBefore: typeof args["skip-before"] === "string" ? new Date(args["skip-before"]).valueOf() : undefined,
-  skipAfter: typeof args["skip-after"] === "string" ? new Date(args["skip-after"]).valueOf() : undefined,
+  skipBefore:
+    typeof args["skip-before"] === "string" ? new Date(args["skip-before"]).valueOf() : undefined,
+  skipAfter:
+    typeof args["skip-after"] === "string" ? new Date(args["skip-after"]).valueOf() : undefined,
 });
 
 // Dump palette for debugging purposes.
-process.stderr.write(
-  `Generated palette for universe:\n`,
-);
+process.stderr.write("Generated palette for universe:\n");
 const paletteMeta = dotGraph.palette;
 const colors = paletteMeta.lookup;
-const ranks = new Map([...dotGraph.ranks.entries()].map(([timeline, rank]) => [timeline.meta.id, rank]));
+const ranks = new Map(
+  [...dotGraph.ranks.entries()].map(([timeline, rank]) => [timeline.meta.id, rank]),
+);
 const styles = dotGraph.styles;
 const describeStyle = (/** @type {import("../lib/styles.js").Style | undefined} */ style) => {
   if (style === undefined) {
@@ -170,14 +184,18 @@ const describeStyle = (/** @type {import("../lib/styles.js").Style | undefined} 
     style.outline ? `${style.penwidth}pt ${dashedOrSolid[0]} outline` : "flat",
   ];
   return parts.join(", ");
-}
-for (const [color, timelines] of [...paletteMeta.assignments.entries()].sort(([a], [b]) => a.localeCompare(b))) {
+};
+for (const [color, timelines] of [...paletteMeta.assignments.entries()].sort(([a], [b]) =>
+  a.localeCompare(b),
+)) {
   const timelinePalette = mustExist(colors.get(timelines[0]));
   process.stderr.write(
     `- ${color} -> Pen: ${timelinePalette.pen} Fill: ${timelinePalette.fill} Font: ${timelinePalette.font}\n`,
   );
   for (const id of timelines.sort((a, b) => a.localeCompare(b))) {
-    process.stderr.write(`  ${id} (ranked ${ranks.get(id)}: ${describeStyle(styles.get(mustExist(ranks.get(id))))})\n`);
+    process.stderr.write(
+      `  ${id} (ranked ${ranks.get(id)}: ${describeStyle(styles.get(mustExist(ranks.get(id))))})\n`,
+    );
   }
   process.stderr.write("\n");
 }
