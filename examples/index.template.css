@@ -2,13 +2,9 @@ html,
 body {
 	margin: 0;
 	padding: 0;
-	overflow: hidden;
 	background: rgb(0, 0, 0);
 	height: 100%;
 	width: 100%;
-	display: flex;
-	justify-content: center;
-	align-items: center;
 }
 
 body {
@@ -20,15 +16,28 @@ body {
 	}
 }
 
-svg .node {
-	scroll-margin: 50vh calc(50vw - 50%);
+svg {
+	z-index: 1;
 
-	&:focus,
-	&:has(:focus) {
-		outline: 5px dashed rgb(255, 255, 255);
+	.node {
+		scroll-margin: 50vh calc(50vw - 50%);
+		opacity: 0.9;
+
+		&:focus,
+		&:has(:focus) {
+			outline: 5px dashed rgb(255, 255, 255);
+		}
+	}
+
+	.edge {
+		opacity: 0.8;
 	}
 }
 
 canvas {
-	display: block;
+	position: fixed;
+	top: 0;
+	left: 0;
+	user-select: none;
+	pointer-events: none;
 }

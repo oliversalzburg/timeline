@@ -47,7 +47,7 @@ let timelineFocused =
 /**
  * @param {string} id -
  */
-const focusNode = (id) => {
+const focusNode = (id, rapid = false) => {
 	if (!id) {
 		return;
 	}
@@ -72,7 +72,7 @@ const focusNode = (id) => {
 	timelineFocused = nodeTimelines.get(id);
 
 	console.info(
-		`Focused node ${idFocused} of timeline ${timelineFocused}. Scrolling it into view...`,
+		`Focused node ${idFocused} of timeline ${timelineFocused}. Scrolling it ${rapid ? "rapidly" : "smoothly"} into view...`,
 	);
 
 	let left = window.pageXOffset + node.getBoundingClientRect().left;
@@ -81,7 +81,7 @@ const focusNode = (id) => {
 	left = left - document.documentElement.clientWidth / 2;
 	top = top - document.documentElement.clientHeight / 2;
 
-	window.scrollTo({ top, behavior: "smooth", left });
+	window.scrollTo({ top, behavior: rapid ? "instant" : "smooth", left });
 };
 
 console.info("Timeline loaded. SVG should fade in now.");
@@ -136,7 +136,7 @@ document.addEventListener("keyup", (event) => {
 		rapidKeys.set(event.code, 0);
 	}
 
-	const keyIsRapid = Date.now() - rapidKeys.get(event.code) < 100;
+	const keyIsRapid = Date.now() - rapidKeys.get(event.code) < 1000;
 	rapidKeys.set(event.code, Date.now());
 
 	let updateNavigation = true;
@@ -147,7 +147,7 @@ document.addEventListener("keyup", (event) => {
 	const scrollTo = (slice) => {
 		const step = document.body.scrollHeight / 10;
 		const top = step * slice;
-		console.log(`Scrolling to ${top}`);
+		console.log(`Scrolling ${keyIsRapid ? "rapidly" : "smoothly"} to ${top}.`);
 		window.scrollTo({ top, behavior: keyIsRapid ? "instant" : "smooth" });
 		updateNavigation = false;
 	};
@@ -296,7 +296,7 @@ document.addEventListener("keyup", (event) => {
 	}
 
 	event.preventDefault();
-	focusNode(idFocused);
+	focusNode(idFocused, keyIsRapid);
 });
 
 const initStarfield = () => {
@@ -327,7 +327,20 @@ const initStarfield = () => {
 		}
 
 		function getRandomColor() {
-			return starColors[Math.floor(Math.random() * starColors.length)];
+			const colorBase =
+				starColors[Math.floor(Math.random() * starColors.length)];
+			const matches = colorBase.substring(1).match(/../g);
+			if (matches === null) {
+				return colorBase;
+			}
+			const components = matches.map((x) => Number.parseInt(x, 16));
+			const scale = 1 / (Math.random() * 10);
+			const color = components
+				.map((_) => Math.floor(_ * scale))
+				.map((_) => _.toString(16).padStart(2, "0"))
+				.join("")
+				.toUpperCase();
+			return `#${color}`;
 		}
 
 		class Star {
