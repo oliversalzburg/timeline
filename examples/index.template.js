@@ -62,9 +62,10 @@ const focusNode = (id, rapid = false) => {
 
 	window.history.pushState(
 		{ id },
-		`${new Date(id.substring(1)).toLocaleDateString()} - Open Time-Travel Engine`,
+		"",
 		window.location.toString().replace(/(#.*)|$/, anchor),
 	);
+	document.title = `${new Date(id.substring(1)).toLocaleDateString()} - Open Time-Travel Engine`;
 	node.focus({ preventScroll: true });
 
 	idFocused = id;
