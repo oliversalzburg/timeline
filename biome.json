@@ -1,77 +1,31 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.1.2/schema.json",
-  "assist": {
-    "actions": {
-      "recommended": true,
-      "source": {
-        "organizeImports": "on",
-        "recommended": true,
-        "useSortedKeys": "off"
-      }
-    },
-    "enabled": true
-  },
-  "files": {
-    "includes": ["!fixtures/**", "!lib/**", "**"]
-  },
-  "formatter": {
-    "attributePosition": "auto",
-    "bracketSpacing": true,
-    "enabled": true,
-    "formatWithErrors": false,
-    "indentStyle": "space",
-    "indentWidth": 2,
-    "lineEnding": "lf",
-    "lineWidth": 100,
-    "useEditorconfig": true
-  },
-  "html": {
-    "formatter": {
-      "enabled": true
-    }
-  },
-  "linter": {
-    "enabled": true,
-    "rules": {
-      "complexity": {
-        "noArguments": "error",
-        "noCommaOperator": "error",
-        "useNumericLiterals": "error"
-      },
-      "correctness": {
-        "noUndeclaredDependencies": "error",
-        "noUnknownPseudoClass": "off",
-        "noUnusedImports": "error",
-        "useImportExtensions": "error"
-      },
-      "nursery": {
-        "noFloatingPromises": "error"
-      },
-      "recommended": true,
-      "style": {
-        "noInferrableTypes": "error",
-        "noNonNullAssertion": "error",
-        "noParameterAssign": "error",
-        "noUnusedTemplateLiteral": "error",
-        "noUselessElse": "error",
-        "useArrayLiterals": "off",
-        "useAsConstAssertion": "error",
-        "useConst": "error",
-        "useDefaultParameterLast": "error",
-        "useEnumInitializers": "error",
-        "useExponentiationOperator": "error",
-        "useExportType": "error",
-        "useImportType": "error",
-        "useLiteralEnumMembers": "error",
-        "useNodejsImportProtocol": "error",
-        "useNumberNamespace": "error",
-        "useSelfClosingElements": "error",
-        "useShorthandFunctionType": "error",
-        "useSingleVarDeclarator": "error",
-        "useTemplate": "error"
-      }
-    }
-  },
-  "overrides": [{ "formatter": { "indentWidth": 4 }, "includes": ["**/*.md"] }],
-  "vcs": { "clientKind": "git", "enabled": true, "useIgnoreFile": true }
+	"$schema": "https://biomejs.dev/schemas/2.1.2/schema.json",
+	"assist": {
+		"actions": {
+			"recommended": true,
+			"source": {
+				"organizeImports": "on",
+				"recommended": true,
+				"useSortedKeys": "off"
+			}
+		},
+		"enabled": true
+	},
+	"files": {
+		"includes": ["!fixtures/**", "!lib/**", "**"]
+	},
+	"html": {
+		"formatter": {
+			"enabled": true
+		}
+	},
+	"linter": {
+		"rules": {
+			"style": {
+				"useArrayLiterals": "off"
+			}
+		}
+	},
+	"overrides": [{ "formatter": { "indentWidth": 4 }, "includes": ["**/*.md"] }],
+	"vcs": { "clientKind": "git", "enabled": true, "useIgnoreFile": true }
 }
