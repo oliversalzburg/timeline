@@ -185,14 +185,8 @@ export const render = (
 
       contributors.forEach(_ => firstNodeAlreadySeen.add(_));
 
-      const id = makeId();
-      const dateString = options?.dateRenderer
-        ? options.dateRenderer(timestamp)
-        : new Date(timestamp).toDateString();
-
-      const style = mustExist(styleSheet.get(rank(leader)));
+      const classList = [...contributors.values().map(_ => classes.get(_.meta.id))];
       const color = mustExist(colors.get(mustExist(leader).meta.id)).pen;
-
       const fillcolor = contributors
         .values()
         .reduce((fillColors, timeline) => {
@@ -211,22 +205,28 @@ export const render = (
           return fillColors;
         }, new Array<string>())
         .join(":");
-
       const fontcolor = mustExist(colors.get(mustExist(leader).meta.id)).font;
+      const id = makeId();
 
       const prefixes = contributors
         .values()
         .reduce((_, timeline) => _ + (timeline.meta.prefix ?? ""), "");
+      const dateString = options?.dateRenderer
+        ? options.dateRenderer(timestamp)
+        : new Date(timestamp).toDateString();
+      const label = makeHtmlString(
+        `${(0 < prefixes.length ? `${prefixes} ` : "") + entry.title}\\n${dateString}`,
+      );
+
+      const style = mustExist(styleSheet.get(rank(leader)));
 
       const nodeProperties: Partial<NodeProperties> = {
-        class: classes.get(timeline.meta.id),
+        class: classList.join(" "),
         color,
         fillcolor,
         fontcolor,
         id,
-        label: makeHtmlString(
-          `${(0 < prefixes.length ? `${prefixes} ` : "") + entry.title}\\n${dateString}`,
-        ),
+        label,
         penwidth: style.outline ? style.penwidth : 0,
         shape: style.shape,
         style: style.style?.join(","),

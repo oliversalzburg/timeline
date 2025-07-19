@@ -36,21 +36,41 @@
   </head>
   <body class="loading">SVG</body>
   <script>
+    // Find all SVG elements that are GraphViz nodes.
     const nodes = [...document.querySelectorAll(".node").values()];
+    // Get all their IDs into a single order. The IDs are designed to fall into
+    // chronological order when sorted based on their ASCII values.
     const ids = nodes.map(_ => _.id).sort();
+    // A set of all the unique IDs. For slightly faster lookups, compared to
+    // an index search through the array.
     const idSet = new Set(ids);
-    const timelineIds = new Set(nodes.map(_ => [..._.classList.values()].filter(c=>c.startsWith("t"))[0]).sort());
+    // A set of all unique timeline IDs. A unique ID has been generated for each
+    // timeline by the renderer. For the navigation, we don't require any
+    // additional metadata.
+    const timelineIds = new Set(nodes.flatMap(node => [...node.classList.values()].filter(_ => _.startsWith("t"))).sort());
+    // A map of all timeline IDs and the IDs of nodes that belong to that timeline.
     const timelineNodes = new Map([...timelineIds.values()].map(_=>[_,[...document.querySelectorAll(`.node.${_}`).values()].map(node=>node.id).sort()]));
+    // A map of node IDs to their respective parent timeline.
     const nodeTimelines = new Map([...timelineIds.values()].flatMap(_=>[...document.querySelectorAll(`.node.${_}`).values()].map(node=>node.id).sort().map(id=>[id,_])));
-    let idFocused = idSet.has(window.location.hash.replace(/^#/,"")) ? window.location.hash.replace(/^#/,"") : undefined;
+    // The ID of the currently focused node.
+    let idFocused = idSet.has(window.location.hash.replace(/^#/, "")) ? window.location.hash.replace(/^#/, "") : undefined;
+    // The global timeline index of the focused node.
     let idFocusedIndex = idFocused !== undefined ? ids.indexOf(idFocused) : -1;
+    // The ID of the timeline the focused node is part of.
+    let timelineFocused = idFocused !== undefined ? nodeTimelines.get(idFocused) : undefined;
 
     const focusNode = (id) => {
       const anchor = `#${id}`;
       const node = document.querySelector(anchor);
 
-      window.history.replaceState({id}, "", window.location.toString().replace(/(#.*)|$/, anchor));
+      window.history.pushState({id}, "", window.location.toString().replace(/(#.*)|$/, anchor));
       node.focus({preventScroll: true});
+
+      idFocused = id;
+      idFocusedIndex = ids.indexOf(idFocused);
+      timelineFocused = nodeTimelines.get(id);
+
+      console.info(`Focused node ${idFocused} of timeline ${timelineFocused}. Scrolling it into view...`);
 
       let left = window.pageXOffset + node.getBoundingClientRect().left;
       let top = window.pageYOffset + node.getBoundingClientRect().top;
@@ -71,14 +91,23 @@
       focusNode(idFocused);
     }
 
+    document.addEventListener("click", (event) => {
+      const nodeParent = event.target.closest("g.node");
+      if (!nodeParent) {
+        return;
+      }
+
+      if (nodeParent.id !== idFocused && idSet.has(nodeParent.id)) {
+        idFocused = nodeParent.id;
+        idFocusedIndex = ids.indexOf(nodeParent.id);
+        timelineFocused = nodeTimelines.get(idFocused);
+        console.info(`User focused ${idFocused} of timeline ${timelineFocused}. Updating history...`);
+        window.history.pushState({idFocused}, "", window.location.toString().replace(/(#.*)|$/, `#${idFocused}`));
+      }
+    });
+
     document.addEventListener("keyup", (event) => {
       console.debug(`keyup: key:${event.key} code:${event.code}`);
-
-      const focusedNode = document.querySelector(":focus");
-      if (focusedNode && focusedNode.id !== idFocused && idSet.has(focusedNode.id)) {
-        idFocused = focusedNode.id;
-        idFocusedIndex = ids.indexOf(focusedNode.id);
-      }
 
       let updateNavigation = true;
       const scrollTo = (slice) => {
@@ -121,37 +150,76 @@
           scrollTo(9);
           break;
 
-        case "Numpad5":
-          break;
-
-        case "Numpad7":
-          idFocusedIndex = 0;
+        // Jump to global end.
+        case "Numpad1": {
+          idFocusedIndex = ids.length - 1;
           idFocusedIndex = Math.min(Math.max(0, idFocusedIndex), ids.length - 1);
           idFocused = ids[idFocusedIndex];
           break;
-        case "Numpad8":
+        }
+
+        // Step forwards in active timeline.
+        case "Numpad2": {
+          const timeline = timelineNodes.get(timelineFocused);
+          const indexInTimeline = timeline.indexOf(idFocused);
+          const indexInTimelineNew = Math.min(Math.max(0, indexInTimeline + 1), timeline.length - 1);
+          const idNew = timeline[indexInTimelineNew];
+          
+          idFocusedIndex = ids.indexOf(idNew);
+          idFocused = ids[idFocusedIndex];
+          break;
+        }
+
+        // Multiple steps forwards
+        case "Numpad3":
+          idFocusedIndex += 10;
+          idFocusedIndex = Math.min(Math.max(0, idFocusedIndex), ids.length - 1);
+          idFocused = ids[idFocusedIndex];
+          break;
+
+        // Single step backwards.
+        case "Numpad4": {
           --idFocusedIndex;
           idFocusedIndex = Math.min(Math.max(0, idFocusedIndex), ids.length - 1);
           idFocused = ids[idFocusedIndex];
           break;
-        case "Numpad9":
-          idFocusedIndex -= 10;
-          idFocusedIndex = Math.min(Math.max(0, idFocusedIndex), ids.length - 1);
-          idFocused = ids[idFocusedIndex];
+        }
+
+        // Re-focus already focused node. Useful when having scrolled away from focus.
+        case "Numpad5":
           break;
 
-        case "Numpad1":
-        idFocusedIndex = ids.length - 1;
-          idFocusedIndex = Math.min(Math.max(0, idFocusedIndex), ids.length - 1);
-          idFocused = ids[idFocusedIndex];
-          break;
-        case "Numpad2":
+        // Single step forwards.
+        case "Numpad6": {
           ++idFocusedIndex;
           idFocusedIndex = Math.min(Math.max(0, idFocusedIndex), ids.length - 1);
           idFocused = ids[idFocusedIndex];
           break;
-        case "Numpad3":
-          idFocusedIndex += 10;
+        }
+
+        // Home - Jump to global start.
+        case "Numpad7": {
+          idFocusedIndex = 0;
+          idFocusedIndex = Math.min(Math.max(0, idFocusedIndex), ids.length - 1);
+          idFocused = ids[idFocusedIndex];
+          break;
+        }
+
+        // Step backwards in active timeline.
+        case "Numpad8": {
+          const timeline = timelineNodes.get(timelineFocused);
+          const indexInTimeline = timeline.indexOf(idFocused);
+          const indexInTimelineNew = Math.min(Math.max(0, indexInTimeline - 1), timeline.length - 1);
+          const idNew = timeline[indexInTimelineNew];
+          
+          idFocusedIndex = ids.indexOf(idNew);
+          idFocused = ids[idFocusedIndex];
+          break;
+        }
+
+        // Multiple steps backwards
+        case "Numpad9":
+          idFocusedIndex -= 10;
           idFocusedIndex = Math.min(Math.max(0, idFocusedIndex), ids.length - 1);
           idFocused = ids[idFocusedIndex];
           break;

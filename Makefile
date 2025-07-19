@@ -1,4 +1,4 @@
-.PHONY: default build clean docs git-hook pretty lint test universe-preview render-smoke render-preview render-hq
+.PHONY: default build clean docs git-hook pretty lint test render-smoke render-hq
 
 default: | clean build
 
@@ -26,8 +26,28 @@ test: node_modules
 	npm exec -- tsc
 	NODE_OPTIONS=--enable-source-maps TZ=UTC npm exec -- c8 --reporter=html-spa mocha --reporter-option maxDiffSize=16000 lib/*.test.js
 
+START != echo $$START
+END != echo $$END
+ORIGIN != echo $$ORIGIN
+ifeq ($(START),)
+	_START ::= --skip-before=1999
+else
+	_START ::= --skip-before=${START}
+endif
+ifeq ($(END),)
+	_END =
+else
+	_END ::= --skip-after=${END}
+endif
+ifeq ($(ORIGIN),)
+	_ORIGIN ::= --origin=1983-12-25
+else
+	_ORIGIN ::= --origin=${ORIGIN}
+endif
+FLAGS=--preview ${_ORIGIN} ${_START} ${_END}
+
 universe-preview: lib output
-	node --enable-source-maps examples/universe.js --preview $(shell ls timelines/* ~/timelines/*.yml) > timelines/.universe.gv
+	node --enable-source-maps examples/universe.js ${FLAGS} $(shell ls timelines/* ~/timelines/*.yml) > timelines/.universe.gv
 
 universe: lib output
 	node examples/universe.js $(shell ls timelines/* ~/timelines/*.yml) > timelines/.universe.gv
@@ -37,7 +57,8 @@ render-smoke: universe-preview
 	dot -Gnslimit=0.1 -Gnslimit1=0.1 -Gsplines=none -O -Tsvg timelines/.universe.gv
 	@echo "SVG image rendered successfully."
 
-render-preview: universe-preview
+timelines/.universe.gv: universe-preview
+render-preview: timelines/.universe.gv
 	@echo "Rendering preview SVG image with dot. This can take several minutes! Please wait..."
 #	dot -Tdot timelines/.universe.gv > timelines/.universe.pre.gv
 	dot -O -Tsvg -Tsvg:cairo timelines/.universe.gv
@@ -63,18 +84,15 @@ output: node_modules
 	node build.js
 	@echo "Building timeline.js bundle complete."
 
-_site: render-preview
+timelines/.universe.gv.cairo.svg: render-preview
+timelines/.universe.gv.svg: render-preview
+_site: timelines/.universe.gv.cairo.svg timelines/.universe.gv.svg
 	@mkdir _site 2>/dev/null || true
 	@echo "Generating '_site/index.html'..."
 	node build-site.js timelines/.universe.gv.cairo.svg > _site/index.html
 	@echo "Generating '_site/system.html'..."
 	node build-site.js timelines/.universe.gv.svg > _site/system.html
 	@echo "HTML documents generated successfully."
-
-stage0: lib
-	@echo "Generating DOT source for universe graph..."
-	node --enable-source-maps examples/universe.js --preview $(shell ls timelines/* ~/timelines/*.yml) > timelines/.universe.gv
-	@echo "Generating DOT source for universe graph complete."
 
 
 graphs:
