@@ -89,18 +89,18 @@ const globalLatest = metrics
 /*
 const yearEarliest = new Date(globalEarliest).getFullYear();
 data.set("timelines/.decoration.nye", {
-  meta: {
-    color: TRANSPARENT,
-    id: "nye",
-    prefix: "🎆",
-  },
-  records: [
-    ...recurringYearly(
-      new Date(yearEarliest, 0, 1, 0, 0, 0, 0),
-      index => `New Year ${yearEarliest + index}`,
-      Math.floor((globalLatest - globalEarliest) / MILLISECONDS.ONE_YEAR),
-    ),
-  ],
+	meta: {
+		color: TRANSPARENT,
+		id: "nye",
+		prefix: "🎆",
+	},
+	records: [
+		...recurringYearly(
+			new Date(yearEarliest, 0, 1, 0, 0, 0, 0),
+			index => `New Year ${yearEarliest + index}`,
+			Math.floor((globalLatest - globalEarliest) / MILLISECONDS.ONE_YEAR),
+		),
+	],
 });
 */
 
@@ -140,7 +140,7 @@ process.stderr.write(
 );
 
 // Write GraphViz graph to stdout.
-process.stderr.write("Writing GraphViz graph for universe..." + "\n");
+process.stderr.write(`Writing GraphViz graph for universe...\n`);
 
 const dotGraph = render(finalTimelines, {
 	dateRenderer: (/** @type {number} */ date) => {
