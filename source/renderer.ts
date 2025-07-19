@@ -1,4 +1,5 @@
 import { isNil, type Maybe, mustExist } from "@oliversalzburg/js-utils/data/nil.js";
+import { hashCyrb53 } from "@oliversalzburg/js-utils/data/string.js";
 import { InvalidOperationError } from "@oliversalzburg/js-utils/errors/InvalidOperationError.js";
 import { formatMilliseconds } from "@oliversalzburg/js-utils/format/milliseconds.js";
 import { clamp } from "@oliversalzburg/js-utils/math/core.js";
@@ -60,6 +61,9 @@ export const render = (
   const paletteMeta = p.toPalette();
   const colors = paletteMeta.lookup;
 
+  const classes = new Map<string, string>(
+    timelines.map(_ => [_.meta.id, `t${hashCyrb53(_.meta.id)}`]),
+  );
   const ranks = new Map<TimelineReferenceRenderer, number>(timelines.map(_ => [_, rank(_)]));
   const styleSheet = styles([...ranks.values()]).toStyleSheet();
 
@@ -96,6 +100,7 @@ export const render = (
   let previousYear: number | undefined;
   const firstNodeAlreadySeen = new Set<TimelineReferenceRenderer>();
   let nextEventIndex = 0;
+  const allNodeIds = new Set<string>();
 
   /**
    * We iterate over each unique timestamp that exists globally.
@@ -119,9 +124,14 @@ export const render = (
 
     // Convert the timestamp to a Date for API features.
     const date = new Date(timestamp);
+
     let eventIndex = 0;
-    const makeId = () =>
-      `${date.getFullYear().toFixed().padStart(4, "0")}-${(date.getMonth() + 1).toFixed().padStart(2, "0")}-${date.getDate().toFixed().padStart(2, "0")}-${eventIndex++}`;
+    const makeId = () => {
+      const id = `Z${date.getFullYear().toFixed().padStart(4, "0")}-${(date.getMonth() + 1).toFixed().padStart(2, "0")}-${date.getDate().toFixed().padStart(2, "0")}-${eventIndex++}`;
+      allNodeIds.add(id);
+      return id;
+    };
+
     // We need the current year to support the "cluster years" feature.
     const currentYear = date.getFullYear();
 
@@ -209,6 +219,7 @@ export const render = (
         .reduce((_, timeline) => _ + (timeline.meta.prefix ?? ""), "");
 
       const nodeProperties: Partial<NodeProperties> = {
+        class: classes.get(timeline.meta.id),
         color,
         fillcolor,
         fontcolor,
@@ -400,5 +411,5 @@ export const render = (
 
   d.raw("}");
 
-  return { graph: d.toString(), palette: paletteMeta, ranks, styles: styleSheet };
+  return { graph: d.toString(), ids: allNodeIds, palette: paletteMeta, ranks, styles: styleSheet };
 };

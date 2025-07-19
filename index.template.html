@@ -14,11 +14,77 @@
         background-color: #000000;
       }
 
-      svg .node:focus {
+      body {
+        opacity: 1;
+        transition: ease-in-out opacity 1s;
+        &.loading {
+          opacity: 0;
+          visibility: hidden;
+        }
+      }
+
+      svg .node:focus,
+      svg .node:has(:focus) {
         outline: 5px dashed greenyellow;
         border: 5px dotted red;
       }
     </style>
   </head>
-  <body>SVG</body>
+  <body class="loading">SVG</body>
+  <script>
+    const ids = [...document.querySelectorAll(".node").values().map(_ => _.id)].sort();
+    const idSet = new Set(ids);
+    let idFocused = idSet.has(window.location.hash.replace(/^#/,"")) ? window.location.hash.replace(/^#/,"") : undefined;
+    let idFocusedIndex = idFocused !== undefined ? ids.indexOf(idFocused) : -1;
+
+    console.log("Timline loaded.");
+    document.body.classList.remove("loading");
+    console.log(window.location.hash, idFocusedIndex, idFocused);
+
+    document.addEventListener("keyup", (event) => {
+      console.log(event);
+
+      const focusNode = document.querySelector(":focus");
+      if (focusNode && focusNode.id !== idFocused && idSet.has(focusNode.id)) {
+        idFocused = focusNode.id;
+        idFocusedIndex = ids.indexOf(focusNode.id);
+      }
+
+      let updateNavigation = true;
+
+      switch (event.key) {
+        case "-":
+        case "8":
+          --idFocusedIndex;
+          idFocusedIndex = Math.min(Math.max(0, idFocusedIndex), ids.length - 1);
+          idFocused = ids[idFocusedIndex];
+          break;
+
+        case "+":
+        case "2":
+          ++idFocusedIndex;
+          idFocusedIndex = Math.min(Math.max(0, idFocusedIndex), ids.length - 1);
+          idFocused = ids[idFocusedIndex];
+          break;
+
+        case "ArrowLeft":
+          break;
+        case "ArrowRight":
+          break;
+        default:
+          updateNavigation = false;
+          break;
+      }
+
+      if (!updateNavigation) {
+        return;
+      }
+
+      const anchor = `#${idFocused}`;
+      const node = document.querySelector(anchor);
+      window.history.pushState({id:idFocused}, "", window.location.toString().replace(/#Z.+/, anchor));
+      node.focus({preventScroll:true});
+      node.scrollIntoView({behavior:"smooth", block:"center", inline:"center"});
+    });
+  </script>
 </html>

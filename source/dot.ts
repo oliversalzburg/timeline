@@ -121,6 +121,7 @@ export interface LinkProperties {
   weight: number;
 }
 export interface NodeProperties {
+  class: string;
   color: Color;
   fillcolor: Color;
   fixedsize: boolean;

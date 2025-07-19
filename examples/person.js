@@ -27,7 +27,6 @@ process.stderr.write(`Timeline for '${name}' (${birthday} - ${endday}):\n`);
 /** @type {import("../lib/types.js").TimelinePlain} */
 const timeline = {
   meta: {
-    prefix: "👱",
     rank: 100,
   },
   records: [
@@ -35,7 +34,7 @@ const timeline = {
       Math.trunc(birth.valueOf() - 9 * MILLISECONDS.ONE_MONTH),
       { title: `Estimated Conception\n${name}` },
     ],
-    [birth.valueOf(), { title: `Geburt ${name}` }],
+    [birth.valueOf(), { title: `👶 Geburt ${name}` }],
     ...recurringYearly(
       new Date(birthYear, birthMonth - 1, birthDay, 0, 0, 0, 0),
       index => `${index}. Geburtstag ${name}`,
