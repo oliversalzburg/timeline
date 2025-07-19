@@ -41,11 +41,11 @@ export const render = (
   options: Partial<RendererOptions> = {},
 ) => {
   const timestampsUnique = [
-    ...new Set(timelines.flatMap(t => roundToDay(t).records.map(([time, _]) => time))),
+    ...new Set(timelines.flatMap((t) => roundToDay(t).records.map(([time, _]) => time))),
   ].sort((a, b) => a - b);
   type TimeTuple = [number, TimelineReferenceRenderer, TimelineEntry];
   const timelineGlobal = timelines
-    .flatMap(_ => roundToDay(_).records.map(r => [r[0], _, r[1]] as TimeTuple))
+    .flatMap((_) => roundToDay(_).records.map((r) => [r[0], _, r[1]] as TimeTuple))
     .sort(([a, , aentry], [b, , bentry]) =>
       a - b !== 0 ? a - b : aentry.title.localeCompare(bentry.title),
     );
@@ -62,9 +62,9 @@ export const render = (
   const colors = paletteMeta.lookup;
 
   const classes = new Map<string, string>(
-    timelines.map(_ => [_.meta.id, `t${hashCyrb53(_.meta.id)}`]),
+    timelines.map((_) => [_.meta.id, `t${hashCyrb53(_.meta.id)}`]),
   );
-  const ranks = new Map<TimelineReferenceRenderer, number>(timelines.map(_ => [_, rank(_)]));
+  const ranks = new Map<TimelineReferenceRenderer, number>(timelines.map((_) => [_, rank(_)]));
   const styleSheet = styles([...ranks.values()]).toStyleSheet();
 
   const d = dot();
@@ -183,9 +183,9 @@ export const render = (
         timelineGlobal[nextEventIndex][2].title === entry.title
       );
 
-      contributors.forEach(_ => firstNodeAlreadySeen.add(_));
+      contributors.forEach((_) => firstNodeAlreadySeen.add(_));
 
-      const classList = [...contributors.values().map(_ => classes.get(_.meta.id))];
+      const classList = [...contributors.values().map((_) => classes.get(_.meta.id))];
       const color = mustExist(colors.get(mustExist(leader).meta.id)).pen;
       const fillcolor = contributors
         .values()
@@ -360,7 +360,7 @@ export const render = (
     ) {
       const [, , entry] = timelineGlobal[nextEventIndex++];
 
-      if (processedEntries.find(_ => _.title === entry.title)) {
+      if (processedEntries.find((_) => _.title === entry.title)) {
         // Events in multiple timelines share time and title.
         // By skipping here, we automatically end up with only a single node with that identity.
         continue;

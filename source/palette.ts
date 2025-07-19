@@ -13,7 +13,7 @@ export interface PaletteEntry {
 
 export const rgbaToString = (rgba: RGBATuple): string =>
   `#${rgba
-    .map(_ => _.toString(16).padStart(2, "0"))
+    .map((_) => _.toString(16).padStart(2, "0"))
     .join("")
     .toUpperCase()}`;
 
@@ -27,6 +27,7 @@ export const fillColorForPen = (color: RGBTuple | RGBATuple, theme: RenderMode):
     255,
   ]);
 };
+
 export const matchFontColorTo = (color: RGBTuple | RGBATuple): string => {
   const hsl = rgb2hsl(color[0] / 255, color[1] / 255, color[2] / 255);
   return hsl[2] < 180 ? "#FFFFFFFF" : "#000000FF";
@@ -57,7 +58,7 @@ export const palette = <T>(theme: RenderMode) => {
       baseColorValues.set(item, [0, 0, 0, 0]);
     }
     if (color?.startsWith("#")) {
-      const components = mustExist(color.substring(1).match(/../g)).map(x =>
+      const components = mustExist(color.substring(1).match(/../g)).map((x) =>
         Number.parseInt(x, 16),
       );
       if (components.length === 3) {
@@ -72,7 +73,7 @@ export const palette = <T>(theme: RenderMode) => {
 
   const predictDemand = () => {
     const requiredToFillReferences = colorReferences.size;
-    const requiredToFillUndefined = [...entries.values().filter(_ => _ === undefined)].length;
+    const requiredToFillUndefined = [...entries.values().filter((_) => _ === undefined)].length;
     return requiredToFillReferences + requiredToFillUndefined;
   };
 
@@ -81,6 +82,7 @@ export const palette = <T>(theme: RenderMode) => {
     const extraColorValues = hslPalette(demand, 0, 0.4, 0.5);
     const assignments = new Map<string, Array<T>>();
     const assigned = new Set<T>();
+
     for (const [colorName, references] of colorReferences) {
       const color = mustExist(extraColorValues.pop());
       assignments.set(colorName, [...references]);
@@ -96,6 +98,7 @@ export const palette = <T>(theme: RenderMode) => {
         .filter(([, color]) => color === TRANSPARENT)
         .map(([timeline]) => timeline),
     ];
+
     for (const [timeline, color] of baseColorValues) {
       if (assigned.has(timeline)) {
         continue;
@@ -151,10 +154,10 @@ export const matchLuminance = (toAdjust: string, target: string): string => {
     return toAdjust;
   }
 
-  const componentsBase = mustExist(toAdjust.substring(1).match(/../g)).map(x =>
+  const componentsBase = mustExist(toAdjust.substring(1).match(/../g)).map((x) =>
     Number.parseInt(x, 16),
   );
-  const componentsTarget = mustExist(target.substring(1).match(/../g)).map(x =>
+  const componentsTarget = mustExist(target.substring(1).match(/../g)).map((x) =>
     Number.parseInt(x, 16),
   );
   const hslBase = rgb2hsl(
@@ -169,7 +172,7 @@ export const matchLuminance = (toAdjust: string, target: string): string => {
   );
 
   return rgbaToString([
-    ...(hsl2rgb(hslBase[0], hslBase[1], hslTarget[2]).map(x => Math.floor(x * 255)) as RGBTuple),
+    ...(hsl2rgb(hslBase[0], hslBase[1], hslTarget[2]).map((x) => Math.floor(x * 255)) as RGBTuple),
     255,
   ]);
 };

@@ -2,7 +2,7 @@
 const nodes = [...document.querySelectorAll(".node").values()];
 // Get all their IDs into a single order. The IDs are designed to fall into
 // chronological order when sorted based on their ASCII values.
-const ids = nodes.map(_ => _.id).sort();
+const ids = nodes.map((_) => _.id).sort();
 // A set of all the unique IDs. For slightly faster lookups, compared to
 // an index search through the array.
 const idSet = new Set(ids);
@@ -10,22 +10,22 @@ const idSet = new Set(ids);
 // timeline by the renderer. For the navigation, we don't require any
 // additional metadata.
 const timelineIds = new Set(
-  nodes.flatMap(node => [...node.classList.values()].filter(_ => _.startsWith("t"))).sort(),
+  nodes.flatMap((node) => [...node.classList.values()].filter((_) => _.startsWith("t"))).sort(),
 );
 // A map of all timeline IDs and the IDs of nodes that belong to that timeline.
 const timelineNodes = new Map(
-  [...timelineIds.values()].map(_ => [
+  [...timelineIds.values()].map((_) => [
     _,
-    [...document.querySelectorAll(`.node.${_}`).values()].map(node => node.id).sort(),
+    [...document.querySelectorAll(`.node.${_}`).values()].map((node) => node.id).sort(),
   ]),
 );
 // A map of node IDs to their respective parent timeline.
 const nodeTimelines = new Map(
-  [...timelineIds.values()].flatMap(_ =>
+  [...timelineIds.values()].flatMap((_) =>
     [...document.querySelectorAll(`.node.${_}`).values()]
-      .map(node => node.id)
+      .map((node) => node.id)
       .sort()
-      .map(id => [id, _]),
+      .map((id) => [id, _]),
   ),
 );
 // The ID of the currently focused node.
@@ -40,7 +40,7 @@ let timelineFocused = idFocused !== undefined ? nodeTimelines.get(idFocused) : u
 /**
  * @param {string} id -
  */
-const focusNode = id => {
+const focusNode = (id) => {
   if (!id) {
     return;
   }
@@ -88,7 +88,7 @@ if (-1 < idFocusedIndex && idFocused !== undefined) {
 /**
  * @param {MouseEvent} event -
  */
-const onClick = event => {
+const onClick = (event) => {
   if (event.target === null) {
     return;
   }
@@ -113,7 +113,7 @@ const onClick = event => {
 };
 document.addEventListener("click", onClick);
 
-document.addEventListener("keyup", event => {
+document.addEventListener("keyup", (event) => {
   console.debug(`keyup: key:${event.key} code:${event.code}`);
 
   let updateNavigation = true;
@@ -121,7 +121,7 @@ document.addEventListener("keyup", event => {
   /**
    * @param {number} slice -
    */
-  const scrollTo = slice => {
+  const scrollTo = (slice) => {
     const step = document.body.scrollHeight / 10;
     const top = step * slice;
     console.log(`Scrolling to ${top}`);

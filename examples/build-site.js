@@ -6,7 +6,7 @@ import { join } from "node:path";
 // Parse command line arguments.
 const args = process.argv
   .slice(2)
-  .filter(_ => _.startsWith("--"))
+  .filter((_) => _.startsWith("--"))
   .reduce(
     (args, _) => {
       const argument = _.substring(2);
@@ -25,7 +25,7 @@ const args = process.argv
     /** @type {Record<string, boolean | string>} */ ({}),
   );
 
-const graphPath = process.argv.slice(2).filter(_ => !_.startsWith("--"))[0];
+const graphPath = process.argv.slice(2).filter((_) => !_.startsWith("--"))[0];
 if (!graphPath.endsWith(".gv")) {
   process.stderr.write(
     `Invalid source document. File name is expected to end in '.gv'.\nProvided: ${graphPath}\n`,

@@ -17,7 +17,7 @@ export const map = (
 ): Timeline => {
   return {
     ...timeline,
-    records: timeline.records.map(record => fn(record)),
+    records: timeline.records.map((record) => fn(record)),
   };
 };
 

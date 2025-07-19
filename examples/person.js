@@ -37,7 +37,7 @@ const timeline = {
     [birth.valueOf(), { title: `👶 Geburt ${name}` }],
     ...recurringYearly(
       new Date(birthYear, birthMonth - 1, birthDay, 0, 0, 0, 0),
-      index => `${index}. Geburtstag ${name}`,
+      (index) => `${index}. Geburtstag ${name}`,
       age,
     ),
   ],

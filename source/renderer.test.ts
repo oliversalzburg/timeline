@@ -26,7 +26,7 @@ describe("Renderer", () => {
       "#004db9": "#FFFFFFFF",
     };
     Object.entries(colors).forEach(([fill, font]) => {
-      const rgb = mustExist(fill.substring(1).match(/../g)).map(x =>
+      const rgb = mustExist(fill.substring(1).match(/../g)).map((x) =>
         Number.parseInt(x, 16),
       ) as RGBTuple;
       const generated = matchFontColorTo(rgb);

@@ -151,7 +151,7 @@ const makePropertyString = (properties: Record<string, boolean | number | string
 export const makeHtmlString = (_: string) =>
   `${_.replace(
     /[&<>'"]/g,
-    tag =>
+    (tag) =>
       ({
         "&": "&amp;",
         "<": "&lt;",

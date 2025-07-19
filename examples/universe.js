@@ -17,7 +17,7 @@ const NOW = Date.now();
 // Parse command line arguments.
 const args = process.argv
   .slice(2)
-  .filter(_ => _.startsWith("--"))
+  .filter((_) => _.startsWith("--"))
   .reduce(
     (args, _) => {
       const argument = _.substring(2);
@@ -39,10 +39,10 @@ const args = process.argv
 // Read raw data from input files.
 const files =
   2 < process.argv.length
-    ? process.argv.slice(2).filter(_ => !_.startsWith("--"))
+    ? process.argv.slice(2).filter((_) => !_.startsWith("--"))
     : readdirSync("timelines/")
-        .filter(_ => _.endsWith(".yml"))
-        .map(_ => `timelines/${_}`);
+        .filter((_) => _.endsWith(".yml"))
+        .map((_) => `timelines/${_}`);
 
 if (files.length === 0) {
   process.stderr.write("No files provided.\n");
@@ -51,7 +51,7 @@ if (files.length === 0) {
 
 // process.stderr.write(`Processing:\n${files.map(_ => `  ${_}\n`).join("")}`);
 
-const rawData = new Map(files.map(_ => [_, readFileSync(_, "utf-8")]));
+const rawData = new Map(files.map((_) => [_, readFileSync(_, "utf-8")]));
 
 // Parse raw data with appropriate parser.
 const plainData = new Map(rawData.entries().map(([filename, data]) => [filename, parse(data)]));
@@ -164,7 +164,7 @@ const describeStyle = (/** @type {import("../lib/styles.js").Style | undefined} 
     return "";
   }
 
-  const dashedOrSolid = style.style?.filter(_ => ["dashed", "solid"].includes(_)) ?? ["solid"];
+  const dashedOrSolid = style.style?.filter((_) => ["dashed", "solid"].includes(_)) ?? ["solid"];
   const parts = [
     style.fill ? "filled" : "translucent",
     style.link ? "linked" : "unlinked",
