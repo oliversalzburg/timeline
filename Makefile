@@ -5,6 +5,41 @@ ifneq "$(CI)" ""
 	DEBUG := 1
 endif
 
+ifneq "$(CI)" ""
+	START ?= 1980
+	END ?= 2035
+	ORIGIN ?= 1983-12-15
+endif
+
+ifeq ($(START),)
+	_START :=
+else
+	_START := --skip-before=$(START)
+endif
+ifeq ($(END),)
+	_END :=
+else
+	_END := --skip-after=$(END)
+endif
+ifeq ($(ORIGIN),)
+	_ORIGIN := --origin=1983-12-25
+else
+	_ORIGIN := --origin=$(ORIGIN)
+endif
+_FLAGS := $(_ORIGIN) $(_START) $(_END)
+
+_TIMELINES := $(wildcard timelines/* ~/timelines/*.yml)
+
+_SCOUR_FLAGS = --enable-viewboxing --enable-id-stripping --enable-comment-stripping --shorten-ids --indent=none
+ifneq ($(DEBUG),)
+	_SCOUR_FLAGS += --verbose
+endif
+_DOT_FLAGS := -O -Tsvg -Tsvg:cairo
+ifneq ($(DEBUG),)
+	_DOT_FLAGS += -v5
+endif
+
+
 default: build docs
 
 build: lib output
@@ -40,53 +75,16 @@ endif
 lib: node_modules
 	npm exec -- tsc --build
 
-ifneq "$(CI)" ""
-	START := 1980
-	END != 2035
-	ORIGIN != 1983-12-15
-else
-	START != echo $$START
-	END != echo $$END
-	ORIGIN != echo $$ORIGIN
-endif
-
-ifeq ($(START),)
-	_START :=
-else
-	_START := --skip-before=$(START)
-endif
-ifeq ($(END),)
-	_END :=
-else
-	_END := --skip-after=$(END)
-endif
-ifeq ($(ORIGIN),)
-	_ORIGIN := --origin=1983-12-25
-else
-	_ORIGIN := --origin=$(ORIGIN)
-endif
-_FLAGS := $(_ORIGIN) $(_START) $(_END)
-
-_TIMELINES := $(wildcard timelines/* ~/timelines/*.yml)
-
-_SCOUR_FLAGS = --enable-viewboxing --enable-id-stripping --enable-comment-stripping --shorten-ids --indent=none
-ifneq ($(DEBUG),)
-	_SCOUR_FLAGS += --verbose
-endif
-
 %.min.svg: %.svg
 	scour -i $^ -o $@ $(_SCOUR_FLAGS)
 
-_DOT_FLAGS := -O -Tsvg -Tsvg:cairo
-ifneq ($(DEBUG),)
-	_DOT_FLAGS += -v5
-endif
-
-output/universe.gv.cairo.svg output/universe.gv.svg &: output/universe.gv
+output/universe.cairo.svg output/universe.default.svg &: output/universe.gv
 	dot $(_DOT_FLAGS) output/universe.gv
 
-output/universe-$(START)-$(END).gv.cairo.svg output/universe-$(START)-$(END).gv.svg &: output/universe-$(START)-$(END).gv
+output/universe-$(START)-$(END).cairo.svg output/universe-$(START)-$(END).default.svg &: output/universe-$(START)-$(END).gv
 	dot $(_DOT_FLAGS) output/universe-$(START)-$(END).gv
+	mv output/universe-$(START)-$(END).gv.cairo.svg output/universe-$(START)-$(END).cairo.svg
+	mv output/universe-$(START)-$(END).gv.svg output/universe-$(START)-$(END).default.svg
 
 output/universe.gv: lib
 	@mkdir output 2>/dev/null || true
@@ -99,7 +97,7 @@ output/universe-$(START)-$(END).gv: lib
 output: node_modules
 	node build.js
 
-_site: output/universe-$(START)-$(END).gv.cairo.min.svg output/universe-$(START)-$(END).gv.svg output/universe-$(START)-$(END).gv
+_site: output/universe-$(START)-$(END).cairo.min.svg output/universe-$(START)-$(END).default.svg output/universe-$(START)-$(END).gv
 	@mkdir _site 2>/dev/null || true
 	node examples/build-site.js --output=_site output/universe-$(START)-$(END).gv
 

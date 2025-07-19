@@ -62,7 +62,7 @@ const focusNode = (id) => {
 
 	window.history.pushState(
 		{ id },
-		"",
+		`${new Date(id.substring(1)).toLocaleDateString()} - Open Time-Travel Engine`,
 		window.location.toString().replace(/(#.*)|$/, anchor),
 	);
 	node.focus({ preventScroll: true });
@@ -128,8 +128,16 @@ const onClick = (event) => {
 };
 document.addEventListener("click", onClick);
 
+const rapidKeys = new Map();
 document.addEventListener("keyup", (event) => {
 	console.debug(`keyup: key:${event.key} code:${event.code}`);
+
+	if (!rapidKeys.has(event.code)) {
+		rapidKeys.set(event.code, 0);
+	}
+
+	const keyIsRapid = Date.now() - rapidKeys.get(event.code) < 100;
+	rapidKeys.set(event.code, Date.now());
 
 	let updateNavigation = true;
 
@@ -140,7 +148,7 @@ document.addEventListener("keyup", (event) => {
 		const step = document.body.scrollHeight / 10;
 		const top = step * slice;
 		console.log(`Scrolling to ${top}`);
-		window.scrollTo({ top, behavior: "smooth" });
+		window.scrollTo({ top, behavior: keyIsRapid ? "instant" : "smooth" });
 		updateNavigation = false;
 	};
 
@@ -290,3 +298,114 @@ document.addEventListener("keyup", (event) => {
 	event.preventDefault();
 	focusNode(idFocused);
 });
+
+const initStarfield = () => {
+	document.addEventListener("DOMContentLoaded", () => {
+		const canvas = /** @type {HTMLCanvasElement} */ (
+			document.getElementById("starfield")
+		);
+		if (canvas === null) {
+			return;
+		}
+		const ctx = /** @type {CanvasRenderingContext2D} */ (
+			canvas.getContext("2d")
+		);
+		if (ctx === null) {
+			return;
+		}
+
+		const numStars = 3000;
+		const speed = 0.01;
+		const maxDepth = 1500;
+		const starColors = ["#FFFFFF", "#FFDDC1", "#FFC0CB", "#ADD8E6", "#B0E0E6"];
+		/** @type {Array<Star>} */
+		let stars = [];
+
+		function setCanvasSize() {
+			canvas.width = window.innerWidth;
+			canvas.height = window.innerHeight;
+		}
+
+		function getRandomColor() {
+			return starColors[Math.floor(Math.random() * starColors.length)];
+		}
+
+		class Star {
+			/**
+			 * @param {string} color -
+			 * @param {number} size -
+			 * @param {number} x -
+			 * @param {number} y -
+			 * @param {number} z -
+			 */
+			constructor(x, y, z, size, color) {
+				this.x = x;
+				this.y = y;
+				this.z = z;
+				this.size = size;
+				this.color = color;
+			}
+
+			update() {
+				this.z -= speed * (2 - this.z / maxDepth);
+				if (this.z <= 0) {
+					this.reset();
+				}
+			}
+
+			reset() {
+				this.z = maxDepth;
+				const angle = Math.random() * 2 * Math.PI;
+				const distance = Math.sqrt(Math.random()) * (canvas.width / 2);
+				this.x = Math.cos(angle) * distance;
+				this.y = Math.sin(angle) * distance;
+				this.size = (1 - distance / (canvas.width / 2)) * 0.1 + 0.5;
+				this.color = getRandomColor();
+			}
+
+			draw() {
+				const x = ((this.x / this.z) * canvas.width) / 2 + canvas.width / 2;
+				const y = ((this.y / this.z) * canvas.height) / 2 + canvas.height / 2;
+				const radius = (1 - this.z / maxDepth) * this.size * 3;
+				ctx.beginPath();
+				ctx.arc(x, y, radius, 3, Math.PI * 2);
+				ctx.fillStyle = this.color;
+				ctx.fill();
+			}
+		}
+
+		function initStars() {
+			stars = Array.from({ length: numStars }, () => {
+				const angle = Math.random() * 2 * Math.PI;
+				const distance = Math.sqrt(Math.random()) * (canvas.width / 2);
+				return new Star(
+					Math.cos(angle) * distance,
+					Math.sin(angle) * distance,
+					Math.random() * maxDepth,
+					(1 - distance / (canvas.width / 2)) * 0.1 + 0.5,
+					getRandomColor(),
+				);
+			});
+		}
+
+		function updateAndDrawStars() {
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+			stars.forEach((star) => {
+				star.update();
+				star.draw();
+			});
+			requestAnimationFrame(updateAndDrawStars);
+		}
+
+		window.addEventListener("resize", () => {
+			setCanvasSize();
+			initStars();
+		});
+
+		setCanvasSize();
+		initStars();
+		requestAnimationFrame(updateAndDrawStars);
+	});
+};
+
+initStarfield();

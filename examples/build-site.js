@@ -34,7 +34,7 @@ if (!graphPath.endsWith(".gv")) {
 }
 
 const VARIANTS = {
-	system: { source: ".svg" },
+	system: { source: ".default.svg" },
 	fallback: { source: ".cairo.min.svg" },
 };
 const variants = new Map();
@@ -45,7 +45,7 @@ for (const [variant, settings] of Object.entries(VARIANTS)) {
 			typeof args.output === "string" ? args.output : process.cwd(),
 			`index.${variant}.html`,
 		),
-		svg: readFileSync(`${graphPath}${settings.source}`, "utf-8"),
+		svg: readFileSync(graphPath.replace(/\.gv$/, settings.source), "utf-8"),
 	});
 }
 
