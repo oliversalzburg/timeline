@@ -14,7 +14,7 @@ import { render } from "../lib/renderer.js";
 
 const NOW = Date.now();
 
-// Parse potential switches.
+// Parse command line arguments.
 const args = process.argv
   .slice(2)
   .filter(_ => _.startsWith("--"))
@@ -99,10 +99,13 @@ data.set("timelines/.decoration.nye", {
 // Adjust the titles in the data set.
 data.set(
   "timelines/mediacontrol-top1-singles.yml",
-  map(mustExist(data.get("timelines/mediacontrol-top1-singles.yml")), record => [
-    record[0],
-    { title: record[1].title.split(" - ").reverse().join("\n") },
-  ]),
+  map(
+    mustExist(data.get("timelines/mediacontrol-top1-singles.yml")),
+    (/** @type {[number, { title: string; }]} */ record) => [
+      record[0],
+      { title: record[1].title.split(" - ").reverse().join("\n") },
+    ],
+  ),
 );
 
 // Inject the "universe" graph.
@@ -128,36 +131,20 @@ process.stderr.write(
   `  Averaging ~${finalEntryCount / ((globalLatest - globalEarliest) / MILLISECONDS.ONE_DAY)} events per day.\n`,
 );
 
-const PREVIEW = Boolean(args.preview);
-
-/** @type {Partial<RendererOptions>} */
-const CONFIG_QUALITY_PREVIEW = {
-  baseUnit: "week",
-  preview: true,
-  scale: "logarithmic",
-};
-/** @type {Partial<RendererOptions>} */
-const CONFIG_QUALITY_ULTRA = {
-  baseUnit: "day",
-  preview: false,
-  scale: "linear",
-};
-
 // Write GraphViz graph to stdout.
 process.stderr.write("Writing GraphViz graph for universe..." + "\n");
 
 const dotGraph = render(finalTimelines, {
-  dateRenderer: date => {
+  dateRenderer: (/** @type {number} */ date) => {
     const _ = new Date(date);
     return `${["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"][_.getDay()]}, ${_.getDate().toFixed(0).padStart(2, "0")}.${(_.getMonth() + 1).toFixed(0).padStart(2, "0")}.${_.getFullYear()}`;
   },
   now: NOW,
-  //origin: new Date(1983, 11, 25, 0, 0, 0, 0).valueOf(),
   origin:
     typeof args.origin === "number" || typeof args.origin === "string"
       ? new Date(args.origin).valueOf()
       : undefined,
-  ...(PREVIEW ? CONFIG_QUALITY_PREVIEW : CONFIG_QUALITY_ULTRA),
+  condensed: true,
   skipBefore:
     typeof args["skip-before"] === "string" ? new Date(args["skip-before"]).valueOf() : undefined,
   skipAfter:
@@ -192,7 +179,9 @@ for (const [color, timelines] of [...paletteMeta.assignments.entries()].sort(([a
   process.stderr.write(
     `- ${color} -> Pen: ${timelinePalette.pen} Fill: ${timelinePalette.fill} Font: ${timelinePalette.font}\n`,
   );
-  for (const id of timelines.sort((a, b) => a.localeCompare(b))) {
+  for (const id of timelines.sort((/** @type {string} */ a, /** @type {string} */ b) =>
+    a.localeCompare(b),
+  )) {
     process.stderr.write(
       `  ${id} (ranked ${ranks.get(id)}: ${describeStyle(styles.get(mustExist(ranks.get(id))))})\n`,
     );

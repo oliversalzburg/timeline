@@ -1,7 +1,6 @@
 _site/
 contrib/fonts/
 coverage/
-graphs/
 lib/
 node_modules/
 output/

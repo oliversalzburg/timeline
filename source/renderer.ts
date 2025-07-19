@@ -13,11 +13,11 @@ import type { RenderMode, TimelineEntry, TimelineReferenceRenderer } from "./typ
 export interface RendererOptions {
   baseUnit: "day" | "week" | "month";
   clusterYears: boolean;
+  condensed: boolean;
   dateRenderer: (date: number) => string;
   debug: boolean;
   now: number;
   origin: number;
-  preview: boolean;
   scale: "linear" | "logarithmic";
   skipAfter: number;
   skipBefore: number;
@@ -308,7 +308,7 @@ export const render = (
 
           d.link(previousEntry.title, entry.title, {
             color,
-            minlen: options.preview !== true ? linkLength : undefined,
+            minlen: options.condensed !== true ? linkLength : undefined,
             penwidth: style.link ? (style.outline ? style.penwidth : 0) : undefined,
             style: style.link ? "solid" : "invis",
             tooltip: style.link
@@ -396,7 +396,7 @@ export const render = (
         // Draw rank-forcing link between merged timeline entries.
         // This forces all entries into a globally linear order.
         d.link(previousEntry.title, entry.title, {
-          minlen: options.preview !== true ? linkLength : undefined,
+          minlen: options.condensed !== true ? linkLength : undefined,
           style: options.debug ? "dashed" : "invis",
           tooltip: options.debug
             ? `${formatMilliseconds(timePassed)} (carrying ${remainder})`
