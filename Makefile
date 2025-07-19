@@ -40,11 +40,18 @@ endif
 lib: node_modules
 	npm exec -- tsc --build
 
-START != echo $$START
-END != echo $$END
-ORIGIN != echo $$ORIGIN
+ifneq "$(CI)" ""
+	START := 1980
+	END != 2035
+	ORIGIN != 1983-12-15
+else
+	START != echo $$START
+	END != echo $$END
+	ORIGIN != echo $$ORIGIN
+endif
+
 ifeq ($(START),)
-	_START := --skip-before=1999
+	_START :=
 else
 	_START := --skip-before=$(START)
 endif

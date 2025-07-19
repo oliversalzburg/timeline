@@ -46,14 +46,21 @@ for (const [variant, settings] of Object.entries(VARIANTS)) {
   });
 }
 
-const templatePath = join(import.meta.dirname, "index.template.html");
-const templateHtml = readFileSync(templatePath, "utf-8");
+const templatePath = join(import.meta.dirname, "index.template");
+const templateCss = readFileSync(`${templatePath}.css`, "utf-8");
+const templateHtml = readFileSync(`${templatePath}.html`, "utf-8");
+const templateJs = readFileSync(`${templatePath}.js`, "utf-8");
 
 for (const [variant, meta] of variants.entries()) {
   const svg = meta.svg
     .replace(/^<\?xml .+dtd">/s, "")
     .replaceAll(/( class="[^"]+">)/g, ' tabindex="0"\$1');
-  const html = templateHtml.replace("SVG", svg);
+
+  const html = templateHtml
+    .replace("/*CSS*/", templateCss)
+    .replace("/*JS*/", templateJs)
+    .replace("SVG", svg);
+
   process.stderr.write(`${variant}: Writing '${meta.output}'...\n`);
   writeFileSync(meta.output, html);
 }
