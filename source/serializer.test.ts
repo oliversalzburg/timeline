@@ -21,7 +21,7 @@ describe("Serializer", () => {
 
 	it("should merge records with same timestamp into array", function () {
 		const timeline: Timeline = {
-			meta: { id: "test" },
+			meta: { id: "test", private: true },
 			records: [
 				[100, { title: "one" }],
 				[100, { title: "two" }],

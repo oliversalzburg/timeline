@@ -58,7 +58,8 @@ pretty: node_modules
 
 lint: node_modules
 	npm exec -- biome check .
-	npm exec -- tsc --noEmit
+	npm exec -- tsc --build --clean tsconfig.json
+	npm exec -- tsc --build tsconfig.json
 
 test: node_modules
 	npm exec -- tsc
@@ -71,7 +72,7 @@ endif
 	npm install
 
 lib: node_modules
-	npm exec -- tsc --build
+	npm exec -- tsc --build tsconfig.json
 
 %.min.svg: %.svg
 	scour -i $^ -o $@ $(_SCOUR_FLAGS)

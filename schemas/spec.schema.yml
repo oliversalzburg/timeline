@@ -32,6 +32,10 @@ properties:
   prefix:
     title: Prefix
     type: string
+  private:
+    title: Private Document
+    type: boolean
+    default: true
   rank:
     title: Rank
     type: number

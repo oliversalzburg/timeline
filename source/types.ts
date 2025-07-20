@@ -20,6 +20,7 @@ export interface TimelinePlain {
 export interface Timeline extends TimelinePlain {
 	meta: {
 		id: string;
+		private: boolean;
 	} & Record<string, unknown>;
 }
 
@@ -44,6 +45,6 @@ export interface TimelineDocumentReferenceRenderer
 	extends TimelineDocument,
 		MetaSectionReferenceRenderer {}
 export interface TimelineReferenceRenderer extends Timeline {
-	meta: MetaSectionReferenceRenderer & { id: string };
+	meta: MetaSectionReferenceRenderer & { id: string; private: boolean };
 	records: Array<TimelineRecord>;
 }

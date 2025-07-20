@@ -48,6 +48,7 @@ export const load = (document: TimelineDocument, id: string): Timeline => {
 
 	const meta = {
 		id,
+		private: true,
 		...Object.fromEntries(
 			Object.entries(document).filter(
 				([key]) => !["id", "records"].includes(key),

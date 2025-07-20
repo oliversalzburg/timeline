@@ -83,7 +83,7 @@ describe("Renderer", () => {
 			[
 				timeline,
 				{
-					meta: { id: "test", rank: 1 },
+					meta: { id: "test", private: true, rank: 1 },
 					records: timeline.records.slice(0, 1),
 				},
 			],
@@ -104,7 +104,7 @@ describe("Renderer", () => {
 			[
 				timeline,
 				{
-					meta: { id: "test", rank: 1 },
+					meta: { id: "test", private: true, rank: 1 },
 					records: timeline.records.slice(1, 2),
 				},
 			],
@@ -125,7 +125,7 @@ describe("Renderer", () => {
 			[
 				timeline,
 				{
-					meta: { id: "test", rank: 1 },
+					meta: { id: "test", private: true, rank: 1 },
 					records: timeline.records.slice(0, 2),
 				},
 			],
