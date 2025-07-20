@@ -62,7 +62,7 @@ for (const [variant, meta] of variants.entries()) {
 	const html = templateHtml
 		.replace("/*CSS*/", templateCss)
 		.replace("/*JS*/", templateJs)
-		.replace("SVG", svg);
+		.replace("<!--SVG-->", svg);
 
 	process.stderr.write(`${variant}: Writing '${meta.output}'...\n`);
 	writeFileSync(meta.output, html);

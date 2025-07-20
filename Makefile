@@ -1,6 +1,5 @@
 .PHONY: default build clean docs git-hook pretty lint test
 
-DEBUG != echo $$DEBUG
 ifneq "$(CI)" ""
 	DEBUG := 1
 endif
@@ -78,28 +77,21 @@ lib: node_modules
 %.min.svg: %.svg
 	scour -i $^ -o $@ $(_SCOUR_FLAGS)
 
-output/universe.cairo.svg output/universe.default.svg &: output/universe.gv
-	dot $(_DOT_FLAGS) output/universe.gv
+output/universe-$(ORIGIN)-$(START)-$(END).cairo.svg output/universe-$(ORIGIN)-$(START)-$(END).default.svg &: output/universe-$(ORIGIN)-$(START)-$(END).gv
+	dot $(_DOT_FLAGS) output/universe-$(ORIGIN)-$(START)-$(END).gv
+	mv output/universe-$(ORIGIN)-$(START)-$(END).gv.cairo.svg output/universe-$(ORIGIN)-$(START)-$(END).cairo.svg
+	mv output/universe-$(ORIGIN)-$(START)-$(END).gv.svg output/universe-$(ORIGIN)-$(START)-$(END).default.svg
 
-output/universe-$(START)-$(END).cairo.svg output/universe-$(START)-$(END).default.svg &: output/universe-$(START)-$(END).gv
-	dot $(_DOT_FLAGS) output/universe-$(START)-$(END).gv
-	mv output/universe-$(START)-$(END).gv.cairo.svg output/universe-$(START)-$(END).cairo.svg
-	mv output/universe-$(START)-$(END).gv.svg output/universe-$(START)-$(END).default.svg
-
-output/universe.gv: lib
+output/universe-$(ORIGIN)-$(START)-$(END).gv: lib
 	@mkdir output 2>/dev/null || true
-	node --enable-source-maps examples/universe.js $(_FLAGS) $(_TIMELINES) > $@
-
-output/universe-$(START)-$(END).gv: lib
-	@mkdir output 2>/dev/null || true
-	node --enable-source-maps examples/universe.js --skip-before=$(START) --skip-after=$(END) $(_TIMELINES) > $@
+	node --enable-source-maps examples/universe.js --origin=$(ORIGIN) --skip-before=$(START) --skip-after=$(END) $(_TIMELINES) > $@
 
 output: node_modules
 	node build.js
 
-_site: output/universe-$(START)-$(END).cairo.min.svg output/universe-$(START)-$(END).default.svg output/universe-$(START)-$(END).gv
+_site: output/universe-$(ORIGIN)-$(START)-$(END).cairo.min.svg output/universe-$(ORIGIN)-$(START)-$(END).default.svg output/universe-$(ORIGIN)-$(START)-$(END).gv
 	@mkdir _site 2>/dev/null || true
-	node examples/build-site.js --output=_site output/universe-$(START)-$(END).gv
+	node examples/build-site.js --output=_site output/universe-$(ORIGIN)-$(START)-$(END).gv
 
 _site/index.html: _site
 	cp _site/index.system.html _site/index.html

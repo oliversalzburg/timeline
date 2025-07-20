@@ -65,7 +65,7 @@ const focusNode = (id, rapid = false) => {
 		"",
 		window.location.toString().replace(/(#.*)|$/, anchor),
 	);
-	document.title = `${new Date(id.substring(1)).toLocaleDateString()} - Open Time-Travel Engine`;
+	document.title = `${new Date(id.substring(1).split("-").slice(0, -1).join("-")).toLocaleDateString()} - Open Time-Travel Engine`;
 	node.focus({ preventScroll: true });
 
 	idFocused = id;
@@ -107,30 +107,27 @@ const onClick = (event) => {
 		return;
 	}
 
-	const node = /** @type {SVGElement} */ (event.target);
-	const nodeParent = node.closest("g.node");
-	if (!nodeParent) {
+	const nodeTarget = /** @type {SVGElement} */ (event.target);
+	const node = nodeTarget.classList.contains("node")
+		? nodeTarget
+		: nodeTarget.closest("g.node");
+	if (!node) {
 		return;
 	}
 
-	if (nodeParent.id !== idFocused && idSet.has(nodeParent.id)) {
-		idFocused = nodeParent.id;
-		idFocusedIndex = ids.indexOf(nodeParent.id);
-		timelineFocused = nodeTimelines.get(idFocused);
-		console.info(
-			`User focused ${idFocused} of timeline ${timelineFocused}. Updating history...`,
-		);
-		window.history.pushState(
-			{ idFocused },
-			"",
-			window.location.toString().replace(/(#.*)|$/, `#${idFocused}`),
-		);
+	if (node.id !== idFocused && idSet.has(node.id)) {
+		console.info(`User selected ${node.id}. Focusing...`);
+		focusNode(node.id);
 	}
 };
 document.addEventListener("click", onClick);
 
 const rapidKeys = new Map();
-document.addEventListener("keyup", (event) => {
+
+/**
+ * @param {KeyboardEvent} event -
+ */
+const onKeyUp = (event) => {
 	console.debug(`keyup: key:${event.key} code:${event.code}`);
 
 	if (!rapidKeys.has(event.code)) {
@@ -298,7 +295,8 @@ document.addEventListener("keyup", (event) => {
 
 	event.preventDefault();
 	focusNode(idFocused, keyIsRapid);
-});
+};
+document.addEventListener("keyup", onKeyUp);
 
 const initStarfield = () => {
 	document.addEventListener("DOMContentLoaded", () => {

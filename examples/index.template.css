@@ -2,17 +2,25 @@ html,
 body {
 	margin: 0;
 	padding: 0;
-	background: rgb(0, 0, 0);
 	height: 100%;
 	width: 100%;
 }
 
+html {
+	-ms-overflow-style: none;
+	scrollbar-width: none;
+	&::-webkit-scrollbar {
+		display: none;
+	}
+}
+
 body {
+	background: rgb(0, 0, 0);
 	opacity: 1;
 	transition: ease-in-out opacity 2s;
+
 	&.loading {
 		opacity: 0;
-		visibility: hidden;
 	}
 }
 
@@ -20,7 +28,7 @@ svg {
 	z-index: 1;
 
 	.node {
-		scroll-margin: 50vh calc(50vw - 50%);
+		scroll-margin: calc(50vh - 50%) calc(50vw - 50%);
 		opacity: 0.9;
 
 		&:focus,
