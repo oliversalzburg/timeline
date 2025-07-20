@@ -12,7 +12,10 @@
 		"enabled": true
 	},
 	"files": {
-		"includes": ["!fixtures/**", "!lib/**", "!*.yml", "**"]
+		"includes": ["!fixtures/**", "!lib/**", "**"]
+	},
+	"json": {
+		"formatter": { "enabled": true }
 	},
 	"html": {
 		"formatter": {
@@ -26,6 +29,5 @@
 			}
 		}
 	},
-	"overrides": [{ "formatter": { "indentWidth": 4 }, "includes": ["**/*.md"] }],
 	"vcs": { "clientKind": "git", "enabled": true, "useIgnoreFile": true }
 }

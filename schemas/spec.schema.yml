@@ -17,7 +17,6 @@ definitions:
         type: string
     required:
       - title
-
 type: object
 additionalProperties: true
 properties:
@@ -25,7 +24,7 @@ properties:
     title: Color
     type: string
     examples:
-      - "#FF0000"
+      - '#FF0000'
       - transparent
       - audio
       - video
@@ -43,7 +42,7 @@ properties:
   timeline:
     title: Timeline
     patternProperties:
-      ".+":
+      .+:
         title: Event
         oneOf:
           - $ref: '#/definitions/record'

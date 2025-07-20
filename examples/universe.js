@@ -1,11 +1,11 @@
 #!/bin/env node
 
-import { readdirSync, readFileSync } from "node:fs";
+import { readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { hostname, userInfo } from "node:os";
 import { basename } from "node:path";
 import { mustExist } from "@oliversalzburg/js-utils/data/nil.js";
 import { parse } from "yaml";
 import { analyze } from "../lib/analyzer.js";
-import { MILLISECONDS } from "../lib/constants.js";
 import { load } from "../lib/loader.js";
 import { map, sort, uniquify } from "../lib/operator.js";
 import { render } from "../lib/renderer.js";
@@ -46,10 +46,22 @@ const files =
 
 if (files.length === 0) {
 	process.stderr.write("No files provided.\n");
-	process.exit(0);
+	process.exit(1);
 }
 
-// process.stderr.write(`Processing:\n${files.map(_ => `  ${_}\n`).join("")}`);
+const outputPath = typeof args.output === "string" ? args.output : undefined;
+if (outputPath === undefined) {
+	process.stderr.write("No --output filename provided.\n");
+	process.exit(1);
+}
+if (!outputPath.endsWith(".gv")) {
+	process.stderr.write(
+		`Invalid output document. File name is expected to end in '.gv'.\nProvided: ${outputPath}\n`,
+	);
+	process.exit(1);
+}
+
+process.stderr.write(`Processing:\n${files.map((_) => `  ${_}\n`).join("")}`);
 
 const rawData = new Map(files.map((_) => [_, readFileSync(_, "utf-8")]));
 
@@ -129,20 +141,10 @@ const finalEntryCount = finalTimelines.reduce(
 	0,
 );
 
-process.stderr.write(
-	`  Universe has ${finalEntryCount} individual entries from ${data.size} timelines.\n`,
-);
-process.stderr.write(
-	`  Horizon spans from ${new Date(globalEarliest).toLocaleDateString()} to ${new Date(globalLatest).toLocaleDateString()}.\n`,
-);
-process.stderr.write(
-	`  Averaging ~${finalEntryCount / ((globalLatest - globalEarliest) / MILLISECONDS.ONE_DAY)} events per day.\n`,
-);
-
 // Write GraphViz graph to stdout.
-process.stderr.write(`Writing GraphViz graph for universe...\n`);
+process.stderr.write(`Generating GraphViz graph for universe...\n`);
 
-const dotGraph = render(finalTimelines, {
+const renderOptions = {
 	dateRenderer: (/** @type {number} */ date) => {
 		const _ = new Date(date);
 		return `${["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"][_.getDay()]}, ${_.getDate().toFixed(0).padStart(2, "0")}.${(_.getMonth() + 1).toFixed(0).padStart(2, "0")}.${_.getFullYear()}`;
@@ -161,7 +163,32 @@ const dotGraph = render(finalTimelines, {
 		typeof args["skip-after"] === "string"
 			? new Date(args["skip-after"]).valueOf()
 			: undefined,
-});
+};
+const dotGraph = render(finalTimelines, renderOptions);
+
+const buildDate = new Date(NOW);
+const offset = buildDate.getTimezoneOffset();
+const dBuild = buildDate.toUTCString();
+const dIso = buildDate.toISOString();
+const dStart = new Date(globalEarliest).toUTCString();
+const dEnd = new Date(globalLatest).toUTCString();
+const dFrom = renderOptions.skipBefore
+	? new Date(renderOptions.skipBefore).toUTCString()
+	: "infinity";
+const dTo = renderOptions.skipAfter
+	? new Date(renderOptions.skipAfter).toUTCString()
+	: "infinity";
+const info = [
+	`Universe was generated on a device indicating a local point in time of:`,
+	`${dBuild} offset ${offset} minutes from UTC`,
+	`${dIso} universal coordinated time (${NOW}).`,
+	`Device self-identified as "${hostname()}" being operated by "${userInfo().username}".`,
+	`Universe has ${finalEntryCount} individual entries from ${data.size} timeline documents.`,
+	`Universe Horizon`,
+	`${dStart} - ${dEnd}`,
+	`Exported Document Window`,
+	`${dFrom} - ${dTo}`,
+];
 
 // Dump palette for debugging purposes.
 process.stderr.write("Generated palette for universe:\n");
@@ -210,6 +237,8 @@ for (const [color, timelines] of [...paletteMeta.assignments.entries()].sort(
 
 const rankCount = new Set(ranks.values()).size;
 process.stderr.write(`Style sheet generated for ${rankCount} ranks.\n`);
-
-process.stdout.write(dotGraph.graph);
+process.stderr.write(`Writing graph...\n`);
+writeFileSync(outputPath, dotGraph.graph);
+process.stderr.write(`Writing graph info...\n`);
+writeFileSync(outputPath.replace(/\.gv$/, ".info"), `${info.join("\n")}\n`);
 process.stderr.write("GraphViz graph for universe written successfully.\n");

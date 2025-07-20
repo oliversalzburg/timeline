@@ -1,5 +1,7 @@
 {
 	"yaml.schemas": {
+		"schemas/identity.schema.yml": "identities/*.yml",
 		"schemas/spec.schema.yml": "timelines/*.yml"
-	}
+	},
+	"editor.rulers": [50, 80, 120]
 }

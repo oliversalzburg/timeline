@@ -1,6 +1,7 @@
 _site/
 contrib/fonts/
 coverage/
+identities/
 lib/
 node_modules/
 output/

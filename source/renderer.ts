@@ -203,7 +203,7 @@ export const render = (
 				...contributors.values().map((_) => classes.get(_.meta.id)),
 			];
 			const color = mustExist(colors.get(mustExist(leader).meta.id)).pen;
-			const fillcolor = contributors
+			const fillcolors = contributors
 				.values()
 				.reduce((fillColors, timeline) => {
 					const fill = mustExist(colors.get(timeline.meta.id)).fill;
@@ -222,8 +222,7 @@ export const render = (
 								),
 					);
 					return fillColors;
-				}, new Array<string>())
-				.join(":");
+				}, new Array<string>());
 			const fontcolor = mustExist(colors.get(mustExist(leader).meta.id)).font;
 			const id = makeId();
 
@@ -242,7 +241,10 @@ export const render = (
 			const nodeProperties: Partial<NodeProperties> = {
 				class: classList.join(" "),
 				color,
-				fillcolor,
+				fillcolor:
+					fillcolors.length === 1
+						? fillcolors[0]
+						: `${fillcolors[0]}:${fillcolors[1]}`,
 				fontcolor,
 				id,
 				label,
