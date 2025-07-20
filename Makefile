@@ -85,7 +85,7 @@ test: node_modules
 
 node_modules:
 ifneq "$(CI)" ""
-	sudo apt-get update; sudo apt-get install graphviz scour
+	sudo apt-get update; sudo apt-get install graphviz scour virtualenv
 endif
 	npm install
 
