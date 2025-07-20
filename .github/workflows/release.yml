@@ -26,5 +26,5 @@ jobs:
     uses: oliversalzburg/workflows/.github/workflows/publish-browser-app.yml@main
     with:
       is-canary: true
-      publish-script: make _site
+      publish-script: make _site/index.html
       wants-github-release: false
