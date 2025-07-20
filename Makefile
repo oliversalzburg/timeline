@@ -4,11 +4,9 @@ ifneq "$(CI)" ""
 	DEBUG := 1
 endif
 
-ifneq "$(CI)" ""
-	START ?= 1980
-	END ?= 2035
-	ORIGIN ?= 1983-12-15
-endif
+START ?= 1980
+END ?= 2035
+ORIGIN ?= 1983-12-15
 
 ifeq ($(START),)
 	_START :=
@@ -26,6 +24,7 @@ else
 	_ORIGIN := --origin=$(ORIGIN)
 endif
 _FLAGS := $(_ORIGIN) $(_START) $(_END)
+_SEGMENT := $(ORIGIN)_$(START)_$(END)
 
 _TIMELINES := $(wildcard timelines/* ~/timelines/*.yml)
 
@@ -77,21 +76,21 @@ lib: node_modules
 %.min.svg: %.svg
 	scour -i $^ -o $@ $(_SCOUR_FLAGS)
 
-output/universe-$(ORIGIN)-$(START)-$(END).cairo.svg output/universe-$(ORIGIN)-$(START)-$(END).default.svg &: output/universe-$(ORIGIN)-$(START)-$(END).gv
-	dot $(_DOT_FLAGS) output/universe-$(ORIGIN)-$(START)-$(END).gv
-	mv output/universe-$(ORIGIN)-$(START)-$(END).gv.cairo.svg output/universe-$(ORIGIN)-$(START)-$(END).cairo.svg
-	mv output/universe-$(ORIGIN)-$(START)-$(END).gv.svg output/universe-$(ORIGIN)-$(START)-$(END).default.svg
+output/universe-$(_SEGMENT).cairo.svg output/universe-$(_SEGMENT).default.svg &: output/universe-$(_SEGMENT).gv
+	dot $(_DOT_FLAGS) output/universe-$(_SEGMENT).gv
+	mv output/universe-$(_SEGMENT).gv.cairo.svg output/universe-$(_SEGMENT).cairo.svg
+	mv output/universe-$(_SEGMENT).gv.svg output/universe-$(_SEGMENT).default.svg
 
-output/universe-$(ORIGIN)-$(START)-$(END).gv: lib
+output/universe-$(_SEGMENT).gv: lib
 	@mkdir output 2>/dev/null || true
 	node --enable-source-maps examples/universe.js --origin=$(ORIGIN) --skip-before=$(START) --skip-after=$(END) $(_TIMELINES) > $@
 
 output: node_modules
 	node build.js
 
-_site: output/universe-$(ORIGIN)-$(START)-$(END).cairo.min.svg output/universe-$(ORIGIN)-$(START)-$(END).default.svg output/universe-$(ORIGIN)-$(START)-$(END).gv
+_site: output/universe-$(_SEGMENT).cairo.min.svg output/universe-$(_SEGMENT).default.svg output/universe-$(_SEGMENT).default.min.svg output/universe-$(_SEGMENT).gv
 	@mkdir _site 2>/dev/null || true
-	node examples/build-site.js --output=_site output/universe-$(ORIGIN)-$(START)-$(END).gv
+	node examples/build-site.js --output=_site output/universe-$(_SEGMENT).gv
 
 _site/index.html: _site
 	cp _site/index.system.html _site/index.html

@@ -34,9 +34,16 @@ if (!graphPath.endsWith(".gv")) {
 }
 
 const VARIANTS = {
-	system: { source: ".default.svg" },
-	fallback: { source: ".cairo.min.svg" },
+	// Intended for exploration.
+	zen: { svgSource: ".default.svg", withJs: true, starfield: true },
+	// Default. Retains text, has JS navigation.
+	system: { svgSource: ".default.svg", withJs: true, starfield: false },
+	// No JS at all. Intended as fallback in sharing scenarios.
+	compat: { svgSource: ".default.min.svg", withJs: false, starfield: false },
+	// Best-effort to produce something viewable.
+	safe: { svgSource: ".cairo.min.svg", withJs: false, starfield: false },
 };
+
 const variants = new Map();
 for (const [variant, settings] of Object.entries(VARIANTS)) {
 	variants.set(variant, {
@@ -45,7 +52,7 @@ for (const [variant, settings] of Object.entries(VARIANTS)) {
 			typeof args.output === "string" ? args.output : process.cwd(),
 			`index.${variant}.html`,
 		),
-		svg: readFileSync(graphPath.replace(/\.gv$/, settings.source), "utf-8"),
+		svg: readFileSync(graphPath.replace(/\.gv$/, settings.svgSource), "utf-8"),
 	});
 }
 
@@ -55,13 +62,27 @@ const templateHtml = readFileSync(`${templatePath}.html`, "utf-8");
 const templateJs = readFileSync(`${templatePath}.js`, "utf-8");
 
 for (const [variant, meta] of variants.entries()) {
+	const js = templateJs.replace(
+		"const FEATURE_FLAG_STARFIELD = undefined;",
+		`const FEATURE_FLAG_STARFIELD = ${meta.starfield};`,
+	);
+
 	const svg = meta.svg
 		.replace(/^<\?xml .+dtd">/s, "")
 		.replaceAll(/( class="[^"]+">)/g, ' tabindex="0"\$1');
 
 	const html = templateHtml
+		.replace(
+			"<!--GENERATOR-->",
+			[
+				"<!--",
+				`Generated with Open Time-Travel Engine ${new Date().toUTCString()}`,
+				"-->",
+			].join("\n"),
+		)
+		.replace("INITIAL_BODY_CLASS", meta.withJs ? "loading" : "")
 		.replace("/*CSS*/", templateCss)
-		.replace("/*JS*/", templateJs)
+		.replace("/*JS*/", meta.withJs ? js : "")
 		.replace("<!--SVG-->", svg);
 
 	process.stderr.write(`${variant}: Writing '${meta.output}'...\n`);

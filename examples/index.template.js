@@ -1,3 +1,5 @@
+const FEATURE_FLAG_STARFIELD = undefined;
+
 // Find all SVG elements that are GraphViz nodes.
 const nodes = [...document.querySelectorAll(".node").values()];
 // Get all their IDs into a single order. The IDs are designed to fall into
@@ -420,4 +422,8 @@ const initStarfield = () => {
 	});
 };
 
-initStarfield();
+if (FEATURE_FLAG_STARFIELD) {
+	initStarfield();
+} else {
+	document.getElementById("starfield")?.remove();
+}
