@@ -313,7 +313,7 @@ const initStarfield = () => {
 			return;
 		}
 
-		const numStars = 3000;
+		const numStars = 5000;
 		const speed = 0.01;
 		const maxDepth = 1500;
 		const starColors = ["#FFFFFF", "#FFDDC1", "#FFC0CB", "#ADD8E6", "#B0E0E6"];
@@ -333,7 +333,7 @@ const initStarfield = () => {
 				return colorBase;
 			}
 			const components = matches.map((x) => Number.parseInt(x, 16));
-			const scale = 1 / (Math.random() * 10);
+			const scale = 1 / (Math.random() * 4);
 			const color = components
 				.map((_) => Math.floor(_ * scale))
 				.map((_) => _.toString(16).padStart(2, "0"))
@@ -359,18 +359,18 @@ const initStarfield = () => {
 			}
 
 			update() {
-				this.z -= speed * (2 - this.z / maxDepth);
-				if (this.z <= 0) {
+				this.y -= speed * (2 - this.z / maxDepth);
+				if (this.y <= canvas.height / -2) {
 					this.reset();
 				}
 			}
 
 			reset() {
-				this.z = maxDepth;
+				this.z = Math.random() * maxDepth;
 				const angle = Math.random() * 2 * Math.PI;
 				const distance = Math.sqrt(Math.random()) * (canvas.width / 2);
 				this.x = Math.cos(angle) * distance;
-				this.y = Math.sin(angle) * distance;
+				this.y = Math.sin(angle) * distance + canvas.height / 2;
 				this.size = (1 - distance / (canvas.width / 2)) * 0.1 + 0.5;
 				this.color = getRandomColor();
 			}
