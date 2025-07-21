@@ -51,8 +51,10 @@ const scan = async () => {
 
 		const filename = join(target, graph.name);
 		const stats = await stat(filename);
-		if (Date.now() - stats.mtime < 1000 * 60) {
-			process.stderr.write(`File still too hot.\n`);
+		if (Date.now() - stats.mtime < 1000 * 30) {
+			process.stdout.write(
+				`${new Date().toISOString()} Found new request '${filename}', but the file was recently modified. Request is skipped during this scan.\n`,
+			);
 			continue;
 		}
 
@@ -66,7 +68,7 @@ const scan = async () => {
 			status: "pending",
 			filename,
 			streamname: join(target, unfixed),
-			target: join(target, `${unfixed}.zen.html`),
+			target: "universe",
 			params: {
 				origin: parts.groups.origin,
 				start: parts.groups.start,
@@ -101,22 +103,27 @@ const manage = async () => {
 		];
 
 		job.status = "executing";
-		process.stderr.write(`Executing 'make ${args.join(" ")}'...\n`);
+		process.stdout.write(
+			`${new Date().toISOString()} Executing 'make ${args.join(" ")}'...\n`,
+		);
 		const processHandle = spawn("make", args, {
 			shell: true,
 		});
 		job.process = processHandle;
 
-		const stderr = createWriteStream(`${job.streamname}.stderr`);
-		const stdout = createWriteStream(`${job.streamname}.stdout`);
+		const logStream = createWriteStream(`${job.streamname}.log`);
+		processHandle.stdout.pipe(logStream);
+		processHandle.stderr.pipe(logStream);
 
-		processHandle.stderr.pipe(stderr);
-		processHandle.stdout.pipe(stdout);
 		processHandle.on("exit", (code) => {
-			process.stderr.write(`'make -j ${job.target}' exited with ${code}\n`);
+			logStream.close();
+
+			process.stdout.write(
+				`${new Date().toISOString()} Process 'make ${args.join(" ")}' exited with code ${code}.\n`,
+			);
 
 			job.status = code === 0 ? "complete" : "failed";
-			if (job.status === 0) {
+			if (code === 0) {
 				unlinkSync(job.filename);
 			}
 		});
@@ -130,25 +137,27 @@ const main = async () => {
 	for (const signal of ["SIGINT", "SIGTERM", "SIGQUIT"]) {
 		process.on(signal, () => {
 			if (exitRequested) {
-				process.stderr.write(
-					`Caught ${signal} while exit already requested. Exiting...\n`,
+				process.stdout.write(
+					`${new Date().toISOString()} Caught ${signal} while exit already requested. Exiting...\n`,
 				);
 				process.exit(1);
 			}
 
-			process.stderr.write(`Caught ${signal}. Requesting exit...\n`);
+			process.stdout.write(
+				`${new Date().toISOString()} Caught ${signal}. Requesting exit...\n`,
+			);
 			exitRequested = true;
 		});
 	}
 
-	process.stderr.write(`Watching ${target}...\n`);
+	process.stdout.write(`${new Date().toISOString()} Watching ${target}...\n`);
 
 	let jobCount = 0;
 	while (!exitRequested) {
 		await scan();
 
 		if (jobs.size !== jobCount) {
-			process.stderr.write(
+			process.stdout.write(
 				`${new Date().toISOString()} Job count changed: ${jobCount} -> ${jobs.size}. Manager will execute.\n`,
 			);
 			jobCount = jobs.size;
@@ -161,6 +170,9 @@ const main = async () => {
 		await setTimeout(10000);
 	}
 
+	process.stdout.write(
+		`${new Date().toISOString()} Sending SIGTERM to any running jobs...\n`,
+	);
 	for (const job of jobs.values()) {
 		if (job.status === "executing") {
 			job.process.kill("SIGTERM");

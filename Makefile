@@ -8,23 +8,10 @@ START ?= 1980
 END ?= 2035
 ORIGIN ?= 1983-12-15
 
-ifeq ($(START),)
-	_START :=
-else
-	_START := --skip-before=$(START)
-endif
-ifeq ($(END),)
-	_END :=
-else
-	_END := --skip-after=$(END)
-endif
-ifeq ($(ORIGIN),)
-	_ORIGIN := --origin=1983-12-25
-else
-	_ORIGIN := --origin=$(ORIGIN)
-endif
-_FLAGS := $(_ORIGIN) $(_START) $(_END)
 _SEGMENT := $(ORIGIN)_$(START)_$(END)
+
+OUTPUT ?= output/$(_SEGMENT)/
+PREFIX ?= universe-
 
 _TIMELINES := $(wildcard timelines/* ~/timelines/*.yml)
 
@@ -93,28 +80,30 @@ lib: node_modules
 schema:
 	@for i in schemas/*.yml; do yq --output-format=json eval '(.. | select(key == "$$ref" and type == "!!str")) |= sub(".schema.yml", ".schema.json")' "$$i" > "$${i%.yml}.json"; done
 
-_site output:
-	mkdir $@
+_site output $(OUTPUT):
+	mkdir -p $@
 
-%.zen.html %.system.html %.compat.html %.safe.html &: $(foreach _, $(_VARIANTS_PUBLISH), output/universe-$(_SEGMENT).$(_)) output/universe-$(_SEGMENT).gv
-	node examples/build-site.js --output=output output/universe-$(_SEGMENT).gv
+universe: $(OUTPUT)/$(PREFIX)$(_SEGMENT).zen.html
+
+%.zen.html %.system.html %.compat.html %.safe.html &: $(foreach _, $(_VARIANTS_PUBLISH), $(OUTPUT)/$(PREFIX)$(_SEGMENT).$(_)) $(OUTPUT)/$(PREFIX)$(_SEGMENT).gv
+	node examples/build-site.js --output=$(OUTPUT) $(OUTPUT)/$(PREFIX)$(_SEGMENT).gv
 	$(MAKE) pretty
 
 %.min.svg: %.svg
 	scour -i $^ -o $@ $(_SCOUR_FLAGS)
 
-$(foreach _, $(_VARIANTS), output/universe-$(_SEGMENT).$(_)) &: output/universe-$(_SEGMENT).gv
-	dot $(_DOT_FLAGS) output/universe-$(_SEGMENT).gv
-	mv output/universe-$(_SEGMENT).gv.cairo.svg output/universe-$(_SEGMENT).cairo.svg
-	mv output/universe-$(_SEGMENT).gv.svg output/universe-$(_SEGMENT).default.svg
-	mv output/universe-$(_SEGMENT).gv.png output/universe-$(_SEGMENT).png
+$(foreach _, $(_VARIANTS), $(OUTPUT)/$(PREFIX)$(_SEGMENT).$(_)) &: $(OUTPUT)/$(PREFIX)$(_SEGMENT).gv
+	dot $(_DOT_FLAGS) $(OUTPUT)/$(PREFIX)$(_SEGMENT).gv
+	mv $(OUTPUT)/$(PREFIX)$(_SEGMENT).gv.cairo.svg $(OUTPUT)/$(PREFIX)$(_SEGMENT).cairo.svg
+	mv $(OUTPUT)/$(PREFIX)$(_SEGMENT).gv.svg $(OUTPUT)/$(PREFIX)$(_SEGMENT).default.svg
+	mv $(OUTPUT)/$(PREFIX)$(_SEGMENT).gv.png $(OUTPUT)/$(PREFIX)$(_SEGMENT).png
 
-output/universe-$(_SEGMENT).gv: lib node_modules output
-	node --enable-source-maps examples/universe.js --origin=$(ORIGIN) --skip-before=$(START) --skip-after=$(END) --output=output/universe-$(_SEGMENT).gv $(_TIMELINES)
+$(OUTPUT)/$(PREFIX)$(_SEGMENT).gv: lib node_modules $(OUTPUT)
+	node --enable-source-maps examples/universe.js --origin=$(ORIGIN) --skip-before=$(START) --skip-after=$(END) --output=$(OUTPUT)/$(PREFIX)$(_SEGMENT).gv $(_TIMELINES)
 
 output/timeline.js: node_modules output
 	node build.js
 
 docs: _site/index.html
-_site/index.html: _site output/universe-$(_SEGMENT).zen.html
-	cp output/universe-$(_SEGMENT).zen.html _site/index.html
+_site/index.html: _site $(OUTPUT)/$(PREFIX)$(_SEGMENT).zen.html
+	cp $(OUTPUT)/$(PREFIX)$(_SEGMENT).zen.html _site/index.html
