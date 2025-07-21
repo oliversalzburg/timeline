@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { readFileSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { basename, join } from "node:path";
 
 // Parse command line arguments.
 const args = process.argv
@@ -44,14 +44,17 @@ const VARIANTS = {
 	safe: { svgSource: ".cairo.min.svg", withJs: false, starfield: false },
 };
 
+const graphName = basename(graphPath).replace(/\.gv$/, "");
+
 const variants = new Map();
 for (const [variant, settings] of Object.entries(VARIANTS)) {
 	variants.set(variant, {
 		...settings,
 		output: join(
 			typeof args.output === "string" ? args.output : process.cwd(),
-			`index.${variant}.html`,
+			`${graphName}.${variant}.html`,
 		),
+		info: readFileSync(graphPath.replace(/\.gv$/, ".info"), "utf-8"),
 		svg: readFileSync(graphPath.replace(/\.gv$/, settings.svgSource), "utf-8"),
 	});
 }
@@ -60,6 +63,7 @@ const templatePath = join(import.meta.dirname, "index.template");
 const templateCss = readFileSync(`${templatePath}.css`, "utf-8");
 const templateHtml = readFileSync(`${templatePath}.html`, "utf-8");
 const templateJs = readFileSync(`${templatePath}.js`, "utf-8");
+const templateTxt = readFileSync(`${templatePath}.txt`, "utf-8");
 
 for (const [variant, meta] of variants.entries()) {
 	const js = templateJs.replace(
@@ -68,18 +72,25 @@ for (const [variant, meta] of variants.entries()) {
 	);
 
 	const svg = meta.svg
-		.replace(/^<\?xml .+dtd">/s, "")
-		.replaceAll(/( class="[^"]+">)/g, ' tabindex="0"\$1');
+		// Remove header to allow embedding.
+		.replace(/^<\?xml .+dtd['"]>/s, "")
+		.replace(/^<\?xml .+?>/s, "")
+		// Add tabindex="0" to all nodes, to allow them to receive focus.
+		.replaceAll(/( class="node [^"]+">)/g, ' tabindex="0"\$1');
 
 	const html = templateHtml
 		.replace(
 			"<!--GENERATOR-->",
 			[
 				"<!--",
-				`Generated with Open Time-Travel Engine ${new Date().toUTCString()}`,
+				`Document generated with Open Time-Travel Engine on ${new Date().toISOString()}`,
+				`Renderer provided following universe metadata block:`,
+				"",
+				meta.info.trim(),
 				"-->",
 			].join("\n"),
 		)
+		.replace("<!--GUIDANCE-->", ["<!--", templateTxt, "-->"].join("\n"))
 		.replace("INITIAL_BODY_CLASS", meta.withJs ? "loading" : "")
 		.replace("/*CSS*/", templateCss)
 		.replace("/*JS*/", meta.withJs ? js : "")

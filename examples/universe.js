@@ -181,7 +181,7 @@ const dTo = renderOptions.skipAfter
 const info = [
 	`Universe was generated on a device indicating a local point in time of:`,
 	`${dBuild} offset ${offset} minutes from UTC`,
-	`${dIso} universal coordinated time (${NOW}).`,
+	`${dIso} universal coordinated time (${NOW})`,
 	`Device self-identified as "${hostname()}" being operated by "${userInfo().username}".`,
 	`Universe has ${finalEntryCount} individual entries from ${data.size} timeline documents.`,
 	`Universe Horizon`,

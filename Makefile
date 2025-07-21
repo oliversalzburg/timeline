@@ -43,15 +43,13 @@ endif
 
 default: build docs
 
-build: lib output
+build: lib output/timeline.js
 
 clean:
 	rm --force --recursive _site lib output
 	find -iwholename "schemas/*.schema.json" -delete
 purge: clean
 	rm --force --recursive .venv node_modules
-
-docs: _site/index.html
 
 git-hook:
 	echo "make pretty" > .git/hooks/pre-commit; chmod +x .git/hooks/pre-commit
@@ -95,6 +93,13 @@ lib: node_modules
 schema:
 	@for i in schemas/*.yml; do yq --output-format=json eval '(.. | select(key == "$$ref" and type == "!!str")) |= sub(".schema.yml", ".schema.json")' "$$i" > "$${i%.yml}.json"; done
 
+_site output:
+	mkdir $@
+
+%.zen.html %.system.html %.compat.html %.safe.html &: $(foreach _, $(_VARIANTS_PUBLISH), output/universe-$(_SEGMENT).$(_)) output/universe-$(_SEGMENT).gv
+	node examples/build-site.js --output=output output/universe-$(_SEGMENT).gv
+	$(MAKE) pretty
+
 %.min.svg: %.svg
 	scour -i $^ -o $@ $(_SCOUR_FLAGS)
 
@@ -104,16 +109,11 @@ $(foreach _, $(_VARIANTS), output/universe-$(_SEGMENT).$(_)) &: output/universe-
 	mv output/universe-$(_SEGMENT).gv.svg output/universe-$(_SEGMENT).default.svg
 	mv output/universe-$(_SEGMENT).gv.png output/universe-$(_SEGMENT).png
 
-output/universe-$(_SEGMENT).gv: lib
-	@mkdir output 2>/dev/null || true
+output/universe-$(_SEGMENT).gv: lib node_modules output
 	node --enable-source-maps examples/universe.js --origin=$(ORIGIN) --skip-before=$(START) --skip-after=$(END) --output=output/universe-$(_SEGMENT).gv $(_TIMELINES)
 
-output: node_modules
+output/timeline.js: node_modules output
 	node build.js
 
-_site: $(foreach _, $(_VARIANTS_PUBLISH), output/universe-$(_SEGMENT).$(_)) output/universe-$(_SEGMENT).gv
-	@mkdir _site 2>/dev/null || true
-	node examples/build-site.js --output=_site output/universe-$(_SEGMENT).gv
-
-_site/index.html: _site
-	cp _site/index.system.html _site/index.html
+docs: _site output/universe-$(_SEGMENT).zen.html
+	cp output/universe-$(_SEGMENT).zen.html _site/index.html

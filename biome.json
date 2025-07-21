@@ -12,7 +12,17 @@
 		"enabled": true
 	},
 	"files": {
-		"includes": ["!fixtures/**", "!lib/**", "**"]
+		"includes": [
+			"**",
+			"!.venv/**",
+			"!coverage/**",
+			"!fixtures/**",
+			"!lib/**",
+			"!node_modules/**",
+			"!output/**",
+			"output/*.html"
+		],
+		"maxSize": 15728640
 	},
 	"json": {
 		"formatter": { "enabled": true }
@@ -28,6 +38,5 @@
 				"useArrayLiterals": "off"
 			}
 		}
-	},
-	"vcs": { "clientKind": "git", "enabled": true, "useIgnoreFile": true }
+	}
 }
