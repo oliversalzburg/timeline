@@ -115,5 +115,6 @@ output/universe-$(_SEGMENT).gv: lib node_modules output
 output/timeline.js: node_modules output
 	node build.js
 
-docs: _site output/universe-$(_SEGMENT).zen.html
+docs: _site/index.html
+_site/index.html: _site output/universe-$(_SEGMENT).zen.html
 	cp output/universe-$(_SEGMENT).zen.html _site/index.html
