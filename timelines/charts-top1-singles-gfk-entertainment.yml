@@ -1,7 +1,285 @@
 ---
 color: audio
 prefix: 🇩🇪
+source:
+  - https://en.wikipedia.org/wiki/List_of_number-one_hits_(Germany)
+  - https://de.wikipedia.org/wiki/Liste_der_Nummer-eins-Hits_in_Deutschland
 timeline:
+  1954-03-15: |-
+    Zeitschrift "Der Automatenmarkt"
+    veröffentlicht erstmalig Jukebox-Auswertungen
+  1954-03-25: Zehn Whiskys und ein Soda - Wir, wir, wir haben ein Klavier
+  1954-05-15: Lys Assia mit Fred Weyrich & den Peheiros - Schweden-Mädel
+  1954-06-15: Friedel Hensch und die Cyprys - Heideröslein
+  1954-09-15: Hans-Arno Simon - Wodka-Fox (Gib mir den Wodka, Anuschka)
+  1954-11-15: Werner Dies mit Willy Berking & seinem Orchester - Schuster, bleib’ bei deinen Leisten
+  1954-12-15: Kurt-Adolf Thelen, Sunshine-Quartett, Golgowsky-Quartett, Will Glahé und sein großes Blas-Orchester - Am 30. Mai ist der Weltuntergang
+  1955-01-15: Hula Hawaiian Quartett - Jim, Jonny und Jonas
+  1955-03-15: Caterina Valente - Ganz Paris träumt von der Liebe
+  1955-08-15: Bibi Johns und die Penny-Pipers - Die Gipsy-Band (Polly-Dolly-do)
+  1955-10-15: Silvio Francesco mit Fausto Campi und den Leonardos - He Mr. Banjo
+  1955-11-15: Die Hilo Hawaiians - Domingo Santo Domingo
+  1955-12-15: Lys Assia - Arrivederci, Roma
+  1956-01-15: Bill Haley & His Comets - Rock Around the Clock
+  1956-03-15: Lys Assia - Arrivederci, Roma
+  1956-04-15: Club Indonesia - Steig in das Traumboot der Liebe
+  1956-06-15: Freddy - Heimweh
+  1956-11-15: Die Sieben Raben - Smoky
+  1957-01-15: Rodgers-Gesangs-Duett - Sei zufrieden
+  1957-02-15: Margot Eskens (/ Wolfgang Sauer) - Cindy, Oh Cindy
+  1957-07-15: Harry Belafonte - Banana Boat Song
+  1957-10-15: Die Heimatsänger - Köhlerliesel
+  1957-11-15: Vico Torriani - Siebenmal in der Woche
+  1957-12-15: Caterina Valente - Wo meine Sonne scheint
+  1958-01-15: Fred Bertelmann - Der lachende Vagabund
+  1958-04-15: Mitch Miller - March from the River Kwai & Colonel Bogey
+  1958-07-15: Billy Vaughn & Orchestra - Sail Along, Silv’ry Moon
+  1958-10-15: Perez Prado - Patricia
+  1958-11-01: Billy Vaughn - La Paloma
+  1959-02-01: Nilsen Brothers - Tom Dooley
+  1959-03-01: Kingston Trio - Tom Dooley
+  1959-04-01: Freddy - Die Gitarre und das Meer
+  1959-08-01: Dalida - Am Tag, als der Regen kam
+  1959-10-01: Bill Ramsey - Souvenirs
+  1959-11-01: Freddy - Unter fremden Sternen
+  1959-12-01: Rocco Granata / Will Brandes - Marina
+  1960-03-01: Jan & Kjeld - Banjo Boy
+  1960-04-01: Heidi Brühl - Wir wollen niemals auseinandergehn
+  1960-07-01: Édith Piaf / Dalida / Dutch Swing College Band - Milord
+  1960-08-01: Ted Herold - Moonlight
+  1960-09-01: Club Honolulu (Caterina Valente & Silvio Francesco) / Brian Hyland - Itsy Bitsy Teenie Weenie Honolulu-Strand-Bikini
+  1960-10-01: Lale Andersen / Caterina Valente / Melina Mercouri - Ein Schiff wird kommen
+  1961-02-01: Blue Diamonds - Ramona
+  1961-05-01: Buzz Clifford / Ralf Bendix und die kleine Elisabeth - Baby Sittin’ Boogie / Babysitter-Boogie
+  1961-06-01: Billy Vaughn & Orchestra / The String-A-Longs // Trio Kolenka - Wheels // Vier Schimmel, ein Wagen (Hüh-a-hoh)
+  1961-09-01: Freddy Quinn - La Paloma
+  1961-10-01: Gus Backus - Der Mann im Mond
+  1961-11-01: Nana Mouskouri - Weiße Rosen aus Athen
+  1962-01-01: Gerhard Wendland - Tanze mit mir in den Morgen
+  1962-02-01: Bob Moore / Peter Niemann - Mexico / Jana, schöne Mexicana
+  1962-04-01: Conny / Jan & Kjeld / Blue Capris - Zwei kleine Italiener
+  1962-05-01: Mina - Heißer Sand
+  1962-07-01: Nana Mouskouri - Ich schau den weißen Wolken nach / Einmal weht der Südwind wieder
+  1962-09-01: Pat Boone / Rex Gildo - Speedy Gonzales / Kleiner Gonzales
+  1962-12-01: Petula Clark - Monsieur
+  1963-01-01: Freddy Quinn - Junge, komm bald wieder
+  1963-04-01: Billy Mo - Ich kauf’ mir lieber einen Tirolerhut
+  1963-05-01: Tahiti-Tamourés - Wini-Wini
+  1963-06-01: Manuela / Eydie Gormé - Schuld war nur der Bossa Nova / Blame It on the Bossa Nova
+  1963-07-01: Connie Francis - Barcarole in der Nacht
+  1963-08-01: Gitte / Lil Malmkvist - Ich will ’nen Cowboy als Mann
+  1963-10-01: Gitte und Rex Gildo - Vom Stadtpark die Laternen
+  1963-12-01: Cliff Richard - Rote Lippen soll man küssen (Lucky Lips)
+  1964-02-01: Bernd Spier / Johnny Tillotson - Das kannst du mir nicht verbieten / You Can Never Stop Me Loving You
+  1964-03-01: The Beatles - I Want to Hold Your Hand (Komm gib mir deine Hand)
+  1964-05-01: Ronny - Oh, My Darling Caroline
+  1964-07-01: Siw Malmkvist - Liebeskummer lohnt sich nicht
+  1964-10-01: Peter Lauch & die Regenpfeifer - Das kommt vom Rudern, das kommt vom Segeln
+  1964-11-01: Johnny Rivers / Bernd Spier / Claudio, Rik und Roger - Memphis, Tennessee
+  1965-01-01: Roy Orbison - Oh, Pretty Woman
+  1965-01-15: Ronny - Kenn ein Land / Kleine Annabell
+  1965-02-01: Cliff Richard - Das ist die Frage aller Fragen (Spanish Harlem)
+  1965-03-01: Ronny - Kenn ein Land / Kleine Annabell
+  1965-03-15: Petula Clark - Downtown
+  1965-06-01: The Rolling Stones - The Last Time
+  1965-07-01: Nini Rosso - Il Silenzio (Abschiedsmelodie)
+  1965-10-15: The Rolling Stones - (I Can't Get No) Satisfaction
+  1965-12-01: Drafi Deutscher - Marmor, Stein und Eisen bricht
+  1966-01-01: The Rolling Stones - Get off of My Cloud
+  1966-01-15: Drafi Deutscher - Marmor, Stein und Eisen bricht
+  1966-02-01: Chris Andrews - Yesterday Man
+  1966-03-15: Roy Black - Ganz in Weiß
+  1966-04-01: The Rolling Stones - 19th Nervous Breakdown
+  1966-04-15: Nancy Sinatra - These Boots Are Made for Walkin’
+  1966-06-01: Freddy Quinn - Hundert Mann und ein Befehl
+  1966-06-15: The Beach Boys - Sloop John B
+  1966-07-15: The Beatles - Paperback Writer
+  1966-08-01: Frank Sinatra - Strangers in the Night
+  1966-10-01: The Beatles - Yellow Submarine
+  1966-11-01: Dave Dee, Dozy, Beaky, Mick & Tich - Bend It
+  1967-01-01: The Kinks - Dandy
+  1967-02-01: The Monkees - I’m a Believer
+  1967-03-15: David Garrick - Dear Mrs. Applebee
+  1967-04-01: The Rolling Stones - Let’s Spend the Night Together
+  1967-05-01: The Beatles - Penny Lane
+  1967-05-15: Sandie Shaw - Puppet on a String
+  1967-07-15: Manfred Mann - Ha! Ha! Said the Clown
+  1967-08-01: Procol Harum - A Whiter Shade of Pale
+  1967-08-15: The Beatles - All You Need Is Love
+  1967-10-01: Scott McKenzie - San Francisco (Be Sure to Wear Flowers in Your Hair)
+  1967-12-01: Bee Gees - Massachusetts
+  1968-01-15: Peter Alexander - Der letzte Walzer
+  1968-02-01: The Beatles - Hello, Goodbye
+  1968-02-15: Bee Gees - World
+  1968-03-01: John Fred & His Playboy Band - Judy in Disguise (With Glasses)
+  1968-04-01: Manfred Mann - Mighty Quinn
+  1968-04-15: Bee Gees - Words
+  1968-05-01: Tom Jones - Delilah
+  1968-08-01: The Rolling Stones - Jumpin’ Jack Flash
+  1968-08-15: Heintje - Du sollst nicht weinen
+  1968-09-01: Tom Jones - Help Yourself
+  1968-10-01: The Beatles - Hey Jude
+  1968-10-15: Tom Jones - Help Yourself
+  1968-11-01: Heintje - Heidschi Bumbeidschi
+  1968-12-01: Mary Hopkin - Those Were the Days
+  1968-12-15: Heintje - Heidschi Bumbeidschi
+  1969-01-15: Barry Ryan - Eloise
+  1969-03-01: The Beatles - Ob-La-Di, Ob-La-Da
+  1969-04-01: Peter Alexander - Liebesleid
+  1969-05-01: Heintje - Ich sing ein Lied für Dich
+  1969-06-01: The Beatles & Billy Preston - Get Back
+  1969-06-15: Roy Black - Das Mädchen Carina
+  1969-07-01: Desmond Dekker - The Israelites
+  1969-07-15: The Beatles - The Ballad of John and Yoko
+  1969-08-01: Edwin Hawkins Singers - Oh Happy Day
+  1969-09-01: Elvis Presley - In the Ghetto
+  1969-09-15: Zager & Evans - In the Year 2525 (Exordium & Terminus)
+  1969-11-01: The Archies - Sugar, Sugar
+  1969-12-01: The Beatles - Come Together / Something
+  1969-12-15: The Archies - Sugar, Sugar
+  1970-01-01: Roy Black - Dein schönstes Geschenk
+  1970-03-01: Led Zeppelin - Whole Lotta Love
+  1970-05-01: Soulful Dynamics - Mademoiselle Ninette
+  1970-05-15: Frijid Pink - House of the Rising Sun
+  1970-06-01: Peter Maffay - Du
+  1970-06-15: Norman Greenbaum - Spirit in the Sky
+  1970-07-01: Simon & Garfunkel - El Condor Pasa (If I Could)
+  1970-08-15: Mungo Jerry - In the Summertime
+  1970-10-01: Miguel Ríos - A Song of Joy
+  1970-12-15: Black Sabbath - Paranoid
+  1971-01-04: Miguel Ríos - A Song of Joy
+  1971-02-02: George Harrison - My Sweet Lord
+  1971-04-12: Lynn Anderson - Rose Garden
+  1971-04-19: Creedence Clearwater Revival - Hey Tonight
+  1971-04-26: Lynn Anderson - Rose Garden
+  1971-05-24: Danyel Gérard - Butterfly
+  1971-08-30: The Sweet - Co-Co
+  1971-10-11: Danyel Gérard - Butterfly
+  1971-10-18: The Sweet - Co-Co
+  1971-10-25: Peret - Borriquito
+  1971-11-08: Pop Tops - Mamy Blue
+  1972-01-17: Tony Christie - (Is This the Way To) Amarillo?
+  1972-01-24: Daisy Door - Du lebst in deiner Welt (Highlights of My Dreams)
+  1972-02-21: Middle of the Road - Sacramento (A Wonderful Town)
+  1972-03-06: Tony Marshall - Komm gib mir deine Hand
+  1972-03-13: Middle of the Road - Sacramento (A Wonderful Town)
+  1972-03-20: Tony Marshall - Komm gib mir deine Hand
+  1972-03-27: Windows - How Do You Do?
+  1972-05-22: Juliane Werding - Am Tag, als Conny Kramer starb
+  1972-05-29: Daniel Boone - Beautiful Sunday
+  1972-06-05: Christian Anders - Es fährt ein Zug nach Nirgendwo
+  1972-06-12: Daniel Boone - Beautiful Sunday
+  1972-07-10: Christian Anders - Es fährt ein Zug nach Nirgendwo
+  1972-07-17: Bata Illic - Michaela
+  1972-07-24: T. Rex - Metal Guru
+  1972-07-31: Bata Illic - Michaela
+  1972-08-07: Mouth & MacNeal - Hello-A
+  1972-08-14: The Sweet - Little Willy
+  1972-08-21: Mouth & MacNeal - Hello-A
+  1972-10-09: Hot Butter - Popcorn
+  1972-10-30: The Sweet - Wig-Wam Bam
+  1972-12-25: Wums Gesang - Ich wünsch' mir 'ne kleine Miezekatze
+  1973-02-26: The Sweet - Block Buster!
+  1973-03-19: The Les Humphries Singers - Mama Loo
+  1973-04-02: The Sweet - Block Buster!
+  1973-04-09: The Les Humphries Singers - Mama Loo
+  1973-04-16: Bernd Clüver - Der Junge mit der Mundharmonika
+  1973-05-14: Gilbert O’Sullivan - Get Down
+  1973-07-23: The Sweet - Hell Raiser
+  1973-08-06: Demis Roussos - Goodbye, My Love, Goodbye
+  1973-08-13: Suzi Quatro - Can the Can
+  1973-10-08: Bernd Clüver - Der kleine Prinz (Ein Engel, der Sehnsucht heißt)
+  1973-10-22: The Sweet - The Ballroom Blitz
+  1973-10-29: Bernd Clüver - Der kleine Prinz (Ein Engel, der Sehnsucht heißt)
+  1973-11-05: Lobo - I’d Love You to Want Me
+  1973-11-12: Bernd Clüver - Der kleine Prinz (Ein Engel, der Sehnsucht heißt)
+  1973-11-19: Lobo - I’d Love You to Want Me
+  1974-01-07: Mireille Mathieu - La Paloma, ade
+  1974-01-14: Lobo - I’d Love You to Want Me
+  1974-02-18: The Sweet - Teenage Rampage
+  1974-04-01: Dan the Banjo Man - Dan the Banjo Man
+  1974-04-08: The Sweet - Teenage Rampage
+  1974-04-15: Nazareth - This Flight Tonight
+  1974-04-22: Terry Jacks - Seasons in the Sun
+  1974-06-10: ABBA - Waterloo
+  1974-06-17: Terry Jacks - Seasons in the Sun
+  1974-06-24: ABBA - Waterloo
+  1974-07-15: The Rubettes - Sugar Baby Love
+  1974-07-29: Vicky Leandros - Theo, wir fahr’n nach Lodz
+  1974-08-05: The Rubettes - Sugar Baby Love
+  1974-09-02: George McCrae - Rock Your Baby
+  1974-11-11: Carl Douglas - Kung Fu Fighting
+  1974-12-30: Michael Holm - Tränen lügen nicht
+  1975-01-27: Bachman-Turner Overdrive - You Ain’t Seen Nothing Yet
+  1975-02-03: Michael Holm - Tränen lügen nicht
+  1975-02-10: Udo Jürgens - Griechischer Wein
+  1975-03-03: Billy Swan - I Can Help
+  1975-03-10: Udo Jürgens - Griechischer Wein
+  1975-04-14: The Sweet - Fox on the Run
+  1975-04-21: Shirley & Company - Shame, Shame, Shame
+  1975-05-12: The Sweet - Fox on the Run
+  1975-06-16: George Baker Selection - Paloma Blanca
+  1975-09-15: ABBA - SOS
+  1975-11-03: Penny McLean - Lady Bump
+  1975-12-08: 5000 Volts - I’m on Fire
+  1975-12-15: Penny McLean - Lady Bump
+  1975-12-29: Jean-Claude Borelly - Dolannes-Melodie
+  1976-01-19: Penny McLean - Lady Bump
+  1976-01-26: Jean-Claude Borelly - Dolannes-Melodie
+  1976-02-02: Harpo - Moviestar
+  1976-02-09: ABBA - Mamma Mia
+  1976-02-16: Harpo - Moviestar
+  1976-03-08: Pussycat - Mississippi
+  1976-04-05: Frank Farian - Rocky
+  1976-04-12: Pussycat - Mississippi
+  1976-04-19: Frank Farian - Rocky
+  1976-05-03: ABBA - Fernando
+  1976-05-10: Frank Farian - Rocky
+  1976-05-17: ABBA - Fernando
+  1976-06-28: Bellamy Brothers - Let Your Love Flow
+  1976-08-02: Jürgen Drews - Ein Bett im Kornfeld
+  1976-09-13: Boney M. - Daddy Cool
+  1976-09-20: ABBA - Dancing Queen
+  1976-09-27: Boney M. - Daddy Cool
+  1976-12-06: David Dundas - Jeans On
+  1976-12-13: Boney M. - Daddy Cool
+  1976-12-20: ABBA - Money, Money, Money
+  1977-01-24: Boney M. - Sunny
+  1977-02-07: Smokie - Living Next Door to Alice
+  1977-04-11: ABBA - Knowing Me, Knowing You
+  1977-04-25: Smokie - Lay Back in the Arms of Someone
+  1977-05-02: Jeanette - Porque te vas
+  1977-05-09: Smokie - Lay Back in the Arms of Someone
+  1977-05-30: Oliver Onions - Orzowei
+  1977-06-06: Smokie - Lay Back in the Arms of Someone
+  1977-06-13: Boney M. - Ma Baker
+  1977-07-04: Baccara - Yes Sir, I Can Boogie
+  1977-08-29: Space - Magic Fly
+  1977-09-05: Baccara - Sorry, I’m a Lady
+  1977-10-24: Boney M. - Belfast
+  1977-11-21: Santa Esmeralda starring Leroy Gomez - Don’t Let Me Be Misunderstood
+  1978-01-16: Wings - Mull of Kintyre
+  1978-03-27: Vader Abraham - Das Lied der Schlümpfe
+  1978-04-24: Boney M. - Rivers of Babylon / Brown Girl in the Ring
+  1978-08-14: John Travolta & Olivia Newton-John - You’re the One That I Want
+  1978-08-21: Boney M. - Rivers of Babylon / Brown Girl in the Ring
+  1978-08-28: John Travolta & Olivia Newton-John - You’re the One That I Want
+  1978-09-11: Marshall Hain - Dancing in the City
+  1978-09-18: John Travolta & Olivia Newton-John - You’re the One That I Want
+  1978-10-09: Boney M. - Rasputin
+  1978-10-16: Smokie - Mexican Girl
+  1978-10-23: Clout - Substitute
+  1978-11-13: Luv’ - You're the Greatest Lover
+  1978-12-11: Village People - Y.M.C.A.
+  1979-01-08: Boney M. - Mary’s Boy Child / Oh My Lord
+  1979-01-15: Village People - Y.M.C.A.
+  1979-03-05: Blondie - Heart of Glass
+  1979-04-16: Dschinghis Khan - Dschinghis Khan
+  1979-05-14: Patrick Hernandez - Born to Be Alive
+  1979-06-18: M - Pop Muzik
+  1979-07-30: Peter Maffay - So bist du
+  1979-08-20: Boney M. - El Lute / Gotta Go Home
+  1979-10-15: Cliff Richard - We Don’t Talk Anymore
   1979-11-19: Thom Pace - Maybe
   1980-01-21: Goombay Dance Band - Sun of Jamaica
   1980-02-04: Pink Floyd - Another Brick in the Wall, Pt. 2
@@ -349,7 +627,7 @@ timeline:
   2006-12-15: Monrose - Shame
   2006-12-29: Nelly Furtado - All Good Things (Come to an End)
   2007-02-09: Tokio Hotel - Übers Ende der Welt
-  2007-02-16: Herbert Grönemeyer - Lied 1 – Stück vom Himmel
+  2007-02-16: Herbert Grönemeyer - Lied 1 - Stück vom Himmel
   2007-02-23: Höhner - Wenn nicht jetzt, wann dann?
   2007-03-02: DJ Ötzi & Nik P. - Ein Stern (… der deinen Namen trägt)
   2007-05-04: Beyoncé & Shakira - Beautiful Liar
@@ -611,7 +889,7 @@ timeline:
   2020-07-10: Apache 207 - Bläulich
   2020-07-31: Apache 207 - Unterwegs
   2020-08-07: Apache 207 - Sie ruft
-  2020-08-14: Jawsh 685 & Jason Derulo - Savage Love (Laxed – Siren Beat)
+  2020-08-14: Jawsh 685 & Jason Derulo - Savage Love (Laxed - Siren Beat)
   2020-08-28: Capital Bra feat. Cro - Frühstück in Paris
   2020-09-04: KitschKrieg feat. Jamule - Unterwegs
   2020-09-11: Bonez MC - Fuckst mich nur ab
