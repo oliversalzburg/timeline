@@ -1,7 +1,22 @@
 ---
 color: transparent
 prefix: ✝️
+source:
+  - https://en.wikipedia.org/wiki/List_of_popes
 timeline:
+  1721-05-08: Pope Innocent XIII
+  1724-05-29: Pope Benedict XIII
+  1730-07-12: Pope Clement XII
+  1740-08-17: Pope Benedict XIV
+  1758-07-06: Pope Clement XIII
+  1769-05-19: Pope Clement XIV
+  1775-02-15: Pope Pius VI
+  1800-03-14: Pope Pius VII
+  1823-09-28: Pope Leo XII
+  1829-03-31: Pope Pius VIII
+  1831-02-02: Pope Gregory XVI
+  1846-06-16: Pope Pius IX
+  1878-02-20: Pope Leo XIII
   1903-08-04: Pope Pius X
   1914-09-03: Pope Benedict XV
   1922-02-02: Pope Pius XI

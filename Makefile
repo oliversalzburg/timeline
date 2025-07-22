@@ -10,7 +10,7 @@ ORIGIN ?= 1983-12-15
 
 _SEGMENT := $(ORIGIN)_$(START)_$(END)
 
-OUTPUT ?= output/$(_SEGMENT)/
+OUTPUT ?= output/$(_SEGMENT)
 PREFIX ?= universe-
 
 _TIMELINES := $(wildcard timelines/* ~/timelines/*.yml)
