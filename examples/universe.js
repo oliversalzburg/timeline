@@ -118,9 +118,9 @@ data.set("timelines/.decoration.nye", {
 
 // Adjust the titles in the data set.
 data.set(
-	"timelines/mediacontrol-top1-singles.yml",
+	"timelines/charts-top1-singles-gfk-entertainment.yml",
 	map(
-		mustExist(data.get("timelines/mediacontrol-top1-singles.yml")),
+		mustExist(data.get("timelines/charts-top1-singles-gfk-entertainment.yml")),
 		(/** @type {[number, { title: string; }]} */ record) => [
 			record[0],
 			{ title: record[1].title.split(" - ").reverse().join("\n") },
