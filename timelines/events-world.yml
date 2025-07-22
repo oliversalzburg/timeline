@@ -2,6 +2,7 @@
 color: transparent
 prefix: 🌍
 timeline:
+  1914-06-29: Assassination of Archduke Franz Ferdinand
   1914-07-28: Start of World War I
   1914-10-30: Start of Middle Eastern Theatre of World War I
   1918-10-30: Start of Middle Eastern Theatre of World War I
@@ -27,6 +28,7 @@ timeline:
   1945-09-02: End of World War II
   1945-11-20: Start of Nuremberg War Crimes Tribunal
   1946-07-29: Start of Paris Peace Conference
+  1948-01-20: Assassination of Mahatma Gandhi
   1948-06-24: Start of Berlin Blockade
   1949-05-12: End of Berlin Blockade
   1951-05-25: |-
@@ -83,6 +85,7 @@ timeline:
   1989-06-05: Tank Man Photograph
   1990-08-02: Iraqi Invasion of Kuwait
   1991-04-02: 1991 VEI6 Eruption of Mount Pinatubo
+  1991-05-21: Assassination of Rajiv Gandhi
   1991-06-01: GNU General Public License, version 2
   1992-11-01: MiniDisc Released
   1993-03-26: The Vulture and the Little Girl Photograph
@@ -118,3 +121,4 @@ timeline:
   2017-11-01: Cryptokitties triggers NFT Hype
   2019-03-15: Christchurch Mosque Shootings
   2019-12-01: COVID-19 Outbreak (COVID-19 Pandemic)
+  2022-07-08: Assassination of Shinzo Abe
