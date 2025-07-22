@@ -172,12 +172,14 @@ const dBuild = buildDate.toUTCString();
 const dIso = buildDate.toISOString();
 const dStart = new Date(globalEarliest).toUTCString();
 const dEnd = new Date(globalLatest).toUTCString();
-const dFrom = renderOptions.skipBefore
-	? new Date(renderOptions.skipBefore).toUTCString()
-	: "infinity";
-const dTo = renderOptions.skipAfter
-	? new Date(renderOptions.skipAfter).toUTCString()
-	: "infinity";
+const dFrom =
+	renderOptions.skipBefore !== undefined
+		? new Date(renderOptions.skipBefore).toUTCString()
+		: "infinity";
+const dTo =
+	renderOptions.skipAfter !== undefined
+		? new Date(renderOptions.skipAfter).toUTCString()
+		: "infinity";
 const info = [
 	`Universe was generated on a device indicating a local point in time of:`,
 	`${dBuild} offset ${offset} minutes from UTC`,
