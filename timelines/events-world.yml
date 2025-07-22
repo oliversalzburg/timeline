@@ -3,6 +3,8 @@ color: transparent
 prefix: 🌍
 timeline:
   1914-07-28: Start of World War I
+  1914-10-30: Start of Middle Eastern Theatre of World War I
+  1918-10-30: Start of Middle Eastern Theatre of World War I
   1918-11-11: End of World War I
   1939-09-01: Start of World War II
   1941-09-29: First Moscow Conference
@@ -21,8 +23,6 @@ timeline:
   1945-08-01: Potsdam Agreement
   1945-08-02: |-
     End of Potsdam Conference
-  1945-08-06: USA drops Atomic Bomb on Hiroshima
-  1945-08-09: USA drops Atomic Bomb on Nagasaki
   1945-08-15: Japan announces Unconditional Surrender
   1945-09-02: End of World War II
   1945-11-20: Start of Nuremberg War Crimes Tribunal
@@ -43,9 +43,6 @@ timeline:
     in the Atmosphere, in Outer Space and Under Water
   1963-10-10: |-
     Partial Nuclear Test Ban Treaty Effective
-  1964-10-14: |-
-    Removal of Nikita Khrushchev
-    as Premier of Soviet Union
   1970-01-01: UNIX Time Epoch starts 00:00 UTC
   1975-05-10: Sony Betamax Released
   1976-09-09: Video Home System (VHS) Released
@@ -84,9 +81,9 @@ timeline:
     Outlaws Halogenated Hydrocarbons
   1989-02-25: GNU General Public License, version 1
   1989-06-05: Tank Man Photograph
+  1990-08-02: Iraqi Invasion of Kuwait
   1991-04-02: 1991 VEI6 Eruption of Mount Pinatubo
   1991-06-01: GNU General Public License, version 2
-  1991-12-26: Dissolution of the Soviet Union finalized
   1992-11-01: MiniDisc Released
   1993-03-26: The Vulture and the Little Girl Photograph
   1995-04-19: Oklahoma City Bombing (Timothy McVeigh)
@@ -97,12 +94,6 @@ timeline:
   1999-04-01: |-
     Bagger 293 (MAN TAKRAF RB293) 14,196 tons Vehicle
     Giant Bucket-Wheel Excavator
-  2003-11-01: |-
-    Associated Press reports Inhumane Treatment
-    Abu Ghraib Torture Prison
-  2004-04-28: |-
-    CBS 60 Minutes II reports Abuse
-    Abu Ghraib Torture Prison
   2004-12-26: 2004 Indian Ocean 9.2 Earthquake and Tsunami
   2006-08-23: |-
     Natascha Kampusch Escape
@@ -116,34 +107,14 @@ timeline:
   2011-03-11: |-
     Tōhoku 9.1 Earthquake and Tsunami
     Fukushima INES7 Nuclear Accident
-  2011-05-02: |-
-    ☠️ Osama bin Laden
-    Shot and Killed by US Special Forces
   2011-07-22: 2011 Norway Attacks (Anders Behring Breivik)
-  2012-12-14: Sandy Hook Elementary School Shooting
-  2013-04-15: Boston Marathon Bombing
   2013-07-01: |-
     XGC88000 5,350 tons Vehicle
     Extremely Large Ultraheavy Crawler Crane
-  2014-02-27: Russia invades Crimea (Russian invasion of Crimea)
   2015-09-02: |-
     ☠️ Alan Kurdi
     Drowned
   2016-07-14: 2016 Nice Truck Attack
-  2016-12-19: 2016 Berlin Truck Attack
-  2017-03-27: Big-Maple-Leaf Gold Heist
   2017-11-01: Cryptokitties triggers NFT Hype
-  2018-03-04: Novichok Poisoning of Sergei and Yulia Skripal
-  2018-06-30: 2018 Amesbury Novichok Poisonings
-  2018-10-02: Assassination of Jamal Khashoggi
   2019-03-15: Christchurch Mosque Shootings
-  2019-04-15: Notre-Dame Fire
-  2019-11-25: Dresden Jewel Heist
   2019-12-01: COVID-19 Outbreak (COVID-19 Pandemic)
-  2020-09-02: Alexei Navalny poisoned with Novichok
-  2021-01-25: WallStreetBets triggers GME Hype
-  2022-02-01: Nord Stream 2 Oil Pipeline cancelled
-  2022-02-24: Russia invades Ukraine (Russian Invasion of Ukraine)
-  2022-07-01: Russia stops Nord Stream 1
-  2022-09-26: Attack on Nord Stream 1
-  2024-02-16: Alexei Navalny Murdered in Prison
