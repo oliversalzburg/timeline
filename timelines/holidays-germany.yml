@@ -1,34 +1,344 @@
 ---
 color: transparent
+private: false
 timeline:
-  1930-01-01: Neujahr 1930
-  1930-01-06: Heilige Drei Könige 1930
-  1930-02-14: Valentinstag 1930
-  1930-03-03: Rosenmontag 1930
-  1930-03-04: Faschingsdienstag 1930
-  1930-03-05: Aschermittwoch 1930
-  1930-04-13: Palmsonntag 1930
-  1930-04-17: Gründonnerstag 1930
-  1930-04-18: Karfreitag 1930
-  1930-04-20: Ostersonntag 1930
-  1930-04-21: Ostermontag 1930
-  1930-05-11: Muttertag 1930
-  1930-05-29: Christi Himmelfahrt, Vatertag 1930
-  1930-06-08: Pfingstsonntag 1930
-  1930-06-09: Pfingstmontag 1930
-  1930-06-19: Fronleichnam 1930
-  1930-08-15: Maria Himmelfahrt 1930
-  1930-10-31: Reformationstag 1930
-  1930-11-01: Allerheiligen 1930
-  1930-11-02: Allerseelen 1930
-  1930-11-06: Nikolaustag 1930
-  1930-11-11: Martinstag 1930
-  1930-11-19: Buß- und Bettag 1930
-  1930-11-30: 1. Advent 1930
-  1930-12-07: 2. Advent 1930
-  1930-12-14: 3. Advent 1930
-  1930-12-21: 4. Advent 1930
-  1930-12-24: Heiligabend 1930
-  1930-12-25: 1. Weihnachtsfeiertag 1930
-  1930-12-26: 2. Weihnachtsfeiertag, Stephanstag 1930
-  1930-12-31: Silvester 1930
+  1935-01-01: Neujahr 1935
+  1935-03-17: Heldengedenktag 1935
+  1935-04-19: Karfreitag 1935
+  1935-04-22: Ostermontag 1935
+  1936-01-01: Neujahr 1936
+  1936-03-08: Heldengedenktag 1936
+  1936-04-10: Karfreitag 1936
+  1936-04-13: Ostermontag 1936
+  1937-01-01: Neujahr 1937
+  1937-02-21: Heldengedenktag 1937
+  1937-03-26: Karfreitag 1937
+  1937-03-29: Ostermontag 1937
+  1938-01-01: Neujahr 1938
+  1938-04-15: Karfreitag 1938
+  1938-04-18: Ostermontag 1938
+  1939-01-01: Neujahr 1939
+  1939-04-07: Karfreitag 1939
+  1939-04-10: Ostermontag 1939
+  1940-01-01: Neujahr 1940
+  1940-03-10: Heldengedenktag 1940
+  1940-03-22: Karfreitag 1940
+  1940-03-25: Ostermontag 1940
+  1941-01-01: Neujahr 1941
+  1941-03-16: Heldengedenktag 1941
+  1941-04-11: Karfreitag 1941
+  1941-04-14: Ostermontag 1941
+  1942-01-01: Neujahr 1942
+  1942-03-15: Heldengedenktag 1942
+  1942-04-03: Karfreitag 1942
+  1942-04-06: Ostermontag 1942
+  1943-01-01: Neujahr 1943
+  1943-03-14: Heldengedenktag 1943
+  1943-04-23: Karfreitag 1943
+  1943-04-26: Ostermontag 1943
+  1944-01-01: Neujahr 1944
+  1944-03-12: Heldengedenktag 1944
+  1944-04-07: Karfreitag 1944
+  1944-04-10: Ostermontag 1944
+  1996-01-01: Neujahr 1996
+  1996-05-01: Tag der Arbeit 1996
+  1996-10-03: Tag der Deutschen Einheit 1996
+  1996-12-25: 1. Weihnachtsfeiertag 1996
+  1996-12-26: 2. Weihnachtsfeiertag 1996
+  1996-04-07: Ostersonntag 1996
+  1996-04-08: Ostermontag 1996
+  1996-05-16: Christi Himmelfahrt 1996
+  1996-05-26: Pfingstsonntag 1996
+  1996-05-27: Pfingstmontag 1996
+  1997-01-01: Neujahr 1997
+  1997-05-01: Tag der Arbeit 1997
+  1997-10-03: Tag der Deutschen Einheit 1997
+  1997-12-25: 1. Weihnachtsfeiertag 1997
+  1997-12-26: 2. Weihnachtsfeiertag 1997
+  1997-03-30: Ostersonntag 1997
+  1997-03-31: Ostermontag 1997
+  1997-05-08: Christi Himmelfahrt 1997
+  1997-05-18: Pfingstsonntag 1997
+  1997-05-19: Pfingstmontag 1997
+  1998-01-01: Neujahr 1998
+  1998-05-01: Tag der Arbeit 1998
+  1998-10-03: Tag der Deutschen Einheit 1998
+  1998-12-25: 1. Weihnachtsfeiertag 1998
+  1998-12-26: 2. Weihnachtsfeiertag 1998
+  1998-04-12: Ostersonntag 1998
+  1998-04-13: Ostermontag 1998
+  1998-05-21: Christi Himmelfahrt 1998
+  1998-05-31: Pfingstsonntag 1998
+  1998-06-01: Pfingstmontag 1998
+  1999-01-01: Neujahr 1999
+  1999-05-01: Tag der Arbeit 1999
+  1999-10-03: Tag der Deutschen Einheit 1999
+  1999-12-25: 1. Weihnachtsfeiertag 1999
+  1999-12-26: 2. Weihnachtsfeiertag 1999
+  1999-04-04: Ostersonntag 1999
+  1999-04-05: Ostermontag 1999
+  1999-05-13: Christi Himmelfahrt 1999
+  1999-05-23: Pfingstsonntag 1999
+  1999-05-24: Pfingstmontag 1999
+  2000-01-01: Neujahr 2000
+  2000-05-01: Tag der Arbeit 2000
+  2000-10-03: Tag der Deutschen Einheit 2000
+  2000-12-25: 1. Weihnachtsfeiertag 2000
+  2000-12-26: 2. Weihnachtsfeiertag 2000
+  2000-04-23: Ostersonntag 2000
+  2000-04-24: Ostermontag 2000
+  2000-06-01: Christi Himmelfahrt 2000
+  2000-06-11: Pfingstsonntag 2000
+  2000-06-12: Pfingstmontag 2000
+  2001-01-01: Neujahr 2001
+  2001-05-01: Tag der Arbeit 2001
+  2001-10-03: Tag der Deutschen Einheit 2001
+  2001-12-25: 1. Weihnachtsfeiertag 2001
+  2001-12-26: 2. Weihnachtsfeiertag 2001
+  2001-04-15: Ostersonntag 2001
+  2001-04-16: Ostermontag 2001
+  2001-05-24: Christi Himmelfahrt 2001
+  2001-06-03: Pfingstsonntag 2001
+  2001-06-04: Pfingstmontag 2001
+  2002-01-01: Neujahr 2002
+  2002-05-01: Tag der Arbeit 2002
+  2002-10-03: Tag der Deutschen Einheit 2002
+  2002-12-25: 1. Weihnachtsfeiertag 2002
+  2002-12-26: 2. Weihnachtsfeiertag 2002
+  2002-03-31: Ostersonntag 2002
+  2002-04-01: Ostermontag 2002
+  2002-05-09: Christi Himmelfahrt 2002
+  2002-05-19: Pfingstsonntag 2002
+  2002-05-20: Pfingstmontag 2002
+  2003-01-01: Neujahr 2003
+  2003-05-01: Tag der Arbeit 2003
+  2003-10-03: Tag der Deutschen Einheit 2003
+  2003-12-25: 1. Weihnachtsfeiertag 2003
+  2003-12-26: 2. Weihnachtsfeiertag 2003
+  2003-04-20: Ostersonntag 2003
+  2003-04-21: Ostermontag 2003
+  2003-05-29: Christi Himmelfahrt 2003
+  2003-06-08: Pfingstsonntag 2003
+  2003-06-09: Pfingstmontag 2003
+  2004-01-01: Neujahr 2004
+  2004-05-01: Tag der Arbeit 2004
+  2004-10-03: Tag der Deutschen Einheit 2004
+  2004-12-25: 1. Weihnachtsfeiertag 2004
+  2004-12-26: 2. Weihnachtsfeiertag 2004
+  2004-04-11: Ostersonntag 2004
+  2004-04-12: Ostermontag 2004
+  2004-05-20: Christi Himmelfahrt 2004
+  2004-05-30: Pfingstsonntag 2004
+  2004-05-31: Pfingstmontag 2004
+  2005-01-01: Neujahr 2005
+  2005-05-01: Tag der Arbeit 2005
+  2005-10-03: Tag der Deutschen Einheit 2005
+  2005-12-25: 1. Weihnachtsfeiertag 2005
+  2005-12-26: 2. Weihnachtsfeiertag 2005
+  2005-03-27: Ostersonntag 2005
+  2005-03-28: Ostermontag 2005
+  2005-05-05: Christi Himmelfahrt 2005
+  2005-05-15: Pfingstsonntag 2005
+  2005-05-16: Pfingstmontag 2005
+  2006-01-01: Neujahr 2006
+  2006-05-01: Tag der Arbeit 2006
+  2006-10-03: Tag der Deutschen Einheit 2006
+  2006-12-25: 1. Weihnachtsfeiertag 2006
+  2006-12-26: 2. Weihnachtsfeiertag 2006
+  2006-04-16: Ostersonntag 2006
+  2006-04-17: Ostermontag 2006
+  2006-05-25: Christi Himmelfahrt 2006
+  2006-06-04: Pfingstsonntag 2006
+  2006-06-05: Pfingstmontag 2006
+  2007-01-01: Neujahr 2007
+  2007-05-01: Tag der Arbeit 2007
+  2007-10-03: Tag der Deutschen Einheit 2007
+  2007-12-25: 1. Weihnachtsfeiertag 2007
+  2007-12-26: 2. Weihnachtsfeiertag 2007
+  2007-04-08: Ostersonntag 2007
+  2007-04-09: Ostermontag 2007
+  2007-05-17: Christi Himmelfahrt 2007
+  2007-05-27: Pfingstsonntag 2007
+  2007-05-28: Pfingstmontag 2007
+  2008-01-01: Neujahr 2008
+  2008-05-01:
+    - Tag der Arbeit 2008
+    - Christi Himmelfahrt 2008
+  2008-10-03: Tag der Deutschen Einheit 2008
+  2008-12-25: 1. Weihnachtsfeiertag 2008
+  2008-12-26: 2. Weihnachtsfeiertag 2008
+  2008-03-23: Ostersonntag 2008
+  2008-03-24: Ostermontag 2008
+  2008-05-11: Pfingstsonntag 2008
+  2008-05-12: Pfingstmontag 2008
+  2009-01-01: Neujahr 2009
+  2009-05-01: Tag der Arbeit 2009
+  2009-10-03: Tag der Deutschen Einheit 2009
+  2009-12-25: 1. Weihnachtsfeiertag 2009
+  2009-12-26: 2. Weihnachtsfeiertag 2009
+  2009-04-12: Ostersonntag 2009
+  2009-04-13: Ostermontag 2009
+  2009-05-21: Christi Himmelfahrt 2009
+  2009-05-31: Pfingstsonntag 2009
+  2009-06-01: Pfingstmontag 2009
+  2010-01-01: Neujahr 2010
+  2010-05-01: Tag der Arbeit 2010
+  2010-10-03: Tag der Deutschen Einheit 2010
+  2010-12-25: 1. Weihnachtsfeiertag 2010
+  2010-12-26: 2. Weihnachtsfeiertag 2010
+  2010-04-04: Ostersonntag 2010
+  2010-04-05: Ostermontag 2010
+  2010-05-13: Christi Himmelfahrt 2010
+  2010-05-23: Pfingstsonntag 2010
+  2010-05-24: Pfingstmontag 2010
+  2011-01-01: Neujahr 2011
+  2011-05-01: Tag der Arbeit 2011
+  2011-10-03: Tag der Deutschen Einheit 2011
+  2011-12-25: 1. Weihnachtsfeiertag 2011
+  2011-12-26: 2. Weihnachtsfeiertag 2011
+  2011-04-24: Ostersonntag 2011
+  2011-04-25: Ostermontag 2011
+  2011-06-02: Christi Himmelfahrt 2011
+  2011-06-12: Pfingstsonntag 2011
+  2011-06-13: Pfingstmontag 2011
+  2012-01-01: Neujahr 2012
+  2012-05-01: Tag der Arbeit 2012
+  2012-10-03: Tag der Deutschen Einheit 2012
+  2012-12-25: 1. Weihnachtsfeiertag 2012
+  2012-12-26: 2. Weihnachtsfeiertag 2012
+  2012-04-08: Ostersonntag 2012
+  2012-04-09: Ostermontag 2012
+  2012-05-17: Christi Himmelfahrt 2012
+  2012-05-27: Pfingstsonntag 2012
+  2012-05-28: Pfingstmontag 2012
+  2013-01-01: Neujahr 2013
+  2013-05-01: Tag der Arbeit 2013
+  2013-10-03: Tag der Deutschen Einheit 2013
+  2013-12-25: 1. Weihnachtsfeiertag 2013
+  2013-12-26: 2. Weihnachtsfeiertag 2013
+  2013-03-31: Ostersonntag 2013
+  2013-04-01: Ostermontag 2013
+  2013-05-09: Christi Himmelfahrt 2013
+  2013-05-19: Pfingstsonntag 2013
+  2013-05-20: Pfingstmontag 2013
+  2014-01-01: Neujahr 2014
+  2014-05-01: Tag der Arbeit 2014
+  2014-10-03: Tag der Deutschen Einheit 2014
+  2014-12-25: 1. Weihnachtsfeiertag 2014
+  2014-12-26: 2. Weihnachtsfeiertag 2014
+  2014-04-20: Ostersonntag 2014
+  2014-04-21: Ostermontag 2014
+  2014-05-29: Christi Himmelfahrt 2014
+  2014-06-08: Pfingstsonntag 2014
+  2014-06-09: Pfingstmontag 2014
+  2015-01-01: Neujahr 2015
+  2015-05-01: Tag der Arbeit 2015
+  2015-10-03: Tag der Deutschen Einheit 2015
+  2015-12-25: 1. Weihnachtsfeiertag 2015
+  2015-12-26: 2. Weihnachtsfeiertag 2015
+  2015-04-05: Ostersonntag 2015
+  2015-04-06: Ostermontag 2015
+  2015-05-14: Christi Himmelfahrt 2015
+  2015-05-24: Pfingstsonntag 2015
+  2015-05-25: Pfingstmontag 2015
+  2016-01-01: Neujahr 2016
+  2016-05-01: Tag der Arbeit 2016
+  2016-10-03: Tag der Deutschen Einheit 2016
+  2016-12-25: 1. Weihnachtsfeiertag 2016
+  2016-12-26: 2. Weihnachtsfeiertag 2016
+  2016-03-27: Ostersonntag 2016
+  2016-03-28: Ostermontag 2016
+  2016-05-05: Christi Himmelfahrt 2016
+  2016-05-15: Pfingstsonntag 2016
+  2016-05-16: Pfingstmontag 2016
+  2017-01-01: Neujahr 2017
+  2017-05-01: Tag der Arbeit 2017
+  2017-10-03: Tag der Deutschen Einheit 2017
+  2017-12-25: 1. Weihnachtsfeiertag 2017
+  2017-12-26: 2. Weihnachtsfeiertag 2017
+  2017-04-16: Ostersonntag 2017
+  2017-04-17: Ostermontag 2017
+  2017-05-25: Christi Himmelfahrt 2017
+  2017-06-04: Pfingstsonntag 2017
+  2017-06-05: Pfingstmontag 2017
+  2018-01-01: Neujahr 2018
+  2018-05-01: Tag der Arbeit 2018
+  2018-10-03: Tag der Deutschen Einheit 2018
+  2018-12-25: 1. Weihnachtsfeiertag 2018
+  2018-12-26: 2. Weihnachtsfeiertag 2018
+  2018-04-01: Ostersonntag 2018
+  2018-04-02: Ostermontag 2018
+  2018-05-10: Christi Himmelfahrt 2018
+  2018-05-20: Pfingstsonntag 2018
+  2018-05-21: Pfingstmontag 2018
+  2019-01-01: Neujahr 2019
+  2019-05-01: Tag der Arbeit 2019
+  2019-10-03: Tag der Deutschen Einheit 2019
+  2019-12-25: 1. Weihnachtsfeiertag 2019
+  2019-12-26: 2. Weihnachtsfeiertag 2019
+  2019-04-21: Ostersonntag 2019
+  2019-04-22: Ostermontag 2019
+  2019-05-30: Christi Himmelfahrt 2019
+  2019-06-09: Pfingstsonntag 2019
+  2019-06-10: Pfingstmontag 2019
+  2020-01-01: Neujahr 2020
+  2020-05-01: Tag der Arbeit 2020
+  2020-10-03: Tag der Deutschen Einheit 2020
+  2020-12-25: 1. Weihnachtsfeiertag 2020
+  2020-12-26: 2. Weihnachtsfeiertag 2020
+  2020-04-12: Ostersonntag 2020
+  2020-04-13: Ostermontag 2020
+  2020-05-21: Christi Himmelfahrt 2020
+  2020-05-31: Pfingstsonntag 2020
+  2020-06-01: Pfingstmontag 2020
+  2021-01-01: Neujahr 2021
+  2021-05-01: Tag der Arbeit 2021
+  2021-10-03: Tag der Deutschen Einheit 2021
+  2021-12-25: 1. Weihnachtsfeiertag 2021
+  2021-12-26: 2. Weihnachtsfeiertag 2021
+  2021-04-04: Ostersonntag 2021
+  2021-04-05: Ostermontag 2021
+  2021-05-13: Christi Himmelfahrt 2021
+  2021-05-23: Pfingstsonntag 2021
+  2021-05-24: Pfingstmontag 2021
+  2022-01-01: Neujahr 2022
+  2022-05-01: Tag der Arbeit 2022
+  2022-10-03: Tag der Deutschen Einheit 2022
+  2022-12-25: 1. Weihnachtsfeiertag 2022
+  2022-12-26: 2. Weihnachtsfeiertag 2022
+  2022-04-17: Ostersonntag 2022
+  2022-04-18: Ostermontag 2022
+  2022-05-26: Christi Himmelfahrt 2022
+  2022-06-05: Pfingstsonntag 2022
+  2022-06-06: Pfingstmontag 2022
+  2023-01-01: Neujahr 2023
+  2023-05-01: Tag der Arbeit 2023
+  2023-10-03: Tag der Deutschen Einheit 2023
+  2023-12-25: 1. Weihnachtsfeiertag 2023
+  2023-12-26: 2. Weihnachtsfeiertag 2023
+  2023-04-09: Ostersonntag 2023
+  2023-04-10: Ostermontag 2023
+  2023-05-18: Christi Himmelfahrt 2023
+  2023-05-28: Pfingstsonntag 2023
+  2023-05-29: Pfingstmontag 2023
+  2024-01-01: Neujahr 2024
+  2024-05-01: Tag der Arbeit 2024
+  2024-10-03: Tag der Deutschen Einheit 2024
+  2024-12-25: 1. Weihnachtsfeiertag 2024
+  2024-12-26: 2. Weihnachtsfeiertag 2024
+  2024-03-31: Ostersonntag 2024
+  2024-04-01: Ostermontag 2024
+  2024-05-09: Christi Himmelfahrt 2024
+  2024-05-19: Pfingstsonntag 2024
+  2024-05-20: Pfingstmontag 2024
+  2025-01-01: Neujahr 2025
+  2025-05-01: Tag der Arbeit 2025
+  2025-10-03: Tag der Deutschen Einheit 2025
+  2025-12-25: 1. Weihnachtsfeiertag 2025
+  2025-12-26: 2. Weihnachtsfeiertag 2025
+  2025-04-20: Ostersonntag 2025
+  2025-04-21: Ostermontag 2025
+  2025-05-29: Christi Himmelfahrt 2025
+  2025-06-08: Pfingstsonntag 2025
+  2025-06-09: Pfingstmontag 2025
+

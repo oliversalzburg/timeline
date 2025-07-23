@@ -1,6 +1,7 @@
 ---
 color: audio
 prefix: ❌
+private: false
 timeline:
   1984-04-01: |-
     Der nette Mann

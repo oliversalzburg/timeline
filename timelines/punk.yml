@@ -1,6 +1,7 @@
 ---
 color: audio
 prefix: ✊
+private: false
 timeline:
   1984-11-01: |-
     Debil

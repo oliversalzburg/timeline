@@ -1,6 +1,7 @@
 ---
 color: health
 prefix: 💊
+private: false
 rank: 2
 timeline:
   1949-05-25: |-

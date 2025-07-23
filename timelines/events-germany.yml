@@ -1,49 +1,55 @@
 ---
 color: transparent
 prefix: 🇩🇪
+private: false
 sources:
   - https://de.wikipedia.org/wiki/Liste_der_Regierungschefs_von_Deutschland
 timeline:
+  1803-05-18: Beginn Dritter Koalitionskrieg
+  1805-10-16: Schlacht bei Ulm
+  1806-07-17: Ende Dritter Koalitionskrieg
+  1806-10-09: Beginn Vierter Koalitionskrieg
+  1807-07-09: Ende Vierter Koalitionskrieg
   1866-06-14: Beginn Deutscher Krieg
-  1866-06-24: 
+  1866-06-24:
     - Schlacht bei Custozza
-  1866-06-26: 
+  1866-06-26:
     - Gefecht bei Hühnerwasser
-  1866-06-27: 
+  1866-06-27:
     - Schlacht bei Bad Langensalza
     - Schlacht bei Trautenau
     - Schlacht bei Nachod
     - Schlacht bei Podol
-  1866-06-28: 
+  1866-06-28:
     - Schlacht bei Münchengrätz
     - Schlacht bei Skalitz
-  1866-06-29: 
+  1866-06-29:
     - Gefecht bei Schweinschädel
     - Gefecht bei Königinhof
     - Schlacht bei Gitschin
   1866-07-01: Mainfeldzug
-  1866-07-03: 
+  1866-07-03:
     - Schlacht bei Königgrätz
-  1866-07-04: 
+  1866-07-04:
     - Gefechte bei Dermbach
-  1866-07-10: 
+  1866-07-10:
     - Schlacht bei Kissingen
-  1866-07-13: 
+  1866-07-13:
     - Gefecht bei Frohnhofen/Laufach
-  1866-07-14: 
+  1866-07-14:
     - Gefechte bei Aschaffenburg
-  1866-07-20: 
+  1866-07-20:
     - Seeschlacht von Lissa
-  1866-07-21: 
+  1866-07-21:
     - Schlacht bei Bezzecca
-  1866-07-22: 
+  1866-07-22:
     - Gefecht bei Blumenau
-  1866-07-23: 
+  1866-07-23:
     - Gefecht bei Hundheim
-  1866-07-24: 
+  1866-07-24:
     - Gefecht bei Werbach
     - Gefechte bei Tauberbischofsheim
-  1866-07-25: 
+  1866-07-25:
     - Gefechte bei Uettingen
     - Gefecht bei Gerchsheim
     - Gefechte bei Helmstadt und Uettingen
@@ -64,6 +70,8 @@ timeline:
   1900-10-17: |-
     Reichskanzler des Deutschen Reiches
     Bernhard von Bülow
+  1901-03-19: Eröffnung Elektrizitätswerk Jena
+  1901-04-01: Elektrische Straßenbahn Jena
   1909-07-14: |-
     Reichskanzler des Deutschen Reiches
     Theobald von Bethmann Hollweg
@@ -127,19 +135,40 @@ timeline:
   1933-03-24: |-
     Reichskanzler des Deutschen Reiches
     Adolf Hitler
+  1933-04-01: |-
+    Boykott jüdischer Geschäfte
+    und Einrichtungen in Jena
   1934-08-07: |-
     Führer und Reichskanzler des Deutschen Reiches
     Adolf Hitler
   1939-09-01: Überfall auf Polen
+  1945-01-30: |-
+    Todesmarsch vom Außenlager
+    Ohrdruf ins KZ Bergen-Belsen
   1945-03-19: |-
     Bombardement von Jena
     "schwärzeste Tag in der Jenaer Geschichte"
-  1945-04-09: |-
-    Bombardement von Jena
-  1945-04-11: |-
-    Artillerie-Beschuss von Jena
+  1945-04-02: |-
+    Todesmarsch vom Außenlager
+    Ohrdruf nach Buchenwald
+  1945-04-04: |-
+    Todesmarsch vom
+    KZ Außenkommando Sonneberg
+  1945-04-09:
+    - |-
+      Bombardement von Jena
+    - |-
+      Todesmarsch vom Außenlager
+      Langenstein-Zwieberge nach Genthin
+  1945-04-11:
+    - Artillerie-Beschuss von Jena
+    - Todesmarsch vom KZ-Buchenwald durch Jena
   1945-04-13: |-
     Besetzung von Jena durch 3. US-Armee
+  1945-04-19: Schwur von Buchenwald
+  1945-04-24: |-
+    US-Senator Alben W. Barkley
+    besichtigt das KZ Buchenwald
   1945-04-30: |-
     Reichskanzler des Deutschen Reiches
     Joseph Goebbels

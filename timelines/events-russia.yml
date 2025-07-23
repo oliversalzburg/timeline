@@ -1,6 +1,7 @@
 ---
 color: transparent
 prefix: 🇷🇺
+private: false
 timeline:
   1917-11-07:
     - October Revolution
@@ -88,7 +89,8 @@ timeline:
     Vladimir Ivashko
   1991-12-08: |-
     Belovezha Accords
-    Agreement establishing the Commonwealth of Independent States
+    Agreement establishing the
+    Commonwealth of Independent States
   1991-12-26: End of Dissolution of the Soviet Union
   1993-12-12: Russian Constitutional Referendum
   2014-02-27: Russia invades Crimea (Russian invasion of Crimea)

@@ -1,6 +1,7 @@
 ---
 color: video
 prefix: 🎬
+private: false
 rank: 2
 timeline:
   1957-04-10: 12 Angry Men

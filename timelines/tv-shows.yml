@@ -1,6 +1,7 @@
 ---
 color: video
 prefix: 📺
+private: false
 rank: 2
 timeline:
   1969-10-05: |-

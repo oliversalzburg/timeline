@@ -1,6 +1,7 @@
 ---
 color: hacking
 prefix: 🧬
+private: false
 rank: 3
 source:
   - 2025-07-12: https://en.wikipedia.org/wiki/Black_Hat_Briefings

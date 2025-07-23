@@ -1,6 +1,7 @@
 ---
 color: transparent
 prefix: 🇸🇦
+private: false
 timeline:
   1902-01-13: Battle of Riyadh
   1904-06-15: Battle of al-Bukayriyya

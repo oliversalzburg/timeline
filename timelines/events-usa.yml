@@ -1,6 +1,7 @@
 ---
 color: transparent
 prefix: 🇺🇸
+private: false
 timeline:
   1776-06-11: |-
     Thomas Jefferson begins Draft of

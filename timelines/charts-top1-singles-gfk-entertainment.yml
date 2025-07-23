@@ -1,6 +1,7 @@
 ---
 color: audio
 prefix: 🇩🇪
+private: false
 source:
   - https://en.wikipedia.org/wiki/List_of_number-one_hits_(Germany)
   - https://de.wikipedia.org/wiki/Liste_der_Nummer-eins-Hits_in_Deutschland

@@ -1,6 +1,7 @@
 ---
 color: audio
 prefix: 🎤
+private: false
 rank: 2
 timeline:
   1990-03-03: |-

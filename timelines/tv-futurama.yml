@@ -1,6 +1,7 @@
 ---
 color: video
 prefix: 📺
+private: false
 rank: 3
 timeline:
   1999-03-28: |-

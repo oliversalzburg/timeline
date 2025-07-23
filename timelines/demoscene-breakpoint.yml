@@ -1,6 +1,7 @@
 ---
 color: hacking
 prefix: 🚀
+private: false
 rank: 2
 timeline:
   2003-04-18: Breakpoint 2003

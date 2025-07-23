@@ -1,6 +1,7 @@
 ---
 color: gaming
 prefix: 🎮
+private: false
 rank: 1
 timeline:
   1981-08-12: Microsoft MS-DOS

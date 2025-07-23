@@ -1,6 +1,7 @@
 ---
 color: transparent
 prefix: 🥊
+private: false
 timeline:
   1960-10-29: Muhammad Ali vs. Tunney Hunsaker
   1960-12-27: Muhammad Ali vs. Herb Siler

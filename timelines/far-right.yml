@@ -1,6 +1,7 @@
 ---
 color: transparent
 prefix: ❌
+private: false
 timeline:
   1964-11-28: Gründung NPD
   1973-06-15: |-

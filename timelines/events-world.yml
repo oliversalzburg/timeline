@@ -1,6 +1,7 @@
 ---
 color: transparent
 prefix: 🌍
+private: false
 timeline:
   1914-06-29: Assassination of Archduke Franz Ferdinand
   1914-07-28: Start of World War I

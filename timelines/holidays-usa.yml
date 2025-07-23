@@ -1,5 +1,6 @@
 ---
 color: transparent
+private: false
 timeline:
   1930-10-31: Halloween 1930
   1931-10-31: Halloween 1931

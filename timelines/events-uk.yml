@@ -1,6 +1,7 @@
 ---
 color: transparent
 prefix: 🇬🇧
+private: false
 timeline:
   1707-01-16: |-
     Royal Assent of
@@ -90,6 +91,7 @@ timeline:
     Prime Minister of the United Kingdom
     of Great Britain and Northern Ireland
     William Pitt the Younger
+  1805-10-21: Battle of Trafalgar
   1806-02-11: |-
     Prime Minister of the United Kingdom
     of Great Britain and Northern Ireland

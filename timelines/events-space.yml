@@ -1,6 +1,7 @@
 ---
 color: transparent
 prefix: 🛸
+private: false
 timeline:
   1955-07-29: |-
     Start of the Space Race

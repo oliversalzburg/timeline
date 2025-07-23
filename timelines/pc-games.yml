@@ -1,6 +1,7 @@
 ---
 color: gaming
 prefix: 🎮
+private: false
 rank: 2
 timeline:
   1980-03-01: |-
@@ -55,7 +56,8 @@ timeline:
     Commander Keen 1
     id Software
   1991-09-07: |-
-    Leisure Suit Larry 5: Passionate Patti Does a Little Undercover Work
+    Leisure Suit Larry 5: Passionate
+    Patti Does a Little Undercover Work
     Sierra On-Line
   1991-10-01: |-
     Might and Magic III: Isles of Terra

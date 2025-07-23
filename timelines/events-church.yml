@@ -1,6 +1,7 @@
 ---
 color: transparent
 prefix: ✝️
+private: false
 source:
   - https://en.wikipedia.org/wiki/List_of_popes
 timeline:
