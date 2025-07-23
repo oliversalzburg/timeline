@@ -48,6 +48,9 @@ const scan = async () => {
 	for (const graph of graphsRequested) {
 		if (jobs.has(graph.name)) {
 			if (jobs.get(graph.name).status === "complete") {
+				process.stdout.write(
+					`${new Date().toISOString()} Job '${job.graph.name}' is complete and should be cleared.\n`,
+				);
 				changes = true;
 			}
 			continue;
@@ -80,6 +83,10 @@ const scan = async () => {
 			},
 			added: Date.now(),
 		});
+
+		process.stdout.write(
+			`${new Date().toISOString()} Registered new job '${graph.name}'.\n`,
+		);
 		changes = true;
 	}
 
@@ -103,6 +110,7 @@ const manage = async () => {
 			continue;
 		}
 
+		const command = "make";
 		const args = [
 			"-j",
 			job.target,
@@ -114,9 +122,9 @@ const manage = async () => {
 
 		job.status = "executing";
 		process.stdout.write(
-			`${new Date().toISOString()} Executing 'make ${args.join(" ")}'...\n`,
+			`${new Date().toISOString()} Executing '${command} ${args.join(" ")}'...\n`,
 		);
-		const processHandle = spawn("make", args, {
+		const processHandle = spawn(command, args, {
 			shell: true,
 		});
 		job.process = processHandle;
@@ -125,11 +133,14 @@ const manage = async () => {
 		processHandle.stdout.pipe(logStream);
 		processHandle.stderr.pipe(logStream);
 
+		logStream.write(`Process started ${new Date().toISOString()}\n`);
+
 		processHandle.on("exit", (code) => {
+			logStream.write(`Process ended ${new Date().toISOString()}\n`);
 			logStream.close();
 
 			process.stdout.write(
-				`${new Date().toISOString()} Process 'make ${args.join(" ")}' exited with code ${code}.\n`,
+				`${new Date().toISOString()} Process '${command} ${args.join(" ")}' exited with code ${code}.\n`,
 			);
 
 			job.status = code === 0 ? "complete" : "failed";

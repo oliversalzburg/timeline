@@ -72,7 +72,14 @@ const focusNode = (id, rapid = false) => {
 
 	idFocused = id;
 	idFocusedIndex = ids.indexOf(idFocused);
-	timelineFocused = nodeTimelines.get(id);
+	// If the newly focused node exists on the already focused timeline,
+	// don't attempt to switch focus. This could cause focus to switch
+	// to another timeline when entering a merge node.
+	timelineFocused =
+		timelineFocused !== undefined &&
+		timelineNodes.get(timelineFocused)?.includes(id)
+			? timelineFocused
+			: nodeTimelines.get(id);
 
 	console.info(
 		`Focused node ${idFocused} of timeline ${timelineFocused}. Scrolling it ${rapid ? "rapidly" : "smoothly"} into view...`,
@@ -99,6 +106,8 @@ if (-1 < idFocusedIndex && idFocused !== undefined) {
 		);
 		focusNode(idFocused);
 	}
+} else {
+	focusNode(ids[0]);
 }
 
 /**
