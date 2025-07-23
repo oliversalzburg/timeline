@@ -35,7 +35,7 @@ const jobs = new Map();
 let scanPending = false;
 const scan = async () => {
 	if (scanPending) {
-		return;
+		return false;
 	}
 
 	scanPending = true;
@@ -43,9 +43,13 @@ const scan = async () => {
 	const entries = await readdir(target, { withFileTypes: true });
 	const files = entries.filter((_) => _.isFile());
 	const graphsRequested = files.filter((_) => _.name.endsWith(".request"));
+	let changes = false;
 
 	for (const graph of graphsRequested) {
 		if (jobs.has(graph.name)) {
+			if (jobs.get(graph.name).status === "complete") {
+				changes = true;
+			}
 			continue;
 		}
 
@@ -76,9 +80,11 @@ const scan = async () => {
 			},
 			added: Date.now(),
 		});
+		changes = true;
 	}
 
 	scanPending = false;
+	return changes;
 };
 
 let managementLock = false;
@@ -156,20 +162,14 @@ const main = async () => {
 
 	process.stdout.write(`${new Date().toISOString()} Watching ${target}...\n`);
 
-	let jobCount = 0;
 	while (!exitRequested) {
-		await scan();
+		const changes = await scan();
 
-		if (jobs.size !== jobCount) {
+		if (changes) {
 			process.stdout.write(
-				`${new Date().toISOString()} Job count changed: ${jobCount} -> ${jobs.size}. Manager will execute.\n`,
+				`${new Date().toISOString()} Pending changes detected. Manager will execute.\n`,
 			);
-			jobCount = jobs.size;
-		}
-
-		if (0 < jobCount) {
 			await manage();
-			jobCount = jobs.size;
 		}
 
 		await setTimeout(10000);

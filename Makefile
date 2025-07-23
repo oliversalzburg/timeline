@@ -33,7 +33,7 @@ _PRETTY_BIOME := npm exec -- biome check --write --no-errors-on-unmatched
 
 default: build docs
 
-build: lib output/timeline.js
+build: lib/timeline.js universe
 
 clean:
 	rm --force --recursive _site lib
@@ -60,8 +60,7 @@ validate-schema: .venv
 validate-data: .venv validate-schema
 	. .venv/bin/activate; cd schemas; check-jsonschema --schemafile spec.schema.yml ../timelines/*.yml
 
-test: node_modules
-	npm exec -- tsc
+test: node_modules lib
 	NODE_OPTIONS=--enable-source-maps TZ=UTC npm exec -- c8 --reporter=html-spa mocha --reporter-option maxDiffSize=16000 lib/*.test.js
 
 .venv: .venv/touchfile

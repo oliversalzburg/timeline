@@ -75,6 +75,8 @@ for (const [variant, meta] of variants.entries()) {
 		// Remove header to allow embedding.
 		.replace(/^<\?xml .+dtd['"]>/s, "")
 		.replace(/^<\?xml .+?>/s, "")
+		// Strip title nodes, as those are only event indices in our data.
+		.replaceAll(/<title>[^<]*<\/title>/g, "")
 		// Add tabindex="0" to all nodes, to allow them to receive focus.
 		.replaceAll(/( class="node [^"]+">)/g, ' tabindex="0"\$1');
 
