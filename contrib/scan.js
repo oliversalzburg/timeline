@@ -89,6 +89,10 @@ const manage = async () => {
 	managementLock = true;
 
 	for (const job of jobs.values()) {
+		if (job.status === "complete") {
+			jobs.delete(job);
+			continue;
+		}
 		if (job.status !== "pending") {
 			continue;
 		}
@@ -164,7 +168,8 @@ const main = async () => {
 		}
 
 		if (0 < jobCount) {
-			manage();
+			await manage();
+			jobCount = jobs.size;
 		}
 
 		await setTimeout(10000);
