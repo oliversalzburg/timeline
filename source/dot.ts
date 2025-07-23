@@ -112,12 +112,14 @@ export interface LinkProperties {
 	color: Color;
 	constraint: boolean;
 	edgetooltip: string;
+	edgeURL: string;
 	fillcolor: Color;
 	fontcolor: Color;
 	fontname: string;
 	fontsize: number;
 	headport: PortPos;
 	headtooltip: string;
+	headURL: string;
 	label: string;
 	labeltooltip: string;
 	labelfontcolor: Color;
@@ -127,7 +129,9 @@ export interface LinkProperties {
 	tailclip: boolean;
 	tailport: PortPos;
 	tailtooltip: string;
+	tailURL: string;
 	tooltip: string;
+	URL: string;
 	weight: number;
 }
 export interface NodeProperties {
@@ -145,6 +149,7 @@ export interface NodeProperties {
 	shape: Shape;
 	style: NodeStyle | string;
 	tooltip: string;
+	URL: string;
 	width: number;
 }
 

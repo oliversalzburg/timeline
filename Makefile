@@ -13,6 +13,7 @@ _SEGMENT := $(ORIGIN)_$(START)_$(END)
 OUTPUT ?= output/$(_SEGMENT)
 PREFIX ?= universe-
 
+_UNIVERSE := $(OUTPUT)/$(PREFIX)$(_SEGMENT)
 _TIMELINES := $(wildcard timelines/* ~/timelines/*.yml)
 
 _SCOUR_FLAGS = --enable-viewboxing --enable-id-stripping --enable-comment-stripping --shorten-ids --indent=none
@@ -27,13 +28,15 @@ ifneq ($(DEBUG),)
 	_DOT_FLAGS += -v5
 endif
 
+_PRETTY_BIOME := npm exec -- biome check --write --no-errors-on-unmatched
+
 
 default: build docs
 
 build: lib output/timeline.js
 
 clean:
-	rm --force --recursive _site lib output
+	rm --force --recursive _site lib
 	find -iwholename "schemas/*.schema.json" -delete
 purge: clean
 	rm --force --recursive .venv node_modules
@@ -42,7 +45,7 @@ git-hook:
 	echo "make pretty" > .git/hooks/pre-commit; chmod +x .git/hooks/pre-commit
 
 pretty: node_modules
-	npm exec -- biome check --write --no-errors-on-unmatched
+	$(_PRETTY_BIOME)
 	npm pkg fix
 	@for i in schemas/*.yml; do yq --prettyPrint --inplace "$$i"; done
 
@@ -83,27 +86,32 @@ schema:
 _site output $(OUTPUT):
 	mkdir -p $@
 
-universe: $(OUTPUT)/$(PREFIX)$(_SEGMENT).zen.html
+universe: $(_UNIVERSE).zen.html
 
-%.zen.html %.system.html %.compat.html %.safe.html &: $(foreach _, $(_VARIANTS_PUBLISH), $(OUTPUT)/$(PREFIX)$(_SEGMENT).$(_)) $(OUTPUT)/$(PREFIX)$(_SEGMENT).gv
-	node examples/build-site.js --output=$(OUTPUT) $(OUTPUT)/$(PREFIX)$(_SEGMENT).gv
-	$(MAKE) pretty
+%.zen.html %.system.html %.compat.html %.safe.html &: $(foreach _, $(_VARIANTS_PUBLISH), $(_UNIVERSE).$(_)) $(_UNIVERSE).gv
+	node examples/build-site.js --output=$(OUTPUT) $(_UNIVERSE).gv
+	$(_PRETTY_BIOME)
 
 %.min.svg: %.svg
 	scour -i $^ -o $@ $(_SCOUR_FLAGS)
 
-$(foreach _, $(_VARIANTS), $(OUTPUT)/$(PREFIX)$(_SEGMENT).$(_)) &: $(OUTPUT)/$(PREFIX)$(_SEGMENT).gv
-	dot $(_DOT_FLAGS) $(OUTPUT)/$(PREFIX)$(_SEGMENT).gv
-	mv $(OUTPUT)/$(PREFIX)$(_SEGMENT).gv.cairo.svg $(OUTPUT)/$(PREFIX)$(_SEGMENT).cairo.svg
-	mv $(OUTPUT)/$(PREFIX)$(_SEGMENT).gv.svg $(OUTPUT)/$(PREFIX)$(_SEGMENT).default.svg
-	mv $(OUTPUT)/$(PREFIX)$(_SEGMENT).gv.png $(OUTPUT)/$(PREFIX)$(_SEGMENT).png
+$(foreach _, $(_VARIANTS), $(_UNIVERSE).$(_)) &: $(_UNIVERSE).gv
+	dot $(_DOT_FLAGS) $(_UNIVERSE).gv
+	mv $(_UNIVERSE).gv.cairo.svg $(_UNIVERSE).cairo.svg
+	mv $(_UNIVERSE).gv.svg $(_UNIVERSE).default.svg
+	mv $(_UNIVERSE).gv.png $(_UNIVERSE).png
 
-$(OUTPUT)/$(PREFIX)$(_SEGMENT).gv: lib node_modules $(OUTPUT)
-	node --enable-source-maps examples/universe.js --origin=$(ORIGIN) --skip-before=$(START) --skip-after=$(END) --output=$(OUTPUT)/$(PREFIX)$(_SEGMENT).gv $(_TIMELINES)
+$(_UNIVERSE).gv: lib node_modules | $(OUTPUT)
+	node --enable-source-maps examples/universe.js \
+		--origin=$(ORIGIN) \
+		--skip-before=$(START) \
+		--skip-after=$(END) \
+		--output=$(_UNIVERSE).gv \
+		$(_TIMELINES)
 
-output/timeline.js: node_modules output
+lib/timeline.js: node_modules | lib
 	node build.js
 
 docs: _site/index.html
-_site/index.html: _site $(OUTPUT)/$(PREFIX)$(_SEGMENT).zen.html
-	cp $(OUTPUT)/$(PREFIX)$(_SEGMENT).zen.html _site/index.html
+_site/index.html: $(_UNIVERSE).zen.html | _site
+	cp $(_UNIVERSE).zen.html _site/index.html

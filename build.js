@@ -10,7 +10,7 @@ esbuild
 		external: ["node:*", "yaml"],
 		format: "esm",
 		minify: true,
-		outfile: "./output/timeline.js",
+		outfile: "./lib/timeline.js",
 		packages: "bundle",
 		platform: "node",
 		sourcemap: true,

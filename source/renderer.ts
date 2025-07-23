@@ -252,6 +252,7 @@ export const render = (
 				shape: style.shape,
 				style: style.style?.join(","),
 				tooltip: `${formatMilliseconds(timePassedSinceOrigin)} since ${originString}\\n${formatMilliseconds(timePassedSinceThen)} ago`,
+				URL: `#${id}`,
 			};
 
 			d.node(entry.title, nodeProperties);
