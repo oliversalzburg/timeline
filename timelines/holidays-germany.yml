@@ -2,44 +2,154 @@
 color: transparent
 private: false
 timeline:
+  1933-05-01: Feiertag der nationalen Arbeit 1933
   1935-01-01: Neujahr 1935
   1935-03-17: Heldengedenktag 1935
   1935-04-19: Karfreitag 1935
   1935-04-22: Ostermontag 1935
+  1935-05-01: Nationaler Feiertag des deutschen Volkes 1935
+  1935-05-30: Christi Himmelfahrt 1935
+  1935-06-10: Pfingstmontag 1935
+  1935-06-20: Fronleichnam 1935
+  1935-09-29: Erntedanktag 1935
+  1935-10-31: Reformationstag 1935
+  1935-11-20: Bußtag 1935
+  1935-12-25: 1. Weihnachtsfeiertag 1935
+  1935-12-26: 2. Weihnachtsfeiertag 1935
   1936-01-01: Neujahr 1936
   1936-03-08: Heldengedenktag 1936
   1936-04-10: Karfreitag 1936
   1936-04-13: Ostermontag 1936
+  1936-05-01: Nationaler Feiertag des deutschen Volkes 1936
+  1936-05-21: Christi Himmelfahrt 1936
+  1936-06-01: Pfingstmontag 1936
+  1936-06-11: Fronleichnam 1936
+  1936-10-04: Erntedanktag 1936
+  1936-10-31: Reformationstag 1936
+  1936-11-18: Bußtag 1936
+  1936-12-25: 1. Weihnachtsfeiertag 1936
+  1936-12-26: 2. Weihnachtsfeiertag 1936
   1937-01-01: Neujahr 1937
   1937-02-21: Heldengedenktag 1937
   1937-03-26: Karfreitag 1937
   1937-03-29: Ostermontag 1937
+  1937-05-01: Nationaler Feiertag des deutschen Volkes 1937
+  1937-05-06: Christi Himmelfahrt 1937
+  1937-05-17: Pfingstmontag 1937
+  1937-05-27: Fronleichnam 1937
+  1937-10-03: Erntedanktag 1937
+  1937-10-31: Reformationstag 1937
+  1937-11-17: Bußtag 1937
+  1937-12-25: 1. Weihnachtsfeiertag 1937
+  1937-12-26: 2. Weihnachtsfeiertag 1937
   1938-01-01: Neujahr 1938
+  1938-03-13: Heldengedenktag 1938
   1938-04-15: Karfreitag 1938
   1938-04-18: Ostermontag 1938
+  1938-05-01: Nationaler Feiertag des deutschen Volkes 1938
+  1938-05-26: Christi Himmelfahrt 1938
+  1938-06-06: Pfingstmontag 1938
+  1938-06-16: Fronleichnam 1938
+  1938-10-02: Erntedanktag 1938
+  1938-10-31: Reformationstag 1938
+  1938-11-23: Bußtag 1938
+  1938-12-25: 1. Weihnachtsfeiertag 1938
+  1938-12-26: 2. Weihnachtsfeiertag 1938
   1939-01-01: Neujahr 1939
+  1939-03-12: Heldengedenktag 1939
   1939-04-07: Karfreitag 1939
   1939-04-10: Ostermontag 1939
+  1939-04-20: Führergeburtstag 1939
+  1939-05-01: Nationaler Feiertag des deutschen Volkes 1939
+  1939-05-18: Christi Himmelfahrt 1939
+  1939-05-29: Pfingstmontag 1939
+  1939-06-08: Fronleichnam 1939
+  1939-10-01: Erntedanktag 1939
+  1939-10-31: Reformationstag 1939
+  1939-11-09: Gedenktag für die Gefallenen der Bewegung 1939
+  1939-11-22: Bußtag 1939
+  1939-12-25: 1. Weihnachtsfeiertag 1939
+  1939-12-26: 2. Weihnachtsfeiertag 1939
   1940-01-01: Neujahr 1940
   1940-03-10: Heldengedenktag 1940
   1940-03-22: Karfreitag 1940
   1940-03-25: Ostermontag 1940
+  1940-05-01: Nationaler Feiertag des deutschen Volkes 1940
+  1940-05-02: Christi Himmelfahrt 1940
+  1940-05-13: Pfingstmontag 1940
+  1940-05-23: Fronleichnam 1940
+  1940-09-29: Erntedanktag 1940
+  1940-10-31: Reformationstag 1940
+  1940-11-09: Gedenktag für die Gefallenen der Bewegung 1940
+  1940-11-20: Bußtag 1940
+  1940-12-25: 1. Weihnachtsfeiertag 1940
+  1940-12-26: 2. Weihnachtsfeiertag 1940
   1941-01-01: Neujahr 1941
   1941-03-16: Heldengedenktag 1941
   1941-04-11: Karfreitag 1941
   1941-04-14: Ostermontag 1941
+  1941-05-01: Nationaler Feiertag des deutschen Volkes 1941
+  1941-05-22: Christi Himmelfahrt 1941
+  1941-06-02: Pfingstmontag 1941
+  1941-06-12: Fronleichnam 1941
+  1941-10-05: Erntedanktag 1941
+  1941-10-31: Reformationstag 1941
+  1941-11-09: Gedenktag für die Gefallenen der Bewegung 1941
+  1941-11-19: Bußtag 1941
+  1941-12-25: 1. Weihnachtsfeiertag 1941
+  1941-12-26: 2. Weihnachtsfeiertag 1941
   1942-01-01: Neujahr 1942
   1942-03-15: Heldengedenktag 1942
   1942-04-03: Karfreitag 1942
   1942-04-06: Ostermontag 1942
+  1942-05-01: Nationaler Feiertag des deutschen Volkes 1942
+  1942-05-14: Christi Himmelfahrt 1942
+  1942-05-25: Pfingstmontag 1942
+  1942-06-04: Fronleichnam 1942
+  1942-10-04: Erntedanktag 1942
+  1942-10-31: Reformationstag 1942
+  1942-11-09: Gedenktag für die Gefallenen der Bewegung 1942
+  1942-11-18: Bußtag 1942
+  1942-12-25: 1. Weihnachtsfeiertag 1942
+  1942-12-26: 2. Weihnachtsfeiertag 1942
   1943-01-01: Neujahr 1943
   1943-03-14: Heldengedenktag 1943
   1943-04-23: Karfreitag 1943
   1943-04-26: Ostermontag 1943
+  1943-05-01: Nationaler Feiertag des deutschen Volkes 1943
+  1943-06-03: Christi Himmelfahrt 1943
+  1943-06-14: Pfingstmontag 1943
+  1943-06-24: Fronleichnam 1943
+  1943-10-03: Erntedanktag 1943
+  1943-10-31: Reformationstag 1943
+  1943-11-09: Gedenktag für die Gefallenen der Bewegung 1943
+  1943-11-17: Bußtag 1943
+  1943-12-25: 1. Weihnachtsfeiertag 1943
+  1943-12-26: 2. Weihnachtsfeiertag 1943
   1944-01-01: Neujahr 1944
   1944-03-12: Heldengedenktag 1944
   1944-04-07: Karfreitag 1944
   1944-04-10: Ostermontag 1944
+  1944-05-01: Nationaler Feiertag des deutschen Volkes 1944
+  1944-05-18: Christi Himmelfahrt 1944
+  1944-05-29: Pfingstmontag 1944
+  1944-06-08: Fronleichnam 1944
+  1944-10-01: Erntedanktag 1944
+  1944-10-31: Reformationstag 1944
+  1944-11-09: Gedenktag für die Gefallenen der Bewegung 1944
+  1944-11-22: Bußtag 1944
+  1944-12-25: 1. Weihnachtsfeiertag 1944
+  1944-12-26: 2. Weihnachtsfeiertag 1944
+  1995-01-01: Neujahr 1995
+  1995-05-01: Tag der Arbeit 1995
+  1995-10-03: Tag der Deutschen Einheit 1995
+  1995-12-25: 1. Weihnachtsfeiertag 1995
+  1995-12-26: 2. Weihnachtsfeiertag 1995
+  1995-04-16: Ostersonntag 1995
+  1995-04-17: Ostermontag 1995
+  1995-05-25: Christi Himmelfahrt 1995
+  1995-06-04: Pfingstsonntag 1995
+  1995-06-05: Pfingstmontag 1995
   1996-01-01: Neujahr 1996
   1996-05-01: Tag der Arbeit 1996
   1996-10-03: Tag der Deutschen Einheit 1996

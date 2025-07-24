@@ -7,15 +7,16 @@ const cliArguments = process.argv.slice(2);
 const startYear = Number(cliArguments[0] ?? "1933");
 const ageOrLastYear = Number(cliArguments[1] ?? "2026");
 
+/** @type {Array<{from:Date;to?:Date;name:string;date:[number,number]|((year:number)=>[number,number]);debug?:boolean|number}>} */
 const HOLIDAYS = [
 	{
-		from: new Date(1934, 0, 1),
+		from: new Date(1934, 1, 27),
 		to: new Date(1945, 4, 8),
 		name: "Neujahr",
 		date: [1, 1],
 	},
 	{
-		from: new Date(1934, 0, 1),
+		from: new Date(1934, 1, 27),
 		to: new Date(1939, 0),
 		name: "Heldengedenktag",
 		date: (/** @type {number} */ year) => {
@@ -39,7 +40,7 @@ const HOLIDAYS = [
 		},
 	},
 	{
-		from: new Date(1934, 0, 1),
+		from: new Date(1934, 1, 27),
 		to: new Date(1945, 4, 8),
 		name: "Karfreitag",
 		date: (/** @type {number} */ year) => {
@@ -48,7 +49,7 @@ const HOLIDAYS = [
 		},
 	},
 	{
-		from: new Date(1934, 0, 1),
+		from: new Date(1934, 1, 27),
 		to: new Date(1945, 4, 8),
 		name: "Ostermontag",
 		date: (/** @type {number} */ year) => {
@@ -61,6 +62,96 @@ const HOLIDAYS = [
 		to: new Date(1940, 0),
 		name: "Führergeburtstag",
 		date: [4, 20],
+	},
+	{
+		from: new Date(1933, 0),
+		to: new Date(1934, 1, 27),
+		name: "Feiertag der nationalen Arbeit",
+		date: [5, 1],
+	},
+	{
+		from: new Date(1934, 1, 27),
+		to: new Date(1945, 4, 8),
+		name: "Nationaler Feiertag des deutschen Volkes",
+		date: [5, 1],
+	},
+	{
+		from: new Date(1934, 1, 27),
+		to: new Date(1945, 4, 8),
+		name: "Christi Himmelfahrt",
+		date: (/** @type {number} */ year) => {
+			const _ = spencer(year);
+			return [_[0], _[1] + 39];
+		},
+	},
+	{
+		from: new Date(1934, 1, 27),
+		to: new Date(1945, 4, 8),
+		name: "Pfingstmontag",
+		date: (/** @type {number} */ year) => {
+			const _ = spencer(year);
+			return [_[0], _[1] + 50];
+		},
+	},
+	{
+		from: new Date(1934, 1, 27),
+		to: new Date(1945, 4, 8),
+		name: "Fronleichnam",
+		date: (/** @type {number} */ year) => {
+			const _ = spencer(year);
+			return [_[0], _[1] + 60];
+		},
+	},
+	{
+		from: new Date(1934, 1, 27),
+		to: new Date(1945, 4, 8),
+		name: "Erntedanktag",
+		date: (/** @type {number} */ year) => {
+			let _ = new Date(year, 8, 29);
+			while (_.getDay() !== 0) {
+				_ = new Date(_.valueOf() + MILLISECONDS.ONE_DAY);
+			}
+			return [_.getMonth() + 1, _.getDate()];
+		},
+	},
+	{
+		from: new Date(1934, 1, 27),
+		to: new Date(1945, 4, 8),
+		name: "Reformationstag",
+		date: [10, 31],
+	},
+	{
+		from: new Date(1939, 0),
+		to: new Date(1945, 4, 8),
+		name: "Gedenktag für die Gefallenen der Bewegung",
+		date: [11, 9],
+	},
+	{
+		from: new Date(1934, 1, 27),
+		to: new Date(1945, 4, 8),
+		name: "Bußtag",
+		date: (/** @type {number} */ year) => {
+			const a = advent(year);
+			const b = new Date(year, a[0] - 1, a[1]);
+			// Totensonntag
+			let _ = new Date(b.valueOf() - MILLISECONDS.ONE_WEEK);
+			while (_.getDay() !== 3) {
+				_ = new Date(_.valueOf() - MILLISECONDS.ONE_DAY);
+			}
+			return [_.getMonth() + 1, _.getDate()];
+		},
+	},
+	{
+		from: new Date(1934, 1, 27),
+		to: new Date(1945, 4, 8),
+		name: "1. Weihnachtsfeiertag",
+		date: [12, 25],
+	},
+	{
+		from: new Date(1934, 1, 27),
+		to: new Date(1945, 4, 8),
+		name: "2. Weihnachtsfeiertag",
+		date: [12, 26],
 	},
 
 	{
@@ -129,6 +220,20 @@ const HOLIDAYS = [
 
 /**
  * @param {number} year -
+ * @returns {[number, number]}
+ */
+const advent = (year) => {
+	let a = new Date(year, 11, 25);
+	while (a.getDay() !== 0) {
+		a = new Date(a.valueOf() - MILLISECONDS.ONE_DAY);
+	}
+	const b = new Date(a.valueOf() - MILLISECONDS.ONE_WEEK * 3);
+	return [b.getMonth() + 1, b.getDate()];
+};
+
+/**
+ * @param {number} year -
+ * @returns {[number, number]}
  */
 const spencer = (year) => {
 	const a = year % 19;
@@ -150,15 +255,24 @@ const spencer = (year) => {
 
 /**
  * @param {number} year -
+ * @returns {Array<[Date, string]>}
  */
 const holidays = (year) => {
 	const start = new Date(year, 0);
 	const end = new Date(year + 1, 0);
+	/** @type {Array<[Date, string]>} */
 	const result = [];
 	for (const _ of HOLIDAYS) {
-		if (_.from < start && (_.to === undefined || end < _.to)) {
+		// biome-ignore lint/suspicious/noDebugger: Debugging is a lot of fun.
+		if (_.debug === year) debugger;
+		if (_.from <= start && (_.to === undefined || end <= _.to)) {
 			const indices = typeof _.date === "function" ? _.date(year) : _.date;
-			result.push([new Date(year, indices[0] - 1, indices[1]), _.name]);
+			result.push(
+				/** @type {[Date, string]} */ ([
+					new Date(year, indices[0] - 1, indices[1]),
+					_.name,
+				]),
+			);
 		}
 	}
 	return result;
@@ -179,10 +293,13 @@ const timeline = {
 	records: new Array(yearCount)
 		.fill(0, 0, yearCount)
 		.flatMap((_, index) =>
-			holidays(startYear + index).map((_) => [
-				_[0],
-				{ title: `${_[1]} ${startYear + index}` },
-			]),
+			holidays(startYear + index).map(
+				(_) =>
+					/** @type {[number, {title:string}]} */ ([
+						_[0].valueOf(),
+						{ title: `${_[1]} ${startYear + index}` },
+					]),
+			),
 		),
 };
 
