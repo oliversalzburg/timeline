@@ -5,7 +5,7 @@ ifneq "$(CI)" ""
 endif
 
 START ?= 1980
-END ?= 2035
+END ?= 2000
 ORIGIN ?= 1983-12-15
 
 _DECADES := $(foreach _, $(shell seq $(START) 10 $(END)), $(ORIGIN)_$(START)_$(_))
