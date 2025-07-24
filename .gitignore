@@ -1,5 +1,6 @@
 _site/
 contrib/fonts/
+contrib/openmoji-svg-color/
 coverage/
 identities/
 lib/

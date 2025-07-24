@@ -276,7 +276,7 @@ const HOLIDAYS = [
 		date: (/** @type {number} */ year) => {
 			const easter = spencer(year);
 			let _ = new Date(year, easter[0] - 1, easter[1]);
-			// Forward 49 days days
+			// Forward 49 days
 			_ = new Date(_.valueOf() + MILLISECONDS.ONE_DAY * 49);
 			return [_.getMonth() + 1, _.getDate()];
 		},
@@ -288,7 +288,7 @@ const HOLIDAYS = [
 		date: (/** @type {number} */ year) => {
 			const easter = spencer(year);
 			let _ = new Date(year, easter[0] - 1, easter[1]);
-			// Forward 50 days days
+			// Forward 50 days
 			_ = new Date(_.valueOf() + MILLISECONDS.ONE_DAY * 50);
 			return [_.getMonth() + 1, _.getDate()];
 		},
@@ -379,7 +379,7 @@ const HOLIDAYS = [
 		date: (/** @type {number} */ year) => {
 			const easter = spencer(year);
 			let _ = new Date(year, easter[0] - 1, easter[1]);
-			// Forward 39 days days
+			// Forward 39 days
 			_ = new Date(_.valueOf() + MILLISECONDS.ONE_DAY * 39);
 			return [_.getMonth() + 1, _.getDate()];
 		},
@@ -390,7 +390,7 @@ const HOLIDAYS = [
 		date: (/** @type {number} */ year) => {
 			const easter = spencer(year);
 			let _ = new Date(year, easter[0] - 1, easter[1]);
-			// Forward 49 days days
+			// Forward 49 days
 			_ = new Date(_.valueOf() + MILLISECONDS.ONE_DAY * 49);
 			return [_.getMonth() + 1, _.getDate()];
 		},
@@ -401,7 +401,7 @@ const HOLIDAYS = [
 		date: (/** @type {number} */ year) => {
 			const easter = spencer(year);
 			let _ = new Date(year, easter[0] - 1, easter[1]);
-			// Forward 50 days days
+			// Forward 50 days
 			_ = new Date(_.valueOf() + MILLISECONDS.ONE_DAY * 50);
 			return [_.getMonth() + 1, _.getDate()];
 		},
