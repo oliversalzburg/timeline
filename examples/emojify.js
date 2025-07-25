@@ -147,8 +147,8 @@ const PREFIXES = {
 let svgPrefixes = content;
 for (const [prefix, config] of Object.entries(PREFIXES)) {
 	svgPrefixes = svgPrefixes.replaceAll(
-		new RegExp(`<${prefix}\u{00A0}(.+)>;`, "gu"),
-		`<<TABLE><TR><TD FIXEDSIZE="TRUE" HEIGHT="25" WIDTH="25"><IMG SCALE="TRUE" SRC="${config.src}"/></TD><TD>\$1</TD></TR></TABLE>>;`,
+		new RegExp(`<${prefix}.*\u{00A0}(.+)>;`, "gu"),
+		`<<TABLE BORDER="0" CELLBORDER="0"><TR><TD FIXEDSIZE="TRUE" WIDTH="30"><IMG SRC="${config.src}"/></TD><TD FIXEDSIZE="TRUE" WIDTH="10"></TD><TD>\$1</TD></TR></TABLE>>;`,
 	);
 	copyFileSync(join(assets, config.src), join(contentLocation, config.src));
 }
