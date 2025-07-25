@@ -66,9 +66,25 @@ export const uniquifyRecords = (
 			continue;
 		}
 		counts.set(entry.title, (count ?? 0) - 1);
-		result.push([timestamp, { title: `${entry.title} 🔁${(count ?? 0) - 1}` }]);
+		const date = new Date(timestamp);
+		const year = date.getFullYear().toString();
+		const month = date.getMonth() + 1;
+		const day = date.getDate();
+		result.push([
+			timestamp,
+			{
+				title: entry.title.endsWith(year)
+					? entry.title.endsWith(`${year}-${month}`)
+						? `${entry.title} ${year}-${month}-${day}`
+						: `${entry.title} ${year}-${month}`
+					: `${entry.title} ${year}`,
+			},
+		]);
 	}
-	return result.reverse();
+	const duplicates = counts
+		.values()
+		.reduce((sum, count) => sum + (count - 1), 0);
+	return 0 < duplicates ? uniquifyRecords(result.reverse()) : result.reverse();
 };
 
 export const sort = (timeline: Timeline): Timeline => {
