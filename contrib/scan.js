@@ -5,6 +5,7 @@ import { createWriteStream, unlinkSync } from "node:fs";
 import { readdir, stat } from "node:fs/promises";
 import { join } from "node:path";
 import { setTimeout } from "node:timers/promises";
+import { formatMilliseconds } from "@oliversalzburg/js-utils/format/milliseconds.js";
 
 // Parse command line arguments.
 const args = process.argv
@@ -47,10 +48,7 @@ const scan = async () => {
 
 	for (const graph of graphsRequested) {
 		if (jobs.has(graph.name)) {
-			if (jobs.get(graph.name).status === "complete") {
-				process.stdout.write(
-					`${new Date().toISOString()} Job '${job.graph.name}' is complete and should be cleared.\n`,
-				);
+			if (jobs.get(graph.name).status === "pending") {
 				changes = true;
 			}
 			continue;
@@ -58,9 +56,9 @@ const scan = async () => {
 
 		const filename = join(target, graph.name);
 		const stats = await stat(filename);
-		if (Date.now() - stats.mtime < 1000 * 30) {
+		if (Date.now() - stats.mtime < 1000 * 15) {
 			process.stdout.write(
-				`${new Date().toISOString()} Found new request '${filename}', but the file was recently modified. Request is skipped during this scan.\n`,
+				`${new Date().toISOString()} New request '${filename}' was recently modified (<15s). Request is skipped during this scan.\n`,
 			);
 			continue;
 		}
@@ -106,6 +104,7 @@ const manage = async () => {
 			jobs.delete(job);
 			continue;
 		}
+
 		if (job.status !== "pending") {
 			continue;
 		}
@@ -121,6 +120,7 @@ const manage = async () => {
 		];
 
 		job.status = "executing";
+		job.started = Date.now();
 		process.stdout.write(
 			`${new Date().toISOString()} Executing '${command} ${args.join(" ")}'...\n`,
 		);
@@ -130,17 +130,31 @@ const manage = async () => {
 		job.process = processHandle;
 
 		const logStream = createWriteStream(`${job.streamname}.log`);
+		logStream.once("error", (_error) => {
+			process.stdout.write(
+				`${new Date().toISOString()} Error on log stream for '${command} ${args.join(" ")}'! Expect failure.\n`,
+			);
+		});
+
 		processHandle.stdout.pipe(logStream);
 		processHandle.stderr.pipe(logStream);
 
 		logStream.write(`Process started ${new Date().toISOString()}\n`);
 
 		processHandle.on("exit", (code) => {
-			logStream.write(`Process ended ${new Date().toISOString()}\n`);
-			logStream.close();
+			if (!logStream.closed && !logStream.destroyed && !logStream.errored) {
+				try {
+					logStream.write(`Process ended ${new Date().toISOString()}\n`);
+					logStream.close();
+				} catch (_fault) {
+					process.stdout.write(
+						`${new Date().toISOString()} Error finalizing log stream for '${command} ${args.join(" ")}'!\n`,
+					);
+				}
+			}
 
 			process.stdout.write(
-				`${new Date().toISOString()} Process '${command} ${args.join(" ")}' exited with code ${code}.\n`,
+				`${new Date().toISOString()} Process '${command} ${args.join(" ")}' exited with code ${code} after ${formatMilliseconds(Date.now() - job.started)}.\n`,
 			);
 
 			job.status = code === 0 ? "complete" : "failed";
@@ -148,6 +162,9 @@ const manage = async () => {
 				unlinkSync(job.filename);
 			}
 		});
+
+		// Only start one job per iteration.
+		//break;
 	}
 
 	managementLock = false;

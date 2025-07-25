@@ -15,7 +15,7 @@ html {
 }
 
 body {
-	background: rgb(0, 0, 0);
+	background: rgb(10, 10, 10);
 	opacity: 1;
 	transition: ease-in-out opacity 2s;
 

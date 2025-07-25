@@ -138,4 +138,23 @@ describe("Renderer", () => {
 			"Snapshot regression detected.",
 		).to.be.false;
 	});
+
+	it("should render prefixes correctly", function () {
+		const now = Date.UTC(2025, 5, 15);
+		const artifact = render(
+			[
+				{
+					meta: { id: "test", private: true, rank: 1, prefix: "🎭" },
+					records: [[now, { title: "Now" }]],
+				},
+			],
+			{
+				now,
+			},
+		);
+		expect(
+			snapshotHasRegression(snapshotIdentity(this, ".gv"), artifact.graph),
+			"Snapshot regression detected.",
+		).to.be.false;
+	});
 });

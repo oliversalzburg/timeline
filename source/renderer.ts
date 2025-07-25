@@ -232,9 +232,9 @@ export const render = (
 			const dateString = options?.dateRenderer
 				? options.dateRenderer(timestamp)
 				: new Date(timestamp).toDateString();
-			const label = makeHtmlString(
-				`${(0 < prefixes.length ? `${prefixes} ` : "") + entry.title}\\n${dateString}`,
-			);
+			const label = `${0 < prefixes.length ? `${prefixes}\u00A0` : ""}${makeHtmlString(
+				`${entry.title}\\n${dateString}`,
+			)}`;
 
 			const style = mustExist(styleSheet.get(rank(leader)));
 

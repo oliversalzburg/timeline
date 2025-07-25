@@ -14,7 +14,8 @@ _SEGMENT := $(ORIGIN)_$(START)_$(END)
 OUTPUT ?= output/$(_SEGMENT)
 PREFIX ?= universe-
 
-_UNIVERSE := $(OUTPUT)/$(PREFIX)$(_SEGMENT)
+_UNIVERSE_NAME := $(PREFIX)$(_SEGMENT)
+_UNIVERSE := $(OUTPUT)/$(_UNIVERSE_NAME)
 _TIMELINES := $(wildcard timelines/* ~/timelines/*.yml)
 _DECADES_REQUESTS := $(foreach _, $(_DECADES), output/$(PREFIX)$(_).request)
 
@@ -87,6 +88,9 @@ schema:
 _site output $(OUTPUT):
 	mkdir -p $@
 
+output/images: output
+	node --enable-source-maps contrib/prepare-emoji.js
+
 decades: output $(_DECADES_REQUESTS)
 $(_DECADES_REQUESTS): output
 	touch $@
@@ -100,11 +104,11 @@ universe: $(_UNIVERSE).zen.html
 %.min.svg: %.svg
 	scour -i $^ -o $@ $(_SCOUR_FLAGS)
 
-$(foreach _, $(_VARIANTS), $(_UNIVERSE).$(_)) &: $(_UNIVERSE).gv
-	dot $(_DOT_FLAGS) $(_UNIVERSE).gv
-	mv $(_UNIVERSE).gv.cairo.svg $(_UNIVERSE).cairo.svg
-	mv $(_UNIVERSE).gv.svg $(_UNIVERSE).default.svg
-	mv $(_UNIVERSE).gv.png $(_UNIVERSE).png
+$(foreach _, $(_VARIANTS), $(_UNIVERSE).$(_)) &: $(_UNIVERSE).gv $(_UNIVERSE).img.gv
+	cd $(OUTPUT) && dot $(_DOT_FLAGS) $(_UNIVERSE_NAME).img.gv
+	mv $(_UNIVERSE).img.gv.cairo.svg $(_UNIVERSE).cairo.svg
+	mv $(_UNIVERSE).img.gv.svg $(_UNIVERSE).default.svg
+	mv $(_UNIVERSE).img.gv.png $(_UNIVERSE).png
 
 $(_UNIVERSE).gv: lib node_modules | $(OUTPUT)
 	node --enable-source-maps examples/universe.js \
@@ -113,6 +117,11 @@ $(_UNIVERSE).gv: lib node_modules | $(OUTPUT)
 		--skip-after=$(END) \
 		--output=$(_UNIVERSE).gv \
 		$(_TIMELINES)
+
+$(_UNIVERSE).img.gv: output/images $(_UNIVERSE).gv | $(OUTPUT)
+	node --enable-source-maps examples/emojify.js \
+		--assets=output/images \
+		--target=$(_UNIVERSE).gv
 
 lib/timeline.js: node_modules | lib
 	node build.js

@@ -239,6 +239,7 @@ for (const [color, timelines] of [...paletteMeta.assignments.entries()].sort(
 
 const rankCount = new Set(ranks.values()).size;
 process.stderr.write(`Style sheet generated for ${rankCount} ranks.\n`);
+
 process.stderr.write(`Writing graph...\n`);
 writeFileSync(outputPath, dotGraph.graph);
 process.stderr.write(`Writing graph info...\n`);

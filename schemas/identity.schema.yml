@@ -1,0 +1,129 @@
+---
+$schema: https://json-schema.org/draft-07/schema
+$id: https://example.com/draft/identity
+title: Identity
+description: Defines a unique identity of a person, place, or object.
+definitions:
+  spoken:
+    type: object
+    title: Spoken Word
+    description: |-
+      Information that is transferred through an articulation-interpretation-loop
+      between persons. This can also be "word of mouth" type information.
+
+      Key is, that the information is not physically persisted.
+    properties:
+      speech:
+        type: string
+      paraphrased:
+        type: boolean
+        default: true
+      recorded:
+        type: boolean
+        default: false
+  written:
+    type: object
+    title: Hand-Written
+    description: |-
+      Information that was articulated through glyphs on a surface. This can also
+      be a drawing that was interpreted.
+
+      Key is, that a person drew something by hand.
+    properties:
+      glyphs:
+        type: string
+  typed:
+    type: object
+    title: Mechanical Type
+    description: |-
+      Information that was persisted onto a surface, like paper, by means of an
+      assisting device, like a typewriter.
+
+      Key is, that there is a consistent type that has a physical imprint on the
+      surface.
+    properties:
+      type:
+        type: string
+  printed:
+    type: object
+    title: Printed Type
+    description: |-
+      Information that was persisted by an automaton onto any surface by means
+      of pigment transfer. Consistent type is usually implied.
+
+      Key is, that no person is involved in the immediate transfer process.
+    properties:
+      text:
+        type: string
+      publication:
+        type: string
+  digital:
+    type: object
+    title: Digital Ephemeral Copy
+    description: Information obtained from a digital source, commonly the internet.
+    properties:
+      copy:
+        type: string
+      url:
+        type: string
+  source:
+    type: object
+    title: Origin of Information
+    oneOf:
+      - $ref: '#/definitions/spoken'
+      - $ref: '#/definitions/written'
+      - $ref: '#/definitions/typed'
+      - $ref: '#/definitions/printed'
+      - $ref: '#/definitions/digital'
+  time:
+    type: object
+    title: Point in Time
+  location:
+    type: object
+    title: Point in Space
+  clue:
+    type: object
+    title: A piece of information.
+    properties:
+      earliest:
+        type: string
+      latest:
+        type: string
+  name:
+    type: object
+    title: Official name assigned to entity.
+    description: |-
+      This is not a name for you to make up.
+      You want this name to be as publicly recognizable as possible.
+    properties:
+      inherited:
+        type: string
+        title: Origin Name
+        description: When referring to a person, this is commonly known as "last" or "family" name in modern times.
+      given:
+        type: string
+        title: Personal Name
+        description: When referring to a person, this is commonly known as the "first" name.
+      chosen:
+        type: string
+        title: Chosen Name
+        description: |-
+          Alternative, or part of a name, that may or may not be part of the officially documented name.
+          For a person, this can be a shorter version of their given name, or sometimes a nickname.
+type: object
+additionalProperties: false
+properties:
+  id:
+    type: string
+  source:
+    type: array
+    title: Origin of Information
+    items:
+      anyOf:
+        - $ref: '#/definitions/spoken'
+        - $ref: '#/definitions/written'
+        - $ref: '#/definitions/typed'
+        - $ref: '#/definitions/printed'
+        - $ref: '#/definitions/digital'
+required:
+  - id

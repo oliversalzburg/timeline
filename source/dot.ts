@@ -207,9 +207,7 @@ export const dot = () => {
 		}
 		const id = ++nextNodeIndex;
 		nodeIds.set(_, id);
-		renderRaw(
-			`${id} [${makePropertyString({ label: makeHtmlString(_), ...options })};]`,
-		);
+		renderRaw(`${id} [${makePropertyString({ label: _, ...options })};]`);
 	};
 
 	const renderLink = (
