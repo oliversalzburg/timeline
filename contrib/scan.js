@@ -42,33 +42,38 @@ const scan = async () => {
 	scanPending = true;
 
 	const entries = await readdir(target, { withFileTypes: true });
-	const files = entries.filter((_) => _.isFile());
-	const graphsRequested = files.filter((_) => _.name.endsWith(".request"));
+	const files = entries.filter((_) => _.isFile()).map((_) => _.name);
+	const graphsRequested = files.filter((_) => _.endsWith(".request"));
 	let changes = false;
 
+	const allJobsRequested = [...jobs.keys()].every((key) =>
+		graphsRequested.includes(key),
+	);
+	if (!allJobsRequested) {
+		changes = true;
+	}
+
 	for (const graph of graphsRequested) {
-		if (jobs.has(graph.name)) {
-			if (jobs.get(graph.name).status === "pending") {
-				changes = true;
-			}
+		if (jobs.has(graph)) {
 			continue;
 		}
 
-		const filename = join(target, graph.name);
+		const filename = join(target, graph);
+		/*
 		const stats = await stat(filename);
 		if (Date.now() - stats.mtime < 1000 * 15) {
 			process.stdout.write(
 				`${new Date().toISOString()} New request '${filename}' was recently modified (<15s). Request is skipped during this scan.\n`,
 			);
 			continue;
-		}
+		}*/
 
-		const unfixed = graph.name.replace(/\.request$/, "");
+		const unfixed = graph.replace(/\.request$/, "");
 		const parts = unfixed.match(
 			/^universe-(?<origin>[^_]+)_(?<start>[^_]+)_(?<end>[^.]+)/,
 		);
 
-		jobs.set(graph.name, {
+		jobs.set(graph, {
 			graph,
 			status: "pending",
 			filename,
@@ -83,7 +88,7 @@ const scan = async () => {
 		});
 
 		process.stdout.write(
-			`${new Date().toISOString()} Registered new job '${graph.name}'.\n`,
+			`${new Date().toISOString()} Registered new job '${graph}'.\n`,
 		);
 		changes = true;
 	}
@@ -99,9 +104,9 @@ const manage = async () => {
 	}
 	managementLock = true;
 
-	for (const job of jobs.values()) {
+	for (const [graph, job] of jobs.entries()) {
 		if (job.status === "complete") {
-			jobs.delete(job);
+			jobs.delete(graph);
 			continue;
 		}
 
@@ -134,6 +139,7 @@ const manage = async () => {
 			process.stdout.write(
 				`${new Date().toISOString()} Error on log stream for '${command} ${args.join(" ")}'! Expect failure.\n`,
 			);
+			console.error(_error);
 		});
 
 		processHandle.stdout.pipe(logStream);

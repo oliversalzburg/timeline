@@ -11,5 +11,9 @@ const prefix = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>';
 const files = readdirSync(sourcePath);
 for (const file of files) {
 	const content = readFileSync(join(sourcePath, file), "utf8");
-	writeFileSync(join(targetPath, file), `${prefix}\n${content}`);
+	const normalized = content.replace(
+		/<svg[^>]+>/,
+		'<svg id="emoji" width="72" height="72" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg">',
+	);
+	writeFileSync(join(targetPath, file), `${prefix}\n${normalized}`);
 }

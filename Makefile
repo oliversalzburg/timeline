@@ -25,6 +25,7 @@ ifneq ($(DEBUG),)
 endif
 
 _VARIANTS := cairo.svg default.svg png
+_VARIANTS_IMG := $(patsubst %,img.%, $(_VARIANTS))
 _VARIANTS_PUBLISH := cairo.svg cairo.min.svg default.svg default.min.svg png
 _DOT_FLAGS := -O -Tpng -Tsvg -Tsvg:cairo
 ifneq ($(DEBUG),)
@@ -90,6 +91,7 @@ _site output $(OUTPUT):
 
 output/images: output
 	node --enable-source-maps contrib/prepare-emoji.js
+	cp contrib/wikimedia/* output/images/
 
 decades: output $(_DECADES_REQUESTS)
 $(_DECADES_REQUESTS): output
@@ -97,18 +99,23 @@ $(_DECADES_REQUESTS): output
 
 universe: $(_UNIVERSE).zen.html
 
-%.zen.html %.system.html %.compat.html %.safe.html &: $(foreach _, $(_VARIANTS_PUBLISH), $(_UNIVERSE).$(_)) $(_UNIVERSE).gv
+%.zen.html %.system.html %.compat.html %.safe.html &: $(foreach _, $(_VARIANTS_PUBLISH), $(_UNIVERSE).$(_) $(_UNIVERSE).img.$(_)) $(_UNIVERSE).gv $(_UNIVERSE).img.gv
 	node examples/build-site.js --output=$(OUTPUT) $(_UNIVERSE).gv
 	$(_PRETTY_BIOME)
 
 %.min.svg: %.svg
 	scour -i $^ -o $@ $(_SCOUR_FLAGS)
 
-$(foreach _, $(_VARIANTS), $(_UNIVERSE).$(_)) &: $(_UNIVERSE).gv $(_UNIVERSE).img.gv
+$(foreach _, $(_VARIANTS), $(_UNIVERSE).$(_)) &: $(_UNIVERSE).gv
+	cd $(OUTPUT) && dot $(_DOT_FLAGS) $(_UNIVERSE_NAME).gv
+	mv $(_UNIVERSE).gv.cairo.svg $(_UNIVERSE).cairo.svg
+	mv $(_UNIVERSE).gv.svg $(_UNIVERSE).default.svg
+	mv $(_UNIVERSE).gv.png $(_UNIVERSE).png
+$(foreach _, $(_VARIANTS_IMG), $(_UNIVERSE).$(_)) &: $(_UNIVERSE).img.gv
 	cd $(OUTPUT) && dot $(_DOT_FLAGS) $(_UNIVERSE_NAME).img.gv
-	mv $(_UNIVERSE).img.gv.cairo.svg $(_UNIVERSE).cairo.svg
-	mv $(_UNIVERSE).img.gv.svg $(_UNIVERSE).default.svg
-	mv $(_UNIVERSE).img.gv.png $(_UNIVERSE).png
+	mv $(_UNIVERSE).img.gv.cairo.svg $(_UNIVERSE).img.cairo.svg
+	mv $(_UNIVERSE).img.gv.svg $(_UNIVERSE).img.default.svg
+	mv $(_UNIVERSE).img.gv.png $(_UNIVERSE).img.png
 
 $(_UNIVERSE).gv: lib node_modules | $(OUTPUT)
 	node --enable-source-maps examples/universe.js \

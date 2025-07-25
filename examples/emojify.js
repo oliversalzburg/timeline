@@ -92,11 +92,6 @@ const PREFIXES = {
 		name: "sports medal",
 		src: "1F3C5.svg",
 	},
-	"\u{1F3F3}\u{FE0F}\u{200D}\u{1F7E5}": {
-		emoji: "🏳️‍🟥",
-		name: "red flag",
-		src: "1F3F3-FE0F-200D-1F7E5.svg",
-	},
 	"\u{1F4FA}": {
 		emoji: "📺",
 		name: "television",
@@ -142,13 +137,31 @@ const PREFIXES = {
 		name: "latin cross",
 		src: "271D.svg",
 	},
+	ddr: {
+		name: "ddr",
+		src: "Flag_of_East_Germany.svg",
+	},
+	"german-reich": {
+		name: "german reich",
+		src: "Flag_of_Germany_(1867–1918).svg",
+	},
+	nazi: {
+		name: "nazi germany",
+		src: "Flag_of_Germany_(1935–1945).svg",
+	},
 };
 
 let svgPrefixes = content;
 for (const [prefix, config] of Object.entries(PREFIXES)) {
+	const cells = [
+		`<TD FIXEDSIZE="TRUE" WIDTH="24" HEIGHT="24"><IMG SRC="${config.src}"/></TD>`,
+		`<TD>\$1</TD>`,
+	];
+	const row = `<TR>${cells.join()}</TR>`;
+	const table = `<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0" CELLSPACING="5">${row}</TABLE>`;
 	svgPrefixes = svgPrefixes.replaceAll(
 		new RegExp(`<${prefix}.*\u{00A0}(.+)>;`, "gu"),
-		`<<TABLE BORDER="0" CELLBORDER="0"><TR><TD FIXEDSIZE="TRUE" WIDTH="30"><IMG SRC="${config.src}"/></TD><TD FIXEDSIZE="TRUE" WIDTH="10"></TD><TD>\$1</TD></TR></TABLE>>;`,
+		`<${table}>;`,
 	);
 	copyFileSync(join(assets, config.src), join(contentLocation, config.src));
 }

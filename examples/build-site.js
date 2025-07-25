@@ -33,15 +33,29 @@ if (!graphPath.endsWith(".gv")) {
 	process.exit(1);
 }
 
+/** @type {Record<string,{embedPrefixes:boolean; svgSource:string; withJs:boolean; starfield:boolean;}>} */
 const VARIANTS = {
 	// Intended for exploration.
-	zen: { svgSource: ".default.svg", withJs: true, starfield: true },
-	// Default. Retains text, has JS navigation.
-	system: { svgSource: ".default.svg", withJs: true, starfield: false },
-	// No JS at all. Intended as fallback in sharing scenarios.
-	compat: { svgSource: ".default.min.svg", withJs: false, starfield: false },
+	zen: {
+		embedPrefixes: true,
+		svgSource: ".default.svg",
+		withJs: true,
+		starfield: true,
+	},
+	// Retains text, has JS navigation.
+	default: {
+		embedPrefixes: true,
+		svgSource: ".default.svg",
+		withJs: true,
+		starfield: false,
+	},
 	// Best-effort to produce something viewable.
-	safe: { svgSource: ".cairo.min.svg", withJs: false, starfield: false },
+	static: {
+		embedPrefixes: true,
+		svgSource: ".cairo.min.svg",
+		withJs: false,
+		starfield: false,
+	},
 };
 
 const graphName = basename(graphPath).replace(/\.gv$/, "");
@@ -55,7 +69,13 @@ for (const [variant, settings] of Object.entries(VARIANTS)) {
 			`${graphName}.${variant}.html`,
 		),
 		info: readFileSync(graphPath.replace(/\.gv$/, ".info"), "utf-8"),
-		svg: readFileSync(graphPath.replace(/\.gv$/, settings.svgSource), "utf-8"),
+		svg: readFileSync(
+			graphPath.replace(
+				/\.gv$/,
+				(settings.embedPrefixes ? ".img" : "") + settings.svgSource,
+			),
+			"utf-8",
+		),
 	});
 }
 
