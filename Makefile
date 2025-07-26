@@ -35,9 +35,9 @@ endif
 _PRETTY_BIOME := npm exec -- biome check --write --no-errors-on-unmatched
 
 
-default: build docs
+default: build docs universe
 
-build: lib/timeline.js universe
+build: lib/timeline.js
 
 clean:
 	rm --force --recursive _site lib

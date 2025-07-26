@@ -2,7 +2,7 @@ import { expect } from "chai";
 import { describe, it } from "mocha";
 import { random } from "./fixtures/documents.js";
 import { load } from "./loader.js";
-import { add, concat, map, sort } from "./operator.js";
+import { add, concat, map, sort, uniquify } from "./operator.js";
 import type { TimelineDocument } from "./types.js";
 
 /**
@@ -95,5 +95,55 @@ describe("Operator - sort", () => {
 			);
 			previous = adjusted.records[index][0];
 		}
+	});
+});
+
+describe("Operator - uniquify", () => {
+	it("should append year to deduplicate", () => {
+		const artifact = uniquify({
+			meta: { id: "test", private: true },
+			records: [
+				[new Date(2000, 0, 1).valueOf(), { title: "Now" }],
+				[new Date(2001, 0, 1).valueOf(), { title: "Now" }],
+				[new Date(2002, 0, 1).valueOf(), { title: "Now" }],
+				[new Date(2003, 0, 1).valueOf(), { title: "Now" }],
+			],
+		});
+		expect(artifact.records[0][1].title).to.equal("Now 2000");
+		expect(artifact.records[1][1].title).to.equal("Now 2001");
+		expect(artifact.records[2][1].title).to.equal("Now 2002");
+		expect(artifact.records[3][1].title).to.equal("Now 2003");
+	});
+
+	it("should append year+month to deduplicate", () => {
+		const artifact = uniquify({
+			meta: { id: "test", private: true },
+			records: [
+				[new Date(2000, 0, 1).valueOf(), { title: "Now" }],
+				[new Date(2000, 1, 1).valueOf(), { title: "Now" }],
+				[new Date(2000, 2, 1).valueOf(), { title: "Now" }],
+				[new Date(2000, 3, 1).valueOf(), { title: "Now" }],
+			],
+		});
+		expect(artifact.records[0][1].title).to.equal("Now 01.2000");
+		expect(artifact.records[1][1].title).to.equal("Now 02.2000");
+		expect(artifact.records[2][1].title).to.equal("Now 03.2000");
+		expect(artifact.records[3][1].title).to.equal("Now 04.2000");
+	});
+
+	it("should append year+month+day to deduplicate", () => {
+		const artifact = uniquify({
+			meta: { id: "test", private: true },
+			records: [
+				[new Date(2000, 0, 1).valueOf(), { title: "Now" }],
+				[new Date(2000, 0, 2).valueOf(), { title: "Now" }],
+				[new Date(2000, 0, 3).valueOf(), { title: "Now" }],
+				[new Date(2000, 0, 4).valueOf(), { title: "Now" }],
+			],
+		});
+		expect(artifact.records[0][1].title).to.equal("Now 01.01.2000");
+		expect(artifact.records[1][1].title).to.equal("Now 02.01.2000");
+		expect(artifact.records[2][1].title).to.equal("Now 03.01.2000");
+		expect(artifact.records[3][1].title).to.equal("Now 04.01.2000");
 	});
 });

@@ -52,39 +52,77 @@ export const uniquify = (timeline: Timeline): Timeline => {
 export const uniquifyRecords = (
 	records: Array<TimelineRecord>,
 ): Array<TimelineRecord> => {
+	const result = [...records];
 	const counts = new Map<string, number>();
-	for (const record of records) {
+	for (const record of result) {
 		const [, entry] = record;
 		counts.set(entry.title, (counts.get(entry.title) ?? 0) + 1);
 	}
-	const result = new Array<TimelineRecord>();
-	for (const record of records.toReversed()) {
-		const [timestamp, entry] = record;
-		const count = counts.get(entry.title);
-		if (count === 1) {
-			result.push([timestamp, entry]);
-			continue;
-		}
-		counts.set(entry.title, (count ?? 0) - 1);
-		const date = new Date(timestamp);
+	const duplicateTitles = new Set(
+		counts
+			.entries()
+			.filter(([, count]) => 1 < count)
+			.map(([name]) => name),
+	);
+	let subjects = result.filter(([, entry]) => duplicateTitles.has(entry.title));
+
+	// Append year to subjects.
+	counts.clear();
+	for (const subject of subjects) {
+		const date = new Date(subject[0]);
 		const year = date.getFullYear().toString();
-		const month = date.getMonth() + 1;
-		const day = date.getDate();
-		result.push([
-			timestamp,
-			{
-				title: entry.title.endsWith(year)
-					? entry.title.endsWith(`${year}-${month}`)
-						? `${entry.title} ${year}-${month}-${day}`
-						: `${entry.title} ${year}-${month}`
-					: `${entry.title} ${year}`,
-			},
-		]);
+		subject[1].title = subject[1].title.replace(/$/, ` ${year}`);
+		counts.set(subject[1].title, (counts.get(subject[1].title) ?? 0) + 1);
 	}
-	const duplicates = counts
-		.values()
-		.reduce((sum, count) => sum + (count - 1), 0);
-	return 0 < duplicates ? uniquifyRecords(result.reverse()) : result.reverse();
+
+	const duplicateTitlesWithYear = new Set(
+		counts
+			.entries()
+			.filter(([, count]) => 1 < count)
+			.map(([name]) => name),
+	);
+	subjects = result.filter(([, entry]) =>
+		duplicateTitlesWithYear.has(entry.title),
+	);
+
+	// Append month to subjects.
+	counts.clear();
+	for (const subject of subjects) {
+		const date = new Date(subject[0]);
+		const year = date.getFullYear().toString();
+		const month = (date.getMonth() + 1).toFixed().padStart(2, "0");
+		subject[1].title = subject[1].title.replace(
+			new RegExp(` ${year}$`),
+			` ${month}.${year}`,
+		);
+		counts.set(subject[1].title, (counts.get(subject[1].title) ?? 0) + 1);
+	}
+
+	const duplicateTitlesWithMonth = new Set(
+		counts
+			.entries()
+			.filter(([, count]) => 1 < count)
+			.map(([name]) => name),
+	);
+	subjects = result.filter(([, entry]) =>
+		duplicateTitlesWithMonth.has(entry.title),
+	);
+
+	// Append day to subjects.
+	counts.clear();
+	for (const subject of subjects) {
+		const date = new Date(subject[0]);
+		const year = date.getFullYear().toString();
+		const month = (date.getMonth() + 1).toFixed().padStart(2, "0");
+		const day = date.getDate().toFixed().padStart(2, "0");
+		subject[1].title = subject[1].title.replace(
+			new RegExp(` ${month}.${year}$`),
+			` ${day}.${month}.${year}`,
+		);
+		counts.set(subject[1].title, (counts.get(subject[1].title) ?? 0) + 1);
+	}
+
+	return result;
 };
 
 export const sort = (timeline: Timeline): Timeline => {
