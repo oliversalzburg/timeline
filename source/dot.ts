@@ -149,6 +149,7 @@ export interface NodeProperties {
 	shape: Shape;
 	style: NodeStyle | string;
 	tooltip: string;
+	ts: number;
 	URL: string;
 	width: number;
 }

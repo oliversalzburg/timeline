@@ -2,7 +2,7 @@
 
 import { spawn } from "node:child_process";
 import { createWriteStream, unlinkSync } from "node:fs";
-import { readdir, stat } from "node:fs/promises";
+import { readdir } from "node:fs/promises";
 import { join } from "node:path";
 import { setTimeout } from "node:timers/promises";
 import { formatMilliseconds } from "@oliversalzburg/js-utils/format/milliseconds.js";

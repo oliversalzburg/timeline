@@ -125,7 +125,10 @@ $(_UNIVERSE).gv: lib node_modules | $(OUTPUT)
 		--output=$(_UNIVERSE).gv \
 		$(_TIMELINES)
 
-$(_UNIVERSE).img.gv: output/images $(_UNIVERSE).gv | $(OUTPUT)
+$(_UNIVERSE).p1.gv: $(_UNIVERSE).gv
+	dot -Tdot -Gphase=1 $(_UNIVERSE).gv -o $(_UNIVERSE).p1.gv
+
+$(_UNIVERSE).img.gv: output/images $(_UNIVERSE).gv $(_UNIVERSE).p1.gv | $(OUTPUT)
 	node --enable-source-maps examples/emojify.js \
 		--assets=output/images \
 		--target=$(_UNIVERSE).gv

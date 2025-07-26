@@ -87,10 +87,30 @@ const PREFIXES = {
 		name: "performing arts",
 		src: "1F3AD.svg",
 	},
+	"\u{1F3AE}": {
+		emoji: "🎮",
+		name: "video game",
+		src: "1F3AE.svg",
+	},
+	"\u{1F3B6}": {
+		emoji: "🎶",
+		name: "musical notes",
+		src: "1F3B6.svg",
+	},
 	"\u{1F3C5}": {
 		emoji: "🏅",
 		name: "sports medal",
 		src: "1F3C5.svg",
+	},
+	"\u{1F3D7}": {
+		emoji: "🏗",
+		name: "building construction",
+		src: "1F3D7.svg",
+	},
+	"\u{1F48A}": {
+		emoji: "💊",
+		name: "pill",
+		src: "1F48A.svg",
 	},
 	"\u{1F4FA}": {
 		emoji: "📺",
@@ -137,6 +157,11 @@ const PREFIXES = {
 		name: "latin cross",
 		src: "271D.svg",
 	},
+	"atom-bomb": {
+		emoji: "",
+		name: "atom bomb",
+		src: "E2DA.svg",
+	},
 	ddr: {
 		name: "ddr",
 		src: "Flag_of_East_Germany.svg",
@@ -148,6 +173,11 @@ const PREFIXES = {
 	nazi: {
 		name: "nazi germany",
 		src: "Flag_of_Germany_(1935–1945).svg",
+	},
+	messe: {
+		emoji: "",
+		name: "collaboration",
+		src: "E249.svg",
 	},
 };
 

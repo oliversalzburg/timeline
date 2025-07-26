@@ -79,7 +79,7 @@ const HOLIDAYS = [
 	{
 		from: new Date(1934, 1, 27),
 		to: new Date(1945, 4, 8),
-		name: "Nationaler Feiertag des deutschen Volkes",
+		name: "Nationaler Feiertag des\ndeutschen Volkes",
 		date: [5, 1],
 	},
 	{
@@ -140,7 +140,7 @@ const HOLIDAYS = [
 	{
 		from: new Date(1939, 0),
 		to: new Date(1945, 4, 8),
-		name: "Gedenktag für die Gefallenen der Bewegung",
+		name: "Gedenktag für die Gefallenen\nder Bewegung",
 		date: [11, 9],
 	},
 	{

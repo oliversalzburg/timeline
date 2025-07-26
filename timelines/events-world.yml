@@ -3,10 +3,16 @@ color: transparent
 prefix: 🌍
 private: false
 timeline:
-  1914-06-29: Assassination of Archduke Franz Ferdinand
+  1914-06-29: |-
+    Assassination of
+    Archduke Franz Ferdinand
   1914-07-28: Start of World War I
-  1914-10-30: Start of Middle Eastern Theatre of World War I
-  1918-10-30: End of Middle Eastern Theatre of World War I
+  1914-10-30: |-
+    Start of Middle Eastern
+    Theatre of World War I
+  1918-10-30: |-
+    End of Middle Eastern
+    Theatre of World War I
   1918-11-11: End of World War I
   1939-09-01: Start of World War II
   1941-09-29: First Moscow Conference
@@ -20,7 +26,8 @@ timeline:
     Planning Post-War Peace
   1945-07-26: |-
     Potsdam Declaration
-    Proclamation Defining Terms for Japanese Surrender
+    Proclamation Defining
+    Terms for Japanese Surrender
   1945-08-02: |-
     End of Potsdam Conference
   1945-08-15: Japan announces Unconditional Surrender
@@ -30,8 +37,10 @@ timeline:
   1948-06-24: Start of Berlin Blockade
   1949-05-12: End of Berlin Blockade
   1951-05-25: |-
-    Donald Maclean & Guy Burgess Defect to Soviet Union
-    Homosexual Tendencies Considered National Security Risk
+    Donald Maclean & Guy Burgess
+    Defect to Soviet Union
+    Homosexual Tendencies Considered
+    National Security Risk
   1962-09-16: Start of Cuban Misslie Crisis
   1962-09-28: End of Cuban Misslie Crisis
   1963-08-01: |-
@@ -40,7 +49,8 @@ timeline:
   1963-08-05: |-
     Partial Nuclear Test Ban Treaty Signed
     Treaty Banning Nuclear Weapon Tests
-    in the Atmosphere, in Outer Space and Under Water
+    in the Atmosphere, in
+    Outer Space and Under Water
   1963-10-10: |-
     Partial Nuclear Test Ban Treaty Effective
   1970-01-01: UNIX Time Epoch starts 00:00 UTC
@@ -58,17 +68,21 @@ timeline:
   1980-06-01: Cable News Network (CNN) Launches
   1980-08-01: |-
     Vigdís Finnbogadóttir 4th President of Iceland
-    World's 1st Democratically Directly Elected Female President
+    World's 1st Democratically
+    Directly Elected Female President
   1980-07-19: 1980 Summer Olympics Boycott
   1980-09-22: Iraqi Invasion of Iran (Iran-Iraq War)
   1980-09-30: |-
-    Digital Equipment Corporation, Intel & Xerox
-    Introduce DIX Standard for Ethernet (10 Mbit/s)
+    Digital Equipment Corporation,
+    Intel & Xerox
+    Introduce DIX Standard
+    for Ethernet (10 Mbit/s)
   1980-10-16: Most Recent Atmospheric Nuclear Weapons Test
   1980-12-08: |-
     ☠️ John Lennon (The Beatles)
     Shot and Killed
-  1982-10-15: Compact Disc Digital Audio (CD-DA) Released
+  1982-10-15: |-
+    Compact Disc Digital Audio (CD-DA) Released
   1983-09-27: Richard Stallman announces GNU Project
   1984-01-24: Steve Jobs Launches the Macintosh
   1986-03-01: |-
@@ -76,7 +90,8 @@ timeline:
     presented at Microsoft CD-ROM Conference
   1986-04-26: Chernobyl INES7 Disaster
   1987-09-10: |-
-    Montreal Protocol on Substances That Deplete the Ozone Layer
+    Montreal Protocol on Substances
+    That Deplete the Ozone Layer
     Outlaws Halogenated Hydrocarbons
   1989-02-25: GNU General Public License, version 1
   1989-06-05: Tank Man Photograph
@@ -92,7 +107,8 @@ timeline:
     United Nations General Assembly
   1997-06-11: First Cell-Phone Picture
   1999-04-01: |-
-    Bagger 293 (MAN TAKRAF RB293) 14,196 tons Vehicle
+    Bagger 293 (MAN TAKRAF RB293)
+    14,196 tons Vehicle
     Giant Bucket-Wheel Excavator
   2004-12-26: 2004 Indian Ocean 9.2 Earthquake and Tsunami
   2006-08-23: |-
@@ -101,7 +117,8 @@ timeline:
   2007-06-29: GNU General Public License, version 3
   2008-04-26: |-
     Fritzl Case
-    Child imprisoned at 18, held captive 24 years
+    Child imprisoned at 18,
+    held captive 24 years
   2010-02-27: 2010 Chile 8.8 Earthquake
   2010-07-16: First Instagram Photo
   2011-03-11: |-

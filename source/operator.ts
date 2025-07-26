@@ -71,7 +71,7 @@ export const uniquifyRecords = (
 	for (const subject of subjects) {
 		const date = new Date(subject[0]);
 		const year = date.getFullYear().toString();
-		subject[1].title = subject[1].title.replace(/$/, ` ${year}`);
+		subject[1].title = subject[1].title.replace(/$/, ` (${year})`);
 		counts.set(subject[1].title, (counts.get(subject[1].title) ?? 0) + 1);
 	}
 
@@ -92,8 +92,8 @@ export const uniquifyRecords = (
 		const year = date.getFullYear().toString();
 		const month = (date.getMonth() + 1).toFixed().padStart(2, "0");
 		subject[1].title = subject[1].title.replace(
-			new RegExp(` ${year}$`),
-			` ${month}.${year}`,
+			new RegExp(` \\(${year}\\)$`),
+			` (${month}.${year})`,
 		);
 		counts.set(subject[1].title, (counts.get(subject[1].title) ?? 0) + 1);
 	}
@@ -116,8 +116,8 @@ export const uniquifyRecords = (
 		const month = (date.getMonth() + 1).toFixed().padStart(2, "0");
 		const day = date.getDate().toFixed().padStart(2, "0");
 		subject[1].title = subject[1].title.replace(
-			new RegExp(` ${month}.${year}$`),
-			` ${day}.${month}.${year}`,
+			new RegExp(` \\(${month}.${year}\\)$`),
+			` (${day}.${month}.${year})`,
 		);
 		counts.set(subject[1].title, (counts.get(subject[1].title) ?? 0) + 1);
 	}
