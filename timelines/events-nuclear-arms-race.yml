@@ -5,6 +5,8 @@ private: false
 timeline:
   1941-08-30: Start of the Nuclear Arms Race
   1945-07-16: Trinity (Nuclear Weapons Test)
+  1945-08-06: USA drops Atomic Bomb on Hiroshima
+  1945-08-09: USA drops Atomic Bomb on Nagasaki
   1946-07-01: |-
     Operation Crossroads - Able
     Nuclear Weapons Test
@@ -510,22 +512,26 @@ timeline:
     Operation Hardtack II - San Juan
     Nuclear Weapons Test
   1958-10-22: |-
-    Operation Hardtack II - Socorro / Wrangell / Oberon / Rushmore
+    Operation Hardtack II
+    Socorro / Wrangell / Oberon / Rushmore
     Nuclear Weapons Test
   1958-10-24: |-
     Operation Hardtack II - Catron / Juno
     Nuclear Weapons Test
   1958-10-26: |-
-    Operation Hardtack II - Ceres / Sanford / De Baca
+    Operation Hardtack II
+    Ceres / Sanford / De Baca
     Nuclear Weapons Test
   1958-10-27: |-
     Operation Hardtack II - Chavez
     Nuclear Weapons Test
   1958-10-29: |-
-    Operation Hardtack II - Evans / Mazama / Humboldt
+    Operation Hardtack II
+    Evans / Mazama / Humboldt
     Nuclear Weapons Test
   1958-10-30: |-
-    Operation Hardtack II - Santa Fe / Ganymede / Blanca / Titania
+    Operation Hardtack II
+    Santa Fe / Ganymede / Blanca / Titania
     Nuclear Weapons Test
   1959-02-09: |-
     R-7A Semyorka
@@ -820,7 +826,8 @@ timeline:
     Project K - 184 K3
     Nuclear Weapons Test
   1962-10-26: |-
-    Operation Fishbowl - Bluegill Triple Prime
+    Operation Fishbowl
+    Bluegill Triple Prime
     Nuclear Weapons Test
   1962-10-27:
     - |-
@@ -932,7 +939,8 @@ timeline:
   1963-08-05: |-
     Partial Nuclear Test Ban Treaty Signed
     Treaty Banning Nuclear Weapon Tests
-    in the Atmosphere, in Outer Space and Under Water
+    in the Atmosphere, in
+    Outer Space and Under Water
   1963-08-12: |-
     Operation Niblick - Pekan
     Nuclear Weapons Test
@@ -1098,7 +1106,8 @@ timeline:
     Operation Whetstone - Crepe / Drill
     Nuclear Weapons Test
   1964-12-16: |-
-    Operation Whetstone - Cassowary / Hoopoe / Parrot / Mudpack
+    Operation Whetstone
+    Cassowary / Hoopoe / Parrot / Mudpack
     Nuclear Weapons Test
   1964-12-18: |-
     Operation Whetstone - Sulky
@@ -1398,7 +1407,8 @@ timeline:
     Operation Latchkey - Scotch
     Nuclear Weapons Test
   1967-05-26: |-
-    Operation Latchkey - Absinthe / Knickerbocker
+    Operation Latchkey
+    Absinthe / Knickerbocker
     Nuclear Weapons Test
   1967-06-22: |-
     Operation Latchkey - Switch
@@ -1446,7 +1456,8 @@ timeline:
     Operation Crosstie - Lanpher
     Nuclear Weapons Test
   1967-10-25: |-
-    Operation Crosstie - Cognac / Sazerac / Worth
+    Operation Crosstie
+    Cognac / Sazerac / Worth
     Nuclear Weapons Test
   1967-11-08: |-
     Operation Crosstie - Cobbler
@@ -1596,7 +1607,8 @@ timeline:
     Operation Bowline - Schooner
     Nuclear Weapons Test
   1968-12-12: |-
-    Operation Bowline - Bay Leaf / Tyg / Scissors
+    Operation Bowline
+    Bay Leaf / Tyg / Scissors
     Nuclear Weapons Test
   1968-12-19: |-
     Operation Bowline - Benham
@@ -1779,7 +1791,8 @@ timeline:
     Operation Emery - Carrizozo / Corazon
     Nuclear Weapons Test
   1970-12-16: |-
-    Operation Emery - Artesia / Avens / Canjilon
+    Operation Emery
+    Artesia / Avens / Canjilon
     Nuclear Weapons Test
   1970-12-17: |-
     Operation Emery - Carpetbag
@@ -1845,7 +1858,8 @@ timeline:
     Operation Grommet - Parnassia
     Nuclear Weapons Test
   1971-12-14: |-
-    Operation Grommet - Chaenactis / Hospah / Yerba
+    Operation Grommet
+    Chaenactis / Hospah / Yerba
     Nuclear Weapons Test
   1972-01-04: |-
     Operation Grommet - Mescalero
@@ -1863,7 +1877,8 @@ timeline:
     Operation Grommet - Ocate / Onaja
     Nuclear Weapons Test
   1972-04-19: |-
-    Operation Grommet - Longchamps / Jicarilla
+    Operation Grommet
+    Longchamps / Jicarilla
     Nuclear Weapons Test
   1972-05-02: |-
     Operation Grommet - Misty North
@@ -1881,7 +1896,8 @@ timeline:
     Operation Grommet - Merida
     Nuclear Weapons Test
   1972-06-28: |-
-    Operation Grommet - Capitan / Tajique / Haplopappus
+    Operation Grommet
+    Capitan / Tajique / Haplopappus
     Nuclear Weapons Test
   1972-07-20: |-
     Operation Toggle - Diamond Sculls
@@ -1890,7 +1906,8 @@ timeline:
     Operation Toggle - Atarque
     Nuclear Weapons Test
   1972-08-09: |-
-    Operation Toggle - Cebolla / Cuchillo / Solano
+    Operation Toggle
+    Cebolla / Cuchillo / Solano
     Nuclear Weapons Test
   1972-09-21: |-
     Operation Toggle - Oscuro
@@ -2232,7 +2249,8 @@ timeline:
     Operation Cresset - Diablo Hawk
     Nuclear Weapons Test
   1978-09-27: |-
-    Operation Cresset - Cremino / Draughts / Rummy
+    Operation Cresset
+    Cremino / Draughts / Rummy
     Nuclear Weapons Test
   1978-11-02: |-
     Operation Quicksilver - Emmenthal
@@ -2409,7 +2427,8 @@ timeline:
     Operation Praetorian - Cerro
     Nuclear Weapons Test
   1982-09-23: |-
-    Operation Praetorian - Diamond Ace / Huron Landing / Frisco
+    Operation Praetorian
+    Diamond Ace / Huron Landing / Frisco
     Nuclear Weapons Test
   1982-09-29: |-
     Operation Praetorian - Borrego
@@ -2553,7 +2572,8 @@ timeline:
     Operation Grenadier - Ponil
     Nuclear Weapons Test
   1985-10-09: |-
-    Operation Charioteer - Mill Yard / Diamond Beach
+    Operation Charioteer
+    Mill Yard / Diamond Beach
     Nuclear Weapons Test
   1985-10-16: |-
     Operation Charioteer - Roquefort
@@ -2664,7 +2684,8 @@ timeline:
     Operation Touchstone - Comstock
     Nuclear Weapons Test
   1988-06-22: |-
-    Operation Touchstone - Nightingale / Rhyolite
+    Operation Touchstone
+    Nightingale / Rhyolite
     Nuclear Weapons Test
   1988-07-07: |-
     Operation Touchstone - Alamo
@@ -2736,7 +2757,8 @@ timeline:
     Operation Aqueduct - Justin
     Nuclear Weapons Test
   1990-07-25: |-
-    Operation Aqueduct - Minearl Quarry / Randsburg
+    Operation Aqueduct
+    Minearl Quarry / Randsburg
     Nuclear Weapons Test
   1990-09-20: |-
     Operation Aqueduct - Sundown

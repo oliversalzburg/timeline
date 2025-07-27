@@ -121,10 +121,13 @@ data.set(
 	"timelines/charts-top1-singles-gfk-entertainment.yml",
 	map(
 		mustExist(data.get("timelines/charts-top1-singles-gfk-entertainment.yml")),
-		(/** @type {[number, { title: string; }]} */ record) => [
-			record[0],
-			{ title: record[1].title.split(" - ").reverse().join("\n") },
-		],
+		(/** @type {[number, { title: string; }]} */ record) => {
+			const title = record[1].title.split(" - ").reverse();
+			return [
+				record[0],
+				{ title: `${title[0].replace(" / ", "\n")}\n${title[1]}` },
+			];
+		},
 	),
 );
 

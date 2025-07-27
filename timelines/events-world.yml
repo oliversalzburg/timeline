@@ -3,9 +3,6 @@ color: transparent
 prefix: 🌍
 private: false
 timeline:
-  1914-06-29: |-
-    Assassination of
-    Archduke Franz Ferdinand
   1914-07-28: Start of World War I
   1914-10-30: |-
     Start of Middle Eastern
@@ -15,10 +12,10 @@ timeline:
     Theatre of World War I
   1918-11-11: End of World War I
   1939-09-01: Start of World War II
-  1941-09-29: First Moscow Conference
-  1942-08-12: Second Moscow Conference
-  1943-10-18: Third Moscow Conference
-  1944-10-09: Fourth Moscow Conference
+  1941-09-29: 1. Moscow Conference
+  1942-08-12: 2. Moscow Conference
+  1943-10-18: 3. Moscow Conference
+  1944-10-09: 4. Moscow Conference
   1945-02-04: Yalta Conference
   1945-06-05: Berlin Declaration
   1945-07-17: |-
@@ -30,7 +27,9 @@ timeline:
     Terms for Japanese Surrender
   1945-08-02: |-
     End of Potsdam Conference
-  1945-08-15: Japan announces Unconditional Surrender
+  1945-08-15: |-
+    Japan announces
+    Unconditional Surrender
   1945-09-02: End of World War II
   1946-07-29: Start of Paris Peace Conference
   1948-01-20: Assassination of Mahatma Gandhi
@@ -41,18 +40,9 @@ timeline:
     Defect to Soviet Union
     Homosexual Tendencies Considered
     National Security Risk
-  1962-09-16: Start of Cuban Misslie Crisis
-  1962-09-28: End of Cuban Misslie Crisis
   1963-08-01: |-
     Compact Casette invented
     Lou Ottens et al., Philips
-  1963-08-05: |-
-    Partial Nuclear Test Ban Treaty Signed
-    Treaty Banning Nuclear Weapon Tests
-    in the Atmosphere, in
-    Outer Space and Under Water
-  1963-10-10: |-
-    Partial Nuclear Test Ban Treaty Effective
   1970-01-01: UNIX Time Epoch starts 00:00 UTC
   1975-05-10: Sony Betamax Released
   1976-09-09: Video Home System (VHS) Released
@@ -71,18 +61,20 @@ timeline:
     World's 1st Democratically
     Directly Elected Female President
   1980-07-19: 1980 Summer Olympics Boycott
-  1980-09-22: Iraqi Invasion of Iran (Iran-Iraq War)
+  1980-09-22: |-
+    Iraqi Invasion of Iran
+    (Iran-Iraq War)
   1980-09-30: |-
     Digital Equipment Corporation,
     Intel & Xerox
     Introduce DIX Standard
     for Ethernet (10 Mbit/s)
-  1980-10-16: Most Recent Atmospheric Nuclear Weapons Test
   1980-12-08: |-
     ☠️ John Lennon (The Beatles)
     Shot and Killed
   1982-10-15: |-
-    Compact Disc Digital Audio (CD-DA) Released
+    Compact Disc Digital Audio
+    (CD-DA) Released
   1983-09-27: Richard Stallman announces GNU Project
   1984-01-24: Steve Jobs Launches the Macintosh
   1986-03-01: |-
@@ -93,28 +85,31 @@ timeline:
     Montreal Protocol on Substances
     That Deplete the Ozone Layer
     Outlaws Halogenated Hydrocarbons
-  1989-02-25: GNU General Public License, version 1
   1989-06-05: Tank Man Photograph
   1990-08-02: Iraqi Invasion of Kuwait
-  1991-04-02: 1991 VEI6 Eruption of Mount Pinatubo
+  1991-04-02: |-
+    1991 VEI6 Eruption
+    of Mount Pinatubo
   1991-05-21: Assassination of Rajiv Gandhi
-  1991-06-01: GNU General Public License, version 2
   1992-11-01: MiniDisc Released
-  1993-03-26: The Vulture and the Little Girl Photograph
-  1995-04-19: Oklahoma City Bombing (Timothy McVeigh)
-  1996-09-24: |-
-    Comprehensive Nuclear-Test-Ban Treaty
-    United Nations General Assembly
+  1993-03-26: |-
+    The Vulture and
+    the Little Girl Photograph
+  1995-04-19: |-
+    Oklahoma City Bombing
+    (Timothy McVeigh)
   1997-06-11: First Cell-Phone Picture
   1999-04-01: |-
     Bagger 293 (MAN TAKRAF RB293)
     14,196 tons Vehicle
     Giant Bucket-Wheel Excavator
-  2004-12-26: 2004 Indian Ocean 9.2 Earthquake and Tsunami
+  2004-12-26: |-
+    2004 Indian Ocean
+    9.2 Earthquake and Tsunami
   2006-08-23: |-
     Natascha Kampusch Escape
-    Child abducted at 10, held captive 8 years
-  2007-06-29: GNU General Public License, version 3
+    Child abducted at 10,
+    held captive 8 years
   2008-04-26: |-
     Fritzl Case
     Child imprisoned at 18,
@@ -124,7 +119,9 @@ timeline:
   2011-03-11: |-
     Tōhoku 9.1 Earthquake and Tsunami
     Fukushima INES7 Nuclear Accident
-  2011-07-22: 2011 Norway Attacks (Anders Behring Breivik)
+  2011-07-22: |-
+    2011 Norway Attacks
+    (Anders Behring Breivik)
   2013-07-01: |-
     XGC88000 5,350 tons Vehicle
     Extremely Large Ultraheavy Crawler Crane
@@ -134,5 +131,7 @@ timeline:
   2016-07-14: 2016 Nice Truck Attack
   2017-11-01: Cryptokitties triggers NFT Hype
   2019-03-15: Christchurch Mosque Shootings
-  2019-12-01: COVID-19 Outbreak (COVID-19 Pandemic)
+  2019-12-01: |-
+    COVID-19 Outbreak
+    (COVID-19 Pandemic)
   2022-07-08: Assassination of Shinzo Abe

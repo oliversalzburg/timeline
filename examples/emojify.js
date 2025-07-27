@@ -37,6 +37,11 @@ const contentLocation = dirname(args.target);
 const contentName = basename(args.target);
 
 const PREFIXES = {
+	"\u2764\uFE0F\u200D\u{1F525}": {
+		emoji: "❤️‍🔥",
+		name: "heart on fire",
+		src: "2764-FE0F-200D-1F525.svg",
+	},
 	"\u{1F1E9}\u{1F1EA}": {
 		emoji: "🇩🇪",
 		name: "flag: germany",
@@ -77,6 +82,11 @@ const PREFIXES = {
 		name: "globe showing europe-africa",
 		src: "1F30D.svg",
 	},
+	"\u{1F3A4}": {
+		emoji: "🎤",
+		name: "microphone",
+		src: "1F3A4.svg",
+	},
 	"\u{1F3AC}": {
 		emoji: "🎬",
 		name: "clapper board",
@@ -91,6 +101,11 @@ const PREFIXES = {
 		emoji: "🎮",
 		name: "video game",
 		src: "1F3AE.svg",
+	},
+	"\u{1F3B4}": {
+		emoji: "🎴",
+		name: "flower playing cards",
+		src: "1F3B4.svg",
 	},
 	"\u{1F3B6}": {
 		emoji: "🎶",
@@ -107,6 +122,11 @@ const PREFIXES = {
 		name: "building construction",
 		src: "1F3D7.svg",
 	},
+	"\u{1F427}": {
+		emoji: "🐧",
+		name: "penguin",
+		src: "1F427.svg",
+	},
 	"\u{1F48A}": {
 		emoji: "💊",
 		name: "pill",
@@ -116,6 +136,11 @@ const PREFIXES = {
 		emoji: "📺",
 		name: "television",
 		src: "1F4FA.svg",
+	},
+	"\u{1F4FB}": {
+		emoji: "📻",
+		name: "radio",
+		src: "1F4FB.svg",
 	},
 	"\u{1F680}": {
 		emoji: "🚀",
@@ -152,10 +177,20 @@ const PREFIXES = {
 		name: "soccer ball",
 		src: "26BD.svg",
 	},
+	"\u270A": {
+		emoji: "✊",
+		name: "raised fist",
+		src: "270A.svg",
+	},
 	"\u271D": {
 		emoji: "✝",
 		name: "latin cross",
 		src: "271D.svg",
+	},
+	"\u274C": {
+		emoji: "❌",
+		name: "cross mark",
+		src: "274C.svg",
 	},
 	"atom-bomb": {
 		emoji: "",
@@ -178,6 +213,10 @@ const PREFIXES = {
 		emoji: "",
 		name: "collaboration",
 		src: "E249.svg",
+	},
+	raf: {
+		name: "rote armee fraktion",
+		src: "RAF-Logo.svg",
 	},
 };
 
