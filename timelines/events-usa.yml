@@ -6,7 +6,10 @@ timeline:
   1776-06-11: |-
     Thomas Jefferson begins Draft of
     Declaration of Independence
-  1776-07-04: United States Declaration of Independence
+  1776-07-04: |-
+    United States
+    Declaration of Independence
+  1789-03-04: Constitution of the United States
   1789-04-30: |-
     President of the United States
     George Washington
@@ -56,6 +59,7 @@ timeline:
     President of the United States
     Abraham Lincoln
   1861-04-12: Start of American Civil War
+  1862-09-22: Emancipation Proclamation
   1863-11-19: Gettysburg Address
   1865-04-14: Assassination of Abraham Lincoln
   1865-04-15: |-
@@ -104,6 +108,7 @@ timeline:
   1929-03-04: |-
     President of the United States
     Herbert Hoover
+  1930-07-04: Nation of Islam
   1933-03-04: |-
     President of the United States
     Franklin D. Roosevelt
@@ -113,10 +118,21 @@ timeline:
   1953-01-20: |-
     President of the United States
     Dwight D. Eisenhower
+  1954-05-17: Start of Civil Rights Movement
+  1955-12-01: |-
+    Rosa Parks
+    Refuses to Give Up Bus Seat
+  1955-12-05: |-
+    Start of Montgomery Bus Boycott
+  1956-12-20: |-
+    End of Montgomery Bus Boycott
   1961-01-20: |-
     President of the United States
     John F. Kennedy
-  1963-11-22: 
+  1963-08-28: |
+    "I Have a Dream"
+    Martin Luther King Jr.
+  1963-11-22:
     - |-
       Assassination of John F. Kennedy
     - |-
@@ -125,14 +141,18 @@ timeline:
   1963-11-24: |-
     ☠️ Lee Harvey Oswald
     Shot and Killed by Jack Ruby
+  1965-02-19: |-
+    ☠️ Malcom X
+    Shot and Killed in Assassination
   1968-04-04: Assassination of Martin Luther King Jr.
+  1968-04-11: End of Civil Rights Movement
   1968-06-05: Assassination of Robert F. Kennedy
   1969-01-20: |-
     President of the United States
     Richard Nixon
   1972-06-17: Watergate Complex Break-In
   1974-08-05: Watergate Scandal "Smoking Gun" Tape
-  1974-08-09: 
+  1974-08-09:
     - Richard Nixon resigns
     - |-
       President of the United States
