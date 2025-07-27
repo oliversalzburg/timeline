@@ -45,23 +45,23 @@ const files =
 				.map((_) => `timelines/${_}`);
 
 if (files.length === 0) {
-	process.stderr.write("No files provided.\n");
+	process.stdout.write("No files provided.\n");
 	process.exit(1);
 }
 
 const outputPath = typeof args.output === "string" ? args.output : undefined;
 if (outputPath === undefined) {
-	process.stderr.write("No --output filename provided.\n");
+	process.stdout.write("No --output filename provided.\n");
 	process.exit(1);
 }
 if (!outputPath.endsWith(".gv")) {
-	process.stderr.write(
+	process.stdout.write(
 		`Invalid output document. File name is expected to end in '.gv'.\nProvided: ${outputPath}\n`,
 	);
 	process.exit(1);
 }
 
-process.stderr.write(`Processing:\n${files.map((_) => `  ${_}\n`).join("")}`);
+process.stdout.write(`Processing:\n${files.map((_) => `  ${_}\n`).join("")}`);
 
 const rawData = new Map(files.map((_) => [_, readFileSync(_, "utf-8")]));
 
@@ -132,7 +132,7 @@ data.set(
 );
 
 // Inject the "universe" graph.
-process.stderr.write("Rendering universe...\n");
+process.stdout.write("Rendering universe...\n");
 const finalTimelines = [
 	...data
 		.entries()
@@ -145,7 +145,7 @@ const finalEntryCount = finalTimelines.reduce(
 );
 
 // Write GraphViz graph to stdout.
-process.stderr.write(`Generating GraphViz graph for universe...\n`);
+process.stdout.write(`Generating GraphViz graph for universe...\n`);
 
 const renderOptions = {
 	dateRenderer: (/** @type {number} */ date) => {
@@ -196,7 +196,7 @@ const info = [
 ];
 
 // Dump palette for debugging purposes.
-process.stderr.write("Generated palette for universe:\n");
+process.stdout.write("Generated palette for universe:\n");
 const paletteMeta = dotGraph.palette;
 const colors = paletteMeta.lookup;
 const ranks = new Map(
@@ -227,24 +227,24 @@ for (const [color, timelines] of [...paletteMeta.assignments.entries()].sort(
 	([a], [b]) => a.localeCompare(b),
 )) {
 	const timelinePalette = mustExist(colors.get(timelines[0]));
-	process.stderr.write(
+	process.stdout.write(
 		`- ${color} -> Pen: ${timelinePalette.pen} Fill: ${timelinePalette.fill} Font: ${timelinePalette.font}\n`,
 	);
 	for (const id of timelines.sort(
 		(/** @type {string} */ a, /** @type {string} */ b) => a.localeCompare(b),
 	)) {
-		process.stderr.write(
+		process.stdout.write(
 			`  ${id} (ranked ${ranks.get(id)}: ${describeStyle(styles.get(mustExist(ranks.get(id))))})\n`,
 		);
 	}
-	process.stderr.write("\n");
+	process.stdout.write("\n");
 }
 
 const rankCount = new Set(ranks.values()).size;
-process.stderr.write(`Style sheet generated for ${rankCount} ranks.\n`);
+process.stdout.write(`Style sheet generated for ${rankCount} ranks.\n`);
 
-process.stderr.write(`Writing graph...\n`);
+process.stdout.write(`Writing graph...\n`);
 writeFileSync(outputPath, dotGraph.graph);
-process.stderr.write(`Writing graph info...\n`);
+process.stdout.write(`Writing graph info...\n`);
 writeFileSync(outputPath.replace(/\.gv$/, ".info"), `${info.join("\n")}\n`);
-process.stderr.write("GraphViz graph for universe written successfully.\n");
+process.stdout.write("GraphViz graph for universe written successfully.\n");

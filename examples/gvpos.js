@@ -39,9 +39,19 @@ const contentName = basename(args.target);
 const start = new Date(1800, 0).valueOf();
 const end = new Date(2030, 0).valueOf();
 const distance = end - start;
+/** @type {null|{nodeid:string;height:number;id:string;pos:string;ts:number;width:number;y:number}} */
 let previous = null;
 const positioned = content.replaceAll(
 	/(?<nodeid>\d+).+?height=(?<height>[^,]+).+?id="(?<id>[^"]+)".+?pos="(?<pos>[^"]+)".+?ts=(?<ts>[^,]+).+?width=(?<width>[^\],\n]+)/gs,
+	/**
+	 * @param {string} substring -
+	 * @param {string} nodeid -
+	 * @param {string} height -
+	 * @param {string} id -
+	 * @param {string} pos -
+	 * @param {string} ts -
+	 * @param {string} width -
+	 */
 	(substring, nodeid, height, id, pos, ts, width) => {
 		const timestamp = Number(ts);
 		const previousHeight = Number(previous?.height ?? 0);
@@ -50,11 +60,11 @@ const positioned = content.replaceAll(
 			(previous?.y ?? 0) + 100 * (previousHeight / 2 + currentHeight / 2) + 50; ///2000000 - ((date - start) / distance) * 2000000;
 		previous = {
 			nodeid,
-			height,
+			height: Number(height),
 			id,
 			pos,
-			ts,
-			width,
+			ts: Number(ts),
+			width: Number(width),
 			y,
 		};
 		return substring.replace(

@@ -338,6 +338,8 @@ export const render = (
 								? style.penwidth
 								: 0
 							: undefined,
+						samehead: timeline.meta.id,
+						sametail: timeline.meta.id,
 						style: style.link ? "solid" : "invis",
 						tooltip: style.link
 							? `${formatMilliseconds(timePassed)} (${linkLength} ranks)`

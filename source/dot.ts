@@ -125,6 +125,8 @@ export interface LinkProperties {
 	labelfontcolor: Color;
 	minlen: number;
 	penwidth: number;
+	samehead: string;
+	sametail: string;
 	style: "bold" | "dashed" | "dotted" | "invis" | "solid" | "tapered";
 	tailclip: boolean;
 	tailport: PortPos;

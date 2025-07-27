@@ -3,15 +3,38 @@ color: transparent
 prefix: 🌍
 private: false
 timeline:
+  1879-10-21: |-
+    Thomas Edison
+    Invents Light Bulb
+  1880-12-17: |-
+    Edison Illuminating Company
+  1895-11-08: |-
+    Wilhelm Conrad Röntgen
+    Discovers X-Rays
+  1908-05-01: Kinemacolor Premiere
   1914-07-28: Start of World War I
   1914-10-30: |-
     Start of Middle Eastern
     Theatre of World War I
+  1917-02-21: Two-Color Technicolor Process 1
   1918-10-30: |-
     End of Middle Eastern
     Theatre of World War I
   1918-11-11: End of World War I
-  1939-09-01: Start of World War II
+  1922-11-26: Two-Color Technicolor Process 2
+  1927-10-06: First "Talkie" Movie
+  1928-11-02: Two-Color Technicolor Process 3
+  1929-10-01: Start of Great Depression
+  1929-10-24: |-
+    Black Thursday
+    Wall Street Crash of 1929
+  1929-10-29: |-
+    Black Tuesday
+    Wall Street Crash of 1929
+  1932-07-30: Three-Strip Technicolor Process 4
+  1939-09-01:
+    - End of Great Depression
+    - Start of World War II
   1941-09-29: 1. Moscow Conference
   1942-08-12: 2. Moscow Conference
   1943-10-18: 3. Moscow Conference
