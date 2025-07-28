@@ -229,7 +229,7 @@ for (const [prefix, config] of Object.entries(PREFIXES)) {
 	const row = `<TR>${cells.join()}</TR>`;
 	const table = `<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0" CELLSPACING="5">${row}</TABLE>`;
 	svgPrefixes = svgPrefixes.replaceAll(
-		new RegExp(`<${prefix}.*\u{00A0}(.+)>;`, "gu"),
+		new RegExp(`<${prefix}.*\u{00A0}(.+)>,`, "gu"),
 		`<${table}>;`,
 	);
 	copyFileSync(join(assets, config.src), join(contentLocation, config.src));

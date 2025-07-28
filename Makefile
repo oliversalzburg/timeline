@@ -106,15 +106,15 @@ newuniverse: \
 # for embedded images. It is unclear if the output or the viewer application
 # is to blame.
 %.gv.cairo.svg: %.gv
-	@date +"Cairo SVG render process starts +%FT%T%z"
+	@date +"Cairo SVG render process starts %FT%T%z"
 	dot $(_DOT_FLAGS) -Tsvg:cairo -o $@ $<
-	@date +"Cairo SVG render process exits +%FT%T%z"
+	@date +"Cairo SVG render process exits %FT%T%z"
 
 # Render a vector SVG document from the given GraphViz document.
 %.gv.svg: %.gv
-	@date +"SVG render process starts +%FT%T%z"
+	@date +"SVG render process starts %FT%T%z"
 	dot $(_DOT_FLAGS) -Tsvg -o $@ $<
-	@date +"SVG render process exits +%FT%T%z"
+	@date +"SVG render process exits %FT%T%z"
 
 # Render a rasterized PNG image from the given GraphViz document.
 %.gv.png: %.gv
@@ -129,6 +129,7 @@ newuniverse: \
 		--skip-after=$(subst .gv,,$(word 4, $(subst _, ,$@))) \
 		--output=$@ \
 		$(_TIMELINES)
+	dot -Tcanon -o $@ $@
 
 # Build individual dot layout phases.
 # These can NOT be used incrementally, as the layout engine always starts
