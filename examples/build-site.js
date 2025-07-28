@@ -118,8 +118,8 @@ for (const [variant, meta] of variants.entries()) {
 		.replace("/*JS*/", meta.withJs ? js : "")
 		.replace("<!--SVG-->", svg);
 
-	process.stderr.write(`${variant}: Writing '${meta.output}'...\n`);
+	process.stdout.write(`${variant}: Writing '${meta.output}'...\n`);
 	writeFileSync(meta.output, html);
 }
 
-process.stderr.write("Done\n");
+process.stdout.write("Done\n");

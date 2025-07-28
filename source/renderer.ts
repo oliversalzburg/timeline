@@ -20,7 +20,6 @@ import type {
 
 export interface RendererOptions {
 	baseUnit: "day" | "week" | "month";
-	clusterYears: boolean;
 	condensed: boolean;
 	dateRenderer: (date: number) => string;
 	debug: boolean;
@@ -61,6 +60,10 @@ export const render = (
 		.sort(([a, , aentry], [b, , bentry]) =>
 			a - b !== 0 ? a - b : aentry.title.localeCompare(bentry.title),
 		);
+
+	const isTimestampInRange = (timestamp: number): boolean =>
+		(options.skipBefore ?? Number.NEGATIVE_INFINITY) < timestamp &&
+		timestamp < (options.skipAfter ?? Number.POSITIVE_INFINITY);
 
 	// We default to dark, as the assume the default output media to be a display.
 	// For printing use cases, we'd prefer to use light.
@@ -111,8 +114,6 @@ export const render = (
 	const originString = options?.dateRenderer
 		? options.dateRenderer(origin)
 		: new Date(origin).toDateString();
-	let previousYear: number | undefined;
-	const firstNodeAlreadySeen = new Set<TimelineReferenceRenderer>();
 	let nextEventIndex = 0;
 	const allNodeIds = new Set<string>();
 
@@ -122,20 +123,6 @@ export const render = (
 	 * exist at this timestamp.
 	 */
 	for (const timestamp of timestampsUnique) {
-		// Fast-forward through skip section.
-		if (
-			timestamp < (options.skipBefore ?? Number.NEGATIVE_INFINITY) ||
-			(options.skipAfter ?? Number.POSITIVE_INFINITY) < timestamp
-		) {
-			while (
-				nextEventIndex < timelineGlobal.length &&
-				timelineGlobal[nextEventIndex][0] === timestamp
-			) {
-				++nextEventIndex;
-			}
-			continue;
-		}
-
 		// Convert the timestamp to a Date for API features.
 		const date = new Date(timestamp);
 
@@ -146,23 +133,8 @@ export const render = (
 			return id;
 		};
 
-		// We need the current year to support the "cluster years" feature.
-		const currentYear = date.getFullYear();
-
 		const timePassedSinceOrigin = timestamp - origin;
 		const timePassedSinceThen = now - timestamp;
-
-		if (options.clusterYears && currentYear !== previousYear) {
-			if (previousYear !== undefined) {
-				d.raw("}");
-			}
-			d.raw(`subgraph cluster_${currentYear} {`);
-			d.raw(`fontname="${FONTS_SYSTEM}"`);
-			d.raw(`fontsize="${FONT_SIZE}"`);
-			d.raw(`label="${currentYear}"`);
-			d.raw(`penwidth="0.2"`);
-			d.raw(`style="dashed,rounded"`);
-		}
 
 		// We now iterate over all global events at the current timestamp.
 		while (
@@ -196,8 +168,6 @@ export const render = (
 				timelineGlobal[nextEventIndex][0] === timestamp &&
 				timelineGlobal[nextEventIndex][2].title === entry.title
 			);
-
-			contributors.forEach((_) => firstNodeAlreadySeen.add(_));
 
 			const classList = [
 				...contributors.values().map((_) => classes.get(_.meta.id)),
@@ -250,6 +220,7 @@ export const render = (
 				label,
 				penwidth: style.outline ? style.penwidth : 0,
 				shape: style.shape,
+				skipDraw: !isTimestampInRange(timestamp),
 				style: style.style?.join(","),
 				tooltip: `${formatMilliseconds(timePassedSinceOrigin)} since ${originString}\\n${formatMilliseconds(timePassedSinceThen)} ago`,
 				ts: timestamp,
@@ -257,13 +228,6 @@ export const render = (
 
 			d.node(entry.title, nodeProperties);
 		}
-
-		previousYear = date.getFullYear();
-	}
-
-	// Ensure last cluster is closed.
-	if (options.clusterYears) {
-		d.raw("}");
 	}
 
 	// Link items in their individual timelines together.
@@ -281,20 +245,6 @@ export const render = (
 		nextEventIndex = 0;
 
 		for (const [timestamp] of timeline.records) {
-			// Fast-forward through skip section.
-			if (
-				timestamp < (options.skipBefore ?? Number.NEGATIVE_INFINITY) ||
-				(options.skipAfter ?? Number.POSITIVE_INFINITY) < timestamp
-			) {
-				do {
-					++nextEventIndex;
-				} while (
-					nextEventIndex < timelineGlobal.length &&
-					timelineGlobal[nextEventIndex][0] === timestamp
-				);
-				continue;
-			}
-
 			if (previousTimestamp && timestamp <= previousTimestamp) {
 				continue;
 			}
@@ -340,6 +290,7 @@ export const render = (
 							: undefined,
 						samehead: timeline.meta.id,
 						sametail: timeline.meta.id,
+						skipDraw: !isTimestampInRange(timestamp),
 						style: style.link ? "solid" : "invis",
 						tooltip: style.link
 							? `${formatMilliseconds(timePassed)} (${linkLength} ranks)`
@@ -360,20 +311,6 @@ export const render = (
 	timePassed = 0;
 	nextEventIndex = 0;
 	for (const timestamp of timestampsUnique) {
-		// Fast-forward through skip section.
-		if (
-			timestamp < (options.skipBefore ?? Number.NEGATIVE_INFINITY) ||
-			(options.skipAfter ?? Number.POSITIVE_INFINITY) < timestamp
-		) {
-			while (
-				nextEventIndex < timelineGlobal.length &&
-				timelineGlobal[nextEventIndex][0] === timestamp
-			) {
-				++nextEventIndex;
-			}
-			continue;
-		}
-
 		timePassed = previousTimestamp
 			? Math.max(1, timestamp - previousTimestamp)
 			: 0;
@@ -429,6 +366,7 @@ export const render = (
 				// This forces all entries into a globally linear order.
 				d.link(previousEntry.title, entry.title, {
 					minlen: options.condensed !== true ? linkLength : undefined,
+					skipDraw: !isTimestampInRange(timestamp),
 					style: options.debug ? "dashed" : "invis",
 					tooltip: options.debug
 						? `${formatMilliseconds(timePassed)} (carrying ${remainder})`

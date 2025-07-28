@@ -235,9 +235,11 @@ for (const [prefix, config] of Object.entries(PREFIXES)) {
 	copyFileSync(join(assets, config.src), join(contentLocation, config.src));
 }
 
-writeFileSync(
-	join(contentLocation, contentName.replace(/\.gv$/, ".img.gv")),
-	svgPrefixes,
-);
+const filename = contentName
+	.replace(/\.dot$/, ".img.dot")
+	.replace(/\.gv$/, ".img.gv");
+writeFileSync(join(contentLocation, filename), svgPrefixes);
 
-process.stderr.write(`Successfully emojified ${args.target}.\n`);
+process.stdout.write(
+	`Successfully emojified ${args.target} into ${filename}.\n`,
+);

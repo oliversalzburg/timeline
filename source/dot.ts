@@ -127,6 +127,7 @@ export interface LinkProperties {
 	penwidth: number;
 	samehead: string;
 	sametail: string;
+	skipDraw: boolean;
 	style: "bold" | "dashed" | "dotted" | "invis" | "solid" | "tapered";
 	tailclip: boolean;
 	tailport: PortPos;
@@ -149,6 +150,7 @@ export interface NodeProperties {
 	margin: number;
 	penwidth: number;
 	shape: Shape;
+	skipDraw: boolean;
 	style: NodeStyle | string;
 	tooltip: string;
 	ts: number;
@@ -160,7 +162,7 @@ const makePropertyString = (
 	properties: Record<string, boolean | number | string>,
 ) =>
 	Object.entries(properties)
-		.filter(([_, value]) => value !== undefined)
+		.filter(([key, _]) => key !== "skipDraw" && _ !== undefined)
 		.map(([key, _]) => (key === "label" ? `${key}=<${_}>` : `${key}="${_}"`))
 		.sort()
 		.join("; ");
@@ -210,7 +212,10 @@ export const dot = () => {
 		}
 		const id = ++nextNodeIndex;
 		nodeIds.set(_, id);
-		renderRaw(`${id} [${makePropertyString({ label: _, ...options })};]`);
+
+		if (options?.skipDraw !== true) {
+			renderRaw(`${id} [${makePropertyString({ label: _, ...options })};]`);
+		}
 	};
 
 	const renderLink = (
@@ -226,9 +231,12 @@ export const dot = () => {
 		if (bId === undefined) {
 			throw new InvalidOperationError(`Node with given title is unknown: ${b}`);
 		}
-		renderRaw(
-			`${aId} -> ${bId}${options ? ` [${makePropertyString(options ?? {})};]` : ""}`,
-		);
+
+		if (options?.skipDraw !== true) {
+			renderRaw(
+				`${aId} -> ${bId}${options ? ` [${makePropertyString(options ?? {})};]` : ""}`,
+			);
+		}
 	};
 
 	return {

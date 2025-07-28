@@ -200,7 +200,9 @@ timeline:
   1986-03-24: |-
     🏆 Out of Africa
     58th Academy Awards Best Picture
-  1986-06-14: "George Carlin: Playin' with Your Head"
+  1986-06-14: |-
+    George Carlin
+    Playin' with Your Head
   1987-03-06: Lethal Weapon
   1987-03-30: |-
     🏆 Platoon
@@ -378,7 +380,7 @@ timeline:
     Star Wars: Episode I
     The Phantom Menace
   1999-05-21: Dogma
-  1999-06-30: 
+  1999-06-30:
     - "South Park: Bigger, Longer & Uncut"
     - Wild Wild West
   1999-07-07: American Pie
@@ -424,15 +426,21 @@ timeline:
   2001-08-22: Jay and Silent Bob Strike Back
   2001-10-05: Training Day
   2001-11-01: Monsters, Inc.
-  2001-11-17: "George Carlin: Complaints & Grievances"
-  2001-12-18: "The Lord of the Rings: The Fellowship of the Ring"
+  2001-11-17: |-
+    George Carlin:
+    Complaints & Grievances
+  2001-12-18: |-
+    The Lord of the Rings
+    The Fellowship of the Ring
   2002-03-14: Ice Age
   2002-03-24: |-
     🏆 A Beautiful Mind
     74th Academy Awards Best Picture
   2002-04-15: "Cube 2: Hypercube"
   2002-05-01: Spider-Man
-  2002-05-12: "Star Wars: Episode II - Attack of the Clones"
+  2002-05-12: |-
+    Star Wars: Episode II
+    Attack of the Clones
   2002-05-24: Insomnia
   2002-06-20: Minority Report
   2002-07-03: Men in Black II
@@ -470,9 +478,12 @@ timeline:
     The Return of the King
   2004-01-17: The Butterfly Effect
   2004-02-29: |-
-    🏆 The Lord of the Rings: The Return of the King
+    🏆 The Lord of the Rings
+    The Return of the King
     76th Academy Awards Best Picture
-  2004-03-09: Eternal Sunshine of the Spotless Mind
+  2004-03-09: |-
+    Eternal Sunshine
+    of the Spotless Mind
   2004-03-19: Dawn of the Dead
   2004-04-09: Shaun of the Dead
   2004-05-01: Freeze Frame
@@ -605,7 +616,9 @@ timeline:
   2009-05-20: Terminator Salvation
   2009-05-22: Objectified
   2009-05-28: Up
-  2009-06-19: "Transformers: Revenge of the Fallen"
+  2009-06-19: |-
+    Transformers
+    Revenge of the Fallen
   2009-07-31: The Cove
   2009-08-05: District 9
   2009-08-19: Inglourious Basterds
@@ -631,7 +644,9 @@ timeline:
   2011-02-27: |-
     🏆 The King's Speech
     83rd Academy Awards Best Picture
-  2011-05-15: "Pirates of the Caribbean: On Stranger Tides"
+  2011-05-15: |-
+    Pirates of the Caribbean
+    On Stranger Tides
   2011-06-28: "Transformers: Dark of the Moon"
   2011-07-22: "Captain America: The First Avenger"
   2011-09-09: Urbanized
@@ -648,13 +663,17 @@ timeline:
   2012-06-13: The Hunt
   2012-07-06: The Queen of Versailles
   2012-07-17: The Dark Knight Rises
-  2012-08-16: "Bill Burr: You People Are All The Same"
+  2012-08-16: |-
+    Bill Burr
+    You People Are All The Same
   2012-09-26: Looper
   2012-11-01: The Act of Killing
   2012-12-12: "The Hobbit: An Unexpected Journey"
   2012-12-25: Django Unchained
   2013-02-06: A Good Day to Die Hard
-  2013-02-08: "TPB AFK: The Pirate Bay - Away from Keyboard"
+  2013-02-08: |-
+    TPB AFK: The Pirate Bay
+    Away from Keyboard
   2013-02-24: |-
     🏆 Argo
     85th Academy Awards Best Picture
@@ -664,13 +683,17 @@ timeline:
   2013-06-19:
     - Monsters University
     - World War Z
-  2013-12-11: "The Hobbit: The Desolation of Smaug"
+  2013-12-11: |-
+    The Hobbit
+    The Desolation of Smaug
   2013-12-18: "Anchorman 2: The Legend Continues"
   2013-12-25: The Wolf of Wall Street
   2014-03-02: |-
     🏆 12 Years a Slave
     86th Academy Awards Best Picture
-  2014-03-20: "Captain America: The Winter Soldier"
+  2014-03-20: |-
+    Captain America
+    The Winter Soldier
   2014-03-21: "Todd Barry: The Crowd Work Tour"
   2014-04-10: Locke
   2014-06-25: "Transformers: Age of Extinction"
@@ -678,11 +701,18 @@ timeline:
   2014-10-22: John Wick
   2014-11-05: Interstellar
   2014-11-17: Banksy Does New York
-  2014-12-05: "Bill Burr: I'm Sorry You Feel That Way"
-  2014-12-10: "The Hobbit: The Battle of the Five Armies"
-  2015-01-27: "Louis C.K.: Live at The Comedy Store"
+  2014-12-05: |-
+    Bill Burr
+    I'm Sorry You Feel That Way
+  2014-12-10: |-
+    The Hobbit
+    The Battle of the Five Armies
+  2015-01-27: |-
+    Louis C.K.
+    Live at The Comedy Store
   2015-02-22: |-
-    🏆 Birdman or (The Unexpected Virtue of Ignorance)
+    🏆 Birdman or
+    (The Unexpected Virtue of Ignorance)
     87th Academy Awards Best Picture
   2015-06-11: Son of Saul
   2015-06-17: Inside Out
@@ -691,7 +721,9 @@ timeline:
   2015-09-30: The Martian
   2015-10-08: Look Who's Back
   2015-11-25: The Good Dinosaur
-  2015-12-14: "Star Wars: Episode VII - The Force Awakens"
+  2015-12-14: |-
+    Star Wars: Episode VII
+    The Force Awakens
   2015-12-30: The Hateful Eight
   2016-01-06: The Revenant
   2016-02-11: Zootopia
@@ -709,18 +741,26 @@ timeline:
   2017-02-08:
     - "Grifters Code 6: Über Freaks"
     - "John Wick: Chapter 2"
-  2017-02-15: "March of the Penguins 2: The Next Step"
+  2017-02-15: |-
+    March of the Penguins 2
+    The Next Step
   2017-02-26: |-
     🏆 Moonlight
     89th Academy Awards Best Picture
   2017-04-04: Louis C.K. 2017
   2017-05-09: "Alien: Covenant"
-  2017-05-23: "Pirates of the Caribbean: Dead Men Tell No Tales"
+  2017-05-23: |-
+    Pirates of the Caribbean
+    Dead Men Tell No Tales
   2017-06-16: "Transformers: The Last Knight"
-  2017-07-28: "An Inconvenient Sequel: Truth to Power"
+  2017-07-28: |-
+    An Inconvenient Sequel
+    Truth to Power
   2017-08-02: A Taxi Driver
   2017-11-11: Obey Giant
-  2017-12-09: "Star Wars: Episode VIII - The Last Jedi"
+  2017-12-09: |-
+    Star Wars: Episode VIII
+    The Last Jedi
   2017-12-17: "Berlin Kidz: Fuck The System"
   2018-02-14: "Chris Rock: Tamborine"
   2018-03-04: |-
@@ -742,7 +782,9 @@ timeline:
   2019-09-10: "Bill Burr: Paper Tiger"
   2019-10-18: Tell Me Who I Am
   2019-10-23: "Terminator: Dark Fate"
-  2019-12-16: "Star Wars: Episode IX - The Rise of Skywalker"
+  2019-12-16: |-
+    Star Wars: Episode IX
+    The Rise of Skywalker
   2020-02-09: |-
     🏆 Parasite
     92nd Academy Awards Best Picture
@@ -782,12 +824,18 @@ timeline:
     🏆 Everything Everywhere All at Once
     95th Academy Awards Best Picture
   2023-03-22: "John Wick: Chapter 4"
-  2023-06-14: Indiana Jones and the Dial of Destiny
+  2023-06-14: |-
+    Indiana Jones
+    and the Dial of Destiny
   2023-08-23: Anatomy of a Fall
   2023-09-08: The Contestant
-  2023-10-27: "South Park: Joining the Panderverse"
+  2023-10-27: |-
+    South Park
+    Joining the Panderverse
   2023-12-15: The Zone of Interest
-  2023-12-20: South Park (Not Suitable for Children)
+  2023-12-20: |-
+    South Park
+    (Not Suitable for Children)
   2023-12-25: "Ricky Gervais: Armageddon"
   2024-03-10: |-
     🏆 Oppenheimer
