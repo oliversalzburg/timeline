@@ -31,6 +31,12 @@ if (typeof args.target !== "string") {
 	process.stderr.write("Missing --target.\n");
 	process.exit(1);
 }
+if (!args.target.endsWith(".dot")) {
+	process.stdout.write(
+		`Invalid target document. File name is expected to end in '.dot'.\nProvided: ${args.target}\n`,
+	);
+	process.exit(1);
+}
 
 const content = readFileSync(args.target, "utf8");
 const contentLocation = dirname(args.target);
@@ -235,9 +241,7 @@ for (const [prefix, config] of Object.entries(PREFIXES)) {
 	copyFileSync(join(assets, config.src), join(contentLocation, config.src));
 }
 
-const filename = contentName
-	.replace(/\.dot$/, ".img.dot")
-	.replace(/\.gv$/, ".img.gv");
+const filename = contentName.replace(/\.dot$/, "-img.dot");
 writeFileSync(join(contentLocation, filename), svgPrefixes);
 
 process.stdout.write(

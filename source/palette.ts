@@ -36,6 +36,10 @@ export const matchFontColorTo = (color: RGBTuple | RGBATuple): string => {
 	return hsl[2] < 180 ? "#FFFFFFFF" : "#000000FF";
 };
 
+export interface PaletteMeta<T> {
+	assignments: Map<string, Array<T>>;
+	lookup: Map<T, PaletteEntry>;
+}
 export const palette = <T>(theme: RenderMode) => {
 	// The registered items.
 	const entries = new Map<T, string | undefined>();
@@ -86,7 +90,7 @@ export const palette = <T>(theme: RenderMode) => {
 		return requiredToFillReferences + requiredToFillUndefined;
 	};
 
-	const toPalette = () => {
+	const toPalette = (): PaletteMeta<T> => {
 		const demand = predictDemand();
 		const extraColorValues = hslPalette(demand, 0, 0.4, 0.5);
 		const assignments = new Map<string, Array<T>>();

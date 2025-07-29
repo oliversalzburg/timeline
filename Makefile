@@ -1,4 +1,4 @@
-.PHONY: default build clean docs git-hook pretty lint test
+.PHONY: default build clean docs git-hook pretty lint test coverage
 
 ifneq "$(CI)" ""
 	DEBUG := 1
@@ -53,50 +53,45 @@ output/images: | output
 universe: $(_UNIVERSE).zen.html
 
 # wip
-_PARTS := 1700_1820 1820_1860 1860_1880 1880_1900 1900_1910 1910_1920 1920_1930 1930_1940 1940_1950 1950_1960 1960_1970 1970_1980 1980_1990 1990_2000 2000_2010 2010_2020 2020_2030
+_PARTS := 1700_1860 1860_1880 1880_1920 1920_1930 1930_1940 1940_1950 1950_1960 1960_1970 1970_1980 1980_1985 1985_1990 1990_1995 1995_2000 2000_2005 2005_2010 2010_2015 2015_2020 2020_2030
 _PARTFILES := $(patsubst %, output/$(PREFIX)$(ORIGIN)_%, $(_PARTS))
 _PARTS_GV := $(patsubst %, %.gv, $(_PARTFILES))
-_PARTS_GV_SVG := $(patsubst %, %.gv.svg, $(_PARTFILES))
-_PARTS_GV_CAIRO_SVG := $(patsubst %, %.gv.cairo.svg, $(_PARTFILES))
-_PARTS_IMG_GV := $(patsubst %, %.img.gv, $(_PARTFILES))
-_PARTS_IMG_GV_SVG := $(patsubst %, %.img.gv.svg, $(_PARTFILES))
-_PARTS_IMG_GV_CAIRO_SVG := $(patsubst %, %.img.gv.cairo.svg, $(_PARTFILES))
-_PARTS_IMG_P1_DOT := $(patsubst %, %.p1.img.dot, $(_PARTFILES))
-_PARTS_IMG_P2_DOT := $(patsubst %, %.p2.img.dot, $(_PARTFILES))
-_PARTS_IMG_P3_DOT := $(patsubst %, %.p3.img.dot, $(_PARTFILES))
-_PARTS_IMG_P4_DOT := $(patsubst %, %.p4.img.dot, $(_PARTFILES))
-_PARTS_IMG_P999_DOT := $(patsubst %, %.p999.img.dot, $(_PARTFILES))
-_PARTS_P1_DOT := $(patsubst %, %.p1.dot, $(_PARTFILES))
-_PARTS_P2_DOT := $(patsubst %, %.p2.dot, $(_PARTFILES))
-_PARTS_P3_DOT := $(patsubst %, %.p3.dot, $(_PARTFILES))
-_PARTS_P4_DOT := $(patsubst %, %.p4.dot, $(_PARTFILES))
-_PARTS_P999_DOT := $(patsubst %, %.p999.dot, $(_PARTFILES))
-newuniverse: \
-	output/images \
-	$(_PARTS_GV) \
-	$(_PARTS_GV_SVG) \
-	$(_PARTS_GV_CAIRO_SVG) \
-	$(_PARTS_IMG_GV) \
-	$(_PARTS_IMG_GV_SVG) \
-	$(_PARTS_IMG_GV_CAIRO_SVG) \
-	$(_PARTS_IMG_P1_DOT) \
-	$(_PARTS_IMG_P2_DOT) \
-	$(_PARTS_IMG_P3_DOT) \
-	$(_PARTS_IMG_P4_DOT) \
-	$(_PARTS_IMG_P999_DOT)
-	$(_PARTS_P1_DOT) \
-	$(_PARTS_P2_DOT) \
-	$(_PARTS_P3_DOT) \
-	$(_PARTS_P4_DOT) \
-	$(_PARTS_P999_DOT)
+_PARTS_DOT := $(patsubst %, %.dot, $(_PARTFILES))
+_PARTS_DOT_PNG := $(patsubst %, %.dot.png, $(_PARTFILES))
+_PARTS_DOT_SVG := $(patsubst %, %.dot.svg, $(_PARTFILES))
+_PARTS_DOT_MIN_SVG := $(patsubst %, %.dot.min.svg, $(_PARTFILES))
+_PARTS_DOT_CAIRO_SVG := $(patsubst %, %.dot.cairo.svg, $(_PARTFILES))
+_PARTS_DOT_CAIRO_MIN_SVG := $(patsubst %, %.dot.cairo.min.svg, $(_PARTFILES))
+_PARTS_IMG_DOT := $(patsubst %, %-img.dot, $(_PARTFILES))
+_PARTS_IMG_DOT_PNG := $(patsubst %, %-img.dot.svg, $(_PARTFILES))
+_PARTS_IMG_DOT_SVG := $(patsubst %, %-img.dot.svg, $(_PARTFILES))
+_PARTS_IMG_DOT_MIN_SVG := $(patsubst %, %-img.dot.min.svg, $(_PARTFILES))
+_PARTS_IMG_DOT_CAIRO_SVG := $(patsubst %, %-img.dot.cairo.svg, $(_PARTFILES))
+_PARTS_IMG_DOT_CAIRO_MIN_SVG := $(patsubst %, %-img.dot.cairo.min.svg, $(_PARTFILES))
+_PARTS_IMG_P1_DOT := $(patsubst %, %-img-p1.dot, $(_PARTFILES))
+_PARTS_IMG_P2_DOT := $(patsubst %, %-img-p2.dot, $(_PARTFILES))
+_PARTS_IMG_P3_DOT := $(patsubst %, %-img-p3.dot, $(_PARTFILES))
+_PARTS_IMG_P4_DOT := $(patsubst %, %-img-p4.dot, $(_PARTFILES))
+_PARTS_IMG_P999_DOT := $(patsubst %, %-img-p999.dot, $(_PARTFILES))
+_PARTS_P1_DOT := $(patsubst %, %-p1.dot, $(_PARTFILES))
+_PARTS_P2_DOT := $(patsubst %, %-p2.dot, $(_PARTFILES))
+_PARTS_P3_DOT := $(patsubst %, %-p3.dot, $(_PARTFILES))
+_PARTS_P4_DOT := $(patsubst %, %-p4.dot, $(_PARTFILES))
+_PARTS_P999_DOT := $(patsubst %, %-p999.dot, $(_PARTFILES))
+_PARTS_DOT_PHASES := $(_PARTS_P1_DOT) $(_PARTS_P2_DOT) $(_PARTS_P3_DOT) $(_PARTS_P4_DOT) $(_PARTS_P999_DOT)
+_PARTS_IMG_DOT_PHASES := $(_PARTS_IMG_P1_DOT) $(_PARTS_IMG_P2_DOT) $(_PARTS_IMG_P3_DOT) $(_PARTS_IMG_P4_DOT) $(_PARTS_IMG_P999_DOT)
 
-%.zen.html %.system.html %.compat.html %.safe.html &: $(foreach _, $(_VARIANTS_PUBLISH), $(_UNIVERSE).$(_) $(_UNIVERSE).img.$(_)) $(_UNIVERSE).gv $(_UNIVERSE).img.gv
-	node examples/build-site.js --output=output $(_UNIVERSE).gv
-	$(_PRETTY_BIOME)
+.SECONDARY:
+profile: \
+	output/images \
+	$(_PARTS_P4_DOT) \
+	$(patsubst %, %.png, $(_PARTS_P4_DOT))
+	@date +"%FT%T%z Build complete."
 
 # Compress an SVG by applying lossy XML transformations.
 %.min.svg: %.svg
 	scour $(_SCOUR_FLAGS) -i $^ -o $@
+	@date +"%FT%T%z Generated minified $@."
 
 # Render a vector SVG document from the given GraphViz document,
 # using the Cairo renderer. This renderer transforms text into
@@ -105,20 +100,48 @@ newuniverse: \
 # Additionally, the Cairo renderer currently produces unexpected output
 # for embedded images. It is unclear if the output or the viewer application
 # is to blame.
-%.gv.cairo.svg: %.gv
-	@date +"Cairo SVG render process starts %FT%T%z"
-	dot $(_DOT_FLAGS) -Tsvg:cairo -o $@ $<
-	@date +"Cairo SVG render process exits %FT%T%z"
+%.dot.cairo.svg: %.dot
+	dot $(_DOT_FLAGS) -Tsvg:cairo -o$@ $<
+	@date +"%FT%T%z Rendered Cairo SVG $@."
 
 # Render a vector SVG document from the given GraphViz document.
-%.gv.svg: %.gv
-	@date +"SVG render process starts %FT%T%z"
-	dot $(_DOT_FLAGS) -Tsvg -o $@ $<
-	@date +"SVG render process exits %FT%T%z"
+%.dot.svg: %.dot
+	dot $(_DOT_FLAGS) -Tsvg -o$@ $<
+	@date +"%FT%T%z Rendered SVG $@."
 
 # Render a rasterized PNG image from the given GraphViz document.
-%.gv.png: %.gv
-	dot $(_DOT_FLAGS) -Tpng -o $@ $<
+%.dot.png: %.dot
+	dot $(_DOT_FLAGS) -Tpng -o$@ $<
+	@date +"%FT%T%z Rendered PNG $@."
+
+# Build individual dot layout phases.
+# These can NOT be used incrementally, as the layout engine always starts
+# in phase 1, regardless of the input (to be confirmed!). When this was
+# attempted, the build failed for multiple segments reliably.
+%-p1.dot: %.dot
+	dot $(_DOT_FLAGS) -Tdot -Gphase=1 -o$@ $<
+	@date +"%FT%T%z Generated dot layout phase 1 $@."
+%-p2.dot: %.dot
+	dot $(_DOT_FLAGS) -Tdot -Gphase=2 -o$@ $<
+	@date +"%FT%T%z Generated dot layout phase 2 $@."
+%-p3.dot: %.dot
+	dot $(_DOT_FLAGS) -Tdot -Gphase=3 -o$@ $<
+	@date +"%FT%T%z Generated dot layout phase 3 $@."
+%-p4.dot: %.dot
+	dot $(_DOT_FLAGS) -Tdot -Gphase=4 -o$@ $<
+	@date +"%FT%T%z Generated dot layout phase 4 $@."
+%-p999.dot: %.dot
+	dot $(_DOT_FLAGS) -Tdot -Gphase=999 -o$@ $<
+	@date +"%FT%T%z Generated dot layout phase 999 $@."
+
+# Embed (emoji) prefixes as <IMG> elements in the label.
+# At time of implementation, this output did not render well
+# with cairo.
+%-img.dot: %.dot output/images | output
+	node --enable-source-maps examples/emojify.js \
+		--assets=output/images \
+		--target=$<
+	@date +"%FT%T%z Embedded prefixes into $@."
 
 # Render a GraphViz document in DOT language, which represents the
 # requested slice from the universe.
@@ -129,34 +152,11 @@ newuniverse: \
 		--skip-after=$(subst .gv,,$(word 4, $(subst _, ,$@))) \
 		--output=$@ \
 		$(_TIMELINES)
-	dot -Tcanon -o $@ $@
+	@date +"%FT%T%z Generated GraphViz document $@."
 
-# Build individual dot layout phases.
-# These can NOT be used incrementally, as the layout engine always starts
-# in phase 1, regardless of the input (to be confirmed!). When this was
-# attempted, the build failed for multiple segments reliably.
-%.p1.dot: %.gv
-	dot $(_DOT_FLAGS) -Tdot -Gphase=1 -o $@ $<
-%.p2.dot: %.gv
-	dot $(_DOT_FLAGS) -Tdot -Gphase=2 -o $@ $<
-%.p3.dot: %.gv
-	dot $(_DOT_FLAGS) -Tdot -Gphase=3 -o $@ $<
-%.p4.dot: %.gv
-	dot $(_DOT_FLAGS) -Tdot -Gphase=4 -o $@ $<
-%.p999.dot: %.gv
-	dot $(_DOT_FLAGS) -Tdot -Gphase=999 -o $@ $<
-
-# Embed (emoji) prefixes as <IMG> elements in the label.
-# At time of implementation, this output did not render well
-# with cairo.
-%.img.dot: %.dot output/images | output
-	node --enable-source-maps examples/emojify.js \
-		--assets=output/images \
-		--target=$<
-%.img.gv: %.gv output/images | output
-	node --enable-source-maps examples/emojify.js \
-		--assets=output/images \
-		--target=$<
+%.dot: %.gv
+	dot -Tcanon -o$@ $<
+	@date +"%FT%T%z Normalized GraphViz document $@."
 
 # Not actually referenced in the implementation. Contains the library code
 # for usage somewhere else.
@@ -171,6 +171,7 @@ _site/index.html: $(_UNIVERSE).zen.html | _site
 # Clean up all build artifacts.
 clean:
 	rm --force --recursive _site lib
+	find -iname "callgrind.out.*" -delete
 	find -iwholename "schemas/*.schema.json" -delete
 # Additionally delete all stored dependencies.
 purge: clean
@@ -202,6 +203,8 @@ validate-data: .venv validate-schema
 
 # Run available software tests.
 test: node_modules lib
+	TZ=UTC node --enable-source-maps --inspect node_modules/.bin/mocha --reporter-option maxDiffSize=16000 lib/*.test.js
+coverage: node_modules lib
 	NODE_OPTIONS=--enable-source-maps TZ=UTC npm exec -- c8 --reporter=html-spa mocha --reporter-option maxDiffSize=16000 lib/*.test.js
 
 # Python dependency handling

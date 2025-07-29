@@ -231,6 +231,9 @@ export const dot = () => {
 		if (bId === undefined) {
 			throw new InvalidOperationError(`Node with given title is unknown: ${b}`);
 		}
+		if (aId === bId) {
+			throw new InvalidOperationError(`Can't link node with itself: ${a}-${b}`);
+		}
 
 		if (options?.skipDraw !== true) {
 			renderRaw(

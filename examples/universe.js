@@ -244,7 +244,20 @@ const rankCount = new Set(ranks.values()).size;
 process.stdout.write(`Style sheet generated for ${rankCount} ranks.\n`);
 
 process.stdout.write(`Writing graph...\n`);
-writeFileSync(outputPath, dotGraph.graph);
+if (dotGraph.graph.length === 1) {
+	writeFileSync(outputPath, dotGraph.graph[0]);
+} else {
+	for (let graphIndex = 0; graphIndex < dotGraph.graph.length; ++graphIndex) {
+		const graph = dotGraph.graph[graphIndex];
+		const index = graphIndex
+			.toFixed()
+			.padStart(dotGraph.graph.length.toFixed().length, "0");
+		const segmentFilename = outputPath.replace(/\.gv$/, `-segment.${index}.gv`);
+		process.stdout.write(`  - ${segmentFilename}...\n`);
+		writeFileSync(segmentFilename, graph);
+	}
+}
+
 process.stdout.write(`Writing graph info...\n`);
 writeFileSync(outputPath.replace(/\.gv$/, ".info"), `${info.join("\n")}\n`);
 process.stdout.write("GraphViz graph for universe written successfully.\n");

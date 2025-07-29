@@ -23,7 +23,12 @@ This repository contains all crucial parts for the engine. Ensure to assemble it
 - Timelines whose file name starts with `_` are local (not part of universe).
 
 ```shell
+# Rebuild MTG editions data set.
 dot -Tsvg:cairo timelines/mtg-editions.yml.gv > timelines/mtg-editions.yml.svg
+
+# Profile build
+remake --profile --jobs --keep-going --output-sync profile
+gprof2dot -e0 -n0 --format=callgrind callgrind.out.* > callgrind.out.dot
 ```
 
 All rights reserved.

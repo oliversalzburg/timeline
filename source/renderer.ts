@@ -4,17 +4,16 @@ import {
 	mustExist,
 } from "@oliversalzburg/js-utils/data/nil.js";
 import { hashCyrb53 } from "@oliversalzburg/js-utils/data/string.js";
-import { InvalidOperationError } from "@oliversalzburg/js-utils/errors/InvalidOperationError.js";
 import { formatMilliseconds } from "@oliversalzburg/js-utils/format/milliseconds.js";
-import { clamp } from "@oliversalzburg/js-utils/math/core.js";
-import { FONTS_SYSTEM, MILLISECONDS, TRANSPARENT } from "./constants.js";
+import { FONTS_SYSTEM, TRANSPARENT } from "./constants.js";
 import { dot, makeHtmlString, type NodeProperties } from "./dot.js";
 import { roundToDay } from "./operator.js";
-import { matchLuminance, palette } from "./palette.js";
-import { styles } from "./styles.js";
+import { matchLuminance, type PaletteMeta, palette } from "./palette.js";
+import { type Style, styles } from "./styles.js";
 import type {
 	RenderMode,
 	TimelineEntry,
+	TimelineRecord,
 	TimelineReferenceRenderer,
 } from "./types.js";
 
@@ -25,16 +24,166 @@ export interface RendererOptions {
 	debug: boolean;
 	now: number;
 	origin: number;
-	scale: "linear" | "logarithmic";
+	segment: number;
 	skipAfter: number;
 	skipBefore: number;
 	theme: RenderMode;
 }
 
+/**
+ * Determine the rank of a timeline.
+ * NOT to be confused with ranks in a dot graph.
+ */
 export const rank = (timeline: Maybe<TimelineReferenceRenderer>) => {
 	return isNil(timeline)
 		? -1
 		: (timeline.meta.rank ?? (timeline.meta.color === TRANSPARENT ? -1 : 0));
+};
+
+export interface PlanEvent {
+	timeline: TimelineReferenceRenderer;
+	index?: number;
+	timestamp: number;
+	title: string;
+}
+export const plan = (
+	timelines: Array<TimelineReferenceRenderer>,
+	options: Partial<RendererOptions> = {},
+) => {
+	const segments = new Array<{
+		events: Array<PlanEvent>;
+		timelines: Array<string>;
+		timestamps: Array<number>;
+	}>();
+
+	// A list of every timestamp that is used in any of the given timelines.
+	const timestampsUnique = [
+		...new Set(
+			timelines.flatMap((t) => roundToDay(t).records.map(([time, _]) => time)),
+		),
+	];
+
+	// Determine if a given timestamp is in the current window.
+	const isTimestampInRange = (timestamp: number): boolean =>
+		(options.skipBefore ?? Number.NEGATIVE_INFINITY) < timestamp &&
+		timestamp < (options.skipAfter ?? Number.POSITIVE_INFINITY);
+
+	const hasTimelineEnded = (
+		timeline: TimelineReferenceRenderer,
+		timestamp: number,
+	): boolean => timeline.records[timeline.records.length - 1][0] < timestamp;
+	const hasTimelineStarted = (
+		timeline: TimelineReferenceRenderer,
+		timestamp: number,
+	): boolean => timeline.records[0][0] <= timestamp;
+
+	const eventHorizon = timestampsUnique.filter(isTimestampInRange);
+	const globalHistory = eventHorizon.sort((a, b) => a - b);
+
+	let globalHistoryIndex = 0;
+	let segmentRanks = 0;
+	let segmentEvents = new Array<{
+		timeline: TimelineReferenceRenderer;
+		index?: number;
+		timestamp: number;
+		title: string;
+	}>();
+	const segmentTimelines = new Set<string>();
+	const localHistoryIndexes = new Array<number>(timelines.length).fill(
+		0,
+		0,
+		timelines.length,
+	);
+
+	const endSegment = () => {
+		const timestamp = globalHistory[globalHistoryIndex];
+		for (const timeline of timelines) {
+			if (
+				!hasTimelineStarted(timeline, timestamp) ||
+				hasTimelineEnded(timeline, timestamp)
+			) {
+				continue;
+			}
+			segmentEvents.push({
+				timeline,
+				timestamp,
+				title: `TX-${timeline.meta.id}-${timestamp}`,
+			});
+		}
+		segments.push({
+			events: segmentEvents,
+			timelines: [...segmentTimelines],
+			timestamps: [
+				...new Set(
+					segmentEvents.map((_) =>
+						_.index !== undefined
+							? _.timeline.records[_.index][0]
+							: mustExist(_.timestamp),
+					),
+				),
+			].sort((a, b) => a - b),
+		});
+		segmentRanks = 0;
+		segmentEvents = [];
+		segmentTimelines.clear();
+	};
+
+	const startSegment = () => {
+		const timestamp = globalHistory[globalHistoryIndex];
+		for (const timeline of timelines) {
+			if (
+				!hasTimelineStarted(timeline, timestamp) ||
+				hasTimelineEnded(timeline, timestamp)
+			) {
+				continue;
+			}
+			segmentEvents.push({
+				timeline,
+				timestamp,
+				title: `TX-${timeline.meta.id}-${timestamp}`,
+			});
+		}
+	};
+
+	while (globalHistoryIndex < globalHistory.length) {
+		const timestamp = globalHistory[globalHistoryIndex];
+		for (
+			let timelineIndex = 0;
+			timelineIndex < timelines.length;
+			++timelineIndex
+		) {
+			const timeline = timelines[timelineIndex];
+			if (
+				!hasTimelineStarted(timeline, timestamp) ||
+				hasTimelineEnded(timeline, timestamp)
+			) {
+				continue;
+			}
+
+			let localHistoryIndex = localHistoryIndexes[timelineIndex];
+			while (
+				localHistoryIndex < timeline.records.length &&
+				timeline.records[localHistoryIndex][0] === timestamp
+			) {
+				segmentEvents.push({
+					timeline,
+					index: localHistoryIndex,
+					title: timeline.records[localHistoryIndex][1].title,
+					timestamp: timeline.records[localHistoryIndex][0],
+				});
+				segmentTimelines.add(timeline.meta.id);
+				++localHistoryIndex;
+			}
+			localHistoryIndexes[timelineIndex] = localHistoryIndex;
+		}
+		if (100 < ++segmentRanks) {
+			endSegment();
+			startSegment();
+		}
+		++globalHistoryIndex;
+	}
+	endSegment();
+	return segments;
 };
 
 /**
@@ -46,20 +195,18 @@ export const rank = (timeline: Maybe<TimelineReferenceRenderer>) => {
 export const render = (
 	timelines: Array<TimelineReferenceRenderer>,
 	options: Partial<RendererOptions> = {},
-) => {
-	const timestampsUnique = [
-		...new Set(
-			timelines.flatMap((t) => roundToDay(t).records.map(([time, _]) => time)),
-		),
-	].sort((a, b) => a - b);
-	type TimeTuple = [number, TimelineReferenceRenderer, TimelineEntry];
-	const timelineGlobal = timelines
-		.flatMap((_) =>
-			roundToDay(_).records.map((r) => [r[0], _, r[1]] as TimeTuple),
-		)
-		.sort(([a, , aentry], [b, , bentry]) =>
-			a - b !== 0 ? a - b : aentry.title.localeCompare(bentry.title),
-		);
+): {
+	graph: Array<string>;
+	ids: Set<string>;
+	palette: PaletteMeta<string>;
+	ranks: Map<TimelineReferenceRenderer, number>;
+	styles: Map<number, Style>;
+} => {
+	const now = options?.now ?? Date.now();
+	const origin = options?.origin ?? timelines[0].records[0][0];
+	const originString = options?.dateRenderer
+		? options.dateRenderer(origin)
+		: new Date(origin).toDateString();
 
 	const isTimestampInRange = (timestamp: number): boolean =>
 		(options.skipBefore ?? Number.NEGATIVE_INFINITY) < timestamp &&
@@ -84,171 +231,238 @@ export const render = (
 	);
 	const styleSheet = styles([...ranks.values()]).toStyleSheet();
 
-	const d = dot();
-
-	d.raw("digraph timeline {");
-	const FONT_SIZE = 12;
-	//const FONT_NODES = "Simple Plan";
-	//const FONT_EDGES = "Master Photograph";
-	d.raw(`node [fontname="${FONTS_SYSTEM}"; fontsize="${FONT_SIZE}";]`);
-	d.raw(`edge [fontname="${FONTS_SYSTEM}"; fontsize="${FONT_SIZE}";]`);
-	d.raw(`bgcolor="${TRANSPARENT}"`);
-	d.raw('comment=" "');
-	d.raw(`fontname="${FONTS_SYSTEM}"`);
-	d.raw(`fontsize="${FONT_SIZE}"`);
-	d.raw('label=" "');
-	d.raw(`rankdir="TD"`);
-	d.raw(`ranksep="0.5"`);
-	d.raw(`tooltip=" "`);
-
-	const TIME_BASE =
-		options.baseUnit === "week"
-			? MILLISECONDS.ONE_WEEK
-			: options.baseUnit === "month"
-				? MILLISECONDS.ONE_MONTH
-				: MILLISECONDS.ONE_DAY;
-	const TIME_SCALE = 1 / TIME_BASE;
-
-	const now = options?.now ?? Date.now();
-	const origin = options?.origin ?? timestampsUnique[0];
-	const originString = options?.dateRenderer
-		? options.dateRenderer(origin)
-		: new Date(origin).toDateString();
-	let nextEventIndex = 0;
+	let eventIndex = 0;
 	const allNodeIds = new Set<string>();
-
-	/**
-	 * We iterate over each unique timestamp that exists globally.
-	 * For each unique timestamp, we want to look at all global events that
-	 * exist at this timestamp.
-	 */
-	for (const timestamp of timestampsUnique) {
+	const registerId = (timestamp: number) => {
 		// Convert the timestamp to a Date for API features.
 		const date = new Date(timestamp);
+		const id = `Z${date.getFullYear().toFixed().padStart(4, "0")}-${(date.getMonth() + 1).toFixed().padStart(2, "0")}-${date.getDate().toFixed().padStart(2, "0")}-${eventIndex++}`;
+		allNodeIds.add(id);
+		return id;
+	};
 
-		let eventIndex = 0;
-		const makeId = () => {
-			const id = `Z${date.getFullYear().toFixed().padStart(4, "0")}-${(date.getMonth() + 1).toFixed().padStart(2, "0")}-${date.getDate().toFixed().padStart(2, "0")}-${eventIndex++}`;
-			allNodeIds.add(id);
-			return id;
-		};
+	const computeNodeProperties = (
+		timestamp: number,
+		title: string,
+		contributors: Set<TimelineReferenceRenderer>,
+		leader?: TimelineReferenceRenderer,
+	) => {
+		const classList = [
+			...contributors.values().map((_) => classes.get(_.meta.id)),
+		];
+		const color = mustExist(
+			colors.get(mustExist(leader, "missing leader").meta.id),
+			"missing color",
+		).pen;
+		const fillcolors = contributors.values().reduce((fillColors, timeline) => {
+			const fill = mustExist(colors.get(timeline.meta.id)).fill;
+
+			// Whatever we want to draw, _one_ transparent fill should be enough.
+			if (fill === TRANSPARENT && fillColors.includes(TRANSPARENT)) {
+				return fillColors;
+			}
+
+			fillColors.push(
+				timeline === leader || fill === TRANSPARENT
+					? fill
+					: matchLuminance(
+							fill,
+							mustExist(colors.get(mustExist(leader).meta.id)).fill,
+						),
+			);
+			return fillColors;
+		}, new Array<string>());
+		const fontcolor = mustExist(colors.get(mustExist(leader).meta.id)).font;
+		const id = registerId(timestamp);
+
+		const prefixes = contributors
+			.values()
+			.reduce((_, timeline) => _ + (timeline.meta.prefix ?? ""), "");
+		const dateString = options?.dateRenderer
+			? options.dateRenderer(timestamp)
+			: new Date(timestamp).toDateString();
+		const label = `${0 < prefixes.length ? `${prefixes}\u00A0` : ""}${makeHtmlString(
+			`${title}\\n${dateString}`,
+		)}`;
 
 		const timePassedSinceOrigin = timestamp - origin;
 		const timePassedSinceThen = now - timestamp;
+		const tooltip = `${formatMilliseconds(timePassedSinceOrigin)} since ${originString}\\n${formatMilliseconds(timePassedSinceThen)} ago`;
 
-		// We now iterate over all global events at the current timestamp.
-		while (
-			nextEventIndex < timelineGlobal.length &&
-			timelineGlobal[nextEventIndex][0] === timestamp
-		) {
-			const contributors = new Set<TimelineReferenceRenderer>();
-			let leader: TimelineReferenceRenderer | undefined;
+		const style = mustExist(styleSheet.get(rank(leader)));
 
-			// We now further iterate over all global events at this timestamp which share the same title.
-			let [timestampActual, timeline, entry] = timelineGlobal[nextEventIndex];
-			do {
-				/**
-				 * We know that `timelineGlobal[nextEventIndex]` points to an event at `timestamp`,
-				 * because we handle _all_ timestamps in an ordered series, and we always consume
-				 * all events from the previous timestamp.
-				 */
-				[timestampActual, timeline, entry] = timelineGlobal[nextEventIndex];
-				if (timestamp !== timestampActual) {
-					throw new InvalidOperationError("This should not happen :(");
-				}
+		const nodeProperties: Partial<NodeProperties> = {
+			class: classList.join(" "),
+			color,
+			fillcolor:
+				fillcolors.length === 1
+					? fillcolors[0]
+					: `${fillcolors[0]}:${fillcolors[1]}`,
+			fontcolor,
+			id,
+			label,
+			penwidth: style.outline ? style.penwidth : 0,
+			shape: style.shape,
+			skipDraw: !isTimestampInRange(timestamp),
+			style: style.style?.join(","),
+			tooltip,
+			ts: timestamp,
+		};
 
-				contributors.add(timeline);
-				if (rank(leader) <= rank(timeline)) {
-					leader = timeline;
-				}
+		return nodeProperties;
+	};
 
-				++nextEventIndex;
-			} while (
-				nextEventIndex < timelineGlobal.length - 1 &&
-				timelineGlobal[nextEventIndex][0] === timestamp &&
-				timelineGlobal[nextEventIndex][2].title === entry.title
+	const dotGraph = () => {
+		const d = dot();
+
+		d.raw("digraph timeline {");
+		const FONT_SIZE = 12;
+		d.raw(`node [fontname="${FONTS_SYSTEM}"; fontsize="${FONT_SIZE}";]`);
+		d.raw(`edge [fontname="${FONTS_SYSTEM}"; fontsize="${FONT_SIZE}";]`);
+		d.raw(`bgcolor="${TRANSPARENT}"`);
+		d.raw('comment=" "');
+		d.raw(`fontname="${FONTS_SYSTEM}"`);
+		d.raw(`fontsize="${FONT_SIZE}"`);
+		d.raw('label=" "');
+		d.raw(`rankdir="TD"`);
+		d.raw(`ranksep="0.5"`);
+		d.raw(`tooltip=" "`);
+		return d;
+	};
+
+	const renderPlan = plan(timelines, options);
+	const graphSegments = new Array<string>();
+	for (const segment of renderPlan) {
+		const timestampsSegment = segment.timestamps;
+		const timelinesSegment = timelines.filter((_) =>
+			segment.timelines.includes(_.meta.id),
+		);
+
+		const d = dotGraph();
+
+		/**
+		 * We iterate over each unique timestamp that exists globally.
+		 * For each unique timestamp, we want to look at all global events that
+		 * exist at this timestamp.
+		 */
+		for (const timestamp of timestampsSegment) {
+			eventIndex = 0;
+
+			// We now iterate over all global events at the current timestamp.
+			const events = segment.events.filter((_) => _.timestamp === timestamp);
+
+			const eventTitles = new Map<string, PlanEvent>(
+				events.map((event) => [event.title, event]),
 			);
 
-			const classList = [
-				...contributors.values().map((_) => classes.get(_.meta.id)),
-			];
-			const color = mustExist(colors.get(mustExist(leader).meta.id)).pen;
-			const fillcolors = contributors
-				.values()
-				.reduce((fillColors, timeline) => {
-					const fill = mustExist(colors.get(timeline.meta.id)).fill;
+			for (const title of new Set(eventTitles.keys())) {
+				// Remember which timelines contribute to the event.
+				const contributors = new Set<TimelineReferenceRenderer>();
+				// Remember the contributor with the highest rank.
+				let leader: TimelineReferenceRenderer | undefined;
 
-					// Whatever we want to draw, _one_ transparent fill should be enough.
-					if (fill === TRANSPARENT && fillColors.includes(TRANSPARENT)) {
-						return fillColors;
+				// We now further iterate over all global events at this timestamp which share the same title.
+				for (const event of events) {
+					if (event.title !== title) {
+						continue;
+					}
+					contributors.add(event.timeline);
+					if (rank(leader) <= rank(event.timeline)) {
+						leader = event.timeline;
+					}
+				}
+
+				const nodeProperties = computeNodeProperties(
+					timestamp,
+					title,
+					contributors,
+					leader,
+				);
+
+				d.node(title, nodeProperties);
+			}
+		}
+
+		// Link items in their individual timelines together.
+		let timePassed = 0;
+		for (const timeline of timelinesSegment) {
+			const color = mustExist(colors.get(timeline.meta.id)).pen;
+			const style = mustExist(styleSheet.get(rank(timeline)));
+
+			// The timestamp we looked at during the last iteration.
+			let previousTimestamp: number | undefined;
+			// The entries at the previous timestamp.
+			let previousEntries = new Array<string>();
+			// How many milliseconds passed since the previous timestamp.
+			let timePassed = 0;
+
+			const eventsInSegment = segment.events.filter(
+				(_) => _.timeline.meta.id === timeline.meta.id,
+			);
+			const eventTimesInSegment = eventsInSegment.map((_) =>
+				_.index !== undefined
+					? timeline.records[_.index][0]
+					: mustExist(_.timestamp),
+			);
+
+			for (const timestamp of eventTimesInSegment) {
+				if (previousTimestamp && timestamp <= previousTimestamp) {
+					continue;
+				}
+
+				timePassed = previousTimestamp
+					? Math.max(1, timestamp - previousTimestamp)
+					: 0;
+
+				// We need to remember these for the next timestamp iteration.
+				const processedTitles = new Array<string>();
+
+				const eventsAtTimestamp = eventsInSegment.filter(
+					(_) =>
+						(_.index !== undefined
+							? timeline.records[_.index][0]
+							: mustExist(_.timestamp)) === timestamp,
+				);
+				for (const event of eventsAtTimestamp) {
+					const timelineEvent =
+						event.index !== undefined
+							? event.timeline.records[event.index][1].title
+							: event.title;
+
+					processedTitles.push(timelineEvent);
+					if (0 === previousEntries.length) {
+						continue;
 					}
 
-					fillColors.push(
-						timeline === leader || fill === TRANSPARENT
-							? fill
-							: matchLuminance(
-									fill,
-									mustExist(colors.get(mustExist(leader).meta.id)).fill,
-								),
-					);
-					return fillColors;
-				}, new Array<string>());
-			const fontcolor = mustExist(colors.get(mustExist(leader).meta.id)).font;
-			const id = makeId();
+					for (const previousEntry of previousEntries) {
+						d.link(previousEntry, timelineEvent, {
+							color,
+							penwidth: style.link
+								? style.outline
+									? style.penwidth
+									: 0
+								: undefined,
+							samehead: timeline.meta.id,
+							sametail: timeline.meta.id,
+							skipDraw: !isTimestampInRange(timestamp),
+							style: style.link ? "solid" : "invis",
+							tooltip: style.link
+								? `${formatMilliseconds(timePassed)} passed`
+								: undefined,
+						});
+					}
+				}
 
-			const prefixes = contributors
-				.values()
-				.reduce((_, timeline) => _ + (timeline.meta.prefix ?? ""), "");
-			const dateString = options?.dateRenderer
-				? options.dateRenderer(timestamp)
-				: new Date(timestamp).toDateString();
-			const label = `${0 < prefixes.length ? `${prefixes}\u00A0` : ""}${makeHtmlString(
-				`${entry.title}\\n${dateString}`,
-			)}`;
-
-			const style = mustExist(styleSheet.get(rank(leader)));
-
-			const nodeProperties: Partial<NodeProperties> = {
-				class: classList.join(" "),
-				color,
-				fillcolor:
-					fillcolors.length === 1
-						? fillcolors[0]
-						: `${fillcolors[0]}:${fillcolors[1]}`,
-				fontcolor,
-				id,
-				label,
-				penwidth: style.outline ? style.penwidth : 0,
-				shape: style.shape,
-				skipDraw: !isTimestampInRange(timestamp),
-				style: style.style?.join(","),
-				tooltip: `${formatMilliseconds(timePassedSinceOrigin)} since ${originString}\\n${formatMilliseconds(timePassedSinceThen)} ago`,
-				ts: timestamp,
-			};
-
-			d.node(entry.title, nodeProperties);
-		}
-	}
-
-	// Link items in their individual timelines together.
-	let timePassed = 0;
-	for (const timeline of timelines) {
-		const color = mustExist(colors.get(timeline.meta.id)).pen;
-		const style = mustExist(styleSheet.get(rank(timeline)));
-
-		// The timestamp we looked at during the last iteration.
-		let previousTimestamp: number | undefined;
-		// The entries at the previous timestamp.
-		let previousEntries = new Array<TimelineEntry>();
-		// How many milliseconds passed since the previous timestamp.
-		let timePassed = 0;
-		nextEventIndex = 0;
-
-		for (const [timestamp] of timeline.records) {
-			if (previousTimestamp && timestamp <= previousTimestamp) {
-				continue;
+				previousTimestamp = timestamp;
+				previousEntries = processedTitles;
 			}
+		}
 
+		// Link up all entries in a single time chain.
+		let previousTimestamp: number | undefined;
+		let previousTimestampEntries = new Array<TimelineEntry>();
+		timePassed = 0;
+		for (const timestamp of timestampsSegment) {
 			timePassed = previousTimestamp
 				? Math.max(1, timestamp - previousTimestamp)
 				: 0;
@@ -256,133 +470,48 @@ export const render = (
 			// We need to remember these for the next timestamp iteration.
 			const processedEntries = new Array<TimelineEntry>();
 
-			while (
-				nextEventIndex < timeline.records.length &&
-				timeline.records[nextEventIndex][0] === timestamp
-			) {
-				const [, entry] = timeline.records[nextEventIndex++];
-				processedEntries.push(entry);
-				if (0 === previousEntries.length) {
+			// We now iterate over all global events at the current timestamp.
+			const events = segment.events
+				.filter((_) => _.timestamp === timestamp)
+
+				.sort((a, b) => a.title.localeCompare(b.title));
+
+			for (const event of events) {
+				if (processedEntries.find((_) => _.title === event.title)) {
+					// Events in multiple timelines share time and title.
+					// By skipping here, we automatically end up with only a single node with that identity.
 					continue;
 				}
 
-				for (const previousEntry of previousEntries) {
-					const linkLength =
-						timePassed < TIME_BASE
-							? // Derived from minimum value for ranksep.
-								0.02
-							: clamp(
-									options?.scale === "logarithmic"
-										? Math.log(timePassed * TIME_SCALE * 10)
-										: timePassed * TIME_SCALE,
-									0.02,
-									// Likely to just introduce rasterization issues, if larger.
-									1000,
-								);
+				processedEntries.push(event);
 
-					d.link(previousEntry.title, entry.title, {
-						color,
-						minlen: options.condensed !== true ? linkLength : undefined,
-						penwidth: style.link
-							? style.outline
-								? style.penwidth
-								: 0
-							: undefined,
-						samehead: timeline.meta.id,
-						sametail: timeline.meta.id,
+				if (0 === previousTimestampEntries.length) {
+					continue;
+				}
+
+				for (const previousEntry of previousTimestampEntries) {
+					// Draw rank-forcing link between merged timeline entries.
+					// This forces all entries into a globally linear order.
+					d.link(previousEntry.title, event.title, {
 						skipDraw: !isTimestampInRange(timestamp),
-						style: style.link ? "solid" : "invis",
-						tooltip: style.link
-							? `${formatMilliseconds(timePassed)} (${linkLength} ranks)`
+						style: options.debug ? "dashed" : "invis",
+						tooltip: options.debug
+							? `${formatMilliseconds(timePassed)} passed`
 							: undefined,
 					});
 				}
 			}
 
 			previousTimestamp = timestamp;
-			previousEntries = processedEntries;
+			previousTimestampEntries = processedEntries;
 		}
+
+		d.raw("}");
+		graphSegments.push(d.toString());
 	}
-
-	// Link up all entries in a single time chain.
-	let previousTimestamp: number | undefined;
-	let previousTimestampEntries = new Array<TimelineEntry>();
-	let remainder = 0;
-	timePassed = 0;
-	nextEventIndex = 0;
-	for (const timestamp of timestampsUnique) {
-		timePassed = previousTimestamp
-			? Math.max(1, timestamp - previousTimestamp)
-			: 0;
-		if (TIME_BASE < remainder + timePassed) {
-			timePassed += remainder;
-			remainder = timePassed % TIME_BASE;
-			timePassed -= remainder;
-		}
-
-		// We need to remember these for the next timestamp iteration.
-		const processedEntries = new Array<TimelineEntry>();
-
-		while (
-			nextEventIndex < timelineGlobal.length &&
-			timelineGlobal[nextEventIndex][0] === timestamp
-		) {
-			const [, , entry] = timelineGlobal[nextEventIndex++];
-
-			if (processedEntries.find((_) => _.title === entry.title)) {
-				// Events in multiple timelines share time and title.
-				// By skipping here, we automatically end up with only a single node with that identity.
-				continue;
-			}
-
-			processedEntries.push(entry);
-
-			if (0 === previousTimestampEntries.length) {
-				continue;
-			}
-
-			// This link length is ultimately the strictest control on the distance between events.
-			// If we have a "time base" of 1 day, we want all events that appear within the same day,
-			// to be grouped in one row. For simplicity, we focus on time distances larger than 24 hours,
-			// instead of strict date changes.
-			// For any distance smaller than 1 day, we want to ensure a link length < 1, to keep the node
-			// on the same row as the previous one.
-			// For any distances of 1 day or longer, we want to ensure the link length is also >= 1.
-			const linkLength = Math.trunc(
-				timePassed < TIME_BASE
-					? 0
-					: clamp(
-							options?.scale === "logarithmic"
-								? Math.log(timePassed * TIME_SCALE * 10)
-								: timePassed * TIME_SCALE,
-							0,
-							// Arbitrarily chosen as "sane" limit.
-							1000,
-						),
-			);
-
-			for (const previousEntry of previousTimestampEntries) {
-				// Draw rank-forcing link between merged timeline entries.
-				// This forces all entries into a globally linear order.
-				d.link(previousEntry.title, entry.title, {
-					minlen: options.condensed !== true ? linkLength : undefined,
-					skipDraw: !isTimestampInRange(timestamp),
-					style: options.debug ? "dashed" : "invis",
-					tooltip: options.debug
-						? `${formatMilliseconds(timePassed)} (carrying ${remainder})`
-						: undefined,
-				});
-			}
-		}
-
-		previousTimestamp = timestamp;
-		previousTimestampEntries = processedEntries;
-	}
-
-	d.raw("}");
 
 	return {
-		graph: d.toString(),
+		graph: graphSegments,
 		ids: allNodeIds,
 		palette: paletteMeta,
 		ranks,
