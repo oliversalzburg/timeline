@@ -8,3 +8,4 @@ node_modules/
 output/
 timelines/.*
 tsconfig.tsbuildinfo
+build.log

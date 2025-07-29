@@ -38,21 +38,21 @@ const VARIANTS = {
 	// Intended for exploration.
 	zen: {
 		embedPrefixes: true,
-		svgSource: ".default.svg",
+		svgSource: ".svg",
 		withJs: true,
 		starfield: true,
 	},
 	// Retains text, has JS navigation.
 	default: {
 		embedPrefixes: true,
-		svgSource: ".default.svg",
+		svgSource: ".svg",
 		withJs: true,
 		starfield: false,
 	},
 	// Best-effort to produce something viewable.
 	static: {
 		embedPrefixes: true,
-		svgSource: ".cairo.min.svg",
+		svgSource: ".min.svg",
 		withJs: false,
 		starfield: false,
 	},
@@ -72,7 +72,7 @@ for (const [variant, settings] of Object.entries(VARIANTS)) {
 		svg: readFileSync(
 			graphPath.replace(
 				/\.gv$/,
-				(settings.embedPrefixes ? ".img" : "") + settings.svgSource,
+				(settings.embedPrefixes ? "-img" : "") + settings.svgSource,
 			),
 			"utf-8",
 		),

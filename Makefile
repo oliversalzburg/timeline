@@ -1,19 +1,21 @@
-.PHONY: default build clean docs git-hook pretty lint test coverage
+.PHONY: default build clean docs git-hook pretty lint test coverage universe
+.SECONDARY:
 
 ifneq "$(CI)" ""
-	DEBUG := 1
+	DEBUG ?= 1
 endif
 
 START ?= 1980
 END ?= 2000
 ORIGIN ?= 1983-12-25
 
-_SEGMENT := $(ORIGIN)_$(START)_$(END)
+_HORIZON := $(ORIGIN)_$(START)_$(END)
 
 PREFIX ?= universe_
 
-_UNIVERSE_NAME := $(PREFIX)$(_SEGMENT)
+_UNIVERSE_NAME := $(PREFIX)$(_HORIZON)
 _UNIVERSE := output/$(_UNIVERSE_NAME)
+_SEGMENTS := $(wildcard $(_UNIVERSE)-segment.*.gv)
 _TIMELINES := $(wildcard timelines/* ~/timelines/*.yml)
 _DEBUG := output/_$(_UNIVERSE_NAME)
 
@@ -28,6 +30,11 @@ _VARIANTS_PUBLISH := cairo.svg cairo.min.svg default.svg default.min.svg png
 _DOT_FLAGS := -Gimagepath=output
 ifneq ($(DEBUG),)
 	_DOT_FLAGS += -v5
+endif
+
+_UNIVERSE_FLAGS :=
+ifneq ($(DEBUG),)
+	_UNIVERSE_FLAGS += --debug
 endif
 
 _PRETTY_BIOME := npm exec -- biome check --write --no-errors-on-unmatched
@@ -50,7 +57,20 @@ output/images: | output
 	node --enable-source-maps contrib/prepare-emoji.js
 	cp contrib/wikimedia/* $@/
 
-universe: $(_UNIVERSE).zen.html
+$(_UNIVERSE)-img.svg &: \
+	$(foreach _, $(_SEGMENTS), $(patsubst %.gv, %-img.dot.svg, $(_)))
+	node --enable-source-maps contrib/svgcat.js \
+		--target=$@ $^
+$(_UNIVERSE).svg &: \
+	$(foreach _, $(_SEGMENTS), $(patsubst %.gv, %.dot.svg, $(_)))
+	node --enable-source-maps contrib/svgcat.js \
+		--target=$@ $^
+
+universe:
+	$(MAKE) $(_UNIVERSE).gv
+	$(MAKE) $(_UNIVERSE)-img.svg $(_UNIVERSE)-img.min.svg $(_UNIVERSE).svg $(_UNIVERSE).min.svg
+	node --enable-source-maps examples/build-site.js \
+		--output=output $(_UNIVERSE).gv
 
 # wip
 _PARTS := 1700_1860 1860_1880 1880_1920 1920_1930 1930_1940 1940_1950 1950_1960 1960_1970 1970_1980 1980_1985 1985_1990 1990_1995 1995_2000 2000_2005 2005_2010 2010_2015 2015_2020 2020_2030
@@ -81,7 +101,6 @@ _PARTS_P999_DOT := $(patsubst %, %-p999.dot, $(_PARTFILES))
 _PARTS_DOT_PHASES := $(_PARTS_P1_DOT) $(_PARTS_P2_DOT) $(_PARTS_P3_DOT) $(_PARTS_P4_DOT) $(_PARTS_P999_DOT)
 _PARTS_IMG_DOT_PHASES := $(_PARTS_IMG_P1_DOT) $(_PARTS_IMG_P2_DOT) $(_PARTS_IMG_P3_DOT) $(_PARTS_IMG_P4_DOT) $(_PARTS_IMG_P999_DOT)
 
-.SECONDARY:
 profile: \
 	output/images \
 	$(_PARTS_P4_DOT) \
@@ -90,7 +109,7 @@ profile: \
 
 # Compress an SVG by applying lossy XML transformations.
 %.min.svg: %.svg
-	scour $(_SCOUR_FLAGS) -i $^ -o $@
+	scour $(_SCOUR_FLAGS) -i $< -o $@
 	@date +"%FT%T%z Generated minified $@."
 
 # Render a vector SVG document from the given GraphViz document,
@@ -143,20 +162,20 @@ profile: \
 		--target=$<
 	@date +"%FT%T%z Embedded prefixes into $@."
 
+%.dot: %.gv
+	dot -Tcanon -o$@ $<
+	@date +"%FT%T%z Normalized GraphViz document $@."
+
 # Render a GraphViz document in DOT language, which represents the
 # requested slice from the universe.
 %.gv: lib node_modules | output
-	node --enable-source-maps examples/universe.js \
+	node --enable-source-maps examples/universe.js $(_UNIVERSE_FLAGS) \
 		--origin=$(word 2, $(subst _, ,$@)) \
 		--skip-before=$(word 3, $(subst _, ,$@)) \
 		--skip-after=$(subst .gv,,$(word 4, $(subst _, ,$@))) \
 		--output=$@ \
 		$(_TIMELINES)
 	@date +"%FT%T%z Generated GraphViz document $@."
-
-%.dot: %.gv
-	dot -Tcanon -o$@ $<
-	@date +"%FT%T%z Normalized GraphViz document $@."
 
 # Not actually referenced in the implementation. Contains the library code
 # for usage somewhere else.

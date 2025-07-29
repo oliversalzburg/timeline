@@ -58,6 +58,14 @@ export const DEFAULT_STYLES: Array<Style> = [
 		style: ["solid", "rounded", "filled"],
 	},
 ];
+export const STYLE_TRANSFER_MARKER: Style = {
+	fill: false,
+	link: true,
+	outline: false,
+	penwidth: 1,
+	shape: "box",
+	style: ["invis"],
+};
 export const STYLE_TRANSPARENT = 0;
 export const STYLE_VISIBLE = 1;
 export const STYLE_INFO = 2;

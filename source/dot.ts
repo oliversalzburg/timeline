@@ -148,6 +148,7 @@ export interface NodeProperties {
 	id: string;
 	label: string;
 	margin: number;
+	ordering: "out" | "in";
 	penwidth: number;
 	shape: Shape;
 	skipDraw: boolean;
@@ -159,7 +160,7 @@ export interface NodeProperties {
 }
 
 const makePropertyString = (
-	properties: Record<string, boolean | number | string>,
+	properties: Record<string, boolean | number | string | undefined>,
 ) =>
 	Object.entries(properties)
 		.filter(([key, _]) => key !== "skipDraw" && _ !== undefined)

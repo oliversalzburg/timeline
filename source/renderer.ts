@@ -9,11 +9,10 @@ import { FONTS_SYSTEM, TRANSPARENT } from "./constants.js";
 import { dot, makeHtmlString, type NodeProperties } from "./dot.js";
 import { roundToDay } from "./operator.js";
 import { matchLuminance, type PaletteMeta, palette } from "./palette.js";
-import { type Style, styles } from "./styles.js";
+import { STYLE_TRANSFER_MARKER, type Style, styles } from "./styles.js";
 import type {
 	RenderMode,
 	TimelineEntry,
-	TimelineRecord,
 	TimelineReferenceRenderer,
 } from "./types.js";
 
@@ -43,6 +42,7 @@ export const rank = (timeline: Maybe<TimelineReferenceRenderer>) => {
 export interface PlanEvent {
 	timeline: TimelineReferenceRenderer;
 	index?: number;
+	isTransferMarker: boolean;
 	timestamp: number;
 	title: string;
 }
@@ -52,7 +52,7 @@ export const plan = (
 ) => {
 	const segments = new Array<{
 		events: Array<PlanEvent>;
-		timelines: Array<string>;
+		timelines: Array<TimelineReferenceRenderer>;
 		timestamps: Array<number>;
 	}>();
 
@@ -85,10 +85,11 @@ export const plan = (
 	let segmentEvents = new Array<{
 		timeline: TimelineReferenceRenderer;
 		index?: number;
+		isTransferMarker: boolean;
 		timestamp: number;
 		title: string;
 	}>();
-	const segmentTimelines = new Set<string>();
+	const segmentTimelines = new Set<TimelineReferenceRenderer>();
 	const localHistoryIndexes = new Array<number>(timelines.length).fill(
 		0,
 		0,
@@ -97,17 +98,15 @@ export const plan = (
 
 	const endSegment = () => {
 		const timestamp = globalHistory[globalHistoryIndex];
-		for (const timeline of timelines) {
-			if (
-				!hasTimelineStarted(timeline, timestamp) ||
-				hasTimelineEnded(timeline, timestamp)
-			) {
+		for (const timeline of segmentTimelines) {
+			if (timestamp === undefined || hasTimelineEnded(timeline, timestamp)) {
 				continue;
 			}
 			segmentEvents.push({
 				timeline,
-				timestamp,
+				timestamp: timestamp + 1,
 				title: `TX-${timeline.meta.id}-${timestamp}`,
+				isTransferMarker: true,
 			});
 		}
 		segments.push({
@@ -123,24 +122,24 @@ export const plan = (
 				),
 			].sort((a, b) => a - b),
 		});
+
 		segmentRanks = 0;
 		segmentEvents = [];
-		segmentTimelines.clear();
+		for (const timeline of segmentTimelines) {
+			if (hasTimelineEnded(timeline, timestamp)) {
+				segmentTimelines.delete(timeline);
+			}
+		}
 	};
 
 	const startSegment = () => {
 		const timestamp = globalHistory[globalHistoryIndex];
-		for (const timeline of timelines) {
-			if (
-				!hasTimelineStarted(timeline, timestamp) ||
-				hasTimelineEnded(timeline, timestamp)
-			) {
-				continue;
-			}
+		for (const timeline of segmentTimelines) {
 			segmentEvents.push({
 				timeline,
-				timestamp,
+				timestamp: timestamp - 1,
 				title: `TX-${timeline.meta.id}-${timestamp}`,
+				isTransferMarker: true,
 			});
 		}
 	};
@@ -160,6 +159,8 @@ export const plan = (
 				continue;
 			}
 
+			segmentTimelines.add(timeline);
+
 			let localHistoryIndex = localHistoryIndexes[timelineIndex];
 			while (
 				localHistoryIndex < timeline.records.length &&
@@ -170,8 +171,8 @@ export const plan = (
 					index: localHistoryIndex,
 					title: timeline.records[localHistoryIndex][1].title,
 					timestamp: timeline.records[localHistoryIndex][0],
+					isTransferMarker: false,
 				});
-				segmentTimelines.add(timeline.meta.id);
 				++localHistoryIndex;
 			}
 			localHistoryIndexes[timelineIndex] = localHistoryIndex;
@@ -242,6 +243,7 @@ export const render = (
 	};
 
 	const computeNodeProperties = (
+		isTransferMarker: boolean,
 		timestamp: number,
 		title: string,
 		contributors: Set<TimelineReferenceRenderer>,
@@ -250,29 +252,35 @@ export const render = (
 		const classList = [
 			...contributors.values().map((_) => classes.get(_.meta.id)),
 		];
-		const color = mustExist(
-			colors.get(mustExist(leader, "missing leader").meta.id),
-			"missing color",
-		).pen;
-		const fillcolors = contributors.values().reduce((fillColors, timeline) => {
-			const fill = mustExist(colors.get(timeline.meta.id)).fill;
+		const color = isTransferMarker
+			? "transparent"
+			: mustExist(
+					colors.get(mustExist(leader, "missing leader").meta.id),
+					"missing color",
+				).pen;
+		const fillcolors = isTransferMarker
+			? ["#FF0000FF"]
+			: contributors.values().reduce((fillColors, timeline) => {
+					const fill = mustExist(colors.get(timeline.meta.id)).fill;
 
-			// Whatever we want to draw, _one_ transparent fill should be enough.
-			if (fill === TRANSPARENT && fillColors.includes(TRANSPARENT)) {
-				return fillColors;
-			}
+					// Whatever we want to draw, _one_ transparent fill should be enough.
+					if (fill === TRANSPARENT && fillColors.includes(TRANSPARENT)) {
+						return fillColors;
+					}
 
-			fillColors.push(
-				timeline === leader || fill === TRANSPARENT
-					? fill
-					: matchLuminance(
-							fill,
-							mustExist(colors.get(mustExist(leader).meta.id)).fill,
-						),
-			);
-			return fillColors;
-		}, new Array<string>());
-		const fontcolor = mustExist(colors.get(mustExist(leader).meta.id)).font;
+					fillColors.push(
+						timeline === leader || fill === TRANSPARENT
+							? fill
+							: matchLuminance(
+									fill,
+									mustExist(colors.get(mustExist(leader).meta.id)).fill,
+								),
+					);
+					return fillColors;
+				}, new Array<string>());
+		const fontcolor = isTransferMarker
+			? "#000000FF"
+			: mustExist(colors.get(mustExist(leader).meta.id)).font;
 		const id = registerId(timestamp);
 
 		const prefixes = contributors
@@ -281,15 +289,21 @@ export const render = (
 		const dateString = options?.dateRenderer
 			? options.dateRenderer(timestamp)
 			: new Date(timestamp).toDateString();
-		const label = `${0 < prefixes.length ? `${prefixes}\u00A0` : ""}${makeHtmlString(
-			`${title}\\n${dateString}`,
-		)}`;
+		const label = isTransferMarker
+			? title
+			: `${0 < prefixes.length ? `${prefixes}\u00A0` : ""}${makeHtmlString(
+					`${title}\\n${dateString}`,
+				)}`;
 
 		const timePassedSinceOrigin = timestamp - origin;
 		const timePassedSinceThen = now - timestamp;
-		const tooltip = `${formatMilliseconds(timePassedSinceOrigin)} since ${originString}\\n${formatMilliseconds(timePassedSinceThen)} ago`;
+		const tooltip = isTransferMarker
+			? undefined
+			: `${formatMilliseconds(timePassedSinceOrigin)} since ${originString}\\n${formatMilliseconds(timePassedSinceThen)} ago`;
 
-		const style = mustExist(styleSheet.get(rank(leader)));
+		const style = isTransferMarker
+			? STYLE_TRANSFER_MARKER
+			: mustExist(styleSheet.get(rank(leader)));
 
 		const nodeProperties: Partial<NodeProperties> = {
 			class: classList.join(" "),
@@ -300,13 +314,15 @@ export const render = (
 					: `${fillcolors[0]}:${fillcolors[1]}`,
 			fontcolor,
 			id,
-			label,
+			label: isTransferMarker ? undefined : label,
 			penwidth: style.outline ? style.penwidth : 0,
 			shape: style.shape,
 			skipDraw: !isTimestampInRange(timestamp),
 			style: style.style?.join(","),
 			tooltip,
 			ts: timestamp,
+			fixedsize: isTransferMarker ? true : undefined,
+			width: isTransferMarker ? 0.5 : undefined,
 		};
 
 		return nodeProperties;
@@ -335,7 +351,7 @@ export const render = (
 	for (const segment of renderPlan) {
 		const timestampsSegment = segment.timestamps;
 		const timelinesSegment = timelines.filter((_) =>
-			segment.timelines.includes(_.meta.id),
+			segment.timelines.includes(_),
 		);
 
 		const d = dotGraph();
@@ -356,23 +372,31 @@ export const render = (
 			);
 
 			for (const title of new Set(eventTitles.keys())) {
+				// The map only contains a single entry for each title.
+				// If that entry is a transfer marker, we assume that it also
+				// has no contributors.
+				const transferMarker = mustExist(eventTitles.get(title));
+
 				// Remember which timelines contribute to the event.
 				const contributors = new Set<TimelineReferenceRenderer>();
 				// Remember the contributor with the highest rank.
 				let leader: TimelineReferenceRenderer | undefined;
 
-				// We now further iterate over all global events at this timestamp which share the same title.
-				for (const event of events) {
-					if (event.title !== title) {
-						continue;
-					}
-					contributors.add(event.timeline);
-					if (rank(leader) <= rank(event.timeline)) {
-						leader = event.timeline;
+				if (!transferMarker.isTransferMarker) {
+					// We now further iterate over all global events at this timestamp which share the same title.
+					for (const event of events) {
+						if (event.title !== title) {
+							continue;
+						}
+						contributors.add(event.timeline);
+						if (rank(leader) <= rank(event.timeline)) {
+							leader = event.timeline;
+						}
 					}
 				}
 
 				const nodeProperties = computeNodeProperties(
+					transferMarker.isTransferMarker,
 					timestamp,
 					title,
 					contributors,
@@ -380,6 +404,22 @@ export const render = (
 				);
 
 				d.node(title, nodeProperties);
+			}
+
+			const isTransferMarkerSection =
+				events[0].isTransferMarker ||
+				events[events.length - 1].isTransferMarker;
+
+			if (isTransferMarkerSection) {
+				d.raw("{");
+				d.raw('rank="same"');
+				//d.raw('rankdir="LR"');
+				for (let eventIndex = 1; eventIndex < events.length; ++eventIndex) {
+					d.link(events[eventIndex - 1].title, events[eventIndex].title, {
+						style: options.debug ? "dashed" : "invis",
+					});
+				}
+				d.raw("}");
 			}
 		}
 
@@ -436,7 +476,9 @@ export const render = (
 
 					for (const previousEntry of previousEntries) {
 						d.link(previousEntry, timelineEvent, {
+							arrowhead: event.isTransferMarker ? "none" : undefined,
 							color,
+							headport: event.isTransferMarker ? "n" : undefined,
 							penwidth: style.link
 								? style.outline
 									? style.penwidth
@@ -446,6 +488,7 @@ export const render = (
 							sametail: timeline.meta.id,
 							skipDraw: !isTimestampInRange(timestamp),
 							style: style.link ? "solid" : "invis",
+							tailport: event.isTransferMarker ? "s" : undefined,
 							tooltip: style.link
 								? `${formatMilliseconds(timePassed)} passed`
 								: undefined,
@@ -473,7 +516,6 @@ export const render = (
 			// We now iterate over all global events at the current timestamp.
 			const events = segment.events
 				.filter((_) => _.timestamp === timestamp)
-
 				.sort((a, b) => a.title.localeCompare(b.title));
 
 			for (const event of events) {

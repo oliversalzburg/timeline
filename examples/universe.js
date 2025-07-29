@@ -148,6 +148,7 @@ const finalEntryCount = finalTimelines.reduce(
 process.stdout.write(`Generating GraphViz graph for universe...\n`);
 
 const renderOptions = {
+	debug: Boolean(args.debug),
 	dateRenderer: (/** @type {number} */ date) => {
 		const _ = new Date(date);
 		return `${["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"][_.getDay()]}, ${_.getDate().toFixed(0).padStart(2, "0")}.${(_.getMonth() + 1).toFixed(0).padStart(2, "0")}.${_.getFullYear()}`;
@@ -252,10 +253,16 @@ if (dotGraph.graph.length === 1) {
 		const index = graphIndex
 			.toFixed()
 			.padStart(dotGraph.graph.length.toFixed().length, "0");
+		const uniqueGraph = graph.replace(
+			/digraph timeline \{/,
+			`digraph segment_${index} { id="segment_${index}";`,
+		);
 		const segmentFilename = outputPath.replace(/\.gv$/, `-segment.${index}.gv`);
-		process.stdout.write(`  - ${segmentFilename}...\n`);
-		writeFileSync(segmentFilename, graph);
+		process.stdout.write(`  - Written segment ${segmentFilename}.\n`);
+		writeFileSync(segmentFilename, uniqueGraph);
 	}
+	// Also write full document path marker.
+	writeFileSync(outputPath, `${Date.now().toFixed()}\n`);
 }
 
 process.stdout.write(`Writing graph info...\n`);

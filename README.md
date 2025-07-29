@@ -23,6 +23,9 @@ This repository contains all crucial parts for the engine. Ensure to assemble it
 - Timelines whose file name starts with `_` are local (not part of universe).
 
 ```shell
+# Build universe
+START=1700 END=2030 remake --jobs=24 --max-load=24 --no-print-directory --output-sync --profile segments 2>&1 | tee build.log
+
 # Rebuild MTG editions data set.
 dot -Tsvg:cairo timelines/mtg-editions.yml.gv > timelines/mtg-editions.yml.svg
 
