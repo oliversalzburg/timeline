@@ -105,7 +105,7 @@ export const plan = (
 			segmentEvents.push({
 				timeline,
 				timestamp: timestamp + 1,
-				title: `TX-${timeline.meta.id}-${timestamp}`,
+				title: `TX-OUT-${timeline.meta.id}-${timestamp}`,
 				isTransferMarker: true,
 			});
 		}
@@ -138,7 +138,7 @@ export const plan = (
 			segmentEvents.push({
 				timeline,
 				timestamp: timestamp - 1,
-				title: `TX-${timeline.meta.id}-${timestamp}`,
+				title: `TX-IN-${timeline.meta.id}-${timestamp}`,
 				isTransferMarker: true,
 			});
 		}
@@ -177,7 +177,7 @@ export const plan = (
 			}
 			localHistoryIndexes[timelineIndex] = localHistoryIndex;
 		}
-		if (100 < ++segmentRanks) {
+		if (200 < ++segmentRanks) {
 			endSegment();
 			startSegment();
 		}
@@ -249,9 +249,9 @@ export const render = (
 		contributors: Set<TimelineReferenceRenderer>,
 		leader?: TimelineReferenceRenderer,
 	) => {
-		const classList = [
-			...contributors.values().map((_) => classes.get(_.meta.id)),
-		];
+		const classList = isTransferMarker
+			? ["tx", ...contributors.values().map((_) => classes.get(_.meta.id))]
+			: [...contributors.values().map((_) => classes.get(_.meta.id))];
 		const color = isTransferMarker
 			? "transparent"
 			: mustExist(
@@ -290,7 +290,7 @@ export const render = (
 			? options.dateRenderer(timestamp)
 			: new Date(timestamp).toDateString();
 		const label = isTransferMarker
-			? title
+			? " "
 			: `${0 < prefixes.length ? `${prefixes}\u00A0` : ""}${makeHtmlString(
 					`${title}\\n${dateString}`,
 				)}`;
@@ -312,25 +312,25 @@ export const render = (
 				fillcolors.length === 1
 					? fillcolors[0]
 					: `${fillcolors[0]}:${fillcolors[1]}`,
+			fixedsize: isTransferMarker ? true : undefined,
 			fontcolor,
+			fontsize: isTransferMarker ? 0 : undefined,
+			height: isTransferMarker ? 0.2 : undefined,
 			id,
-			label: isTransferMarker ? undefined : label,
+			label,
 			penwidth: style.outline ? style.penwidth : 0,
 			shape: style.shape,
 			skipDraw: !isTimestampInRange(timestamp),
 			style: style.style?.join(","),
 			tooltip,
 			ts: timestamp,
-			fixedsize: isTransferMarker ? true : undefined,
-			width: isTransferMarker ? 0.5 : undefined,
+			width: isTransferMarker ? 1.5 : undefined,
 		};
 
 		return nodeProperties;
 	};
 
-	const dotGraph = () => {
-		const d = dot();
-
+	const dotGraph = (d = dot()) => {
 		d.raw("digraph timeline {");
 		const FONT_SIZE = 12;
 		d.raw(`node [fontname="${FONTS_SYSTEM}"; fontsize="${FONT_SIZE}";]`);
@@ -347,6 +347,7 @@ export const render = (
 	};
 
 	const renderPlan = plan(timelines, options);
+	let d = dotGraph();
 	const graphSegments = new Array<string>();
 	for (const segment of renderPlan) {
 		const timestampsSegment = segment.timestamps;
@@ -354,7 +355,8 @@ export const render = (
 			segment.timelines.includes(_),
 		);
 
-		const d = dotGraph();
+		d.clear();
+		d = dotGraph(d);
 
 		/**
 		 * We iterate over each unique timestamp that exists globally.
@@ -393,6 +395,15 @@ export const render = (
 							leader = event.timeline;
 						}
 					}
+				} else {
+					const style = mustExist(
+						styleSheet.get(rank(transferMarker.timeline)),
+					);
+					if (!style.link) {
+						continue;
+					}
+					leader = transferMarker.timeline;
+					contributors.add(transferMarker.timeline);
 				}
 
 				const nodeProperties = computeNodeProperties(
@@ -413,11 +424,21 @@ export const render = (
 			if (isTransferMarkerSection) {
 				d.raw("{");
 				d.raw('rank="same"');
-				//d.raw('rankdir="LR"');
-				for (let eventIndex = 1; eventIndex < events.length; ++eventIndex) {
-					d.link(events[eventIndex - 1].title, events[eventIndex].title, {
-						style: options.debug ? "dashed" : "invis",
-					});
+				const linkedEvents = events.filter(
+					(_) => mustExist(styleSheet.get(rank(_.timeline))).link,
+				);
+				for (
+					let eventIndex = 1;
+					eventIndex < linkedEvents.length;
+					++eventIndex
+				) {
+					d.link(
+						linkedEvents[eventIndex - 1].title,
+						linkedEvents[eventIndex].title,
+						{
+							style: options.debug ? "dashed" : "invis",
+						},
+					);
 				}
 				d.raw("}");
 			}
@@ -428,6 +449,10 @@ export const render = (
 		for (const timeline of timelinesSegment) {
 			const color = mustExist(colors.get(timeline.meta.id)).pen;
 			const style = mustExist(styleSheet.get(rank(timeline)));
+
+			if (!style.link) {
+				continue;
+			}
 
 			// The timestamp we looked at during the last iteration.
 			let previousTimestamp: number | undefined;
@@ -444,6 +469,8 @@ export const render = (
 					? timeline.records[_.index][0]
 					: mustExist(_.timestamp),
 			);
+
+			let previousWasTransferMarker = true;
 
 			for (const timestamp of eventTimesInSegment) {
 				if (previousTimestamp && timestamp <= previousTimestamp) {
@@ -463,6 +490,7 @@ export const render = (
 							? timeline.records[_.index][0]
 							: mustExist(_.timestamp)) === timestamp,
 				);
+
 				for (const event of eventsAtTimestamp) {
 					const timelineEvent =
 						event.index !== undefined
@@ -488,16 +516,20 @@ export const render = (
 							sametail: timeline.meta.id,
 							skipDraw: !isTimestampInRange(timestamp),
 							style: style.link ? "solid" : "invis",
-							tailport: event.isTransferMarker ? "s" : undefined,
-							tooltip: style.link
-								? `${formatMilliseconds(timePassed)} passed`
-								: undefined,
+							tailport: previousWasTransferMarker ? "s" : undefined,
+							tooltip:
+								style.link && !event.isTransferMarker
+									? `${formatMilliseconds(timePassed)} passed`
+									: undefined,
 						});
 					}
 				}
 
 				previousTimestamp = timestamp;
 				previousEntries = processedTitles;
+				previousWasTransferMarker = eventsAtTimestamp.some(
+					(_) => _.isTransferMarker,
+				);
 			}
 		}
 
@@ -525,6 +557,13 @@ export const render = (
 					continue;
 				}
 
+				if (
+					event.isTransferMarker &&
+					!mustExist(styleSheet.get(rank(event.timeline))).link
+				) {
+					continue;
+				}
+
 				processedEntries.push(event);
 
 				if (0 === previousTimestampEntries.length) {
@@ -537,9 +576,10 @@ export const render = (
 					d.link(previousEntry.title, event.title, {
 						skipDraw: !isTimestampInRange(timestamp),
 						style: options.debug ? "dashed" : "invis",
-						tooltip: options.debug
-							? `${formatMilliseconds(timePassed)} passed`
-							: undefined,
+						tooltip:
+							options.debug && !event.isTransferMarker
+								? `${formatMilliseconds(timePassed)} passed`
+								: undefined,
 					});
 				}
 			}

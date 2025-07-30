@@ -27,7 +27,7 @@ endif
 _VARIANTS := cairo.svg default.svg png
 _VARIANTS_IMG := $(patsubst %,img.%, $(_VARIANTS))
 _VARIANTS_PUBLISH := cairo.svg cairo.min.svg default.svg default.min.svg png
-_DOT_FLAGS := -Gimagepath=output
+_DOT_FLAGS := -Gcenter=false -Gimagepath=output -Gmargin=0 -Gpad=0
 ifneq ($(DEBUG),)
 	_DOT_FLAGS += -v5
 endif

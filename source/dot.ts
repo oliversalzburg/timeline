@@ -141,15 +141,17 @@ export interface NodeProperties {
 	class: string;
 	color: Color;
 	fillcolor: Color;
-	fixedsize: boolean;
+	fixedsize: boolean | string;
 	fontcolor: Color;
 	fontname: string;
 	fontsize: number;
+	height: number;
 	id: string;
 	label: string;
 	margin: number;
 	ordering: "out" | "in";
 	penwidth: number;
+	peripheries: number;
 	shape: Shape;
 	skipDraw: boolean;
 	style: NodeStyle | string;
@@ -188,7 +190,7 @@ export const makeHtmlString = (_: string) =>
  * Provides helper constructs to render GraphViz graphs.
  */
 export const dot = () => {
-	const buffer = new Array<string>();
+	let buffer = new Array<string>();
 	const nodeIds = new Map<string, number>();
 
 	let indentation = 0;
@@ -226,11 +228,15 @@ export const dot = () => {
 	) => {
 		const aId = nodeIds.get(a);
 		if (aId === undefined) {
-			throw new InvalidOperationError(`Node with given title is unknown: ${a}`);
+			throw new InvalidOperationError(
+				`Source Node with given title is unknown: ${a}`,
+			);
 		}
 		const bId = nodeIds.get(b);
 		if (bId === undefined) {
-			throw new InvalidOperationError(`Node with given title is unknown: ${b}`);
+			throw new InvalidOperationError(
+				`Target Node with given title is unknown: ${b}`,
+			);
 		}
 		if (aId === bId) {
 			throw new InvalidOperationError(`Can't link node with itself: ${a}-${b}`);
@@ -248,5 +254,9 @@ export const dot = () => {
 		node: renderNode,
 		link: renderLink,
 		toString: () => buffer.join("\n"),
+		clear: () => {
+			buffer = new Array<string>();
+			indentation = 0;
+		},
 	};
 };

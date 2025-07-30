@@ -30,19 +30,37 @@ if (typeof args.target !== "string") {
 	process.exit(1);
 }
 
-const segments = process.argv.slice(2).filter((_) => !_.startsWith("--"));
+const segments = process.argv
+	.slice(2)
+	.filter((_) => !_.startsWith("--"))
+	.sort();
 
 let maxWidth = 0;
 let height = 0;
+const meta = new Map();
 for (const segment of segments) {
 	try {
 		const rawSVG = readFileSync(segment, "utf8");
 		const svgStart = rawSVG.indexOf("<svg");
 		const svgStartContent = rawSVG.indexOf(">", svgStart) + 1;
 		const svgHeader = rawSVG.substring(svgStart, svgStartContent);
+
 		const dimensions = svgHeader.match(
 			/width="(?<width>\d+)pt" height="(?<height>\d+)pt"/,
 		);
+		const heightSegment = Number(dimensions.groups.height);
+		const widthSegment = Number(dimensions.groups.width);
+
+		const txMarker = rawSVG.matchAll(
+			/class="node tx.+?text-anchor="middle" x="(?<x>[^"]+)" y="(?<y>[^"]+)+"/gs,
+		);
+
+		meta.set(segment, {
+			width: widthSegment,
+			height: heightSegment,
+			marker: [...txMarker].map((_) => _.groups),
+		});
+
 		maxWidth = Math.max(maxWidth, Number(dimensions.groups.width));
 		height += Number(dimensions.groups.height);
 	} catch (error) {
@@ -70,10 +88,13 @@ for (const segment of segments) {
 		/width="(?<width>\d+)pt" height="(?<height>\d+)pt"/,
 	);
 	const heightSegment = Number(dimensions.groups.height);
+	const widthSegment = Number(dimensions.groups.width);
+	const center = maxWidth / 2;
+	const margin = center - widthSegment / 2;
 	let svg = rawSVG.substring(svgStartContent, svgEnd);
 	svg = svg.replace(
-		/translate\(4 [^)]+\)/,
-		`translate(4 ${offset + heightSegment})`,
+		/translate\(0 [^)]+\)/,
+		`translate(${margin} ${offset + heightSegment})`,
 	);
 	offset += heightSegment;
 	output.write(svg);
