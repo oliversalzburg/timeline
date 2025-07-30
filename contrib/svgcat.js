@@ -69,35 +69,65 @@ for (const segment of segments) {
 	}
 }
 
-const output = createWriteStream(args.target, "utf8");
-output.write(
-	[
-		`<?xml version="1.0" encoding="UTF-8" standalone="no"?>`,
-		`<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">`,
-		`<svg width="${maxWidth}pt" height="${height}pt" viewBox="0.00 0.00 ${maxWidth}.00 ${height}.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">`,
-	].join("\n"),
-);
-let offset = 0;
+let offsetX = 0;
+let offsetY = 0;
+const buffer = [];
+const boundingBox = {
+	top: 0,
+	right: 0,
+	bottom: 0,
+	left: 0,
+};
+
+const MARKER_Y = "-22.67";
 for (const segment of segments) {
 	const rawSVG = readFileSync(segment, "utf8");
 	const svgStart = rawSVG.indexOf("<svg");
 	const svgEnd = rawSVG.lastIndexOf("</svg>");
 	const svgStartContent = rawSVG.indexOf(">", svgStart) + 1;
-	const svgHeader = rawSVG.substring(svgStart, svgStartContent);
-	const dimensions = svgHeader.match(
-		/width="(?<width>\d+)pt" height="(?<height>\d+)pt"/,
-	);
-	const heightSegment = Number(dimensions.groups.height);
-	const widthSegment = Number(dimensions.groups.width);
-	const center = maxWidth / 2;
-	const margin = center - widthSegment / 2;
+
+	const svgMeta = meta.get(segment);
+	const entryMarker = svgMeta.marker
+		.filter((_) => _.y !== MARKER_Y)
+		.map((_) => Number(_.x))
+		.sort((a, b) => a - b);
+	const exitMarker = svgMeta.marker
+		.filter((_) => _.y === MARKER_Y)
+		.map((_) => Number(_.x))
+		.sort((a, b) => a - b);
+
+	const leftMostEntry = 0 < entryMarker.length ? entryMarker[1] : 0;
+	offsetX -= leftMostEntry;
+
 	let svg = rawSVG.substring(svgStartContent, svgEnd);
-	svg = svg.replace(
-		/translate\(0 [^)]+\)/,
-		`translate(${margin} ${offset + heightSegment})`,
+	const svgHeightAdjusted = svgMeta.height + Number(MARKER_Y) - 3;
+	const translation = `${Math.round(offsetX * 100) / 100} ${Math.round((offsetY + svgHeightAdjusted) * 100) / 100}`;
+
+	boundingBox.right = Math.max(boundingBox.right, offsetX + svgMeta.width);
+	boundingBox.left = Math.min(boundingBox.left, offsetX);
+	boundingBox.bottom = Math.max(
+		boundingBox.bottom,
+		offsetY + svgHeightAdjusted,
 	);
-	offset += heightSegment;
-	output.write(svg);
+
+	process.stderr.write(`${segment}: ${translation}\n`);
+
+	svg = svg.replace(/translate\(0 [^)]+\)/, `translate(${translation})`);
+
+	const leftMostExit = 0 < exitMarker.length ? exitMarker[1] : 0;
+	offsetX += leftMostExit;
+	offsetY += svgHeightAdjusted;
+
+	buffer.push(svg);
 }
-output.write("</svg>");
+buffer.unshift(
+	[
+		`<?xml version="1.0" encoding="UTF-8" standalone="no"?>`,
+		`<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">`,
+		`<svg width="${boundingBox.right - boundingBox.left}pt" height="${boundingBox.bottom}pt" viewBox="0.00 0.00 ${boundingBox.right - boundingBox.left} ${boundingBox.bottom}" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">`,
+	].join("\n"),
+);
+buffer.push("</svg>");
+const output = createWriteStream(args.target, "utf8");
+output.write(buffer.join("\n"));
 output.close();

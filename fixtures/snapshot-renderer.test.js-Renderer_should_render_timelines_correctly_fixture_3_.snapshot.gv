@@ -1,9 +1,9 @@
 digraph timeline {
-    node [fontname="Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"; fontsize="12";];
-    edge [fontname="Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"; fontsize="12";];
+    node [fontname="Arial"; fontsize="12";];
+    edge [fontname="Arial"; fontsize="12";];
     bgcolor="transparent";
     comment=" ";
-    fontname="Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif";
+    fontname="Arial";
     fontsize="12";
     label=" ";
     rankdir="TD";

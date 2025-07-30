@@ -5,7 +5,7 @@ import {
 } from "@oliversalzburg/js-utils/data/nil.js";
 import { hashCyrb53 } from "@oliversalzburg/js-utils/data/string.js";
 import { formatMilliseconds } from "@oliversalzburg/js-utils/format/milliseconds.js";
-import { FONTS_SYSTEM, TRANSPARENT } from "./constants.js";
+import { TRANSPARENT } from "./constants.js";
 import { dot, makeHtmlString, type NodeProperties } from "./dot.js";
 import { roundToDay } from "./operator.js";
 import { matchLuminance, type PaletteMeta, palette } from "./palette.js";
@@ -315,7 +315,7 @@ export const render = (
 			fixedsize: isTransferMarker ? true : undefined,
 			fontcolor,
 			fontsize: isTransferMarker ? 0 : undefined,
-			height: isTransferMarker ? 0.2 : undefined,
+			height: isTransferMarker ? 0 : undefined,
 			id,
 			label,
 			penwidth: style.outline ? style.penwidth : 0,
@@ -324,7 +324,7 @@ export const render = (
 			style: style.style?.join(","),
 			tooltip,
 			ts: timestamp,
-			width: isTransferMarker ? 1.5 : undefined,
+			width: isTransferMarker ? 1.25 : undefined,
 		};
 
 		return nodeProperties;
@@ -332,12 +332,13 @@ export const render = (
 
 	const dotGraph = (d = dot()) => {
 		d.raw("digraph timeline {");
+		const FONT_NAME = "Arial";
 		const FONT_SIZE = 12;
-		d.raw(`node [fontname="${FONTS_SYSTEM}"; fontsize="${FONT_SIZE}";]`);
-		d.raw(`edge [fontname="${FONTS_SYSTEM}"; fontsize="${FONT_SIZE}";]`);
+		d.raw(`node [fontname="${FONT_NAME}"; fontsize="${FONT_SIZE}";]`);
+		d.raw(`edge [fontname="${FONT_NAME}"; fontsize="${FONT_SIZE}";]`);
 		d.raw(`bgcolor="${TRANSPARENT}"`);
 		d.raw('comment=" "');
-		d.raw(`fontname="${FONTS_SYSTEM}"`);
+		d.raw(`fontname="${FONT_NAME}"`);
 		d.raw(`fontsize="${FONT_SIZE}"`);
 		d.raw('label=" "');
 		d.raw(`rankdir="TD"`);
