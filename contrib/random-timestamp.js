@@ -10,7 +10,7 @@ for (let iteration = 0; iteration < timestampsRequested; ++iteration) {
 	const year = random.nextRange(1980, 2030).toFixed(0).padStart(2, "0");
 	const month = random.nextRange(1, 12).toFixed(0).padStart(2, "0");
 	const day = random
-		.nextRange(1, month === 2 ? 28 : 30)
+		.nextRange(1, month === "02" ? 28 : 30)
 		.toFixed(0)
 		.padStart(2, "0");
 	const hour = random.nextRange(0, 23).toFixed(0).padStart(2, "0");

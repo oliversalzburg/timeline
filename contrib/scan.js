@@ -29,7 +29,7 @@ const args = process.argv
 		/** @type {Record<string, boolean | string>} */ ({}),
 	);
 
-const target = args.target ?? process.cwd();
+const target = typeof args.target === "string" ? args.target : process.cwd();
 
 const jobs = new Map();
 
@@ -80,9 +80,9 @@ const scan = async () => {
 			streamname: join(target, unfixed),
 			target: "universe",
 			params: {
-				origin: parts.groups.origin,
-				start: parts.groups.start,
-				end: parts.groups.end,
+				origin: parts?.groups?.origin,
+				start: parts?.groups?.start,
+				end: parts?.groups?.end,
 			},
 			added: Date.now(),
 		});

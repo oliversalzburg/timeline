@@ -34,6 +34,7 @@ const segments = process.argv
 	.filter((_) => !_.startsWith("--"))
 	.sort();
 
+/** @type {Map<string,{width:number;height:number;marker:Array<Record<string,string>>}>} */
 const meta = new Map();
 for (const segment of segments) {
 	try {
@@ -45,8 +46,8 @@ for (const segment of segments) {
 		const dimensions = svgHeader.match(
 			/width="(?<width>\d+)pt" height="(?<height>\d+)pt"/,
 		);
-		const heightSegment = Number(dimensions.groups.height);
-		const widthSegment = Number(dimensions.groups.width);
+		const heightSegment = Number(dimensions?.groups?.height);
+		const widthSegment = Number(dimensions?.groups?.width);
 
 		const txMarker = rawSVG.matchAll(
 			/class="node tx.+?text-anchor="middle" x="(?<x>[^"]+)" y="(?<y>[^"]+)+"/gs,
@@ -55,7 +56,7 @@ for (const segment of segments) {
 		meta.set(segment, {
 			width: widthSegment,
 			height: heightSegment,
-			marker: [...txMarker].map((_) => _.groups),
+			marker: [...txMarker].map((_) => _.groups ?? {}),
 		});
 	} catch (error) {
 		console.error(segment);
@@ -81,6 +82,10 @@ for (const segment of segments) {
 	const svgStartContent = rawSVG.indexOf(">", svgStart) + 1;
 
 	const svgMeta = meta.get(segment);
+	if (svgMeta === undefined) {
+		throw new Error("Unexpected miss on segment metadata.");
+	}
+
 	const entryMarker = svgMeta.marker
 		.filter((_) => _.y !== MARKER_Y)
 		.map((_) => Number(_.x))
