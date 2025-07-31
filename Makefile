@@ -1,10 +1,6 @@
 .PHONY: default build clean docs git-hook pretty lint test coverage universe
 .SECONDARY:
 
-ifneq "$(CI)" ""
-	DEBUG ?= 1
-endif
-
 START ?= 1980
 END ?= 2000
 ORIGIN ?= 1983-12-25
@@ -37,8 +33,6 @@ ifneq ($(DEBUG),)
 	_UNIVERSE_FLAGS += --debug
 endif
 
-_PRETTY_BIOME := npm exec -- biome check --write --no-errors-on-unmatched
-
 
 default: build docs universe
 
@@ -48,7 +42,11 @@ lib: node_modules
 	npm exec -- tsc --build tsconfig.json
 
 schema:
-	@for i in schemas/*.yml; do yq --output-format=json eval '(.. | select(key == "$$ref" and type == "!!str")) |= sub(".schema.yml", ".schema.json")' "$$i" > "$${i%.yml}.json"; done
+	@for i in schemas/*.yml; do \
+		yq --output-format=json \
+		eval '(.. | select(key == "$$ref" and type == "!!str")) |= sub(".schema.yml", ".schema.json")' \
+		"$$i" > "$${i%.yml}.json"; \
+		done
 
 _site output:
 	mkdir -p $@
@@ -84,38 +82,70 @@ universe:
 # Additionally, the Cairo renderer currently produces unexpected output
 # for embedded images. It is unclear if the output or the viewer application
 # is to blame.
-%.dot.cairo.svg: %.dot
-	dot $(_DOT_FLAGS) -Tsvg:cairo -o$@ $<
+%.dot.cairo.svg %.dot.cairo.svg.log: %.dot
+ifneq ($(DEBUG),)
+	>$@.log 2>&1 dot $(_DOT_FLAGS) -Tsvg:cairo -o $@ $<
+else
+	dot $(_DOT_FLAGS) -Tsvg:cairo -o $@ $<
+endif
 	@date +"%FT%T%z Rendered Cairo SVG $@."
 
 # Render a vector SVG document from the given GraphViz document.
-%.dot.svg: %.dot
-	dot $(_DOT_FLAGS) -Tsvg -o$@ $<
+%.dot.svg %.dot.svg.log: %.dot
+ifneq ($(DEBUG),)
+	>$@.log 2>&1 dot $(_DOT_FLAGS) -Tsvg -o $@ $<
+else
+	dot $(_DOT_FLAGS) -Tsvg -o $@ $<
+endif
 	@date +"%FT%T%z Rendered SVG $@."
 
 # Render a rasterized PNG image from the given GraphViz document.
-%.dot.png: %.dot
-	dot $(_DOT_FLAGS) -Tpng -o$@ $<
+%.dot.png %.dot.png.log: %.dot
+ifneq ($(DEBUG),)
+	>$@.log 2>&1 dot $(_DOT_FLAGS) -Tpng -o $@ $<
+else
+	dot $(_DOT_FLAGS) -Tpng -o $@ $<
+endif
 	@date +"%FT%T%z Rendered PNG $@."
 
 # Build individual dot layout phases.
 # These can NOT be used incrementally, as the layout engine always starts
 # in phase 1, regardless of the input (to be confirmed!). When this was
 # attempted, the build failed for multiple segments reliably.
-%-p1.dot: %.dot
-	dot $(_DOT_FLAGS) -Tdot -Gphase=1 -o$@ $<
+%-p1.dot %-p1.dot.log: %.dot
+ifneq ($(DEBUG),)
+	>$@.log 2>&1 dot $(_DOT_FLAGS) -Tdot -Gphase=1 -o $@ $<
+else
+	dot $(_DOT_FLAGS) -Tdot -Gphase=1 -o $@ $<
+endif
 	@date +"%FT%T%z Generated dot layout phase 1 $@."
-%-p2.dot: %.dot
-	dot $(_DOT_FLAGS) -Tdot -Gphase=2 -o$@ $<
+%-p2.dot %-p2.dot.log: %.dot
+ifneq ($(DEBUG),)
+	>$@.log 2>&1 dot $(_DOT_FLAGS) -Tdot -Gphase=2 -o $@ $<
+else
+	dot $(_DOT_FLAGS) -Tdot -Gphase=2 -o $@ $<
+endif
 	@date +"%FT%T%z Generated dot layout phase 2 $@."
-%-p3.dot: %.dot
-	dot $(_DOT_FLAGS) -Tdot -Gphase=3 -o$@ $<
+%-p3.dot %-p3.dot.log: %.dot
+ifneq ($(DEBUG),)
+	>$@.log 2>&1 dot $(_DOT_FLAGS) -Tdot -Gphase=3 -o $@ $<
+else
+	dot $(_DOT_FLAGS) -Tdot -Gphase=3 -o $@ $<
+endif
 	@date +"%FT%T%z Generated dot layout phase 3 $@."
-%-p4.dot: %.dot
-	dot $(_DOT_FLAGS) -Tdot -Gphase=4 -o$@ $<
+%-p4.dot %-p4.dot.log: %.dot
+ifneq ($(DEBUG),)
+	>$@.log 2>&1 dot $(_DOT_FLAGS) -Tdot -Gphase=4 -o $@ $<
+else
+	dot $(_DOT_FLAGS) -Tdot -Gphase=4 -o $@ $<
+endif
 	@date +"%FT%T%z Generated dot layout phase 4 $@."
-%-p999.dot: %.dot
-	dot $(_DOT_FLAGS) -Tdot -Gphase=999 -o$@ $<
+%-p999.dot %-p999.dot.log: %.dot
+ifneq ($(DEBUG),)
+	>$@.log 2>&1 dot $(_DOT_FLAGS) -Tdot -Gphase=999 -o $@ $<
+else
+	dot $(_DOT_FLAGS) -Tdot -Gphase=999 -o $@ $<
+endif
 	@date +"%FT%T%z Generated dot layout phase 999 $@."
 
 # Embed (emoji) prefixes as <IMG> elements in the label.
@@ -127,8 +157,12 @@ universe:
 		--target=$<
 	@date +"%FT%T%z Embedded prefixes into $@."
 
-%.dot: %.gv
-	dot -Tcanon -o$@ $<
+%.dot %.dot.log: %.gv
+ifneq ($(DEBUG),)
+	>$@.log 2>&1 dot -v5 -Tcanon -o $@ $<
+else
+	dot -Tcanon -o $@ $<
+endif
 	@date +"%FT%T%z Normalized GraphViz document $@."
 
 # Render a GraphViz document in DOT language, which represents the
@@ -167,7 +201,7 @@ git-hook:
 
 # Normalizes the style of as many documents in the repository as possible.
 pretty: node_modules
-	$(_PRETTY_BIOME)
+	npm exec -- biome check --unsafe --write
 	npm pkg fix
 	@for i in schemas/*.yml; do yq --prettyPrint --inplace "$$i"; done
 
@@ -179,17 +213,28 @@ lint: node_modules validate-data
 
 # Validate all schemas to be valid JSON schema documents.
 validate-schema: .venv
-	. .venv/bin/activate; cd schemas; check-jsonschema --schemafile "https://json-schema.org/draft/2019-09/schema" *.yml
+	. .venv/bin/activate; cd schemas; \
+	check-jsonschema \
+		--schemafile "https://json-schema.org/draft/2019-09/schema" \
+		*.yml
 
 # Validate all data to be valid timeline documents.
 validate-data: .venv validate-schema
-	. .venv/bin/activate; cd schemas; check-jsonschema --schemafile spec.schema.yml ../timelines/*.yml
+	. .venv/bin/activate; cd schemas; \
+	check-jsonschema \
+		--schemafile spec.schema.yml \
+		../timelines/*.yml
 
 # Run available software tests.
 test: node_modules lib
-	TZ=UTC node --enable-source-maps --inspect node_modules/.bin/mocha --reporter-option maxDiffSize=16000 lib/*.test.js
+	TZ=UTC node --enable-source-maps --inspect \
+		node_modules/.bin/mocha --reporter-option maxDiffSize=16000 \
+		lib/*.test.js
 coverage: node_modules lib
-	NODE_OPTIONS=--enable-source-maps TZ=UTC npm exec -- c8 --reporter=html-spa mocha --reporter-option maxDiffSize=16000 lib/*.test.js
+	NODE_OPTIONS=--enable-source-maps TZ=UTC npm exec -- \
+		c8 --reporter=html-spa \
+		mocha --reporter-option maxDiffSize=16000 \
+		lib/*.test.js
 
 # Python dependency handling
 .venv: .venv/touchfile

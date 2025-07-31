@@ -97,25 +97,6 @@ const globalLatest = metrics
 		0,
 	);
 
-// Generate New Year's Eve events.
-/*
-const yearEarliest = new Date(globalEarliest).getFullYear();
-data.set("timelines/.decoration.nye", {
-	meta: {
-		color: TRANSPARENT,
-		id: "nye",
-		prefix: "🎆",
-	},
-	records: [
-		...recurringYearly(
-			new Date(yearEarliest, 0, 1, 0, 0, 0, 0),
-			index => `New Year ${yearEarliest + index}`,
-			Math.floor((globalLatest - globalEarliest) / MILLISECONDS.ONE_YEAR),
-		),
-	],
-});
-*/
-
 // Adjust the titles in the data set.
 data.set(
 	"timelines/charts-top1-singles-gfk-entertainment.yml",
@@ -131,7 +112,7 @@ data.set(
 	),
 );
 
-// Inject the "universe" graph.
+// Generate the "universe" graph.
 process.stdout.write("Rendering universe...\n");
 const finalTimelines = [
 	...data

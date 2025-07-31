@@ -19,8 +19,7 @@
 			"!fixtures/**",
 			"!lib/**",
 			"!node_modules/**",
-			"!output/**",
-			"output/*.html"
+			"!output/**"
 		],
 		"maxSize": 15728640
 	},
