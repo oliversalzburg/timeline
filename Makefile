@@ -23,12 +23,12 @@ endif
 _VARIANTS := cairo.svg default.svg png
 _VARIANTS_IMG := $(patsubst %,img.%, $(_VARIANTS))
 _VARIANTS_PUBLISH := cairo.svg cairo.min.svg default.svg default.min.svg png
-_DOT_FLAGS := -Gcenter=false -Gimagepath=output -Gmargin=0 -Gpad=0
+_DOT_FLAGS := -Gcenter=false -Gimagepath=output/images -Gmargin=0 -Gpad=0
 ifneq ($(DEBUG),)
 	_DOT_FLAGS += -v5
 endif
 
-_UNIVERSE_FLAGS :=
+_UNIVERSE_FLAGS := --segment=300
 ifneq ($(DEBUG),)
 	_UNIVERSE_FLAGS += --debug
 endif
@@ -66,7 +66,8 @@ $(_UNIVERSE).svg &: \
 
 universe:
 	$(MAKE) $(_UNIVERSE).gv
-	$(MAKE) $(_UNIVERSE)-img.svg $(_UNIVERSE)-img.min.svg $(_UNIVERSE).svg $(_UNIVERSE).min.svg
+	$(MAKE) $(_UNIVERSE)-img.svg $(_UNIVERSE)-img.min.svg
+# $(_UNIVERSE).svg $(_UNIVERSE).min.svg
 	node --enable-source-maps examples/build-site.js \
 		--output=output $(_UNIVERSE).gv
 

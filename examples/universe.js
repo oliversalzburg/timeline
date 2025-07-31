@@ -152,7 +152,7 @@ const renderOptions = {
 		typeof args.origin === "number" || typeof args.origin === "string"
 			? new Date(args.origin).valueOf()
 			: undefined,
-	condensed: true,
+	segment: typeof args.segment === "string" ? Number(args.segment) : undefined,
 	skipBefore:
 		typeof args["skip-before"] === "string"
 			? new Date(args["skip-before"]).valueOf()

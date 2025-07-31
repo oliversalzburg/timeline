@@ -16,6 +16,9 @@ import type {
 	TimelineReferenceRenderer,
 } from "./types.js";
 
+const FONT_NAME = "Arial";
+const FONT_SIZE = 12;
+
 export interface RendererOptions {
 	baseUnit: "day" | "week" | "month";
 	condensed: boolean;
@@ -177,7 +180,7 @@ export const plan = (
 			}
 			localHistoryIndexes[timelineIndex] = localHistoryIndex;
 		}
-		if (200 < ++segmentRanks) {
+		if ((options.segment ?? Number.POSITIVE_INFINITY) < ++segmentRanks) {
 			endSegment();
 			startSegment();
 		}
@@ -251,7 +254,7 @@ export const render = (
 	) => {
 		const classList = isTransferMarker
 			? ["tx", ...contributors.values().map((_) => classes.get(_.meta.id))]
-			: [...contributors.values().map((_) => classes.get(_.meta.id))];
+			: ["event", ...contributors.values().map((_) => classes.get(_.meta.id))];
 		const color = isTransferMarker
 			? "transparent"
 			: mustExist(
@@ -299,7 +302,9 @@ export const render = (
 		const timePassedSinceThen = now - timestamp;
 		const tooltip = isTransferMarker
 			? undefined
-			: `${formatMilliseconds(timePassedSinceOrigin)} since ${originString}\\n${formatMilliseconds(timePassedSinceThen)} ago`;
+			: `${formatMilliseconds(timePassedSinceOrigin)} seit ${originString}\\n${formatMilliseconds(
+					timePassedSinceThen,
+				)} her`;
 
 		const style = isTransferMarker
 			? STYLE_TRANSFER_MARKER
@@ -332,8 +337,6 @@ export const render = (
 
 	const dotGraph = (d = dot()) => {
 		d.raw("digraph timeline {");
-		const FONT_NAME = "Arial";
-		const FONT_SIZE = 12;
 		d.raw(`node [fontname="${FONT_NAME}"; fontsize="${FONT_SIZE}";]`);
 		d.raw(`edge [fontname="${FONT_NAME}"; fontsize="${FONT_SIZE}";]`);
 		d.raw(`bgcolor="${TRANSPARENT}"`);

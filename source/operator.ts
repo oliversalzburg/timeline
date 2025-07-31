@@ -223,8 +223,8 @@ export const anonymizeRecords = (
 		while (words.length < wordCount) {
 			const wordRandom = random.nextString(
 				random.nextRange(2, 10),
-				"aeiou".repeat(5) +
-					"abcdefghijklmnoprstuvwz".repeat(3) +
+				"aeiou".repeat(4) +
+					"abcdefghiklmnoprstu".repeat(3) +
 					"abcdefghijklmnopqrstuvwxyz" +
 					"äöüß",
 			);

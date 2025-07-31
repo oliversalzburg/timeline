@@ -22,7 +22,7 @@ const timelineIds = new Set(
 const timelineNodes = new Map(
 	[...timelineIds.values()].map((_) => [
 		_,
-		[...document.querySelectorAll(`.node.${_}`).values()]
+		[...document.querySelectorAll(`.node.event.${_}`).values()]
 			.map((node) => node.id)
 			.sort(),
 	]),
@@ -30,7 +30,7 @@ const timelineNodes = new Map(
 // A map of node IDs to their respective parent timeline.
 const nodeTimelines = new Map(
 	[...timelineIds.values()].flatMap((_) =>
-		[...document.querySelectorAll(`.node.${_}`).values()]
+		[...document.querySelectorAll(`.node.event.${_}`).values()]
 			.map((node) => node.id)
 			.sort()
 			.map((id) => [id, _]),
@@ -119,9 +119,9 @@ const onClick = (event) => {
 	}
 
 	const nodeTarget = /** @type {SVGElement} */ (event.target);
-	const node = nodeTarget.classList.contains("node")
+	const node = nodeTarget.classList.contains("event")
 		? nodeTarget
-		: nodeTarget.closest("g.node");
+		: nodeTarget.closest("g.event");
 	if (!node) {
 		return;
 	}
@@ -326,7 +326,7 @@ const initStarfield = () => {
 
 		const numStars = 5000;
 		const speed = 0.01;
-		const maxDepth = 1500;
+		const maxDepth = 2500;
 		const starColors = ["#FFFFFF", "#FFDDC1", "#FFC0CB", "#ADD8E6", "#B0E0E6"];
 		/** @type {Array<Star>} */
 		let stars = [];
@@ -344,7 +344,7 @@ const initStarfield = () => {
 				return colorBase;
 			}
 			const components = matches.map((x) => Number.parseInt(x, 16));
-			const scale = 1 / (Math.random() * 4);
+			const scale = 1 / (Math.random() * 3);
 			const color = components
 				.map((_) => Math.floor(_ * scale))
 				.map((_) => _.toString(16).padStart(2, "0"))
@@ -381,7 +381,7 @@ const initStarfield = () => {
 				const angle = Math.random() * 2 * Math.PI;
 				const distance = Math.sqrt(Math.random()) * (canvas.width / 2);
 				this.x = Math.cos(angle) * distance;
-				this.y = Math.sin(angle) * distance + canvas.height / 2;
+				this.y = Math.sin(angle) * distance;
 				this.size = (1 - distance / (canvas.width / 2)) * 0.1 + 0.5;
 				this.color = getRandomColor();
 			}
