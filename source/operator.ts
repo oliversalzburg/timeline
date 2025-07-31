@@ -1,3 +1,7 @@
+import {
+	Random,
+	seedFromString,
+} from "@oliversalzburg/js-utils/data/random.js";
 import type { Timeline, TimelineRecord } from "./types.js";
 
 export const add = (timeline: Timeline, record: TimelineRecord): Timeline => {
@@ -191,4 +195,53 @@ export const roundToDay = (timeline: Timeline): Timeline => {
 		_[0] = roundDateToDay(_[0]);
 	}
 	return timeline;
+};
+
+export const anonymize = (timeline: Timeline, seed: string): Timeline => {
+	return {
+		...timeline,
+		records: anonymizeRecords(timeline.records, seed),
+	};
+};
+
+export const anonymizeRecords = (
+	records: Array<TimelineRecord>,
+	seed: string,
+): Array<TimelineRecord> => {
+	const random = new Random(seedFromString(seed));
+	return records.map(([_, entry]) => {
+		const lengthOriginal = entry.title.length;
+		const lengthVariance = Math.max(1, Math.floor(lengthOriginal * 0.15));
+		const lengthNew =
+			lengthOriginal + random.nextRange(-lengthVariance, lengthVariance);
+		const wordCount = Math.max(
+			1,
+			Math.floor(lengthNew / random.nextRange(4, 6)),
+		);
+		const words = new Array<string>();
+		let lineWidth = 0;
+		while (words.length < wordCount) {
+			const wordRandom = random.nextString(
+				random.nextRange(2, 10),
+				"aeiou".repeat(5) +
+					"abcdefghijklmnoprstuvwz".repeat(3) +
+					"abcdefghijklmnopqrstuvwxyz" +
+					"äöüß",
+			);
+			const word =
+				words.length === 0 || random.nextBoolean()
+					? wordRandom.substring(0, 1).toLocaleUpperCase() +
+						wordRandom.substring(1)
+					: wordRandom;
+			words.push(word);
+
+			lineWidth += word.length;
+			if (25 < lineWidth) {
+				lineWidth = 0;
+				words.push("\n");
+			}
+		}
+		const title = words.join(" ");
+		return [_, { ...entry, title }];
+	});
 };

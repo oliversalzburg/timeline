@@ -72,41 +72,6 @@ universe:
 	node --enable-source-maps examples/build-site.js \
 		--output=output $(_UNIVERSE).gv
 
-# wip
-_PARTS := 1700_1860 1860_1880 1880_1920 1920_1930 1930_1940 1940_1950 1950_1960 1960_1970 1970_1980 1980_1985 1985_1990 1990_1995 1995_2000 2000_2005 2005_2010 2010_2015 2015_2020 2020_2030
-_PARTFILES := $(patsubst %, output/$(PREFIX)$(ORIGIN)_%, $(_PARTS))
-_PARTS_GV := $(patsubst %, %.gv, $(_PARTFILES))
-_PARTS_DOT := $(patsubst %, %.dot, $(_PARTFILES))
-_PARTS_DOT_PNG := $(patsubst %, %.dot.png, $(_PARTFILES))
-_PARTS_DOT_SVG := $(patsubst %, %.dot.svg, $(_PARTFILES))
-_PARTS_DOT_MIN_SVG := $(patsubst %, %.dot.min.svg, $(_PARTFILES))
-_PARTS_DOT_CAIRO_SVG := $(patsubst %, %.dot.cairo.svg, $(_PARTFILES))
-_PARTS_DOT_CAIRO_MIN_SVG := $(patsubst %, %.dot.cairo.min.svg, $(_PARTFILES))
-_PARTS_IMG_DOT := $(patsubst %, %-img.dot, $(_PARTFILES))
-_PARTS_IMG_DOT_PNG := $(patsubst %, %-img.dot.svg, $(_PARTFILES))
-_PARTS_IMG_DOT_SVG := $(patsubst %, %-img.dot.svg, $(_PARTFILES))
-_PARTS_IMG_DOT_MIN_SVG := $(patsubst %, %-img.dot.min.svg, $(_PARTFILES))
-_PARTS_IMG_DOT_CAIRO_SVG := $(patsubst %, %-img.dot.cairo.svg, $(_PARTFILES))
-_PARTS_IMG_DOT_CAIRO_MIN_SVG := $(patsubst %, %-img.dot.cairo.min.svg, $(_PARTFILES))
-_PARTS_IMG_P1_DOT := $(patsubst %, %-img-p1.dot, $(_PARTFILES))
-_PARTS_IMG_P2_DOT := $(patsubst %, %-img-p2.dot, $(_PARTFILES))
-_PARTS_IMG_P3_DOT := $(patsubst %, %-img-p3.dot, $(_PARTFILES))
-_PARTS_IMG_P4_DOT := $(patsubst %, %-img-p4.dot, $(_PARTFILES))
-_PARTS_IMG_P999_DOT := $(patsubst %, %-img-p999.dot, $(_PARTFILES))
-_PARTS_P1_DOT := $(patsubst %, %-p1.dot, $(_PARTFILES))
-_PARTS_P2_DOT := $(patsubst %, %-p2.dot, $(_PARTFILES))
-_PARTS_P3_DOT := $(patsubst %, %-p3.dot, $(_PARTFILES))
-_PARTS_P4_DOT := $(patsubst %, %-p4.dot, $(_PARTFILES))
-_PARTS_P999_DOT := $(patsubst %, %-p999.dot, $(_PARTFILES))
-_PARTS_DOT_PHASES := $(_PARTS_P1_DOT) $(_PARTS_P2_DOT) $(_PARTS_P3_DOT) $(_PARTS_P4_DOT) $(_PARTS_P999_DOT)
-_PARTS_IMG_DOT_PHASES := $(_PARTS_IMG_P1_DOT) $(_PARTS_IMG_P2_DOT) $(_PARTS_IMG_P3_DOT) $(_PARTS_IMG_P4_DOT) $(_PARTS_IMG_P999_DOT)
-
-profile: \
-	output/images \
-	$(_PARTS_P4_DOT) \
-	$(patsubst %, %.png, $(_PARTS_P4_DOT))
-	@date +"%FT%T%z Build complete."
-
 # Compress an SVG by applying lossy XML transformations.
 %.min.svg: %.svg
 	scour $(_SCOUR_FLAGS) -i $< -o $@

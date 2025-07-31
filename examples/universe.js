@@ -7,7 +7,7 @@ import { mustExist } from "@oliversalzburg/js-utils/data/nil.js";
 import { parse } from "yaml";
 import { analyze } from "../lib/analyzer.js";
 import { load } from "../lib/loader.js";
-import { map, sort, uniquify } from "../lib/operator.js";
+import { anonymize, map, sort, uniquify } from "../lib/operator.js";
 import { render } from "../lib/renderer.js";
 
 /** @import {RendererOptions} from "../lib/renderer.js" */
@@ -137,7 +137,20 @@ const finalTimelines = [
 	...data
 		.entries()
 		.filter(([filename]) => !basename(filename).startsWith("_"))
-		.map(([_, timeline]) => uniquify(sort(timeline))),
+		.map(([_, timeline]) =>
+			uniquify(
+				sort(
+					timeline.meta.private
+						? anonymize(
+								timeline,
+								[...crypto.getRandomValues(new Uint32Array(10))]
+									.map((_) => _.toString(16))
+									.join(""),
+							)
+						: timeline,
+				),
+			),
+		),
 ];
 const finalEntryCount = finalTimelines.reduce(
 	(previous, timeline) => previous + timeline.records.length,

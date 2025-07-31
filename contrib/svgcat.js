@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
-import { createWriteStream, readdirSync, readFileSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { createWriteStream, readFileSync } from "node:fs";
 
 // Parse command line arguments.
 const args = process.argv
@@ -35,8 +34,6 @@ const segments = process.argv
 	.filter((_) => !_.startsWith("--"))
 	.sort();
 
-let maxWidth = 0;
-let height = 0;
 const meta = new Map();
 for (const segment of segments) {
 	try {
@@ -60,9 +57,6 @@ for (const segment of segments) {
 			height: heightSegment,
 			marker: [...txMarker].map((_) => _.groups),
 		});
-
-		maxWidth = Math.max(maxWidth, Number(dimensions.groups.width));
-		height += Number(dimensions.groups.height);
 	} catch (error) {
 		console.error(segment);
 		throw error;

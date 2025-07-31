@@ -281,7 +281,7 @@ export const render = (
 		const fontcolor = isTransferMarker
 			? "#000000FF"
 			: mustExist(colors.get(mustExist(leader).meta.id)).font;
-		const id = registerId(timestamp);
+		const id = isTransferMarker ? undefined : registerId(timestamp);
 
 		const prefixes = contributors
 			.values()
