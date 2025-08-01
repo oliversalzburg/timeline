@@ -326,7 +326,7 @@ const initStarfield = () => {
 
 		const numStars = 5000;
 		const speed = 0.01;
-		const maxDepth = 2500;
+		const maxDepth = 100;
 		const starColors = ["#FFFFFF", "#FFDDC1", "#FFC0CB", "#ADD8E6", "#B0E0E6"];
 		/** @type {Array<Star>} */
 		let stars = [];
@@ -370,28 +370,23 @@ const initStarfield = () => {
 			}
 
 			update() {
-				this.y -= speed * (2 - this.z / maxDepth);
-				if (this.y <= canvas.height / -2) {
+				this.y -= speed + speed * (this.z / maxDepth);
+				if (this.y < 0) {
 					this.reset();
 				}
 			}
 
 			reset() {
-				this.z = Math.random() * maxDepth;
-				const angle = Math.random() * 2 * Math.PI;
-				const distance = Math.sqrt(Math.random()) * (canvas.width / 2);
-				this.x = Math.cos(angle) * distance;
-				this.y = Math.sin(angle) * distance;
-				this.size = (1 - distance / (canvas.width / 2)) * 0.1 + 0.5;
+				this.x = Math.random() * canvas.width;
+				this.y = canvas.height + 5;
+				this.z = Math.random() * maxDepth + 0.01;
+				this.size = this.z / maxDepth + 0.1 + Math.random();
 				this.color = getRandomColor();
 			}
 
 			draw() {
-				const x = ((this.x / this.z) * canvas.width) / 2 + canvas.width / 2;
-				const y = ((this.y / this.z) * canvas.height) / 2 + canvas.height / 2;
-				const radius = (1 - this.z / maxDepth) * this.size * 3;
 				ctx.beginPath();
-				ctx.arc(x, y, radius, 3, Math.PI * 2);
+				ctx.arc(this.x, this.y, this.size / 2, 0, Math.PI * 2);
 				ctx.fillStyle = this.color;
 				ctx.fill();
 			}
@@ -399,13 +394,12 @@ const initStarfield = () => {
 
 		function initStars() {
 			stars = Array.from({ length: numStars }, () => {
-				const angle = Math.random() * 2 * Math.PI;
-				const distance = Math.sqrt(Math.random()) * (canvas.width / 2);
+				const z = Math.random() * maxDepth;
 				return new Star(
-					Math.cos(angle) * distance,
-					Math.sin(angle) * distance,
-					Math.random() * maxDepth,
-					(1 - distance / (canvas.width / 2)) * 0.1 + 0.5,
+					Math.random() * canvas.width,
+					Math.random() * canvas.height,
+					z,
+					z / maxDepth + 0.1 + Math.random(),
 					getRandomColor(),
 				);
 			});
