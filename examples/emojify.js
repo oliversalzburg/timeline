@@ -26,21 +26,27 @@ const args = process.argv
 	);
 
 const assets = typeof args.assets === "string" ? args.assets : "output/images";
+const copyOnly = args["copy-only"] === true;
 
-if (typeof args.target !== "string") {
-	process.stderr.write("Missing --target.\n");
-	process.exit(1);
-}
-if (!args.target.endsWith(".dot")) {
-	process.stdout.write(
-		`Invalid target document. File name is expected to end in '.dot'.\nProvided: ${args.target}\n`,
-	);
-	process.exit(1);
-}
+let content = "";
+let contentLocation = "output";
+let contentName = "";
+if (!copyOnly) {
+	if (typeof args.target !== "string") {
+		process.stderr.write("Missing --target.\n");
+		process.exit(1);
+	}
+	if (!args.target.endsWith(".dot")) {
+		process.stdout.write(
+			`Invalid target document. File name is expected to end in '.dot'.\nProvided: ${args.target}\n`,
+		);
+		process.exit(1);
+	}
 
-const content = readFileSync(args.target, "utf8");
-const contentLocation = dirname(args.target);
-const contentName = basename(args.target);
+	content = readFileSync(args.target, "utf8");
+	contentLocation = dirname(args.target);
+	contentName = basename(args.target);
+}
 
 const PREFIXES = {
 	"\u2764\uFE0F\u200D\u{1F525}": {
@@ -228,6 +234,11 @@ const PREFIXES = {
 
 let svgPrefixes = content;
 for (const [prefix, config] of Object.entries(PREFIXES)) {
+	if (copyOnly) {
+		copyFileSync(join(assets, config.src), join(contentLocation, config.src));
+		continue;
+	}
+
 	const cells = [
 		`<TD FIXEDSIZE="TRUE" WIDTH="24" HEIGHT="24"><IMG SRC="${config.src}"/></TD>`,
 		`<TD>\$1</TD>`,
@@ -238,7 +249,11 @@ for (const [prefix, config] of Object.entries(PREFIXES)) {
 		new RegExp(`<${prefix}.*\u{00A0}(.+)>,`, "gu"),
 		`<${table}>;`,
 	);
-	copyFileSync(join(assets, config.src), join(contentLocation, config.src));
+}
+
+if (copyOnly) {
+	process.stdout.write(`Successfully prepared images for ${args.target}.\n`);
+	process.exit(0);
 }
 
 const filename = contentName.replace(/\.dot$/, "-img.dot");

@@ -20,9 +20,6 @@ ifneq ($(DEBUG),)
 	_SCOUR_FLAGS += --verbose
 endif
 
-_VARIANTS := cairo.svg default.svg png
-_VARIANTS_IMG := $(patsubst %,img.%, $(_VARIANTS))
-_VARIANTS_PUBLISH := cairo.svg cairo.min.svg default.svg default.min.svg png
 _DOT_FLAGS := -Gcenter=false -Gimagepath=output/images -Gmargin=0 -Gpad=0
 ifneq ($(DEBUG),)
 	_DOT_FLAGS += -v5
@@ -56,6 +53,7 @@ _site output:
 output/images: | output
 	node --enable-source-maps contrib/prepare-emoji.js
 	cp contrib/wikimedia/* $@/
+	node --enable-source-maps examples/emojify.js --copy-only
 
 $(_UNIVERSE)-img.svg &: \
 	$(foreach _, $(_SEGMENTS), $(patsubst %.gv, %-img.dot.svg, $(_)))
