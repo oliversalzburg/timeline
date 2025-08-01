@@ -229,17 +229,19 @@ export const dot = () => {
 		const aId = nodeIds.get(a);
 		if (aId === undefined) {
 			throw new InvalidOperationError(
-				`Source Node with given title is unknown: ${a}`,
+				`Source Node with given title is unknown: '${a}'`,
 			);
 		}
 		const bId = nodeIds.get(b);
 		if (bId === undefined) {
 			throw new InvalidOperationError(
-				`Target Node with given title is unknown: ${b}`,
+				`Target Node with given title is unknown: '${b}'`,
 			);
 		}
 		if (aId === bId) {
-			throw new InvalidOperationError(`Can't link node with itself: ${a}-${b}`);
+			throw new InvalidOperationError(
+				`Can't link node with itself: '${a}' <-> '${b}'`,
+			);
 		}
 
 		if (options?.skipDraw !== true) {

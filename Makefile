@@ -32,7 +32,9 @@ _UNIVERSE_FLAGS := --segment=300
 ifneq ($(DEBUG),)
 	_UNIVERSE_FLAGS += --debug
 endif
-
+ifneq ($(PRIVATE),)
+	_UNIVERSE_FLAGS += --private
+endif
 
 default: build docs universe
 

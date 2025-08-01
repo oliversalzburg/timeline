@@ -121,7 +121,7 @@ const finalTimelines = [
 		.map(([_, timeline]) =>
 			uniquify(
 				sort(
-					timeline.meta.private
+					timeline.meta.private && args.private !== true
 						? anonymize(
 								timeline,
 								[...crypto.getRandomValues(new Uint32Array(10))]
