@@ -39,12 +39,37 @@ export interface MetaSectionReferenceRenderer extends Record<string, unknown> {
 	color?: string;
 	prefix?: string;
 	rank?: number;
-	streams?: Array<string>;
 }
 export interface TimelineDocumentReferenceRenderer
 	extends TimelineDocument,
 		MetaSectionReferenceRenderer {}
 export interface TimelineReferenceRenderer extends Timeline {
 	meta: MetaSectionReferenceRenderer & { id: string; private: boolean };
+	records: Array<TimelineRecord>;
+}
+
+export interface RelationMarriage {
+	marriedTo: string;
+	since?: string;
+	as?: string;
+}
+export interface RelationMother {
+	motherOf: string;
+}
+export interface RelationFather {
+	fatherOf: string;
+}
+export interface Identity {
+	id: string;
+	born?: string;
+	died?: string;
+	name?: string;
+	relations?: Array<RelationMarriage | RelationFather | RelationMother>;
+}
+export interface MetaSectionAncestryRenderer extends Record<string, unknown> {
+	identity: Identity;
+}
+export interface TimelineAncestryRenderer extends Timeline {
+	meta: MetaSectionAncestryRenderer & { id: string; private: boolean };
 	records: Array<TimelineRecord>;
 }

@@ -28,6 +28,55 @@ properties:
       - transparent
       - audio
       - video
+  identity:
+    title: Identity
+    type: object
+    additionalProperties: true
+    required:
+      - id
+    properties:
+      id:
+        title: ID
+        type: string
+      name:
+        title: Name
+        type: string
+      born:
+        title: Date of Birth
+        type: string
+      died:
+        title: Date of Death
+        type: string
+      relations:
+        title: Relations
+        type: array
+        items:
+          anyOf:
+            - title: Marriage
+              type: object
+              required:
+                - marriedTo
+              properties:
+                marriedTo:
+                  type: string
+                since:
+                  type: string
+                as:
+                  type: string
+            - title: Fatherhood
+              type: object
+              required:
+                - fatherOf
+              properties:
+                fatherOf:
+                  type: string
+            - title: Motherhood
+              type: object
+              required:
+                - motherOf
+              properties:
+                motherOf:
+                  type: string
   prefix:
     title: Prefix
     type: string

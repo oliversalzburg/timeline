@@ -12,7 +12,7 @@ PREFIX ?= universe_
 _UNIVERSE_NAME := $(PREFIX)$(_HORIZON)
 _UNIVERSE := output/$(_UNIVERSE_NAME)
 _SEGMENTS := $(wildcard $(_UNIVERSE)-segment.*.gv)
-_TIMELINES := $(wildcard timelines/* ~/timelines/*.yml)
+_TIMELINES := $(wildcard timelines/* ~/timelines/*/*.yml)
 _DEBUG := output/_$(_UNIVERSE_NAME)
 
 _SCOUR_FLAGS = --enable-viewboxing --enable-id-stripping --enable-comment-stripping --shorten-ids --indent=none

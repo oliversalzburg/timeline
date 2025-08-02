@@ -5,7 +5,7 @@ import {
 } from "@oliversalzburg/js-utils/data/nil.js";
 import { hashCyrb53 } from "@oliversalzburg/js-utils/data/string.js";
 import { formatMilliseconds } from "@oliversalzburg/js-utils/format/milliseconds.js";
-import { TRANSPARENT } from "./constants.js";
+import { FONT_NAME, FONT_SIZE, TRANSPARENT } from "./constants.js";
 import { dot, makeHtmlString, type NodeProperties } from "./dot.js";
 import { roundToDay } from "./operator.js";
 import { matchLuminance, type PaletteMeta, palette } from "./palette.js";
@@ -16,12 +16,7 @@ import type {
 	TimelineReferenceRenderer,
 } from "./types.js";
 
-const FONT_NAME = "Arial";
-const FONT_SIZE = 12;
-
 export interface RendererOptions {
-	baseUnit: "day" | "week" | "month";
-	condensed: boolean;
 	dateRenderer: (date: number) => string;
 	debug: boolean;
 	now: number;

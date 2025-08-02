@@ -46,7 +46,7 @@ export const deduplicateRecords = (
 	return unique;
 };
 
-export const uniquify = (timeline: Timeline): Timeline => {
+export const uniquify = <T extends Timeline>(timeline: T): T => {
 	return {
 		...timeline,
 		records: uniquifyRecords(timeline.records),
@@ -129,7 +129,7 @@ export const uniquifyRecords = (
 	return result;
 };
 
-export const sort = (timeline: Timeline): Timeline => {
+export const sort = <T extends Timeline>(timeline: T): T => {
 	return {
 		...timeline,
 		records: sortRecords(timeline.records),
@@ -190,14 +190,14 @@ export const mergeDuringPeriod = (
 export const roundDateToDay = (date: number): number =>
 	new Date(date).setHours(0, 0, 0, 0).valueOf();
 
-export const roundToDay = (timeline: Timeline): Timeline => {
+export const roundToDay = <T extends Timeline>(timeline: T): T => {
 	for (const _ of timeline.records) {
 		_[0] = roundDateToDay(_[0]);
 	}
 	return timeline;
 };
 
-export const anonymize = (timeline: Timeline, seed: string): Timeline => {
+export const anonymize = <T extends Timeline>(timeline: T, seed: string): T => {
 	return {
 		...timeline,
 		records: anonymizeRecords(timeline.records, seed),

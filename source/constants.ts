@@ -8,7 +8,9 @@ export const MILLISECONDS = {
 	ONE_MONTH: (1000 * 60 * 60 * 24 * 7 * 52.25) / 12,
 };
 
+export const FONT_NAME = "Arial";
 export const FONTS_SYSTEM =
 	"Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif";
+export const FONT_SIZE = 12;
 
 export const TRANSPARENT = "transparent";

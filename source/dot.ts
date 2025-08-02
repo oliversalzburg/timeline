@@ -110,6 +110,7 @@ export interface LinkProperties {
 	arrowhead: Arrow;
 	arrowtail: Arrow;
 	color: Color;
+	comment: string;
 	constraint: boolean;
 	edgetooltip: string;
 	edgeURL: string;
@@ -123,6 +124,7 @@ export interface LinkProperties {
 	label: string;
 	labeltooltip: string;
 	labelfontcolor: Color;
+	len: number;
 	minlen: number;
 	penwidth: number;
 	samehead: string;
@@ -260,5 +262,6 @@ export const dot = () => {
 			buffer = new Array<string>();
 			indentation = 0;
 		},
+		has: (id: string) => nodeIds.has(id),
 	};
 };
