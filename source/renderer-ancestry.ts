@@ -1,9 +1,17 @@
-import { mustExist } from "@oliversalzburg/js-utils/data/nil.js";
+import { isNil, mustExist } from "@oliversalzburg/js-utils/data/nil.js";
 import { InvalidOperationError } from "@oliversalzburg/js-utils/errors/InvalidOperationError.js";
-import { FONT_NAME, FONT_SIZE, TRANSPARENT } from "./constants.js";
+import { FONT_NAME, FONT_SIZE } from "./constants.js";
 import { dot, makeHtmlString } from "./dot.js";
 import type { RendererOptions } from "./renderer.js";
-import type { Identity, TimelineAncestryRenderer } from "./types.js";
+import type {
+	Birth,
+	Death,
+	Identity,
+	RelationFather,
+	RelationMarriage,
+	RelationMother,
+	TimelineAncestryRenderer,
+} from "./types.js";
 
 export class Child {
 	identity: string | Identity;
@@ -13,13 +21,56 @@ export class Child {
 	father?: string | Child;
 	mother?: string | Child;
 }
+export interface ChildMarker {
+	identity: string;
+	father?: string;
+	mother?: string;
+}
+export interface ChildConcrete {
+	identity: Identity;
+	father?: ChildConcrete;
+	mother?: ChildConcrete;
+}
 export class Alias {
-	alias: string;
+	identity: string | Identity;
 	origin: string | Child;
-	constructor(alias: string, origin: string | Child) {
-		this.alias = alias;
+	constructor(identity: string, origin: string | Child) {
+		this.identity = identity;
 		this.origin = origin;
 	}
+}
+export interface AliasConcrete {
+	identity: Identity;
+	origin: ChildConcrete;
+}
+export class Joiner {
+	who: Set<string | Child | Alias>;
+	type?: "marriage" | "dna";
+	since?: string;
+	until?: string;
+	mergeFrom?: Joiner;
+	mergeInto?: Joiner;
+	constructor(who: Array<string>, type?: "marriage" | "dna") {
+		this.who = new Set(who);
+		this.type = type;
+	}
+	static makeJoinId(
+		a: string | undefined,
+		b: string | undefined,
+		since?: string,
+		until?: string,
+	) {
+		const ids = [a ?? "NULL", b ?? "NULL"].sort();
+		return `JOINED-${ids.join("+")}@${since ?? "NULL"}-${until ?? "NULL"}`;
+	}
+}
+export interface JoinerConcrete {
+	who: Set<ChildConcrete | AliasConcrete>;
+	type?: "marriage" | "dna";
+	since?: string;
+	until?: string;
+	mergeInto?: JoinerConcrete;
+	mergeFrom?: JoinerConcrete;
 }
 
 export const parentOf = (identity: Identity) => [
@@ -48,14 +99,82 @@ export const plan = (
 		identities.set(identity.id, timeline.meta.identity);
 	}
 
+	const nodeId = (maybeNode: string | Child) => {
+		return maybeNode instanceof Child
+			? typeof maybeNode.identity === "string"
+				? maybeNode.identity
+				: maybeNode.identity.id
+			: maybeNode;
+	};
+	const joinNodes = (a: string, b: string, type?: "marriage" | "dna") => {
+		const joinerId = Joiner.makeJoinId(
+			a,
+			b,
+			//marriage.since,
+		);
+
+		const node = graphNodes.get(joinerId) as Joiner | undefined;
+		if (node === undefined) {
+			const joiner = new Joiner([a, b], type);
+			graphNodes.set(joinerId, joiner);
+			return joiner;
+		}
+
+		if (type === "marriage" && node.type !== "marriage") {
+			node.type = type;
+		}
+		return node;
+	};
+	let randomIndex = 1;
+	const generateMale = (relations?: Array<RelationFather>): Identity => {
+		const name = `Unbekannter Mann ${randomIndex++}`;
+		return { name, id: name, relations };
+	};
+	const generateFemale = (relations?: Array<RelationMother>): Identity => {
+		const name = `Unbekannte Frau ${randomIndex++}`;
+		return { name, id: name, relations };
+	};
+
 	// Parse identities and construct relationship graph.
-	const graphNodes = new Map<string, Child | Alias>();
+	const graphNodes = new Map<string, Child | Alias | Joiner>();
 	for (const [id, identity] of identities.entries()) {
 		if (!graphNodes.has(id)) {
 			graphNodes.set(id, new Child(mustExist(identities.get(id))));
 		}
 
 		const graphNode = mustExist(graphNodes.get(id)) as Child;
+
+		for (const marriage of marriedToMeta(identity)) {
+			// Generate new node for potential name change.
+			const alias = marriage.as;
+			if (alias !== undefined) {
+				if (!graphNodes.has(alias)) {
+					graphNodes.set(alias, new Alias(alias, id));
+					identities.set(alias, { id: alias, name: alias });
+				}
+				const aliasNode = mustExist(graphNodes.get(alias)) as Alias;
+				aliasNode.origin = graphNode;
+			}
+			const self = alias ?? id;
+			const marriedTo = marriage.marriedTo;
+			const spouseIdentity = mustExist(
+				identities.get(marriedTo),
+				`unknown identity '${marriedTo}' in '${id}'`,
+			);
+			const spouseMarriage = marriedToMeta(spouseIdentity).find(
+				(_) => _.marriedTo === id,
+			);
+			const spouse = spouseMarriage?.as ?? marriedTo;
+
+			const joiner = joinNodes(self, marriedTo, "marriage");
+			joiner.since = marriage.since;
+			if (spouse !== marriedTo) {
+				const joinerAlias = joinNodes(self, spouse, "marriage");
+				joinerAlias.mergeInto = joiner;
+				joiner.mergeFrom = joinerAlias;
+				joinerAlias.since = marriage.since;
+			}
+		}
 
 		for (const childId of fatherOf(identity)) {
 			if (!graphNodes.has(childId)) {
@@ -64,6 +183,10 @@ export const plan = (
 
 			const childNode = mustExist(graphNodes.get(childId)) as Child;
 			childNode.father = graphNode;
+
+			if (childNode.father && childNode.mother) {
+				joinNodes(nodeId(childNode.father), nodeId(childNode.mother), "dna");
+			}
 		}
 
 		for (const childId of motherOf(identity)) {
@@ -73,66 +196,99 @@ export const plan = (
 
 			const childNode = mustExist(graphNodes.get(childId)) as Child;
 			childNode.mother = graphNode;
-		}
 
-		for (const marriage of marriedToMeta(identity)) {
-			const alias = marriage.as;
-			if (alias === undefined) {
-				continue;
+			if (childNode.father && childNode.mother) {
+				joinNodes(nodeId(childNode.father), nodeId(childNode.mother), "dna");
 			}
-
-			if (!graphNodes.has(alias)) {
-				graphNodes.set(alias, new Alias(alias, id));
-			}
-
-			const aliasNode = mustExist(graphNodes.get(alias)) as Alias;
-			aliasNode.origin = graphNode;
 		}
 	}
 
-	for (const [name, marker] of graphNodes.entries()) {
-		if ("origin" in marker && typeof marker.origin === "string") {
-			// Alias marker
-			const origin = mustExist(graphNodes.get(marker.origin));
-			if ("alias" in origin) {
-				throw new InvalidOperationError(
-					`'${name}' is an alias of an alias '${origin.alias}'. Aliases should point to their origin.`,
-				);
-			}
+	// Generate missing parents
+	for (const [id, node] of graphNodes.entries()) {
+		if (node instanceof Child === false) {
+			continue;
+		}
 
-			graphNodes.set(name, { alias: name, origin });
+		// Children with both parents unknown, stop recursion.
+		if (node.father === undefined && node.mother === undefined) {
+			continue;
+		}
+
+		if (node.father === undefined) {
+			const father = generateMale([{ fatherOf: id }]);
+			identities.set(father.id, father);
+			node.father = new Child(father);
+			graphNodes.set(father.id, node.father);
+		}
+		if (node.mother === undefined) {
+			const mother = generateFemale([{ motherOf: id }]);
+			identities.set(mother.id, mother);
+			node.mother = new Child(mother);
+			graphNodes.set(mother.id, node.mother);
+		}
+
+		joinNodes(nodeId(node.father), nodeId(node.mother), "dna");
+	}
+
+	// Resolve
+	for (const [id, marker] of graphNodes.entries()) {
+		if (marker instanceof Joiner) {
+			marker.who = new Set(
+				marker.who
+					.values()
+					.map((_) =>
+						typeof _ === "string"
+							? (mustExist(graphNodes.get(_)) as ChildConcrete)
+							: _,
+					),
+			);
+			continue;
+		}
+
+		if (marker instanceof Alias) {
+			const alias = marker as Alias;
+			alias.identity =
+				typeof alias.identity === "string"
+					? mustExist(identities.get(alias.identity as string))
+					: alias.identity;
+			alias.origin =
+				typeof alias.origin === "string"
+					? (mustExist(graphNodes.get(alias.origin as string)) as Child)
+					: alias.origin;
 			continue;
 		}
 
 		const childMarker = marker as Child;
 
-		graphNodes.set(name, {
-			identity: childMarker.identity,
-			father:
-				typeof childMarker.father === "string"
-					? (graphNodes.get(childMarker.father) as Child | undefined)
-					: childMarker.father,
-			mother:
-				typeof childMarker.mother === "string"
-					? (graphNodes.get(childMarker.mother) as Child | undefined)
-					: childMarker.mother,
-		});
+		const child = new Child(childMarker.identity);
+		child.father =
+			typeof childMarker.father === "string"
+				? (mustExist(graphNodes.get(childMarker.father)) as Child)
+				: childMarker.father;
+		child.mother =
+			typeof childMarker.mother === "string"
+				? (mustExist(graphNodes.get(childMarker.mother)) as Child)
+				: childMarker.mother;
+		graphNodes.set(id, child);
 	}
 
-	return graphNodes;
+	return graphNodes as Map<
+		string,
+		ChildConcrete | AliasConcrete | JoinerConcrete
+	>;
 };
 
 export const render = (
 	timelines: Array<TimelineAncestryRenderer>,
 	options: Partial<RendererOptions> = {},
 ) => {
-	const _graph = plan(timelines);
+	const graph = plan(timelines);
 
 	const d = dot();
 	d.raw("digraph ancestry {");
 	d.raw(`node [fontname="${FONT_NAME}"; fontsize="${FONT_SIZE}";]`);
 	d.raw(`edge [fontname="${FONT_NAME}"; fontsize="${FONT_SIZE}";]`);
-	d.raw(`bgcolor="${TRANSPARENT}"`);
+	d.raw(`bgcolor="white"`);
 	d.raw('comment=" "');
 	d.raw('concentrate="true"');
 	d.raw(`fontname="${FONT_NAME}"`);
@@ -142,22 +298,7 @@ export const render = (
 	d.raw(`ranksep="0.5"`);
 	d.raw(`tooltip=" "`);
 
-	const identityMap = new Map<string, TimelineAncestryRenderer>();
-	const marriagesUnconcluded = new Map<string, string>();
-
-	const findFatherOf = (id: string) =>
-		timelines.find((_) =>
-			(_.meta.identity.relations ?? []).some(
-				(relation) => "fatherOf" in relation && relation.fatherOf === id,
-			),
-		);
-	const findMotherOf = (id: string) =>
-		timelines.find((_) =>
-			(_.meta.identity.relations ?? []).some(
-				(relation) => "motherOf" in relation && relation.motherOf === id,
-			),
-		);
-	const toDate = (input?: string) => {
+	const parseAsDate = (input?: string) => {
 		if (input === undefined) {
 			return undefined;
 		}
@@ -167,115 +308,202 @@ export const render = (
 		}
 		return new Date(input);
 	};
+	const uncertainEventToDateString = (input?: Birth | Death) => {
+		if (isNil(input)) {
+			return undefined;
+		}
 
-	for (const timeline of timelines) {
-		const identity = timeline.meta.identity;
-		identityMap.set(identity.id, timeline);
+		if (input.date !== undefined) {
+			const date = mustExist(parseAsDate(input.date));
+			return options.dateRenderer !== undefined
+				? options.dateRenderer(date.valueOf())
+				: date?.toLocaleDateString();
+		}
 
-		const born = toDate(identity.born)?.valueOf();
-		const bornString =
-			born !== undefined && options?.dateRenderer
-				? options.dateRenderer(born)
-				: born !== undefined
-					? new Date(born).toDateString()
-					: "";
+		if (input.when?.showAs !== "undefined") {
+			return input.when?.showAs as string;
+		}
 
-		const died = toDate(identity.died)?.valueOf();
-		const diedString =
-			died !== undefined && options?.dateRenderer
-				? options.dateRenderer(died)
-				: died !== undefined
-					? new Date(died).toDateString()
-					: "";
+		return "UNSUPPORTED UNCERTAINTY DESCRIPTION";
+	};
 
-		const relations = identity.relations ?? [];
-		const marriages = relations.filter((_) => "marriedTo" in _);
+	for (const [id, identity] of graph) {
+		if (identity instanceof Joiner) {
+			const joiner = identity as JoinerConcrete;
+
+			if (joiner.mergeInto !== undefined) {
+				continue;
+			}
+
+			// Resolve aliases to their origin.
+			const who = ([...joiner.who] as Array<ChildConcrete | AliasConcrete>).map(
+				(_) => (_ instanceof Alias ? (_ as AliasConcrete).origin : _),
+			);
+			const joinedId = Joiner.makeJoinId(
+				who[0].identity.id,
+				who[1].identity.id,
+				//child.identity.born,
+				//child.identity.died,
+			);
+			if (d.has(joinedId)) {
+				continue;
+			}
+
+			const since = parseAsDate(identity.since)?.valueOf();
+			const sinceString =
+				since !== undefined && options?.dateRenderer
+					? options.dateRenderer(since)
+					: since !== undefined
+						? new Date(since).toDateString()
+						: "";
+
+			const mergedWho =
+				joiner.mergeFrom?.who !== undefined ? [...joiner.mergeFrom.who] : who;
+			const names = mergedWho.map((_) => _.identity.name ?? _.identity.id);
+			d.node(joinedId, {
+				height: identity.type === "dna" ? 0 : undefined,
+				label: makeHtmlString(
+					`${names[0]}\n⚭${since ? ` ${sinceString}` : ""}\n${names[1]}`,
+				),
+				shape: identity.type === "dna" ? "point" : "ellipse",
+				style: identity.type === "dna" ? "invis" : "dashed",
+				width: identity.type === "dna" ? 0 : undefined,
+			});
+			continue;
+		}
+
+		//if (identity instanceof Alias) {
+		//	const alias = identity as AliasConcrete;
+		//	d.node(alias.identity.id, {
+		//		label: alias.identity.name ?? alias.identity.name,
+		//		style: "dashed",
+		//	});
+		//	continue;
+		//}
+
+		if (identity instanceof Child === false) {
+			continue;
+		}
+
+		const subject = (
+			"origin" in identity ? identity.origin : identity
+		) as ChildConcrete;
+		const bornString = uncertainEventToDateString(subject.identity.born);
+		const diedString = uncertainEventToDateString(subject.identity.died);
+		const diedSymbol =
+			subject.identity.died?.inMilitaryService === true ||
+			subject.identity.died?.inMilitaryService === null
+				? "⚔︎"
+				: "✝︎";
+
+		const relations = subject.identity.relations ?? [];
+		const _marriages = relations.filter((_) => "marriedTo" in _);
+		const fatherhoods = relations.filter((_) => "fatherOf" in _);
+		const motherhoods = relations.filter((_) => "motherOf" in _);
 
 		let chromosomes: "M" | "W" | undefined;
-		if (relations.some((_) => "fatherOf" in _)) {
+		if (0 < fatherhoods.length) {
 			chromosomes = "M";
 		}
-		if (relations.some((_) => "motherOf" in _)) {
+
+		if (0 < motherhoods.length) {
 			chromosomes = "W";
 		}
 
-		d.node(identity.id, {
+		d.node(id, {
 			color:
 				chromosomes === "M" ? "blue" : chromosomes === "W" ? "red" : "black",
 			label: makeHtmlString(
-				(identity.name ?? identity.id) +
-					(born ? `\n* ${bornString}` : "") +
-					(died ? `\n✝︎ ${diedString}` : ""),
+				((identity instanceof Alias
+					? ((identity as AliasConcrete).origin.identity.name ??
+						(identity as AliasConcrete).origin.identity.id)
+					: undefined) ??
+					subject.identity.name ??
+					subject.identity.id) +
+					(bornString !== undefined ? `\n* ${bornString}` : "") +
+					(diedString !== undefined ? `\n${diedSymbol} ${diedString}` : ""),
 			),
 		});
-
-		if (0 < marriages.length) {
-			marriagesUnconcluded.set(identity.id, marriages[0].marriedTo);
-			const name = marriages[0].as ?? identity.name ?? identity.id;
-			const spouse = marriages[0].marriedTo;
-			d.node(`MARRIAGE-${identity.id}+${spouse}`, {
-				label: makeHtmlString(`${name} + ${spouse}`),
-				style: "dotted",
-			});
-		}
 	}
 
-	// Render relations.
-	for (const timeline of timelines) {
-		const id = timeline.meta.identity.id;
-		const relations = timeline.meta.identity.relations ?? [];
+	for (const [id, node] of graph) {
+		if (node instanceof Joiner) {
+			continue;
+		}
+
+		const _alias = node as AliasConcrete;
+		const child = node as ChildConcrete;
+
+		//if (node instanceof Alias) {
+		//	d.link(alias.origin.identity.id, alias.identity.id, { style: "dashed" });
+		//}
+
+		const relations = child.identity.relations ?? [];
 
 		for (const relation of relations) {
 			try {
 				if ("fatherOf" in relation) {
-					const child = mustExist(identityMap.get(relation.fatherOf));
+					const child = mustExist(
+						graph.get(relation.fatherOf) as ChildConcrete,
+					);
 					const father = id;
-					const mother = findMotherOf(child.meta.identity.id)?.meta.identity.id;
-					const dna = `DNA-${father}+${mother}`;
-					if (!d.has(dna)) {
-						d.node(dna, {
-							shape: "point",
-							style: "invis",
-							width: 0,
-							height: 0,
-						});
-					}
-					d.link(id, dna, {
+					const mother = child.mother?.identity.id;
+					const joinerId = Joiner.makeJoinId(
+						father,
+						mother,
+						//marriage.since,
+					);
+					d.link(id, joinerId, {
 						arrowhead: "none",
 						headport: "e",
 						tailport: "w",
 					});
-					d.link(dna, relation.fatherOf, { headport: "e", tailport: "w" });
+					d.link(joinerId, relation.fatherOf, { headport: "e", tailport: "w" });
 				} else if ("motherOf" in relation) {
-					const child = mustExist(identityMap.get(relation.motherOf));
-					const father = findFatherOf(child.meta.identity.id)?.meta.identity.id;
+					const child = mustExist(
+						graph.get(relation.motherOf) as ChildConcrete,
+					);
+					const father = child.father?.identity.id;
 					const mother = id;
-					const dna = `DNA-${father}+${mother}`;
-					if (!d.has(dna)) {
-						d.node(dna, {
-							shape: "point",
-							style: "invis",
-							width: 0,
-							height: 0,
-						});
-					}
-					d.link(id, dna, {
+					const joinerId = Joiner.makeJoinId(
+						father,
+						mother,
+						//marriage.since,
+					);
+					d.link(id, joinerId, {
 						arrowhead: "none",
 						headport: "e",
 						tailport: "w",
 					});
-					d.link(dna, relation.motherOf, { headport: "e", tailport: "w" });
+					d.link(joinerId, relation.motherOf, { headport: "e", tailport: "w" });
 				} else if ("marriedTo" in relation) {
-					d.link(id, relation.marriedTo, {
+					const marriage = relation as RelationMarriage;
+
+					const self = id;
+					const marriedTo = marriage.marriedTo;
+					const spouseIdentity = (
+						mustExist(graph.get(marriedTo)) as AliasConcrete | ChildConcrete
+					).identity;
+					const spouseMarriage = marriedToMeta(spouseIdentity).find(
+						(_) => _.marriedTo === id,
+					);
+					const _spouse = spouseMarriage?.as ?? marriage.marriedTo;
+
+					const joinerId = Joiner.makeJoinId(
+						self,
+						marriedTo,
+						//relation.since,
+					);
+					// TODO: Only link, if no shared children during marriage.
+					d.link(id, joinerId, {
 						arrowhead: "none",
-						comment: "married to",
-						constraint: false,
-						style: "bold",
+						headport: "e",
+						tailport: "w",
 					});
 				}
 			} catch (fault) {
 				process.stderr.write(
-					`Error while processing relation '${JSON.stringify(relation)}' of ${timeline.meta.id}!\n`,
+					`Error while processing relation '${JSON.stringify(relation)}' of ${id}!\n`,
 				);
 				throw fault;
 			}

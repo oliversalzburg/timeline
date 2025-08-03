@@ -42,11 +42,51 @@ properties:
         title: Name
         type: string
       born:
-        title: Date of Birth
-        type: string
+        title: Birth Information
+        type: object
+        properties:
+          date:
+            title: Exact Day of Birth
+            type: string
+          when:
+            title: Uncertain Date of Birth
+            type: object
+            properties:
+              after:
+                type: string
+              before:
+                type: string
+              showAs:
+                type: string
+          where:
+            title: Uncertain Location of Birth
+            type: string
       died:
-        title: Date of Death
-        type: string
+        title: Death Information
+        type:
+          - object
+          - "null"
+        properties:
+          date:
+            title: Exact Day of Death
+            type: string
+          when:
+            title: Uncertain Date of Death
+            type: object
+            properties:
+              after:
+                type: string
+              before:
+                type: string
+              showAs:
+                type: string
+          where:
+            title: Location of Death
+            type: string
+          inMilitaryService:
+            type:
+              - boolean
+              - "null"
       relations:
         title: Relations
         type: array

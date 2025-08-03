@@ -59,10 +59,29 @@ export interface RelationMother {
 export interface RelationFather {
 	fatherOf: string;
 }
+export interface Birth {
+	date?: string;
+	when?: {
+		before?: string;
+		after?: string;
+		showAs?: string;
+	};
+	where?: string;
+}
+export interface Death {
+	date?: string;
+	when?: {
+		before?: string;
+		after?: string;
+		showAs?: string;
+	};
+	where?: string;
+	inMilitaryService?: boolean | null;
+}
 export interface Identity {
 	id: string;
-	born?: string;
-	died?: string;
+	born?: Birth;
+	died?: Death;
 	name?: string;
 	relations?: Array<RelationMarriage | RelationFather | RelationMother>;
 }
