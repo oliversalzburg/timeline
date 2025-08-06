@@ -48,6 +48,12 @@ export interface TimelineReferenceRenderer extends Timeline {
 	records: Array<TimelineRecord>;
 }
 
+export interface RelationConnection {
+	connectedTo: string;
+}
+export interface RelationFamily {
+	relatedTo: string;
+}
 export interface RelationMarriage {
 	marriedTo: string;
 	since?: string;

@@ -1,6 +1,6 @@
 import { isNil, mustExist } from "@oliversalzburg/js-utils/data/nil.js";
 import { InvalidOperationError } from "@oliversalzburg/js-utils/errors/InvalidOperationError.js";
-import { FONT_NAME, FONT_SIZE } from "./constants.js";
+import { FONT_NAME, FONT_SIZE, MILLISECONDS } from "./constants.js";
 import { dot, makeHtmlString } from "./dot.js";
 import type { RendererOptions } from "./renderer.js";
 import type {
@@ -94,7 +94,7 @@ export const plan = (
 	for (const timeline of timelines) {
 		const identity = timeline.meta.identity;
 		if (identities.has(identity.id)) {
-			throw new InvalidOperationError(`Duplicate identity: ${identity.id}`);
+			throw new InvalidOperationError(`Duplicate identity: '${identity.id}'`);
 		}
 		identities.set(identity.id, timeline.meta.identity);
 	}
@@ -178,7 +178,15 @@ export const plan = (
 
 		for (const childId of fatherOf(identity)) {
 			if (!graphNodes.has(childId)) {
-				graphNodes.set(childId, new Child(mustExist(identities.get(childId))));
+				graphNodes.set(
+					childId,
+					new Child(
+						mustExist(
+							identities.get(childId),
+							`'${id}' declares father of unknown identity '${childId}'`,
+						),
+					),
+				);
 			}
 
 			const childNode = mustExist(graphNodes.get(childId)) as Child;
@@ -191,7 +199,15 @@ export const plan = (
 
 		for (const childId of motherOf(identity)) {
 			if (!graphNodes.has(childId)) {
-				graphNodes.set(childId, new Child(mustExist(identities.get(childId))));
+				graphNodes.set(
+					childId,
+					new Child(
+						mustExist(
+							identities.get(childId),
+							`'${id}' declares mother of unknown identity '${childId}'`,
+						),
+					),
+				);
 			}
 
 			const childNode = mustExist(graphNodes.get(childId)) as Child;
@@ -298,6 +314,8 @@ export const render = (
 	d.raw(`ranksep="0.5"`);
 	d.raw(`tooltip=" "`);
 
+	const asYears = (milliseconds: number) =>
+		Math.round(milliseconds / MILLISECONDS.ONE_YEAR);
 	const parseAsDate = (input?: string) => {
 		if (input === undefined) {
 			return undefined;
@@ -389,7 +407,10 @@ export const render = (
 			"origin" in identity ? identity.origin : identity
 		) as ChildConcrete;
 		const bornString = uncertainEventToDateString(subject.identity.born);
-		const diedString = uncertainEventToDateString(subject.identity.died);
+		const diedString =
+			subject.identity.died === null
+				? ""
+				: uncertainEventToDateString(subject.identity.died);
 		const diedSymbol =
 			subject.identity.died?.inMilitaryService === true ||
 			subject.identity.died?.inMilitaryService === null
@@ -458,13 +479,21 @@ export const render = (
 						headport: "e",
 						tailport: "w",
 					});
-					d.link(joinerId, relation.fatherOf, { headport: "e", tailport: "w" });
+					// We only link the mother
+					//d.link(joinerId, relation.fatherOf, { headport: "e", tailport: "w" });
 				} else if ("motherOf" in relation) {
-					const child = mustExist(
+					const offspring = mustExist(
 						graph.get(relation.motherOf) as ChildConcrete,
 					);
-					const father = child.father?.identity.id;
+					const father = offspring.father?.identity.id;
 					const mother = id;
+					const age =
+						child.identity.born?.date !== undefined &&
+						offspring.identity.born?.date !== undefined
+							? new Date(offspring.identity.born?.date).valueOf() -
+								new Date(child.identity.born.date).valueOf()
+							: undefined;
+
 					const joinerId = Joiner.makeJoinId(
 						father,
 						mother,
@@ -475,9 +504,19 @@ export const render = (
 						headport: "e",
 						tailport: "w",
 					});
-					d.link(joinerId, relation.motherOf, { headport: "e", tailport: "w" });
+					d.link(joinerId, relation.motherOf, {
+						headlabel: age !== undefined ? asYears(age).toFixed() : undefined,
+						headport: "e",
+						tailport: "w",
+					});
 				} else if ("marriedTo" in relation) {
 					const marriage = relation as RelationMarriage;
+					const age =
+						child.identity.born?.date !== undefined &&
+						relation.since !== undefined
+							? new Date(relation.since).valueOf() -
+								new Date(child.identity.born.date).valueOf()
+							: undefined;
 
 					const self = id;
 					const marriedTo = marriage.marriedTo;
@@ -498,6 +537,7 @@ export const render = (
 					d.link(id, joinerId, {
 						arrowhead: "none",
 						headport: "e",
+						taillabel: age !== undefined ? asYears(age).toFixed() : undefined,
 						tailport: "w",
 					});
 				}

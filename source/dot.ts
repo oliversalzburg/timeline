@@ -118,6 +118,7 @@ export interface LinkProperties {
 	fontcolor: Color;
 	fontname: string;
 	fontsize: number;
+	headlabel: string;
 	headport: PortPos;
 	headtooltip: string;
 	headURL: string;
@@ -132,6 +133,7 @@ export interface LinkProperties {
 	skipDraw: boolean;
 	style: "bold" | "dashed" | "dotted" | "invis" | "solid" | "tapered";
 	tailclip: boolean;
+	taillabel: string;
 	tailport: PortPos;
 	tailtooltip: string;
 	tailURL: string;
@@ -165,12 +167,14 @@ export interface NodeProperties {
 
 const makePropertyString = (
 	properties: Record<string, boolean | number | string | undefined>,
-) =>
-	Object.entries(properties)
+) => {
+	const propertyString = Object.entries(properties)
 		.filter(([key, _]) => key !== "skipDraw" && _ !== undefined)
 		.map(([key, _]) => (key === "label" ? `${key}=<${_}>` : `${key}="${_}"`))
 		.sort()
 		.join("; ");
+	return propertyString !== "" ? `[${propertyString};]` : "";
+};
 
 /**
  * Transforms a multi-line string into an HTML-like construct to be rendered by GraphViz.
@@ -219,7 +223,7 @@ export const dot = () => {
 		nodeIds.set(_, id);
 
 		if (options?.skipDraw !== true) {
-			renderRaw(`${id} [${makePropertyString({ label: _, ...options })};]`);
+			renderRaw(`${id} ${makePropertyString({ label: _, ...options })}`);
 		}
 	};
 
@@ -248,7 +252,7 @@ export const dot = () => {
 
 		if (options?.skipDraw !== true) {
 			renderRaw(
-				`${aId} -> ${bId}${options ? ` [${makePropertyString(options ?? {})};]` : ""}`,
+				`${aId} -> ${bId}${options ? ` ${makePropertyString(options ?? {})}` : ""}`,
 			);
 		}
 	};
