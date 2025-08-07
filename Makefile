@@ -3,9 +3,9 @@
 
 START ?= 1980
 END ?= 2000
-ORIGIN ?= 1983-12-25
 
-_HORIZON := $(ORIGIN)_$(START)_$(END)
+_ORIGIN := $(ORIGIN: =-)
+_HORIZON := $(START)_$(END)
 
 PREFIX ?= universe_
 
@@ -25,7 +25,7 @@ ifneq ($(DEBUG),)
 	_DOT_FLAGS += -v5
 endif
 
-_UNIVERSE_FLAGS := --segment=300
+_UNIVERSE_FLAGS := "--origin=$(_ORIGIN)" --segment=300
 ifneq ($(DEBUG),)
 	_UNIVERSE_FLAGS += --debug
 endif
@@ -170,8 +170,7 @@ endif
 # requested slice from the universe.
 %.gv: lib node_modules | output
 	node --enable-source-maps examples/universe.js $(_UNIVERSE_FLAGS) \
-		--origin=$(word 2, $(subst _, ,$@)) \
-		--skip-before=$(word 3, $(subst _, ,$@)) \
+		--skip-before=$(word 2, $(subst _, ,$@)) \
 		--skip-after=$(subst .gv,,$(word 4, $(subst _, ,$@))) \
 		--output=$@ \
 		$(_TIMELINES)

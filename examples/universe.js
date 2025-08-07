@@ -72,9 +72,11 @@ const plainData = new Map(
 
 // Load raw data to normalized model.
 const data = new Map(
-	plainData
-		.entries()
-		.map(([filename, data]) => [filename, load(data, filename)]),
+	/** @type {Array<[string, import("../source/types.js").Timeline]>} */ ([
+		...plainData
+			.entries()
+			.map(([filename, data]) => [filename, load(data, filename)]),
+	]).filter(([, data]) => 0 < data.records.length),
 );
 
 const metrics = new Map(
@@ -148,10 +150,7 @@ const renderOptions = {
 		return `${["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"][_.getDay()]}, ${_.getDate().toFixed(0).padStart(2, "0")}.${(_.getMonth() + 1).toFixed(0).padStart(2, "0")}.${_.getFullYear()}`;
 	},
 	now: NOW,
-	origin:
-		typeof args.origin === "number" || typeof args.origin === "string"
-			? new Date(args.origin).valueOf()
-			: undefined,
+	origin: typeof args.origin === "string" ? args.origin : undefined,
 	segment: typeof args.segment === "string" ? Number(args.segment) : undefined,
 	skipBefore:
 		typeof args["skip-before"] === "string"

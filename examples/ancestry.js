@@ -113,19 +113,7 @@ const renderOptions = {
 		return `${["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"][_.getDay()]}, ${_.getDate().toFixed(0).padStart(2, "0")}.${(_.getMonth() + 1).toFixed(0).padStart(2, "0")}.${_.getFullYear()}`;
 	},
 	now: NOW,
-	origin:
-		typeof args.origin === "number" || typeof args.origin === "string"
-			? new Date(args.origin).valueOf()
-			: undefined,
-	segment: typeof args.segment === "string" ? Number(args.segment) : undefined,
-	skipBefore:
-		typeof args["skip-before"] === "string"
-			? new Date(args["skip-before"]).valueOf()
-			: undefined,
-	skipAfter:
-		typeof args["skip-after"] === "string"
-			? new Date(args["skip-after"]).valueOf()
-			: undefined,
+	origin: typeof args.origin === "string" ? args.origin : undefined,
 };
 const dotGraph = render(finalTimelines, renderOptions);
 

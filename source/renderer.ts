@@ -7,11 +7,13 @@ import { hashCyrb53 } from "@oliversalzburg/js-utils/data/string.js";
 import { formatMilliseconds } from "@oliversalzburg/js-utils/format/milliseconds.js";
 import { FONT_NAME, FONT_SIZE, TRANSPARENT } from "./constants.js";
 import { dot, makeHtmlString, type NodeProperties } from "./dot.js";
+import { uncertainEventToDate } from "./genealogy.js";
 import { roundToDay } from "./operator.js";
 import { matchLuminance, type PaletteMeta, palette } from "./palette.js";
 import { STYLE_TRANSFER_MARKER, type Style, styles } from "./styles.js";
 import type {
 	RenderMode,
+	TimelineAncestryRenderer,
 	TimelineEntry,
 	TimelineReferenceRenderer,
 } from "./types.js";
@@ -20,7 +22,7 @@ export interface RendererOptions {
 	dateRenderer: (date: number) => string;
 	debug: boolean;
 	now: number;
-	origin: number;
+	origin: string;
 	segment: number;
 	skipAfter: number;
 	skipBefore: number;
@@ -37,20 +39,24 @@ export const rank = (timeline: Maybe<TimelineReferenceRenderer>) => {
 		: (timeline.meta.rank ?? (timeline.meta.color === TRANSPARENT ? -1 : 0));
 };
 
-export interface PlanEvent {
-	timeline: TimelineReferenceRenderer;
+export interface PlanEvent<
+	TTimelines extends TimelineReferenceRenderer | TimelineAncestryRenderer,
+> {
+	timeline: TTimelines;
 	index?: number;
 	isTransferMarker: boolean;
 	timestamp: number;
 	title: string;
 }
-export const plan = (
-	timelines: Array<TimelineReferenceRenderer>,
+export const plan = <
+	TTimelines extends TimelineReferenceRenderer | TimelineAncestryRenderer,
+>(
+	timelines: Array<TTimelines>,
 	options: Partial<RendererOptions> = {},
 ) => {
 	const segments = new Array<{
-		events: Array<PlanEvent>;
-		timelines: Array<TimelineReferenceRenderer>;
+		events: Array<PlanEvent<TTimelines>>;
+		timelines: Array<TTimelines>;
 		timestamps: Array<number>;
 	}>();
 
@@ -66,12 +72,10 @@ export const plan = (
 		(options.skipBefore ?? Number.NEGATIVE_INFINITY) < timestamp &&
 		timestamp < (options.skipAfter ?? Number.POSITIVE_INFINITY);
 
-	const hasTimelineEnded = (
-		timeline: TimelineReferenceRenderer,
-		timestamp: number,
-	): boolean => timeline.records[timeline.records.length - 1][0] < timestamp;
+	const hasTimelineEnded = (timeline: TTimelines, timestamp: number): boolean =>
+		timeline.records[timeline.records.length - 1][0] < timestamp;
 	const hasTimelineStarted = (
-		timeline: TimelineReferenceRenderer,
+		timeline: TTimelines,
 		timestamp: number,
 	): boolean => timeline.records[0][0] <= timestamp;
 
@@ -81,13 +85,13 @@ export const plan = (
 	let globalHistoryIndex = 0;
 	let segmentRanks = 0;
 	let segmentEvents = new Array<{
-		timeline: TimelineReferenceRenderer;
+		timeline: TTimelines;
 		index?: number;
 		isTransferMarker: boolean;
 		timestamp: number;
 		title: string;
 	}>();
-	const segmentTimelines = new Set<TimelineReferenceRenderer>();
+	const segmentTimelines = new Set<TTimelines>();
 	const localHistoryIndexes = new Array<number>(timelines.length).fill(
 		0,
 		0,
@@ -191,21 +195,37 @@ export const plan = (
  * as an example of how to further utilize recorded timeline data.
  * Readers are encouraged to write their own Renderer implementation.
  */
-export const render = (
-	timelines: Array<TimelineReferenceRenderer>,
+export const render = <
+	TTimelines extends TimelineReferenceRenderer | TimelineAncestryRenderer,
+>(
+	timelines: Array<TTimelines>,
 	options: Partial<RendererOptions> = {},
 ): {
 	graph: Array<string>;
 	ids: Set<string>;
 	palette: PaletteMeta<string>;
-	ranks: Map<TimelineReferenceRenderer, number>;
+	ranks: Map<TTimelines, number>;
 	styles: Map<number, Style>;
 } => {
 	const now = options?.now ?? Date.now();
-	const origin = options?.origin ?? timelines[0].records[0][0];
+	const origin: TTimelines =
+		options?.origin !== undefined
+			? mustExist(
+					timelines.find(
+						(_) =>
+							"identity" in _.meta && _.meta.identity.id === options.origin,
+					),
+					`no timeline has identity '${options.origin}'`,
+				)
+			: timelines[0];
+	const originTimestamp =
+		"identity" in origin.meta
+			? (uncertainEventToDate(origin.meta.identity.born)?.valueOf() ??
+				origin.records[0][0])
+			: now;
 	const originString = options?.dateRenderer
-		? options.dateRenderer(origin)
-		: new Date(origin).toDateString();
+		? options.dateRenderer(originTimestamp)
+		: new Date(originTimestamp).toDateString();
 
 	const isTimestampInRange = (timestamp: number): boolean =>
 		(options.skipBefore ?? Number.NEGATIVE_INFINITY) < timestamp &&
@@ -225,9 +245,7 @@ export const render = (
 	const classes = new Map<string, string>(
 		timelines.map((_) => [_.meta.id, `t${hashCyrb53(_.meta.id)}`]),
 	);
-	const ranks = new Map<TimelineReferenceRenderer, number>(
-		timelines.map((_) => [_, rank(_)]),
-	);
+	const ranks = new Map<TTimelines, number>(timelines.map((_) => [_, rank(_)]));
 	const styleSheet = styles([...ranks.values()]).toStyleSheet();
 
 	let eventIndex = 0;
@@ -244,8 +262,8 @@ export const render = (
 		isTransferMarker: boolean,
 		timestamp: number,
 		title: string,
-		contributors: Set<TimelineReferenceRenderer>,
-		leader?: TimelineReferenceRenderer,
+		contributors: Set<TTimelines>,
+		leader?: TTimelines,
 	) => {
 		const classList = isTransferMarker
 			? ["tx", ...contributors.values().map((_) => classes.get(_.meta.id))]
@@ -293,7 +311,7 @@ export const render = (
 					`${title}\\n${dateString}`,
 				)}`;
 
-		const timePassedSinceOrigin = timestamp - origin;
+		const timePassedSinceOrigin = timestamp - originTimestamp;
 		const timePassedSinceThen = now - timestamp;
 		const tooltip = isTransferMarker
 			? undefined
@@ -368,7 +386,7 @@ export const render = (
 			// We now iterate over all global events at the current timestamp.
 			const events = segment.events.filter((_) => _.timestamp === timestamp);
 
-			const eventTitles = new Map<string, PlanEvent>(
+			const eventTitles = new Map<string, PlanEvent<TTimelines>>(
 				events.map((event) => [event.title, event]),
 			);
 
@@ -379,9 +397,9 @@ export const render = (
 				const transferMarker = mustExist(eventTitles.get(title));
 
 				// Remember which timelines contribute to the event.
-				const contributors = new Set<TimelineReferenceRenderer>();
+				const contributors = new Set<TTimelines>();
 				// Remember the contributor with the highest rank.
-				let leader: TimelineReferenceRenderer | undefined;
+				let leader: TTimelines | undefined;
 
 				if (!transferMarker.isTransferMarker) {
 					// We now further iterate over all global events at this timestamp which share the same title.

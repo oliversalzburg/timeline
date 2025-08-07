@@ -1,5 +1,8 @@
-export interface TimelineDocument extends Record<string, unknown> {
+export interface TimelineDocument {
 	timeline: TimelineFlexibleInput;
+}
+export interface TimelineDocumentInternal extends TimelineDocument {
+	id?: string;
 }
 
 export interface TimelineFlexibleInput
@@ -21,7 +24,7 @@ export interface Timeline extends TimelinePlain {
 	meta: {
 		id: string;
 		private: boolean;
-	} & Record<string, unknown>;
+	};
 }
 
 export interface TimelineMetrics {
@@ -35,7 +38,7 @@ export type RGBTuple = [number, number, number];
 export type RGBATuple = [number, number, number, number];
 export type RenderMode = "dark" | "light";
 
-export interface MetaSectionReferenceRenderer extends Record<string, unknown> {
+export interface MetaSectionReferenceRenderer {
 	color?: string;
 	prefix?: string;
 	rank?: number;
@@ -54,18 +57,17 @@ export interface RelationConnection {
 export interface RelationFamily {
 	relatedTo: string;
 }
-export interface RelationMarriage {
+export interface Marriage extends Event {
 	marriedTo: string;
-	since?: string;
 	as?: string;
 }
-export interface RelationMother {
+export interface Mother {
 	motherOf: string;
 }
-export interface RelationFather {
+export interface Father {
 	fatherOf: string;
 }
-export interface Birth {
+export interface Event {
 	date?: string;
 	when?: {
 		before?: string;
@@ -74,14 +76,8 @@ export interface Birth {
 	};
 	where?: string;
 }
-export interface Death {
-	date?: string;
-	when?: {
-		before?: string;
-		after?: string;
-		showAs?: string;
-	};
-	where?: string;
+export interface Birth extends Event {}
+export interface Death extends Event {
 	inMilitaryService?: boolean | null;
 }
 export interface Identity {
@@ -89,9 +85,10 @@ export interface Identity {
 	born?: Birth;
 	died?: Death;
 	name?: string;
-	relations?: Array<RelationMarriage | RelationFather | RelationMother>;
+	relations?: Array<Marriage | Father | Mother>;
 }
-export interface MetaSectionAncestryRenderer extends Record<string, unknown> {
+export interface MetaSectionAncestryRenderer
+	extends MetaSectionReferenceRenderer {
 	identity: Identity;
 }
 export interface TimelineAncestryRenderer extends Timeline {

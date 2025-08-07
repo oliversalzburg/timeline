@@ -92,14 +92,42 @@ properties:
         type: array
         items:
           anyOf:
+            - title: Connection
+              type: object
+              required:
+                - connectedTo
+              properties:
+                connectedTo:
+                  type: string
+            - title: Family
+              type: object
+              required:
+                - relatedTo
+              properties:
+                relatedTo:
+                  type: string
             - title: Marriage
               type: object
               required:
                 - marriedTo
               properties:
-                marriedTo:
+                date:
+                  title: Exact Day of Marriage
                   type: string
-                since:
+                when:
+                  title: Uncertain Date of Marriage
+                  type: object
+                  properties:
+                    after:
+                      type: string
+                    before:
+                      type: string
+                    showAs:
+                      type: string
+                where:
+                  title: Uncertain Location of Marriage
+                  type: string
+                marriedTo:
                   type: string
                 as:
                   type: string

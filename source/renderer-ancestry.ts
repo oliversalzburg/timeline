@@ -1,15 +1,18 @@
-import { isNil, mustExist } from "@oliversalzburg/js-utils/data/nil.js";
+import { mustExist } from "@oliversalzburg/js-utils/data/nil.js";
 import { InvalidOperationError } from "@oliversalzburg/js-utils/errors/InvalidOperationError.js";
-import { FONT_NAME, FONT_SIZE, MILLISECONDS } from "./constants.js";
+import { FONT_NAME, FONT_SIZE } from "./constants.js";
 import { dot, makeHtmlString } from "./dot.js";
+import {
+	millisecondsAsYears,
+	uncertainEventToDate,
+	uncertainEventToDateString,
+} from "./genealogy.js";
 import type { RendererOptions } from "./renderer.js";
 import type {
-	Birth,
-	Death,
+	Father,
 	Identity,
-	RelationFather,
-	RelationMarriage,
-	RelationMother,
+	Marriage,
+	Mother,
 	TimelineAncestryRenderer,
 } from "./types.js";
 
@@ -20,6 +23,7 @@ export class Child {
 	}
 	father?: string | Child;
 	mother?: string | Child;
+	distance?: number;
 }
 export interface ChildMarker {
 	identity: string;
@@ -30,6 +34,7 @@ export interface ChildConcrete {
 	identity: Identity;
 	father?: ChildConcrete;
 	mother?: ChildConcrete;
+	distance?: number;
 }
 export class Alias {
 	identity: string | Identity;
@@ -46,7 +51,7 @@ export interface AliasConcrete {
 export class Joiner {
 	who: Set<string | Child | Alias>;
 	type?: "marriage" | "dna";
-	since?: string;
+	date?: string;
 	until?: string;
 	mergeFrom?: Joiner;
 	mergeInto?: Joiner;
@@ -57,17 +62,17 @@ export class Joiner {
 	static makeJoinId(
 		a: string | undefined,
 		b: string | undefined,
-		since?: string,
+		date?: string,
 		until?: string,
 	) {
 		const ids = [a ?? "NULL", b ?? "NULL"].sort();
-		return `JOINED-${ids.join("+")}@${since ?? "NULL"}-${until ?? "NULL"}`;
+		return `JOINED-${ids.join("+")}@${date ?? "NULL"}-${until ?? "NULL"}`;
 	}
 }
 export interface JoinerConcrete {
 	who: Set<ChildConcrete | AliasConcrete>;
 	type?: "marriage" | "dna";
-	since?: string;
+	date?: string;
 	until?: string;
 	mergeInto?: JoinerConcrete;
 	mergeFrom?: JoinerConcrete;
@@ -88,7 +93,7 @@ export const marriedToMeta = (identity: Identity) =>
 
 export const plan = (
 	timelines: Array<TimelineAncestryRenderer>,
-	_options: Partial<RendererOptions> = {},
+	options: Partial<RendererOptions & { originIdentity: string }> = {},
 ) => {
 	const identities = new Map<string, Identity>();
 	for (const timeline of timelines) {
@@ -98,6 +103,10 @@ export const plan = (
 		}
 		identities.set(identity.id, timeline.meta.identity);
 	}
+	const originIdentity =
+		options?.originIdentity !== undefined
+			? identities.get(options.originIdentity)
+			: undefined;
 
 	const nodeId = (maybeNode: string | Child) => {
 		return maybeNode instanceof Child
@@ -110,7 +119,7 @@ export const plan = (
 		const joinerId = Joiner.makeJoinId(
 			a,
 			b,
-			//marriage.since,
+			//marriage.date,
 		);
 
 		const node = graphNodes.get(joinerId) as Joiner | undefined;
@@ -126,11 +135,11 @@ export const plan = (
 		return node;
 	};
 	let randomIndex = 1;
-	const generateMale = (relations?: Array<RelationFather>): Identity => {
+	const generateMale = (relations?: Array<Father>): Identity => {
 		const name = `Unbekannter Mann ${randomIndex++}`;
 		return { name, id: name, relations };
 	};
-	const generateFemale = (relations?: Array<RelationMother>): Identity => {
+	const generateFemale = (relations?: Array<Mother>): Identity => {
 		const name = `Unbekannte Frau ${randomIndex++}`;
 		return { name, id: name, relations };
 	};
@@ -167,12 +176,12 @@ export const plan = (
 			const spouse = spouseMarriage?.as ?? marriedTo;
 
 			const joiner = joinNodes(self, marriedTo, "marriage");
-			joiner.since = marriage.since;
+			joiner.date = marriage.date;
 			if (spouse !== marriedTo) {
 				const joinerAlias = joinNodes(self, spouse, "marriage");
 				joinerAlias.mergeInto = joiner;
 				joiner.mergeFrom = joinerAlias;
-				joinerAlias.since = marriage.since;
+				joinerAlias.date = marriage.date;
 			}
 		}
 
@@ -288,6 +297,87 @@ export const plan = (
 		graphNodes.set(id, child);
 	}
 
+	// Resolve for origin
+	const traverse = (
+		child: ChildConcrete,
+		options: Array<ChildConcrete | undefined>,
+	) => {
+		const tests = options.map((_) =>
+			_ !== undefined ? _.distance : undefined,
+		);
+		const distances = tests
+			.filter((_) => typeof _ === "number")
+			.sort((a, b) => a - b);
+		const depth = 0 < distances.length ? distances[0] + 1 : undefined;
+		if (depth !== undefined) {
+			child.distance = depth;
+		}
+		return depth;
+	};
+
+	if (originIdentity !== undefined) {
+		const children = [
+			...graphNodes.values().filter((_) => _ instanceof Child),
+		] as Array<ChildConcrete>;
+		const childrenOfParents = new Array<[string, Array<ChildConcrete>]>();
+
+		for (const child of children) {
+			if (child.father !== undefined) {
+				childrenOfParents.push([child.father.identity.id, []]);
+			}
+			if (child.mother !== undefined) {
+				childrenOfParents.push([child.mother.identity.id, []]);
+			}
+		}
+		const childrenLookup = new Map<string, Array<ChildConcrete>>(
+			childrenOfParents,
+		);
+		for (const child of children) {
+			if (child.father !== undefined) {
+				const childrenCollection = mustExist(
+					childrenLookup.get(child.father.identity.id),
+				);
+				childrenCollection.push(child);
+			}
+			if (child.mother !== undefined) {
+				const childrenCollection = mustExist(
+					childrenLookup.get(child.mother.identity.id),
+				);
+				childrenCollection.push(child);
+			}
+		}
+		let iterations = 0;
+		let changes = 0;
+		for (; iterations < 20; ++iterations) {
+			console.log(`${changes} changes after ${iterations} iterations`);
+			for (const child of children.values()) {
+				if (child.distance !== undefined) {
+					continue;
+				}
+				if (child.identity === originIdentity) {
+					child.distance = 0;
+					++changes;
+					continue;
+				}
+				if (
+					traverse(child, [
+						child.father !== undefined
+							? (graphNodes.get(child.father.identity.id) as ChildConcrete)
+							: undefined,
+						child.mother !== undefined
+							? (graphNodes.get(child.mother.identity.id) as ChildConcrete)
+							: undefined,
+						...(childrenLookup.get(child.identity.id) ?? []).map(
+							(_) => graphNodes.get(_.identity.id) as ChildConcrete | undefined,
+						),
+					]) !== undefined
+				) {
+					++changes;
+				}
+			}
+		}
+	}
+
 	return graphNodes as Map<
 		string,
 		ChildConcrete | AliasConcrete | JoinerConcrete
@@ -298,52 +388,26 @@ export const render = (
 	timelines: Array<TimelineAncestryRenderer>,
 	options: Partial<RendererOptions> = {},
 ) => {
-	const graph = plan(timelines);
+	const graph = plan(timelines, options);
 
 	const d = dot();
 	d.raw("digraph ancestry {");
-	d.raw(`node [fontname="${FONT_NAME}"; fontsize="${FONT_SIZE}";]`);
-	d.raw(`edge [fontname="${FONT_NAME}"; fontsize="${FONT_SIZE}";]`);
-	d.raw(`bgcolor="white"`);
+	d.raw(
+		`node [fontcolor="white"; fontname="${FONT_NAME}"; fontsize="${FONT_SIZE}";]`,
+	);
+	d.raw(
+		`edge [color="white"; fontcolor="white"; fontname="${FONT_NAME}"; fontsize="${FONT_SIZE}";]`,
+	);
+	d.raw(`bgcolor="${options.theme === "light" ? "white" : "black"}"`);
 	d.raw('comment=" "');
 	d.raw('concentrate="true"');
+	d.raw(`fontcolor="white"`);
 	d.raw(`fontname="${FONT_NAME}"`);
 	d.raw(`fontsize="${FONT_SIZE}"`);
 	d.raw('label=" "');
 	d.raw(`rankdir="RL"`);
 	d.raw(`ranksep="0.5"`);
 	d.raw(`tooltip=" "`);
-
-	const asYears = (milliseconds: number) =>
-		Math.round(milliseconds / MILLISECONDS.ONE_YEAR);
-	const parseAsDate = (input?: string) => {
-		if (input === undefined) {
-			return undefined;
-		}
-		if (input.length === 4) {
-			const year = Number(input);
-			return new Date(year, 0);
-		}
-		return new Date(input);
-	};
-	const uncertainEventToDateString = (input?: Birth | Death) => {
-		if (isNil(input)) {
-			return undefined;
-		}
-
-		if (input.date !== undefined) {
-			const date = mustExist(parseAsDate(input.date));
-			return options.dateRenderer !== undefined
-				? options.dateRenderer(date.valueOf())
-				: date?.toLocaleDateString();
-		}
-
-		if (input.when?.showAs !== "undefined") {
-			return input.when?.showAs as string;
-		}
-
-		return "UNSUPPORTED UNCERTAINTY DESCRIPTION";
-	};
 
 	for (const [id, identity] of graph) {
 		if (identity instanceof Joiner) {
@@ -367,21 +431,22 @@ export const render = (
 				continue;
 			}
 
-			const since = parseAsDate(identity.since)?.valueOf();
-			const sinceString =
-				since !== undefined && options?.dateRenderer
-					? options.dateRenderer(since)
-					: since !== undefined
-						? new Date(since).toDateString()
+			const date = uncertainEventToDate(identity)?.valueOf();
+			const dateString =
+				date !== undefined && options?.dateRenderer
+					? options.dateRenderer(date)
+					: date !== undefined
+						? new Date(date).toDateString()
 						: "";
 
 			const mergedWho =
 				joiner.mergeFrom?.who !== undefined ? [...joiner.mergeFrom.who] : who;
 			const names = mergedWho.map((_) => _.identity.name ?? _.identity.id);
 			d.node(joinedId, {
+				color: "white",
 				height: identity.type === "dna" ? 0 : undefined,
 				label: makeHtmlString(
-					`${names[0]}\n⚭${since ? ` ${sinceString}` : ""}\n${names[1]}`,
+					`${names[0]}\n⚭${date ? ` ${dateString}` : ""}\n${names[1]}`,
 				),
 				shape: identity.type === "dna" ? "point" : "ellipse",
 				style: identity.type === "dna" ? "invis" : "dashed",
@@ -406,11 +471,17 @@ export const render = (
 		const subject = (
 			"origin" in identity ? identity.origin : identity
 		) as ChildConcrete;
-		const bornString = uncertainEventToDateString(subject.identity.born);
+		const bornString = uncertainEventToDateString(
+			subject.identity.born,
+			options.dateRenderer,
+		);
 		const diedString =
 			subject.identity.died === null
 				? ""
-				: uncertainEventToDateString(subject.identity.died);
+				: uncertainEventToDateString(
+						subject.identity.died,
+						options.dateRenderer,
+					);
 		const diedSymbol =
 			subject.identity.died?.inMilitaryService === true ||
 			subject.identity.died?.inMilitaryService === null
@@ -431,9 +502,20 @@ export const render = (
 			chromosomes = "W";
 		}
 
+		const colorComponent = (
+			subject.distance === 0
+				? 255
+				: Math.floor(255 - 20 * (subject.distance ?? 10))
+		).toString(16);
 		d.node(id, {
-			color:
-				chromosomes === "M" ? "blue" : chromosomes === "W" ? "red" : "black",
+			color: `#${colorComponent.repeat(3)}`,
+			fillcolor:
+				chromosomes === "M"
+					? "darkblue"
+					: chromosomes === "W"
+						? "darkred"
+						: undefined,
+			style: chromosomes !== undefined ? "filled" : undefined,
 			label: makeHtmlString(
 				((identity instanceof Alias
 					? ((identity as AliasConcrete).origin.identity.name ??
@@ -442,7 +524,8 @@ export const render = (
 					subject.identity.name ??
 					subject.identity.id) +
 					(bornString !== undefined ? `\n* ${bornString}` : "") +
-					(diedString !== undefined ? `\n${diedSymbol} ${diedString}` : ""),
+					(diedString !== undefined ? `\n${diedSymbol} ${diedString}` : "") +
+					`\n${subject.distance ?? "?"}`,
 			),
 		});
 	}
@@ -472,7 +555,7 @@ export const render = (
 					const joinerId = Joiner.makeJoinId(
 						father,
 						mother,
-						//marriage.since,
+						//marriage.date,
 					);
 					d.link(id, joinerId, {
 						arrowhead: "none",
@@ -497,7 +580,7 @@ export const render = (
 					const joinerId = Joiner.makeJoinId(
 						father,
 						mother,
-						//marriage.since,
+						//marriage.date,
 					);
 					d.link(id, joinerId, {
 						arrowhead: "none",
@@ -505,16 +588,19 @@ export const render = (
 						tailport: "w",
 					});
 					d.link(joinerId, relation.motherOf, {
-						headlabel: age !== undefined ? asYears(age).toFixed() : undefined,
+						headlabel:
+							age !== undefined
+								? millisecondsAsYears(age).toFixed()
+								: undefined,
 						headport: "e",
 						tailport: "w",
 					});
 				} else if ("marriedTo" in relation) {
-					const marriage = relation as RelationMarriage;
+					const marriage = relation as Marriage;
 					const age =
 						child.identity.born?.date !== undefined &&
-						relation.since !== undefined
-							? new Date(relation.since).valueOf() -
+						relation.date !== undefined
+							? new Date(relation.date).valueOf() -
 								new Date(child.identity.born.date).valueOf()
 							: undefined;
 
@@ -531,13 +617,16 @@ export const render = (
 					const joinerId = Joiner.makeJoinId(
 						self,
 						marriedTo,
-						//relation.since,
+						//relation.date,
 					);
 					// TODO: Only link, if no shared children during marriage.
 					d.link(id, joinerId, {
 						arrowhead: "none",
 						headport: "e",
-						taillabel: age !== undefined ? asYears(age).toFixed() : undefined,
+						taillabel:
+							age !== undefined
+								? millisecondsAsYears(age).toFixed()
+								: undefined,
 						tailport: "w",
 					});
 				}

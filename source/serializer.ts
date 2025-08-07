@@ -1,7 +1,7 @@
 import { stringify } from "yaml";
 import type {
 	Timeline,
-	TimelineDocument,
+	TimelineDocumentInternal,
 	TimelineFlexibleInput,
 	TimelinePlain,
 } from "./types.js";
@@ -10,7 +10,7 @@ export const serialize = (
 	timeline: Timeline | TimelinePlain,
 	metadata: Record<string | number, unknown> = {},
 ) => {
-	const document: TimelineDocument = {
+	const document: TimelineDocumentInternal = {
 		...("meta" in timeline && typeof timeline.meta === "object"
 			? timeline.meta
 			: {}),
