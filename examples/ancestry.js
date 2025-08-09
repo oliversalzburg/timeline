@@ -58,8 +58,6 @@ if (!outputPath.endsWith(".gv")) {
 	process.exit(1);
 }
 
-process.stdout.write(`Processing:\n${files.map((_) => `  ${_}\n`).join("")}`);
-
 const rawData = new Map(files.map((_) => [_, readFileSync(_, "utf-8")]));
 
 // Parse raw data with appropriate parser.

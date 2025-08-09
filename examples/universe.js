@@ -6,8 +6,9 @@ import { basename } from "node:path";
 import { mustExist } from "@oliversalzburg/js-utils/data/nil.js";
 import { parse } from "yaml";
 import { analyze } from "../lib/analyzer.js";
+import { identityGraph } from "../lib/genealogy.js";
 import { load } from "../lib/loader.js";
-import { anonymize, map, sort, uniquify } from "../lib/operator.js";
+import { anonymize, sort, uniquify } from "../lib/operator.js";
 import { render } from "../lib/renderer.js";
 
 /** @import {RendererOptions} from "../lib/renderer.js" */
@@ -61,7 +62,7 @@ if (!outputPath.endsWith(".gv")) {
 	process.exit(1);
 }
 
-process.stdout.write(`Processing:\n${files.map((_) => `  ${_}\n`).join("")}`);
+//process.stdout.write(`Processing:\n${files.map((_) => `  ${_}\n`).join("")}`);
 
 const rawData = new Map(files.map((_) => [_, readFileSync(_, "utf-8")]));
 
@@ -76,7 +77,7 @@ const data = new Map(
 		...plainData
 			.entries()
 			.map(([filename, data]) => [filename, load(data, filename)]),
-	]).filter(([, data]) => 0 < data.records.length),
+	]),
 );
 
 const metrics = new Map(
@@ -99,27 +100,15 @@ const globalLatest = metrics
 		0,
 	);
 
-// Adjust the titles in the data set.
-data.set(
-	"timelines/charts-top1-singles-gfk-entertainment.yml",
-	map(
-		mustExist(data.get("timelines/charts-top1-singles-gfk-entertainment.yml")),
-		(/** @type {[number, { title: string; }]} */ record) => {
-			const title = record[1].title.split(" - ").reverse();
-			return [
-				record[0],
-				{ title: `${title[0].replace(" / ", "\n")}\n${title[1]}` },
-			];
-		},
-	),
-);
-
 // Generate the "universe" graph.
 process.stdout.write("Rendering universe...\n");
 const finalTimelines = [
 	...data
 		.entries()
-		.filter(([filename]) => !basename(filename).startsWith("_"))
+		.filter(
+			([filename, timeline]) =>
+				!basename(filename).startsWith("_") && 0 < timeline.records.length,
+		)
 		.map(([_, timeline]) =>
 			uniquify(
 				sort(
@@ -142,7 +131,6 @@ const finalEntryCount = finalTimelines.reduce(
 
 // Write GraphViz graph to stdout.
 process.stdout.write(`Generating GraphViz graph for universe...\n`);
-
 const renderOptions = {
 	debug: Boolean(args.debug),
 	dateRenderer: (/** @type {number} */ date) => {
@@ -161,7 +149,15 @@ const renderOptions = {
 			? new Date(args["skip-after"]).valueOf()
 			: undefined,
 };
-const dotGraph = render(finalTimelines, renderOptions);
+
+const ancestryGraph = identityGraph(
+	/** @type {Array<import("../source/types.js").TimelineAncestryRenderer>} */ ([
+		...data.values().filter((timeline) => "identity" in timeline.meta),
+	]),
+	renderOptions,
+);
+
+const dotGraph = render(finalTimelines, renderOptions, ancestryGraph);
 
 const buildDate = new Date(NOW);
 const offset = buildDate.getTimezoneOffset();
@@ -254,8 +250,6 @@ if (dotGraph.graph.length === 1) {
 		process.stdout.write(`  - Written segment ${segmentFilename}.\n`);
 		writeFileSync(segmentFilename, uniqueGraph);
 	}
-	// Also write full document path marker.
-	writeFileSync(outputPath, `${Date.now().toFixed()}\n`);
 }
 
 process.stdout.write(`Writing graph info...\n`);

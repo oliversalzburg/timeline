@@ -7,7 +7,7 @@ import { hashCyrb53 } from "@oliversalzburg/js-utils/data/string.js";
 import { formatMilliseconds } from "@oliversalzburg/js-utils/format/milliseconds.js";
 import { FONT_NAME, FONT_SIZE, TRANSPARENT } from "./constants.js";
 import { dot, makeHtmlString, type NodeProperties } from "./dot.js";
-import { uncertainEventToDate } from "./genealogy.js";
+import { type IdentityGraph, uncertainEventToDate } from "./genealogy.js";
 import { roundToDay } from "./operator.js";
 import { matchLuminance, type PaletteMeta, palette } from "./palette.js";
 import { STYLE_TRANSFER_MARKER, type Style, styles } from "./styles.js";
@@ -33,10 +33,28 @@ export interface RendererOptions {
  * Determine the rank of a timeline.
  * NOT to be confused with ranks in a dot graph.
  */
-export const rank = (timeline: Maybe<TimelineReferenceRenderer>) => {
-	return isNil(timeline)
-		? -1
-		: (timeline.meta.rank ?? (timeline.meta.color === TRANSPARENT ? -1 : 0));
+export const rank = (
+	timeline: Maybe<TimelineReferenceRenderer | TimelineAncestryRenderer>,
+	ancestryGraph?: IdentityGraph,
+) => {
+	let rank: number | undefined;
+	if (ancestryGraph !== undefined && !isNil(timeline?.meta)) {
+		const meta = timeline.meta;
+		if ("identity" in meta) {
+			const identity = meta.identity;
+			const childAddress = ancestryGraph.node(identity.id);
+			const child = ancestryGraph.nodes[Number(childAddress)];
+			if ("distance" in child && child.distance !== undefined) {
+				rank = 100 - child.distance;
+			}
+		}
+	}
+	return (
+		rank ??
+		(isNil(timeline)
+			? -1
+			: (timeline.meta.rank ?? (timeline.meta.color === TRANSPARENT ? -1 : 0)))
+	);
 };
 
 export interface PlanEvent<
@@ -200,6 +218,7 @@ export const render = <
 >(
 	timelines: Array<TTimelines>,
 	options: Partial<RendererOptions> = {},
+	ancestryGraph?: IdentityGraph,
 ): {
 	graph: Array<string>;
 	ids: Set<string>;
@@ -245,7 +264,9 @@ export const render = <
 	const classes = new Map<string, string>(
 		timelines.map((_) => [_.meta.id, `t${hashCyrb53(_.meta.id)}`]),
 	);
-	const ranks = new Map<TTimelines, number>(timelines.map((_) => [_, rank(_)]));
+	const ranks = new Map<TTimelines, number>(
+		timelines.map((_) => [_, rank(_, ancestryGraph)]),
+	);
 	const styleSheet = styles([...ranks.values()]).toStyleSheet();
 
 	let eventIndex = 0;
@@ -321,7 +342,7 @@ export const render = <
 
 		const style = isTransferMarker
 			? STYLE_TRANSFER_MARKER
-			: mustExist(styleSheet.get(rank(leader)));
+			: mustExist(styleSheet.get(mustExist(ranks.get(mustExist(leader)))));
 
 		const nodeProperties: Partial<NodeProperties> = {
 			class: classList.join(" "),
@@ -408,13 +429,23 @@ export const render = <
 							continue;
 						}
 						contributors.add(event.timeline);
-						if (rank(leader) <= rank(event.timeline)) {
+						if (leader === undefined) {
+							leader = event.timeline;
+							continue;
+						}
+
+						if (
+							mustExist(ranks.get(mustExist(leader, "no leader"))) <=
+							mustExist(ranks.get(mustExist(event.timeline, "no timeline")))
+						) {
 							leader = event.timeline;
 						}
 					}
 				} else {
 					const style = mustExist(
-						styleSheet.get(rank(transferMarker.timeline)),
+						styleSheet.get(
+							mustExist(ranks.get(mustExist(transferMarker.timeline))),
+						),
 					);
 					if (!style.link) {
 						continue;
@@ -442,7 +473,10 @@ export const render = <
 				d.raw("{");
 				d.raw('rank="same"');
 				const linkedEvents = events.filter(
-					(_) => mustExist(styleSheet.get(rank(_.timeline))).link,
+					(_) =>
+						mustExist(
+							styleSheet.get(mustExist(ranks.get(mustExist(_.timeline)))),
+						).link,
 				);
 				for (
 					let eventIndex = 1;
@@ -465,7 +499,9 @@ export const render = <
 		let timePassed = 0;
 		for (const timeline of timelinesSegment) {
 			const color = mustExist(colors.get(timeline.meta.id)).pen;
-			const style = mustExist(styleSheet.get(rank(timeline)));
+			const style = mustExist(
+				styleSheet.get(mustExist(ranks.get(mustExist(timeline)))),
+			);
 
 			if (!style.link) {
 				continue;
@@ -576,7 +612,9 @@ export const render = <
 
 				if (
 					event.isTransferMarker &&
-					!mustExist(styleSheet.get(rank(event.timeline))).link
+					!mustExist(
+						styleSheet.get(mustExist(ranks.get(mustExist(event.timeline)))),
+					).link
 				) {
 					continue;
 				}

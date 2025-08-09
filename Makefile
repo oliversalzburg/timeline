@@ -1,18 +1,18 @@
 .PHONY: default build clean docs git-hook pretty lint test coverage universe
 .SECONDARY:
 
-START ?= 1980
-END ?= 2000
+START ?= 1800
+END ?= 2030
 
-_ORIGIN := $(ORIGIN: =-)
-_HORIZON := $(START)_$(END)
+_HORIZON := $(START)-$(END)
 
 PREFIX ?= universe_
 
 _UNIVERSE_NAME := $(PREFIX)$(_HORIZON)
 _UNIVERSE := output/$(_UNIVERSE_NAME)
 _SEGMENTS := $(wildcard $(_UNIVERSE)-segment.*.gv)
-_TIMELINES := $(wildcard timelines/* ~/timelines/*/*.yml)
+_TIMELINES := $(filter-out %.auto.yml, $(wildcard ~/timelines/*.yml ~/timelines/*/*.yml))
+_AUTO_TIMELINES := $(patsubst %.yml,%.auto.yml,$(_TIMELINES))
 _DEBUG := output/_$(_UNIVERSE_NAME)
 
 _SCOUR_FLAGS = --enable-viewboxing --enable-id-stripping --enable-comment-stripping --shorten-ids --indent=none
@@ -25,7 +25,7 @@ ifneq ($(DEBUG),)
 	_DOT_FLAGS += -v5
 endif
 
-_UNIVERSE_FLAGS := "--origin=$(_ORIGIN)" --segment=300
+_UNIVERSE_FLAGS := "--origin=$(ORIGIN)" --segment=100
 ifneq ($(DEBUG),)
 	_UNIVERSE_FLAGS += --debug
 endif
@@ -56,11 +56,11 @@ output/images: | output
 	node --enable-source-maps examples/emojify.js --copy-only
 
 $(_UNIVERSE)-img.svg &: \
-	$(foreach _, $(_SEGMENTS), $(patsubst %.gv, %-img.dot.svg, $(_)))
+	$(foreach _, $(_SEGMENTS), $(patsubst %.gv,%-img.dot.svg,$(_)))
 	node --enable-source-maps contrib/svgcat.js \
 		--target=$@ $^
 $(_UNIVERSE).svg &: \
-	$(foreach _, $(_SEGMENTS), $(patsubst %.gv, %.dot.svg, $(_)))
+	$(foreach _, $(_SEGMENTS), $(patsubst %.gv,%.dot.svg,$(_)))
 	node --enable-source-maps contrib/svgcat.js \
 		--target=$@ $^
 
@@ -70,6 +70,12 @@ universe:
 # $(_UNIVERSE).svg $(_UNIVERSE).min.svg
 	node --enable-source-maps examples/build-site.js \
 		--output=output $(_UNIVERSE).gv
+
+pedigree: $(_AUTO_TIMELINES) lib node_modules | output
+	node --enable-source-maps examples/ancestry.js \
+		"--origin=$(ORIGIN)" \
+		--output=output/ancestry.gv $(_AUTO_TIMELINES)
+	dot -O -Tpng -Tsvg output/ancestry.gv
 
 # Compress an SVG by applying lossy XML transformations.
 %.min.svg: %.svg
@@ -168,13 +174,16 @@ endif
 
 # Render a GraphViz document in DOT language, which represents the
 # requested slice from the universe.
-%.gv: lib node_modules | output
+%.gv: $(_AUTO_TIMELINES) lib node_modules | output
 	node --enable-source-maps examples/universe.js $(_UNIVERSE_FLAGS) \
 		--skip-before=$(word 2, $(subst _, ,$@)) \
 		--skip-after=$(subst .gv,,$(word 4, $(subst _, ,$@))) \
 		--output=$@ \
-		$(_TIMELINES)
+		$(_AUTO_TIMELINES)
 	@date +"%FT%T%z Generated GraphViz document $@."
+
+%.auto.yml: %.yml lib node_modules
+	>$@ node --enable-source-maps examples/person.js --target=$<
 
 # Not actually referenced in the implementation. Contains the library code
 # for usage somewhere else.

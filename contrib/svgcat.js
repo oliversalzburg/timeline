@@ -95,7 +95,7 @@ for (const segment of segments) {
 		.map((_) => Number(_.x))
 		.sort((a, b) => a - b);
 
-	const leftMostEntry = 0 < entryMarker.length ? entryMarker[1] : 0;
+	const leftMostEntry = 0 < entryMarker.length ? entryMarker[0] : 0;
 	offsetX -= leftMostEntry;
 
 	let svg = rawSVG.substring(svgStartContent, svgEnd);
@@ -113,7 +113,7 @@ for (const segment of segments) {
 
 	svg = svg.replace(/translate\(0 [^)]+\)/, `translate(${translation})`);
 
-	const leftMostExit = 0 < exitMarker.length ? exitMarker[1] : 0;
+	const leftMostExit = 0 < exitMarker.length ? exitMarker[0] : 0;
 	offsetX += leftMostExit;
 	offsetY += svgHeightAdjusted;
 
