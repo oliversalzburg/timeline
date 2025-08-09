@@ -20,6 +20,9 @@ import type {
 
 export interface RendererOptions {
 	dateRenderer: (date: number) => string;
+	palette?: PaletteMeta<string>;
+	ranks?: Map<string, number>;
+	styleSheet?: Map<number, Style>;
 	debug: boolean;
 	now: number;
 	origin: string;
@@ -38,12 +41,15 @@ export const rank = (
 	ancestryGraph?: IdentityGraph,
 ) => {
 	let rank: number | undefined;
-	if (ancestryGraph !== undefined && !isNil(timeline?.meta)) {
+	if (
+		ancestryGraph !== undefined &&
+		!isNil(timeline?.meta) &&
+		timeline.meta.rank === undefined
+	) {
 		const meta = timeline.meta;
 		if ("identity" in meta) {
 			const identity = meta.identity;
-			const childAddress = ancestryGraph.node(identity.id);
-			const child = ancestryGraph.nodes[Number(childAddress)];
+			const child = ancestryGraph.node(identity.id);
 			if ("distance" in child && child.distance !== undefined) {
 				rank = 100 - child.distance;
 			}
@@ -58,7 +64,9 @@ export const rank = (
 };
 
 export interface PlanEvent<
-	TTimelines extends TimelineReferenceRenderer | TimelineAncestryRenderer,
+	TTimelines extends TimelineReferenceRenderer | TimelineAncestryRenderer =
+		| TimelineReferenceRenderer
+		| TimelineAncestryRenderer,
 > {
 	timeline: TTimelines;
 	index?: number;
@@ -67,7 +75,9 @@ export interface PlanEvent<
 	title: string;
 }
 export const plan = <
-	TTimelines extends TimelineReferenceRenderer | TimelineAncestryRenderer,
+	TTimelines extends TimelineReferenceRenderer | TimelineAncestryRenderer =
+		| TimelineReferenceRenderer
+		| TimelineAncestryRenderer,
 >(
 	timelines: Array<TTimelines>,
 	options: Partial<RendererOptions> = {},
@@ -214,7 +224,9 @@ export const plan = <
  * Readers are encouraged to write their own Renderer implementation.
  */
 export const render = <
-	TTimelines extends TimelineReferenceRenderer | TimelineAncestryRenderer,
+	TTimelines extends TimelineReferenceRenderer | TimelineAncestryRenderer =
+		| TimelineReferenceRenderer
+		| TimelineAncestryRenderer,
 >(
 	timelines: Array<TTimelines>,
 	options: Partial<RendererOptions> = {},
@@ -223,7 +235,7 @@ export const render = <
 	graph: Array<string>;
 	ids: Set<string>;
 	palette: PaletteMeta<string>;
-	ranks: Map<TTimelines, number>;
+	ranks: Map<string, number>;
 	styles: Map<number, Style>;
 } => {
 	const now = options?.now ?? Date.now();
@@ -250,24 +262,30 @@ export const render = <
 		(options.skipBefore ?? Number.NEGATIVE_INFINITY) < timestamp &&
 		timestamp < (options.skipAfter ?? Number.POSITIVE_INFINITY);
 
-	// We default to dark, as the assume the default output media to be a display.
-	// For printing use cases, we'd prefer to use light.
-	const p = palette<string>(options.theme ?? "dark");
+	let paletteMeta = options.palette;
+	if (paletteMeta === undefined) {
+		// We default to dark, as the assume the default output media to be a display.
+		// For printing use cases, we'd prefer to use light.
+		const p = palette<string>(options.theme ?? "dark");
 
-	for (const timeline of timelines) {
-		p.add(timeline.meta.id, timeline.meta.color);
+		for (const timeline of timelines) {
+			p.add(timeline.meta.id, timeline.meta.color);
+		}
+
+		paletteMeta = p.toPalette();
 	}
-
-	const paletteMeta = p.toPalette();
 	const colors = paletteMeta.lookup;
 
 	const classes = new Map<string, string>(
 		timelines.map((_) => [_.meta.id, `t${hashCyrb53(_.meta.id)}`]),
 	);
-	const ranks = new Map<TTimelines, number>(
-		timelines.map((_) => [_, rank(_, ancestryGraph)]),
-	);
-	const styleSheet = styles([...ranks.values()]).toStyleSheet();
+	const ranks =
+		options.ranks ??
+		new Map<string, number>(
+			timelines.map((_) => [_.meta.id, rank(_, ancestryGraph)]),
+		);
+	const styleSheet =
+		options.styleSheet ?? styles([...ranks.values()]).toStyleSheet();
 
 	let eventIndex = 0;
 	const allNodeIds = new Set<string>();
@@ -342,7 +360,9 @@ export const render = <
 
 		const style = isTransferMarker
 			? STYLE_TRANSFER_MARKER
-			: mustExist(styleSheet.get(mustExist(ranks.get(mustExist(leader)))));
+			: mustExist(
+					styleSheet.get(mustExist(ranks.get(mustExist(leader?.meta.id)))),
+				);
 
 		const nodeProperties: Partial<NodeProperties> = {
 			class: classList.join(" "),
@@ -435,8 +455,10 @@ export const render = <
 						}
 
 						if (
-							mustExist(ranks.get(mustExist(leader, "no leader"))) <=
-							mustExist(ranks.get(mustExist(event.timeline, "no timeline")))
+							mustExist(ranks.get(mustExist(leader.meta.id, "no leader"))) <=
+							mustExist(
+								ranks.get(mustExist(event.timeline.meta.id, "no timeline")),
+							)
 						) {
 							leader = event.timeline;
 						}
@@ -444,7 +466,7 @@ export const render = <
 				} else {
 					const style = mustExist(
 						styleSheet.get(
-							mustExist(ranks.get(mustExist(transferMarker.timeline))),
+							mustExist(ranks.get(mustExist(transferMarker.timeline.meta.id))),
 						),
 					);
 					if (!style.link) {
@@ -475,7 +497,9 @@ export const render = <
 				const linkedEvents = events.filter(
 					(_) =>
 						mustExist(
-							styleSheet.get(mustExist(ranks.get(mustExist(_.timeline)))),
+							styleSheet.get(
+								mustExist(ranks.get(mustExist(_.timeline.meta.id))),
+							),
 						).link,
 				);
 				for (
@@ -500,7 +524,7 @@ export const render = <
 		for (const timeline of timelinesSegment) {
 			const color = mustExist(colors.get(timeline.meta.id)).pen;
 			const style = mustExist(
-				styleSheet.get(mustExist(ranks.get(mustExist(timeline)))),
+				styleSheet.get(mustExist(ranks.get(mustExist(timeline.meta.id)))),
 			);
 
 			if (!style.link) {
@@ -613,7 +637,9 @@ export const render = <
 				if (
 					event.isTransferMarker &&
 					!mustExist(
-						styleSheet.get(mustExist(ranks.get(mustExist(event.timeline)))),
+						styleSheet.get(
+							mustExist(ranks.get(mustExist(event.timeline.meta.id))),
+						),
 					).link
 				) {
 					continue;

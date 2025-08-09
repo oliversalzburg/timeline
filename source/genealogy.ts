@@ -110,7 +110,6 @@ export interface IdentityGraph {
 }
 export const identityGraph = (
 	timelines: Array<Timeline & { meta: { identity?: Identity } }>,
-	_options: Partial<RendererOptions> = {},
 ): IdentityGraph => {
 	const ids = new Array<string | null>(timelines.length);
 	const identities = new Array<Identity | null>(timelines.length);

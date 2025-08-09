@@ -2,9 +2,13 @@
 
 import { readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { parse } from "yaml";
+import { identityGraph } from "../lib/genealogy.js";
 import { load } from "../lib/loader.js";
 import { anonymize, sort, uniquify } from "../lib/operator.js";
+import { palette } from "../lib/palette.js";
+import { rank } from "../lib/renderer.js";
 import { render } from "../lib/renderer-ancestry.js";
+import { styles } from "../lib/styles.js";
 
 /** @import {RendererOptions} from "../lib/renderer.js" */
 
@@ -72,8 +76,13 @@ const data = new Map(
 		.map(([filename, data]) => [filename, load(data, filename)]),
 );
 
-// Generate the "universe" graph.
-process.stdout.write("Rendering ancestry chart...\n");
+// Generate palette for universe.
+const p = palette("dark");
+for (const timeline of data.values()) {
+	p.add(timeline.meta.id, timeline.meta.color);
+}
+const paletteMeta = p.toPalette();
+
 /** @type {Array<import("source/types.js").TimelineAncestryRenderer>} */
 const finalTimelines = [
 	...data
@@ -100,8 +109,21 @@ const finalTimelines = [
 			),
 		),
 ];
+
 process.stdout.write(`Chart contains ${finalTimelines.length} identities.\n`);
-// Write GraphViz graph to stdout.
+const ancestryGraph = identityGraph(finalTimelines);
+if (typeof args.origin === "string") {
+	ancestryGraph.distance(args.origin);
+}
+
+// Determine ranks of universe.
+const ranks = new Map(
+	data.values().map((_) => [_.meta.id, rank(_, ancestryGraph)]),
+);
+// Genreate stylesheet.
+const styleSheet = styles([...ranks.values()]).toStyleSheet();
+
+// Write GraphViz graph
 process.stdout.write(`Generating GraphViz graph for ancestry chart...\n`);
 
 const renderOptions = {
@@ -112,6 +134,9 @@ const renderOptions = {
 	},
 	now: NOW,
 	origin: typeof args.origin === "string" ? args.origin : undefined,
+	palette: paletteMeta,
+	ranks,
+	styleSheet,
 };
 const dotGraph = render(finalTimelines, renderOptions);
 

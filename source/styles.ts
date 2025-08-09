@@ -3,7 +3,7 @@ import type { Shape } from "./dot.js";
 export interface Style {
 	fill: boolean;
 	outline: boolean;
-	link: boolean;
+	link: boolean | LinkStyle;
 	penwidth: number;
 	shape: Shape;
 	style?: Array<string>;

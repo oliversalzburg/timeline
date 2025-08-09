@@ -1,13 +1,14 @@
 import { mustExist } from "@oliversalzburg/js-utils/data/nil.js";
 import { InvalidOperationError } from "@oliversalzburg/js-utils/errors/InvalidOperationError.js";
-import { FONT_NAME, FONT_SIZE } from "./constants.js";
-import { dot, makeHtmlString } from "./dot.js";
+import { FONT_NAME, FONT_SIZE, TRANSPARENT } from "./constants.js";
+import { dot, makeHtmlString, type NodeProperties } from "./dot.js";
 import {
 	identityGraph,
 	millisecondsAsYears,
 	uncertainEventToDate,
 	uncertainEventToDateString,
 } from "./genealogy.js";
+import { matchLuminance } from "./palette.js";
 import type { RendererOptions } from "./renderer.js";
 import type { Identity, Marriage, TimelineAncestryRenderer } from "./types.js";
 
@@ -60,10 +61,12 @@ export const render = (
 	timelines: Array<TimelineAncestryRenderer>,
 	options: Partial<RendererOptions> = {},
 ) => {
-	const graph = identityGraph(timelines, options);
+	const graph = identityGraph(timelines);
 	if (options.origin !== undefined) {
 		graph.distance(options.origin);
 	}
+
+	const colors = mustExist(options.palette?.lookup);
 
 	const d = dot();
 	d.raw("digraph ancestry {");
@@ -85,6 +88,75 @@ export const render = (
 	d.raw(`tooltip=" "`);
 
 	const name = (_?: Identity | null | undefined) => _?.name ?? _?.id ?? _;
+
+	const computeNodeProperties = (
+		title: string,
+		contributors: Set<Identity>,
+		leader?: Identity,
+	) => {
+		const contributorsTimelines = [...contributors.values()].map(
+			(_) => timelines[graph.ids.indexOf(_.id)],
+		);
+		const leaderTimeline =
+			leader !== undefined
+				? timelines[graph.ids.indexOf(leader.id)]
+				: undefined;
+
+		const color =
+			colors.get(leaderTimeline?.meta.id ?? contributorsTimelines[0]?.meta.id)
+				?.pen ?? "#808080FF";
+		const fillcolors = contributorsTimelines.reduce((fillColors, timeline) => {
+			const fill = colors.get(timeline?.meta.id)?.fill ?? TRANSPARENT;
+
+			// Whatever we want to draw, _one_ transparent fill should be enough.
+			if (fill === TRANSPARENT && fillColors.includes(TRANSPARENT)) {
+				return fillColors;
+			}
+
+			fillColors.push(
+				timeline === leaderTimeline ||
+					fill === TRANSPARENT ||
+					leaderTimeline === undefined
+					? fill
+					: matchLuminance(
+							fill,
+							mustExist(colors.get(mustExist(leaderTimeline).meta.id)).fill,
+						),
+			);
+			return fillColors;
+		}, new Array<string>());
+		const fontcolor =
+			colors.get(leaderTimeline?.meta.id ?? contributorsTimelines[0]?.meta.id)
+				?.font ?? "#808080FF";
+		const prefixes = contributorsTimelines
+			.values()
+			.reduce((_, timeline) => _ + (timeline?.meta.prefix ?? ""), "");
+		const label = `${0 < prefixes.length ? `${prefixes}\u00A0` : ""}${makeHtmlString(
+			`${title}`,
+		)}`;
+		const style = mustExist(
+			options.styleSheet?.get(
+				options.ranks?.get(
+					leaderTimeline?.meta.id ?? contributorsTimelines[0]?.meta.id,
+				) ?? 1,
+			),
+		);
+
+		const nodeProperties: Partial<NodeProperties> = {
+			color,
+			fillcolor:
+				fillcolors.length === 1
+					? fillcolors[0]
+					: `${fillcolors[0]}:${fillcolors[1]}`,
+			fontcolor,
+			label,
+			penwidth: style.outline ? style.penwidth : 0.5,
+			shape: "oval",
+			style: style.style?.join(","),
+		};
+
+		return nodeProperties;
+	};
 
 	for (const node of graph.nodes) {
 		const identity = node;
@@ -123,15 +195,21 @@ export const render = (
 						)
 					: undefined;
 
-			const names = joiner.who.map((_) => name(graph.identity(_)) ?? _);
+			const contributors = joiner.who.map((_) =>
+				mustExist(graph.identity(graph.rootId(_)), `unknown identity: '${_}'`),
+			);
+			const names = contributors.map((_) => name(_) ?? _);
+
+			const nodeProperties = computeNodeProperties(
+				`${marriage?.as ?? names[0]}\n⚭${date ? ` ${dateString}` : ""}\n${marriageOnSpouse?.as ?? names[1]}`,
+				new Set(contributors),
+			);
+
 			d.node(joinedId, {
-				color: "white",
+				...nodeProperties,
 				height: identity.type === "dna" ? 0 : undefined,
-				label: makeHtmlString(
-					`${marriage?.as ?? names[0]}\n⚭${date ? ` ${dateString}` : ""}\n${marriageOnSpouse?.as ?? names[1]}`,
-				),
 				shape: identity.type === "dna" ? "point" : "ellipse",
-				style: identity.type === "dna" ? "invis" : "dashed",
+				style: identity.type === "dna" ? "invis" : nodeProperties.style,
 				width: identity.type === "dna" ? 0 : undefined,
 			});
 			continue;
@@ -163,34 +241,28 @@ export const render = (
 			const fatherhoods = relations.filter((_) => "fatherOf" in _);
 			const motherhoods = relations.filter((_) => "motherOf" in _);
 
-			let chromosomes: "M" | "W" | undefined;
+			let _chromosomes: "M" | "W" | undefined;
 			if (0 < fatherhoods.length) {
-				chromosomes = "M";
+				_chromosomes = "M";
 			}
 
 			if (0 < motherhoods.length) {
-				chromosomes = "W";
+				_chromosomes = "W";
 			}
 
-			const colorComponent = (
-				ego.distance === 0 ? 255 : Math.floor(255 - 20 * (ego.distance ?? 10))
-			).toString(16);
-			d.node(egoIdentity.id, {
-				color: `#${colorComponent.repeat(3)}`,
-				fillcolor:
-					chromosomes === "M"
-						? "darkblue"
-						: chromosomes === "W"
-							? "darkred"
-							: undefined,
-				style: chromosomes !== undefined ? "filled" : undefined,
-				label: makeHtmlString(
-					(egoIdentity.name ?? egoIdentity.id) +
-						(bornString !== undefined ? `\n* ${bornString}` : "") +
-						(diedString !== undefined ? `\n${diedSymbol} ${diedString}` : "") +
-						`\n${ego.distance ?? "?"}`,
-				),
-			});
+			const title =
+				(egoIdentity.name ?? egoIdentity.id) +
+				(bornString !== undefined ? `\n* ${bornString}` : "") +
+				(diedString !== undefined ? `\n${diedSymbol} ${diedString}` : "") +
+				`\n${ego.distance ?? "?"}`;
+
+			const nodeProperties = computeNodeProperties(
+				title,
+				new Set([egoIdentity]),
+				egoIdentity,
+			);
+
+			d.node(egoIdentity.id, nodeProperties);
 		}
 	}
 
@@ -213,6 +285,12 @@ export const render = (
 
 		for (const relation of relations) {
 			try {
+				const timeline = timelines[graph.ids.indexOf(subject.identity)];
+				const color = colors.get(timeline?.meta.id)?.pen ?? "#808080FF";
+				const style = mustExist(
+					options.styleSheet?.get(options.ranks?.get(timeline?.meta.id) ?? -1),
+				);
+
 				if ("fatherOf" in relation) {
 					const childIdentity = mustExist(
 						graph.identity(relation.fatherOf),
@@ -230,7 +308,13 @@ export const render = (
 					const joinerId = Joiner.makeJoinId(father, mother);
 					d.link(subject.identity, joinerId, {
 						arrowhead: "none",
+						color,
 						headport: "e",
+						penwidth: style.outline ? style.penwidth : 0.5,
+						style:
+							style.style?.includes("dashed") || style.link === false
+								? "dashed"
+								: "solid",
 						tailport: "w",
 					});
 					// We only link the mother
@@ -259,15 +343,39 @@ export const render = (
 
 					d.link(subject.identity, joinerId, {
 						arrowhead: "none",
+						color,
 						headport: "e",
+						penwidth: style.outline ? style.penwidth : 0.5,
+						style:
+							style.style?.includes("dashed") || style.link === false
+								? "dashed"
+								: "solid",
 						tailport: "w",
 					});
+
+					const timelineMotherOf =
+						timelines[graph.ids.indexOf(relation.motherOf)];
+					const colorMotherOf =
+						colors.get(timelineMotherOf?.meta.id)?.pen ?? "#808080FF";
+					const styleMotherOf = mustExist(
+						options.styleSheet?.get(
+							options.ranks?.get(timelineMotherOf?.meta.id) ?? -1,
+						),
+					);
+
 					d.link(joinerId, relation.motherOf, {
+						color: colorMotherOf,
 						headlabel:
 							age !== undefined
 								? millisecondsAsYears(age).toFixed()
 								: undefined,
 						headport: "e",
+						penwidth: styleMotherOf.outline ? styleMotherOf.penwidth : 0.5,
+						style:
+							styleMotherOf.style?.includes("dashed") ||
+							styleMotherOf.link === false
+								? "dashed"
+								: "solid",
 						tailport: "w",
 					});
 				} else if ("marriedTo" in relation) {
@@ -285,7 +393,12 @@ export const render = (
 					// TODO: Only link, if no shared children during marriage.
 					d.link(ego, joinerId, {
 						arrowhead: "none",
+						color,
 						headport: "e",
+						style:
+							style.style?.includes("dashed") || style.link === false
+								? "dashed"
+								: "solid",
 						taillabel:
 							age !== undefined
 								? millisecondsAsYears(age).toFixed()

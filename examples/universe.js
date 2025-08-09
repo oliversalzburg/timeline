@@ -154,7 +154,6 @@ const ancestryGraph = identityGraph(
 	/** @type {Array<import("../source/types.js").TimelineAncestryRenderer>} */ ([
 		...data.values().filter((timeline) => "identity" in timeline.meta),
 	]),
-	renderOptions,
 );
 
 const dotGraph = render(finalTimelines, renderOptions, ancestryGraph);
@@ -189,12 +188,7 @@ const info = [
 process.stdout.write("Generated palette for universe:\n");
 const paletteMeta = dotGraph.palette;
 const colors = paletteMeta.lookup;
-const ranks = new Map(
-	[...dotGraph.ranks.entries()].map(([timeline, rank]) => [
-		timeline.meta.id,
-		rank,
-	]),
-);
+const ranks = new Map([...dotGraph.ranks.entries()]);
 const styles = dotGraph.styles;
 const describeStyle = (
 	/** @type {import("../lib/styles.js").Style | undefined} */ style,
