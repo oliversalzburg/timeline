@@ -113,6 +113,7 @@ export const identityGraph = (
 ): IdentityGraph => {
 	const ids = new Array<string | null>(timelines.length);
 	const identities = new Array<Identity | null>(timelines.length);
+	const nodes = new Array<Child | Alias | Joiner>(timelines.length);
 
 	for (const _ in timelines) {
 		identities[_] = timelines[_].meta.identity ?? null;
@@ -146,57 +147,6 @@ export const identityGraph = (
 	const marriedToIn = (identity: Identity) =>
 		identity.relations?.filter((_) => "marriedTo" in _) ?? [];
 
-	// Parse identities and construct relationship graph.
-	const nodes = new Array<Child | Alias | Joiner>(timelines.length);
-	for (const _ in identities) {
-		if (identities[_] === null) {
-			// Timeline contained no identity section.
-			continue;
-		}
-
-		nodes[_] = new Child(identities[_].id);
-
-		const marriages = marriedToIn(identities[_]);
-		const childrenAsFather = fatherOfIdIn(identities[_]);
-		const childrenAsMother = motherOfIdIn(identities[_]);
-		const children = [...childrenAsFather, ...childrenAsMother];
-		nodes[_].children = children;
-		nodes[_].marriages = marriages.map((_) => _.marriedTo);
-
-		for (const marriage of marriages) {
-			const marriedAs = marriage.as;
-			if (marriedAs !== undefined && !ids.includes(marriedAs)) {
-				ids.push(marriedAs);
-				identities.push(null);
-				nodes.push(new Alias(marriedAs, identities[_].id));
-			}
-
-			const joinId = Joiner.makeJoinId(
-				marriedAs ?? identities[_].id,
-				marriage.marriedTo,
-				marriage.date,
-			);
-			if (!ids.includes(joinId)) {
-				ids.push(joinId);
-				identities.push(null);
-				nodes.push(
-					new Joiner(
-						[marriedAs ?? identities[_].id, marriage.marriedTo],
-						"marriage",
-					),
-				);
-			}
-		}
-
-		for (const child of children) {
-			if (!ids.includes(child)) {
-				ids.push(child);
-				identities.push(null);
-				nodes.push(new Child(child));
-			}
-		}
-	}
-
 	const rootId = (_: string | undefined) =>
 		_ === undefined
 			? undefined
@@ -219,6 +169,75 @@ export const identityGraph = (
 		] as Child | Alias;
 	const marriage = (id: string, spouse: string) =>
 		marriedToIn(identity(id)).filter((_) => _.marriedTo === spouse);
+
+	// Parse identities and construct relationship graph.
+	for (const _ in identities) {
+		if (identities[_] === null) {
+			// Timeline contained no identity section.
+			continue;
+		}
+
+		nodes[_] = new Child(identities[_].id);
+
+		const marriages = marriedToIn(identities[_]);
+		const childrenAsFather = fatherOfIdIn(identities[_]);
+		const childrenAsMother = motherOfIdIn(identities[_]);
+		const children = [...childrenAsFather, ...childrenAsMother];
+		nodes[_].children = children;
+		nodes[_].marriages = marriages.map((_) => _.marriedTo);
+
+		for (const relation of marriages) {
+			const marriedAs = relation.as;
+			if (marriedAs !== undefined && !ids.includes(marriedAs)) {
+				ids.push(marriedAs);
+				identities.push(null);
+				nodes.push(new Alias(marriedAs, identities[_].id));
+			}
+
+			const joinId = Joiner.makeJoinId(
+				identities[_].id,
+				relation.marriedTo,
+				relation.date,
+			);
+			if (!ids.includes(joinId)) {
+				const who = [identities[_].id, relation.marriedTo];
+				if (marriedAs !== undefined) {
+					who.push(marriedAs);
+				}
+
+				const marriageOnSpouse = marriage(
+					relation.marriedTo,
+					identities[_].id,
+				)[0];
+				if (marriageOnSpouse === undefined) {
+					throw new InvalidOperationError(
+						`identity '${identities[_].id}' declares marriage to '${relation.marriedTo}', but there is no matching relation on that identity.`,
+					);
+				}
+				const spouseMarriedAs = marriageOnSpouse.as;
+				if (spouseMarriedAs !== undefined) {
+					if (!ids.includes(spouseMarriedAs)) {
+						ids.push(spouseMarriedAs);
+						identities.push(null);
+						nodes.push(new Alias(spouseMarriedAs, identities[_].id));
+					}
+					who.push(spouseMarriedAs);
+				}
+
+				ids.push(joinId);
+				identities.push(null);
+				nodes.push(new Joiner(who, "marriage"));
+			}
+		}
+
+		for (const child of children) {
+			if (!ids.includes(child)) {
+				ids.push(child);
+				identities.push(null);
+				nodes.push(new Child(child));
+			}
+		}
+	}
 
 	// Generate identities for undefined parents.
 	for (const _ in identities) {
