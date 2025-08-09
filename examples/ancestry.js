@@ -1,7 +1,6 @@
 #!/bin/env node
 
 import { readdirSync, readFileSync, writeFileSync } from "node:fs";
-import { basename } from "node:path";
 import { parse } from "yaml";
 import { load } from "../lib/loader.js";
 import { anonymize, sort, uniquify } from "../lib/operator.js";
@@ -80,8 +79,8 @@ const finalTimelines = [
 	...data
 		.entries()
 		.filter(
-			([filename, timeline]) =>
-				!basename(filename).startsWith("_") &&
+			([_filename, timeline]) =>
+				timeline.meta.private &&
 				"identity" in timeline.meta &&
 				"id" in timeline.meta.identity &&
 				"born" in timeline.meta.identity,
