@@ -42,20 +42,56 @@ const data = parse(rawData);
 const timeline = load(data, args.target);
 
 if ("identity" in timeline.meta === false) {
-	process.stderr.write("No identity in target.\n");
+	process.stderr.write(`Warning: No identity in '${args.target}'.\n`);
 	process.stdout.write(rawData);
 	process.exit(0);
 }
 
 const name = timeline.meta.identity.name ?? timeline.meta.identity.id;
-const birth = uncertainEventToDate(timeline.meta.identity.born);
-if (isNil(birth)) {
-	process.stderr.write("No birth in target.\n");
+if (timeline.meta.identity.born === undefined) {
+	process.stderr.write(
+		`Info: No birth in identity in '${args.target}'. Might not be treated as a person.\n`,
+	);
 	process.stdout.write(rawData);
 	process.exit(0);
 }
 
-const death = uncertainEventToDate(timeline.meta.identity.died);
+let birth;
+if (timeline.meta.identity.born === null) {
+	if (timeline.records.length === 0) {
+		process.stderr.write(
+			`Warning: No birth record in identity with empty timeline '${args.target}'.\n`,
+		);
+		process.stdout.write(rawData);
+		process.exit(0);
+	}
+
+	process.stderr.write(
+		`Warning: No birth record in timeline '${args.target}'. Using date of first entry.\n`,
+	);
+	birth = new Date(timeline.records[0][0]);
+} else {
+	birth = uncertainEventToDate(timeline.meta.identity.born);
+}
+
+if (isNil(birth)) {
+	process.stderr.write(
+		`Warning: Unspecific birth in identity in '${args.target}'.\n`,
+	);
+	process.stdout.write(rawData);
+	process.exit(0);
+}
+
+let death;
+if (timeline.meta.identity.died === null) {
+	process.stderr.write(
+		`Warning: No death record in dead identity '${args.target}'. Assuming aged 85.\n`,
+	);
+	death = new Date(birth.valueOf() + MILLISECONDS.ONE_YEAR * 85);
+} else {
+	death = uncertainEventToDate(timeline.meta.identity.died);
+}
+
 const birthYear = birth.getFullYear();
 const birthMonth = birth.getMonth() + 1;
 const birthDay = birth.getDate();

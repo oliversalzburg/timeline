@@ -20,14 +20,6 @@ definitions:
 type: object
 additionalProperties: true
 properties:
-  color:
-    title: Color
-    type: string
-    examples:
-      - '#FF0000'
-      - transparent
-      - audio
-      - video
   identity:
     title: Identity
     type: object
@@ -41,6 +33,56 @@ properties:
       name:
         title: Name
         type: string
+      # Location
+      established:
+        title: Establishment Information
+        type: object
+        date:
+          title: Exact Day of Establishment
+          type: string
+        when:
+          title: Uncertain Date of Establishment
+          type: object
+          properties:
+            after:
+              type: string
+            before:
+              type: string
+            showAs:
+              type: string
+      dissolved:
+        title: Dissolvement Information
+        type: object
+        date:
+          title: Exact Day of Dissolvement
+          type: string
+        when:
+          title: Uncertain Date of Dissolvement
+          type: object
+          properties:
+            after:
+              type: string
+            before:
+              type: string
+            showAs:
+              type: string
+      position:
+        title: Location Information
+        type: object
+        latlong:
+          title: Exact Location
+          type: string
+        where:
+          title: Uncertain Location
+          type: object
+          properties:
+            around:
+              type: string
+            within:
+              type: string
+            showAs:
+              type: string
+      # Person
       born:
         title: Birth Information
         type: object
@@ -92,20 +134,6 @@ properties:
         type: array
         items:
           anyOf:
-            - title: Connection
-              type: object
-              required:
-                - connectedTo
-              properties:
-                connectedTo:
-                  type: string
-            - title: Family
-              type: object
-              required:
-                - relatedTo
-              properties:
-                relatedTo:
-                  type: string
             - title: Marriage
               type: object
               required:
@@ -145,6 +173,14 @@ properties:
               properties:
                 motherOf:
                   type: string
+  color:
+    title: Color
+    type: string
+    examples:
+      - '#FF0000'
+      - transparent
+      - audio
+      - video
   prefix:
     title: Prefix
     type: string

@@ -19,7 +19,7 @@ export const parseStringAsDate = (input?: string) => {
 	return new Date(input);
 };
 
-export const uncertainEventToDate = (input?: Event) => {
+export const uncertainEventToDate = (input?: Event | null) => {
 	if (isNil(input)) {
 		return undefined;
 	}
@@ -58,11 +58,11 @@ export const uncertainEventToDate = (input?: Event) => {
 };
 
 export const uncertainEventToDateString = (
-	input?: Event,
+	input?: Event | null,
 	dateRenderer?: RendererOptions["dateRenderer"],
 ) => {
 	const date = uncertainEventToDate(input);
-	if (date === undefined) {
+	if (isNil(date)) {
 		return "";
 	}
 

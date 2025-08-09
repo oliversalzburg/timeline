@@ -38,7 +38,7 @@ default: build docs universe
 build: lib/timeline.js
 
 lib: node_modules
-	npm exec -- tsc --build tsconfig.json
+	@npm exec -- tsc --build tsconfig.json
 
 schema:
 	@for i in schemas/*.yml; do \
@@ -72,7 +72,7 @@ universe:
 		--output=output $(_UNIVERSE).gv
 
 pedigree: $(_AUTO_TIMELINES) lib node_modules | output
-	node --enable-source-maps examples/ancestry.js \
+	@node --enable-source-maps examples/ancestry.js \
 		"--origin=$(ORIGIN)" \
 		--output=output/ancestry.gv $(_AUTO_TIMELINES)
 	dot -O -Tpng -Tsvg output/ancestry.gv
@@ -175,7 +175,7 @@ endif
 # Render a GraphViz document in DOT language, which represents the
 # requested slice from the universe.
 %.gv: $(_AUTO_TIMELINES) lib node_modules | output
-	node --enable-source-maps examples/universe.js $(_UNIVERSE_FLAGS) \
+	@node --enable-source-maps examples/universe.js $(_UNIVERSE_FLAGS) \
 		--skip-before=$(word 2, $(subst _, ,$@)) \
 		--skip-after=$(subst .gv,,$(word 4, $(subst _, ,$@))) \
 		--output=$@ \
@@ -183,7 +183,7 @@ endif
 	@date +"%FT%T%z Generated GraphViz document $@."
 
 %.auto.yml: %.yml lib node_modules
-	>$@ node --enable-source-maps examples/person.js --target=$<
+	@>$@ node --enable-source-maps examples/person.js --target=$<
 
 # Not actually referenced in the implementation. Contains the library code
 # for usage somewhere else.
@@ -197,9 +197,9 @@ _site/index.html: $(_UNIVERSE).zen.html | _site
 
 # Clean up all build artifacts.
 clean:
-	rm --force --recursive _site lib
-	find -iname "callgrind.out.*" -delete
-	find -iwholename "schemas/*.schema.json" -delete
+	@rm --force --recursive _site lib
+	@find -iname "callgrind.out.*" -delete
+	@find -iwholename "schemas/*.schema.json" -delete
 # Additionally delete all stored dependencies.
 purge: clean
 	rm --force --recursive .venv node_modules

@@ -76,14 +76,25 @@ export interface Event {
 	};
 	where?: string;
 }
+export interface Location {
+	latlong?: string;
+	where?: {
+		around?: string;
+		within?: string;
+		showAs?: string;
+	};
+}
 export interface Birth extends Event {}
 export interface Death extends Event {
 	inMilitaryService?: boolean | null;
 }
 export interface Identity {
 	id: string;
-	born?: Birth;
-	died?: Death;
+	established?: Event | null;
+	dissolved?: Event | null;
+	position?: Location;
+	born?: Birth | null;
+	died?: Death | null;
 	name?: string;
 	relations?: Array<Marriage | Father | Mother>;
 }
