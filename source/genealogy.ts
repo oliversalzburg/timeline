@@ -105,7 +105,8 @@ export interface IdentityGraph {
 	motherOf: (id: string) => Child | Alias;
 	fatherOf: (id: string) => Child | Alias;
 	marriage: (id: string, spouse: string) => Array<Marriage>;
-	rootId: (id: string | undefined) => string | undefined;
+	rootId: (id: string) => string;
+	distance: (a: string, b?: string) => void;
 }
 export const identityGraph = (
 	timelines: Array<Timeline & { meta: { identity?: Identity } }>,
@@ -147,12 +148,10 @@ export const identityGraph = (
 	const marriedToIn = (identity: Identity) =>
 		identity.relations?.filter((_) => "marriedTo" in _) ?? [];
 
-	const rootId = (_: string | undefined) =>
-		_ === undefined
-			? undefined
-			: rootIdForNode(nodes[ids.indexOf(_)] as Child | Alias | undefined);
-	const rootIdForNode = (_: Child | Alias | undefined) =>
-		_ === undefined ? undefined : _ instanceof Alias ? _.origin : _.identity;
+	const rootId = (id: string) =>
+		rootIdForNode(nodes[ids.indexOf(id)] as Child | Alias);
+	const rootIdForNode = (_: Child | Alias) =>
+		_ instanceof Alias ? _.origin : _.identity;
 	const identity = (id: string) => identities[ids.indexOf(id)] as Identity;
 	const node = (id: string) => nodes[ids.indexOf(id)];
 	const fatherOf = (id: string) =>
@@ -246,8 +245,14 @@ export const identityGraph = (
 			continue;
 		}
 
-		const mother = rootIdForNode(motherOf(identities[_].id));
-		const father = rootIdForNode(fatherOf(identities[_].id));
+		const motherNode = motherOf(identities[_].id);
+		const mother =
+			motherNode !== undefined ? rootIdForNode(motherNode) : undefined;
+		const fatherNode = fatherOf(identities[_].id);
+		const father =
+			fatherNode !== undefined
+				? rootIdForNode(fatherOf(identities[_].id))
+				: undefined;
 
 		if (father === undefined && mother === undefined) {
 			continue;
@@ -267,6 +272,30 @@ export const identityGraph = (
 		}
 	}
 
+	// Register parents on children.
+	for (const _ in identities) {
+		if (identities[_] === null) {
+			// Timeline contained no identity section.
+			continue;
+		}
+
+		const childrenAsFather = fatherOfIdIn(identities[_]);
+		const childrenAsMother = motherOfIdIn(identities[_]);
+
+		for (const child of childrenAsFather) {
+			const childNode = node(rootId(child)) as Child | undefined;
+			if (childNode !== undefined) {
+				childNode.father = identities[_].id;
+			}
+		}
+		for (const child of childrenAsMother) {
+			const childNode = node(rootId(child)) as Child | undefined;
+			if (childNode !== undefined) {
+				childNode.mother = identities[_].id;
+			}
+		}
+	}
+
 	// Join parents.
 	for (const _ in identities) {
 		if (identities[_] === null) {
@@ -274,16 +303,107 @@ export const identityGraph = (
 			continue;
 		}
 
-		const mother = rootIdForNode(motherOf(identities[_].id));
-		const father = rootIdForNode(fatherOf(identities[_].id));
-		if (father !== undefined && mother !== undefined) {
-			const joinId = Joiner.makeJoinId(father, mother);
-			if (!ids.includes(joinId)) {
-				ids.push(joinId);
-				nodes.push(new Joiner([father, mother], "dna"));
-			}
+		const motherNode = motherOf(identities[_].id);
+		const mother =
+			motherNode !== undefined ? rootIdForNode(motherNode) : undefined;
+		const fatherNode = fatherOf(identities[_].id);
+		const father =
+			fatherNode !== undefined
+				? rootIdForNode(fatherOf(identities[_].id))
+				: undefined;
+
+		if (father === undefined || mother === undefined) {
+			continue;
+		}
+
+		const joinId = Joiner.makeJoinId(father, mother);
+		if (!ids.includes(joinId)) {
+			ids.push(joinId);
+			nodes.push(new Joiner([father, mother], "dna"));
 		}
 	}
+
+	const distance = (a: string, b?: string) => {
+		const rootA = mustExist(rootId(a));
+		const rootB = b !== undefined ? mustExist(rootId(b)) : undefined;
+		const nodeA = nodes[ids.indexOf(rootA)] as Child;
+		const nodeB =
+			rootB !== undefined ? (nodes[ids.indexOf(rootB)] as Child) : undefined;
+
+		let changes = 1;
+		let _misses = 0;
+		nodeA.distance = 0;
+		while (
+			(nodeB !== undefined && nodeB.distance === undefined) ||
+			0 < changes
+		) {
+			changes = 0;
+			_misses = 0;
+			for (const subject of nodes) {
+				if (subject instanceof Child === false) {
+					continue;
+				}
+
+				let bestDistance = subject.distance;
+				const mother =
+					subject.mother !== undefined
+						? (node(mustExist(rootId(subject.mother))) as Child)
+						: undefined;
+				if (mother !== undefined && mother.distance !== undefined) {
+					if (
+						bestDistance !== undefined &&
+						mother.distance + 1 < bestDistance
+					) {
+						bestDistance = mother.distance + 1;
+					}
+					if (bestDistance === undefined) {
+						bestDistance = mother.distance + 1;
+					}
+				}
+
+				const father =
+					subject.father !== undefined
+						? (node(mustExist(rootId(subject.father))) as Child)
+						: undefined;
+				if (father !== undefined && father.distance !== undefined) {
+					if (
+						bestDistance !== undefined &&
+						father.distance + 1 < bestDistance
+					) {
+						bestDistance = father.distance + 1;
+					}
+					if (bestDistance === undefined) {
+						bestDistance = father.distance + 1;
+					}
+				}
+
+				for (const childId of subject.children) {
+					const child = node(mustExist(rootId(childId))) as Child;
+					if (child.distance !== undefined) {
+						if (
+							bestDistance !== undefined &&
+							child.distance + 1 < bestDistance
+						) {
+							bestDistance = child.distance + 1;
+						}
+						if (bestDistance === undefined) {
+							bestDistance = child.distance + 1;
+						}
+					}
+				}
+
+				if (
+					bestDistance !== undefined &&
+					(subject.distance === undefined || bestDistance < subject.distance)
+				) {
+					subject.distance = bestDistance;
+					++changes;
+					continue;
+				}
+				++_misses;
+			}
+		}
+	};
 
 	return {
 		ids,
@@ -295,5 +415,6 @@ export const identityGraph = (
 		motherOf,
 		marriage,
 		rootId,
+		distance,
 	};
 };

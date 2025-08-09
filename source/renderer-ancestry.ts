@@ -61,6 +61,9 @@ export const render = (
 	options: Partial<RendererOptions> = {},
 ) => {
 	const graph = identityGraph(timelines, options);
+	if (options.origin !== undefined) {
+		graph.distance(options.origin);
+	}
 
 	const d = dot();
 	d.raw("digraph ancestry {");
