@@ -152,7 +152,7 @@ export const identityGraph = (
 		rootIdForNode(nodes[ids.indexOf(id)] as Child | Alias);
 	const rootIdForNode = (_: Child | Alias) =>
 		_ instanceof Alias ? _.origin : _.identity;
-	const identity = (id: string) => identities[ids.indexOf(id)] as Identity;
+	const identity = (id: string) => identities[ids.indexOf(id)];
 	const node = (id: string) => nodes[ids.indexOf(id)];
 	const fatherOf = (id: string) =>
 		nodes[
@@ -167,7 +167,9 @@ export const identityGraph = (
 			)
 		] as Child | Alias;
 	const marriage = (id: string, spouse: string) =>
-		marriedToIn(identity(id)).filter((_) => _.marriedTo === spouse);
+		marriedToIn(mustExist(identity(id), `unknown identity '${id}'`)).filter(
+			(_) => _.marriedTo === spouse,
+		);
 
 	// Parse identities and construct relationship graph.
 	for (const _ in identities) {
@@ -260,13 +262,19 @@ export const identityGraph = (
 
 		if (mother === undefined) {
 			const motherNode = generateFemale();
-			const motherIdentity = identity(motherNode.identity);
+			const motherIdentity = mustExist(
+				identity(motherNode.identity),
+				"generated female has no identity",
+			);
 			motherNode.children.push(identities[_].id);
 			motherIdentity.relations?.push({ motherOf: identities[_].id });
 		}
 		if (father === undefined) {
 			const fatherNode = generateMale();
-			const fatherIdentity = identity(fatherNode.identity);
+			const fatherIdentity = mustExist(
+				identity(fatherNode.identity),
+				"generated male has no identity",
+			);
 			fatherNode.children.push(identities[_].id);
 			fatherIdentity.relations?.push({ fatherOf: identities[_].id });
 		}

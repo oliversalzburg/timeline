@@ -36,7 +36,9 @@ properties:
       # Location
       established:
         title: Establishment Information
-        type: object
+        type:
+          - object
+          - "null"
         date:
           title: Exact Day of Establishment
           type: string
@@ -52,7 +54,9 @@ properties:
               type: string
       dissolved:
         title: Dissolvement Information
-        type: object
+        type:
+          - object
+          - "null"
         date:
           title: Exact Day of Dissolvement
           type: string
@@ -85,7 +89,9 @@ properties:
       # Person
       born:
         title: Birth Information
-        type: object
+        type:
+          - object
+          - "null"
         properties:
           date:
             title: Exact Day of Birth

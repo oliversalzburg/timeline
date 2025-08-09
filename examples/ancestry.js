@@ -83,7 +83,8 @@ const finalTimelines = [
 			([filename, timeline]) =>
 				!basename(filename).startsWith("_") &&
 				"identity" in timeline.meta &&
-				"id" in timeline.meta.identity,
+				"id" in timeline.meta.identity &&
+				"born" in timeline.meta.identity,
 		)
 		.map(([_, timeline]) =>
 			uniquify(

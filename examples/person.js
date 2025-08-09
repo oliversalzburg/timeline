@@ -50,7 +50,7 @@ if ("identity" in timeline.meta === false) {
 const name = timeline.meta.identity.name ?? timeline.meta.identity.id;
 if (timeline.meta.identity.born === undefined) {
 	process.stderr.write(
-		`Info: No birth in identity in '${args.target}'. Might not be treated as a person.\n`,
+		`Warning: No birth in identity in '${args.target}'. Might not be treated as a person.\n`,
 	);
 	process.stdout.write(rawData);
 	process.exit(0);
