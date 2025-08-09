@@ -81,7 +81,7 @@ export const render = (
 	d.raw(`ranksep="0.5"`);
 	d.raw(`tooltip=" "`);
 
-	const name = (_?: Identity | null | undefined) => _?.name ?? _?.id ?? "";
+	const name = (_?: Identity | null | undefined) => _?.name ?? _?.id ?? _;
 
 	for (const node of graph.nodes) {
 		const identity = node;
@@ -105,7 +105,7 @@ export const render = (
 						? new Date(date).toDateString()
 						: "";
 
-			const names = joiner.who.map((_) => name(graph.identity(_)));
+			const names = joiner.who.map((_) => name(graph.identity(_)) ?? _);
 			d.node(joinedId, {
 				color: "white",
 				height: identity.type === "dna" ? 0 : undefined,
@@ -202,7 +202,7 @@ export const render = (
 					);
 					const father = subject.identity;
 					const motherPointer = graph.motherOf(childIdentity.id);
-					const mother = graph.rootId(motherPointer);
+					const mother = graph.rootId(motherPointer.identity);
 					if (mother === undefined) {
 						throw new InvalidOperationError(
 							`identity '${subject.identity}' is father of '${childIdentity.id}', but mother is undefined.`,
@@ -224,7 +224,7 @@ export const render = (
 					);
 					const mother = subject.identity;
 					const fatherPointer = graph.fatherOf(childIdentity.id);
-					const father = graph.rootId(fatherPointer);
+					const father = graph.rootId(fatherPointer.identity);
 					if (father === undefined) {
 						throw new InvalidOperationError(
 							`identity '${subject.identity}' is mother of '${childIdentity.id}', but father is undefined.`,

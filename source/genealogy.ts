@@ -105,7 +105,7 @@ export interface IdentityGraph {
 	motherOf: (id: string) => Child | Alias;
 	fatherOf: (id: string) => Child | Alias;
 	marriage: (id: string, spouse: string) => Array<Marriage>;
-	rootId: (_: Child | Alias | undefined) => string | undefined;
+	rootId: (id: string | undefined) => string | undefined;
 }
 export const identityGraph = (
 	timelines: Array<Timeline & { meta: { identity?: Identity } }>,
@@ -137,10 +137,6 @@ export const identityGraph = (
 		return child;
 	};
 
-	const _r = {
-		get: (id: string) => identities[ids.indexOf(id)],
-	};
-
 	const fatherOfIdIn = (identity: Identity) =>
 		identity.relations?.filter((_) => "fatherOf" in _).map((_) => _.fatherOf) ??
 		[];
@@ -168,8 +164,15 @@ export const identityGraph = (
 		nodes[_].marriages = marriages.map((_) => _.marriedTo);
 
 		for (const marriage of marriages) {
+			const marriedAs = marriage.as;
+			if (marriedAs !== undefined && !ids.includes(marriedAs)) {
+				ids.push(marriedAs);
+				identities.push(null);
+				nodes.push(new Alias(marriedAs, identities[_].id));
+			}
+
 			const joinId = Joiner.makeJoinId(
-				identities[_].id,
+				marriedAs ?? identities[_].id,
 				marriage.marriedTo,
 				marriage.date,
 			);
@@ -177,15 +180,11 @@ export const identityGraph = (
 				ids.push(joinId);
 				identities.push(null);
 				nodes.push(
-					new Joiner([identities[_].id, marriage.marriedTo], "marriage"),
+					new Joiner(
+						[marriedAs ?? identities[_].id, marriage.marriedTo],
+						"marriage",
+					),
 				);
-			}
-
-			const marriageAlias = marriage.as;
-			if (marriageAlias !== undefined && !ids.includes(marriageAlias)) {
-				ids.push(marriageAlias);
-				identities.push(null);
-				nodes.push(new Alias(marriageAlias, identities[_].id));
 			}
 		}
 
@@ -198,7 +197,11 @@ export const identityGraph = (
 		}
 	}
 
-	const rootId = (_: Child | Alias | undefined) =>
+	const rootId = (_: string | undefined) =>
+		_ === undefined
+			? undefined
+			: rootIdForNode(nodes[ids.indexOf(_)] as Child | Alias | undefined);
+	const rootIdForNode = (_: Child | Alias | undefined) =>
 		_ === undefined ? undefined : _ instanceof Alias ? _.origin : _.identity;
 	const identity = (id: string) => identities[ids.indexOf(id)] as Identity;
 	const node = (id: string) => nodes[ids.indexOf(id)];
@@ -224,8 +227,8 @@ export const identityGraph = (
 			continue;
 		}
 
-		const mother = rootId(motherOf(identities[_].id));
-		const father = rootId(fatherOf(identities[_].id));
+		const mother = rootIdForNode(motherOf(identities[_].id));
+		const father = rootIdForNode(fatherOf(identities[_].id));
 
 		if (father === undefined && mother === undefined) {
 			continue;
@@ -252,8 +255,8 @@ export const identityGraph = (
 			continue;
 		}
 
-		const mother = rootId(motherOf(identities[_].id));
-		const father = rootId(fatherOf(identities[_].id));
+		const mother = rootIdForNode(motherOf(identities[_].id));
+		const father = rootIdForNode(fatherOf(identities[_].id));
 		if (father !== undefined && mother !== undefined) {
 			const joinId = Joiner.makeJoinId(father, mother);
 			if (!ids.includes(joinId)) {
