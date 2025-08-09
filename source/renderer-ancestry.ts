@@ -105,12 +105,27 @@ export const render = (
 						? new Date(date).toDateString()
 						: "";
 
+			const marriage =
+				identity.type === "marriage"
+					? mustExist(
+							graph.marriage(joiner.who[0], joiner.who[1])[0],
+							`can't find marriage between '${joiner.who[0]}' and '${joiner.who[1]}'`,
+						)
+					: undefined;
+			const marriageOnSpouse =
+				identity.type === "marriage"
+					? mustExist(
+							graph.marriage(joiner.who[1], joiner.who[0])[0],
+							`can't find marriage between '${joiner.who[1]}' and '${joiner.who[0]}'`,
+						)
+					: undefined;
+
 			const names = joiner.who.map((_) => name(graph.identity(_)) ?? _);
 			d.node(joinedId, {
 				color: "white",
 				height: identity.type === "dna" ? 0 : undefined,
 				label: makeHtmlString(
-					`${names[0]}\n⚭${date ? ` ${dateString}` : ""}\n${names[1]}`,
+					`${marriage?.as ?? names[0]}\n⚭${date ? ` ${dateString}` : ""}\n${marriageOnSpouse?.as ?? names[1]}`,
 				),
 				shape: identity.type === "dna" ? "point" : "ellipse",
 				style: identity.type === "dna" ? "invis" : "dashed",
