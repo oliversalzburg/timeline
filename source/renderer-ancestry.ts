@@ -395,6 +395,7 @@ export const render = (
 						arrowhead: "none",
 						color,
 						headport: "e",
+						penwidth: style.outline ? style.penwidth : 0.5,
 						style:
 							style.style?.includes("dashed") || style.link === false
 								? "dashed"
