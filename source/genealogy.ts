@@ -222,11 +222,18 @@ export const identityGraph = (
 						nodes.push(new Alias(spouseMarriedAs, identities[_].id));
 					}
 					who.push(spouseMarriedAs);
+					if (marriageOnSpouse.date !== relation.date) {
+						throw new InvalidOperationError(
+							`marriage date mismatch between '${identities[_].id}' and '${relation.marriedTo}'`,
+						);
+					}
 				}
 
+				const joiner = new Joiner(who, "marriage");
+				joiner.date = relation.date;
 				ids.push(joinId);
 				identities.push(null);
-				nodes.push(new Joiner(who, "marriage"));
+				nodes.push(joiner);
 			}
 		}
 

@@ -380,12 +380,13 @@ export const render = (
 					});
 				} else if ("marriedTo" in relation) {
 					const marriage = relation as Marriage;
-					const age = undefined;
-					// subject.identity.born?.date !== undefined &&
-					// relation.date !== undefined
-					// 	? new Date(relation.date).valueOf() -
-					// 		new Date(subject.identity.born.date).valueOf()
-					// 	: undefined;
+					const subjectIdentity = graph.identity(subject.identity);
+					const age =
+						subjectIdentity?.born?.date !== undefined &&
+						relation.date !== undefined
+							? new Date(relation.date).valueOf() -
+								new Date(subjectIdentity.born.date).valueOf()
+							: undefined;
 
 					const ego = subject.identity;
 					const marriedTo = marriage.marriedTo;
