@@ -130,7 +130,6 @@ const finalEntryCount = finalTimelines.reduce(
 );
 
 // Write GraphViz graph to stdout.
-process.stdout.write(`Generating GraphViz graph for universe...\n`);
 const renderOptions = {
 	debug: Boolean(args.debug),
 	dateRenderer: (/** @type {number} */ date) => {
@@ -155,6 +154,9 @@ const ancestryGraph = identityGraph(
 		...data.values().filter((timeline) => "identity" in timeline.meta),
 	]),
 );
+if (typeof args.origin === "string") {
+	ancestryGraph.distance(args.origin);
+}
 
 const dotGraph = render(finalTimelines, renderOptions, ancestryGraph);
 
@@ -184,50 +186,53 @@ const info = [
 	`${dFrom} - ${dTo}`,
 ];
 
-// Dump palette for debugging purposes.
-process.stdout.write("Generated palette for universe:\n");
-const paletteMeta = dotGraph.palette;
-const colors = paletteMeta.lookup;
-const ranks = new Map([...dotGraph.ranks.entries()]);
-const styles = dotGraph.styles;
-const describeStyle = (
-	/** @type {import("../lib/styles.js").Style | undefined} */ style,
-) => {
-	if (style === undefined) {
-		return "";
-	}
+if (args.debug) {
+	// Dump palette for debugging purposes.
+	const paletteMeta = dotGraph.palette;
+	const colors = paletteMeta.lookup;
+	const ranks = new Map([...dotGraph.ranks.entries()]);
+	const styles = dotGraph.styles;
+	const describeStyle = (
+		/** @type {import("../lib/styles.js").Style | undefined} */ style,
+	) => {
+		if (style === undefined) {
+			return "";
+		}
 
-	const dashedOrSolid = style.style?.filter((_) =>
-		["dashed", "solid"].includes(_),
-	) ?? ["solid"];
-	const parts = [
-		style.fill ? "filled" : "translucent",
-		style.link ? "linked" : "unlinked",
-		style.outline ? `${style.penwidth}pt ${dashedOrSolid[0]} outline` : "flat",
-	];
-	return parts.join(", ");
-};
-for (const [color, timelines] of [...paletteMeta.assignments.entries()].sort(
-	([a], [b]) => a.localeCompare(b),
-)) {
-	const timelinePalette = mustExist(colors.get(timelines[0]));
-	process.stdout.write(
-		`- ${color} -> Pen: ${timelinePalette.pen} Fill: ${timelinePalette.fill} Font: ${timelinePalette.font}\n`,
-	);
-	for (const id of timelines.sort(
-		(/** @type {string} */ a, /** @type {string} */ b) => a.localeCompare(b),
+		const dashedOrSolid = style.style?.filter((_) =>
+			["dashed", "solid"].includes(_),
+		) ?? ["solid"];
+		const parts = [
+			style.fill ? "filled" : "translucent",
+			style.link ? "linked" : "unlinked",
+			style.outline
+				? `${style.penwidth}pt ${dashedOrSolid[0]} outline`
+				: "flat",
+		];
+		return parts.join(", ");
+	};
+
+	const rankCount = new Set(ranks.values()).size;
+	process.stdout.write(`Style sheet generated for ${rankCount} ranks.\n`);
+	process.stdout.write("Generated palette for universe:\n");
+	for (const [color, timelines] of [...paletteMeta.assignments.entries()].sort(
+		([a], [b]) => a.localeCompare(b),
 	)) {
+		const timelinePalette = mustExist(colors.get(timelines[0]));
 		process.stdout.write(
-			`  ${id} (ranked ${ranks.get(id)}: ${describeStyle(styles.get(mustExist(ranks.get(id))))})\n`,
+			`- ${color} -> Pen: ${timelinePalette.pen} Fill: ${timelinePalette.fill} Font: ${timelinePalette.font}\n`,
 		);
+		for (const id of timelines.sort(
+			(/** @type {string} */ a, /** @type {string} */ b) => a.localeCompare(b),
+		)) {
+			process.stdout.write(
+				`  ${id} (ranked ${ranks.get(id)}: ${describeStyle(styles.get(mustExist(ranks.get(id))))})\n`,
+			);
+		}
+		process.stdout.write("\n");
 	}
-	process.stdout.write("\n");
 }
 
-const rankCount = new Set(ranks.values()).size;
-process.stdout.write(`Style sheet generated for ${rankCount} ranks.\n`);
-
-process.stdout.write(`Writing graph...\n`);
 if (dotGraph.graph.length === 1) {
 	writeFileSync(outputPath, dotGraph.graph[0]);
 } else {
@@ -240,12 +245,10 @@ if (dotGraph.graph.length === 1) {
 			/digraph timeline \{/,
 			`digraph segment_${index} { id="segment_${index}";`,
 		);
-		const segmentFilename = outputPath.replace(/\.gv$/, `-segment.${index}.gv`);
+		const segmentFilename = outputPath.replace(/\.gv$/, `-segment${index}.gv`);
 		process.stdout.write(`  - Written segment ${segmentFilename}.\n`);
 		writeFileSync(segmentFilename, uniqueGraph);
 	}
 }
 
-process.stdout.write(`Writing graph info...\n`);
 writeFileSync(outputPath.replace(/\.gv$/, ".info"), `${info.join("\n")}\n`);
-process.stdout.write("GraphViz graph for universe written successfully.\n");

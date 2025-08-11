@@ -383,7 +383,7 @@ export const render = <
 			style: style.style?.join(","),
 			tooltip,
 			ts: timestamp,
-			width: isTransferMarker ? 1.25 : undefined,
+			width: isTransferMarker ? 1 : undefined,
 		};
 
 		return nodeProperties;

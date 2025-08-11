@@ -259,6 +259,4 @@ if (copyOnly) {
 const filename = contentName.replace(/\.dot$/, "-img.dot");
 writeFileSync(join(contentLocation, filename), svgPrefixes);
 
-process.stdout.write(
-	`Successfully emojified ${args.target} into ${filename}.\n`,
-);
+//process.stdout.write(`Successfully emojified ${args.target} into ${filename}.\n`,);
