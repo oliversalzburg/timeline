@@ -20,20 +20,24 @@ export const rgbaToString = (rgba: RGBATuple): string =>
 export const fillColorForPen = (
 	color: RGBTuple | RGBATuple,
 	theme: RenderMode,
-): string => {
+): RGBATuple => {
 	const hsl = rgb2hsl(color[0] / 255, color[1] / 255, color[2] / 255);
-	const rgb = hsl2rgb(hsl[0], hsl[1], hsl[2] * (theme === "light" ? 2 : 0.5));
-	return rgbaToString([
+	const rgb = hsl2rgb(
+		hsl[0],
+		hsl[1],
+		Math.min(1, hsl[2] * (theme === "light" ? 1.8 : 0.5)),
+	);
+	return [
 		Math.trunc(rgb[0] * 255),
 		Math.trunc(rgb[1] * 255),
 		Math.trunc(rgb[2] * 255),
 		255,
-	]);
+	];
 };
 
-export const matchFontColorTo = (color: RGBTuple | RGBATuple): string => {
+export const matchFontColorTo = (color: RGBTuple | RGBATuple): RGBATuple => {
 	const hsl = rgb2hsl(color[0] / 255, color[1] / 255, color[2] / 255);
-	return hsl[2] < 180 ? "#FFFFFFFF" : "#000000FF";
+	return hsl[2] < 0.5 ? [255, 255, 255, 255] : [0, 0, 0, 255];
 };
 
 export interface PaletteMeta<T> {
@@ -144,15 +148,23 @@ export const palette = <T>(theme: RenderMode) => {
 					color === TRANSPARENT
 						? {
 								fill: "transparent",
-								font: matchFontColorTo(
-									theme === "light" ? [255, 255, 255] : [0, 0, 0],
+								font: rgbaToString(
+									matchFontColorTo(
+										theme === "light" ? [255, 255, 255] : [0, 0, 0],
+									),
 								),
 								pen: "transparent",
 								source: color,
 							}
 						: {
-								fill: fillColorForPen(mustExist(baseColorValues.get(_)), theme),
-								font: matchFontColorTo(mustExist(baseColorValues.get(_))),
+								fill: rgbaToString(
+									fillColorForPen(mustExist(baseColorValues.get(_)), theme),
+								),
+								font: rgbaToString(
+									matchFontColorTo(
+										fillColorForPen(mustExist(baseColorValues.get(_)), theme),
+									),
+								),
 								pen: rgbaToString(mustExist(baseColorValues.get(_))),
 								source: color,
 							},
@@ -191,5 +203,17 @@ export const matchLuminance = (toAdjust: string, target: string): string => {
 			Math.floor(x * 255),
 		) as RGBTuple),
 		255,
+	]);
+};
+
+export const setOpacity = (color: string, opacity: number): string => {
+	const componentsBase = mustExist(color.substring(1).match(/../g)).map((x) =>
+		Number.parseInt(x, 16),
+	);
+	return rgbaToString([
+		componentsBase[0],
+		componentsBase[1],
+		componentsBase[2],
+		opacity,
 	]);
 };

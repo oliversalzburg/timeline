@@ -8,15 +8,15 @@ import type { Event, Identity, Marriage, Timeline } from "./types.js";
 export const millisecondsAsYears = (milliseconds: number) =>
 	Math.round(milliseconds / MILLISECONDS.ONE_YEAR);
 
-export const parseStringAsDate = (input?: string) => {
+export const parseStringAsDate = (input?: string, offset = 0) => {
 	if (input === undefined) {
 		return undefined;
 	}
 	if (input.length === 4) {
 		const year = Number(input);
-		return new Date(year, 0);
+		return new Date(new Date(year, 0).valueOf() + offset);
 	}
-	return new Date(input);
+	return new Date(Date.parse(input) + offset);
 };
 
 export const uncertainEventToDate = (input?: Event | null) => {
@@ -48,10 +48,10 @@ export const uncertainEventToDate = (input?: Event | null) => {
 		return new Date(start.valueOf() + distance / 2);
 	}
 	if (after !== undefined) {
-		return mustExist(parseStringAsDate(after), `invalid date '${after}'`);
+		return mustExist(parseStringAsDate(after, 1), `invalid date '${after}'`);
 	}
 	if (before !== undefined) {
-		return mustExist(parseStringAsDate(before), `invalid date '${before}'`);
+		return mustExist(parseStringAsDate(before, -1), `invalid date '${before}'`);
 	}
 
 	return undefined;
@@ -104,9 +104,12 @@ export interface IdentityGraph {
 	node: (id: string) => Child | Alias | Joiner;
 	motherOf: (id: string) => Child | Alias;
 	fatherOf: (id: string) => Child | Alias;
-	marriage: (id: string, spouse: string) => Array<Marriage>;
+	marriage: (id: string, spouse?: string) => Array<Marriage>;
+	marriageInDnaScope: (id: string) => Marriage | undefined;
 	rootId: (id: string) => string;
 	distance: (a: string, b?: string) => void;
+	joins: (a: string, b: string) => Array<Joiner>;
+	childrenDuring: (id: string, after: Date, before?: Date) => Array<string>;
 }
 export const identityGraph = (
 	timelines: Array<Timeline & { meta: { identity?: Identity } }>,
@@ -165,9 +168,9 @@ export const identityGraph = (
 				(_) => _ !== null && motherOfIdIn(_ as Identity).includes(id),
 			)
 		] as Child | Alias;
-	const marriage = (id: string, spouse: string) =>
+	const marriage = (id: string, spouse?: string) =>
 		marriedToIn(mustExist(identity(id), `unknown identity '${id}'`)).filter(
-			(_) => _.marriedTo === spouse,
+			(_) => (spouse !== undefined ? _.marriedTo === spouse : true),
 		);
 
 	// Parse identities and construct relationship graph.
@@ -194,11 +197,14 @@ export const identityGraph = (
 				nodes.push(new Alias(marriedAs, identities[_].id));
 			}
 
+			const date = uncertainEventToDate(relation);
+
 			const joinId = Joiner.makeJoinId(
 				identities[_].id,
 				relation.marriedTo,
-				relation.date,
+				date?.toISOString(),
 			);
+
 			if (!ids.includes(joinId)) {
 				const who = [identities[_].id, relation.marriedTo];
 				if (marriedAs !== undefined) {
@@ -230,7 +236,7 @@ export const identityGraph = (
 				}
 
 				const joiner = new Joiner(who, "marriage");
-				joiner.date = relation.date;
+				joiner.date = date?.toISOString();
 				ids.push(joinId);
 				identities.push(null);
 				nodes.push(joiner);
@@ -337,6 +343,26 @@ export const identityGraph = (
 		}
 	}
 
+	const childrenDuring = (
+		id: string,
+		after: Date,
+		before?: Date,
+	): Array<string> => {
+		const egoIdentity = node(rootId(id)) as Child | undefined;
+		return (
+			egoIdentity?.children.filter((_) => {
+				const born = uncertainEventToDate(identity(rootId(_))?.born);
+				const bornAfter =
+					born !== undefined ? after.valueOf() < born.valueOf() : true;
+				const bornBefore =
+					born !== undefined && before !== undefined
+						? born.valueOf() < before.valueOf()
+						: true;
+				return bornAfter && bornBefore;
+			}) ?? []
+		);
+	};
+
 	const distance = (a: string, b?: string) => {
 		const rootA = mustExist(rootId(a));
 		const rootB = b !== undefined ? mustExist(rootId(b)) : undefined;
@@ -419,6 +445,18 @@ export const identityGraph = (
 		}
 	};
 
+	const joins = (a: string, b: string) =>
+		nodes.filter(
+			(_) => _ instanceof Joiner && _.who.includes(a) && _.who.includes(b),
+		) as Array<Joiner>;
+
+	const marriageInDnaScope = (ego: string): Marriage | undefined => {
+		const motherNode = motherOf(rootId(ego));
+		const fatherNode = fatherOf(rootId(ego));
+		const subjects = marriage(motherNode.identity, fatherNode.identity);
+		return subjects[0];
+	};
+
 	return {
 		ids,
 		identities,
@@ -428,7 +466,10 @@ export const identityGraph = (
 		fatherOf,
 		motherOf,
 		marriage,
+		marriageInDnaScope,
 		rootId,
 		distance,
+		joins,
+		childrenDuring,
 	};
 };

@@ -25,8 +25,10 @@ ifneq ($(DEBUG),)
 	_DOT_FLAGS += -v5
 endif
 
+_ANCESTRY_FLAGS := "--origin=$(ORIGIN)"
 _UNIVERSE_FLAGS := "--origin=$(ORIGIN)" --skip-before=$(START) --skip-after=$(END)
 ifneq ($(DEBUG),)
+	_ANCESTRY_FLAGS += --debug
 	_UNIVERSE_FLAGS += --debug
 endif
 ifneq ($(PRIVATE),)
@@ -72,7 +74,7 @@ universe:
 
 pedigree: $(_AUTO_TIMELINES) lib node_modules | output
 	@node --enable-source-maps examples/ancestry.js \
-		"--origin=$(ORIGIN)" \
+		$(_ANCESTRY_FLAGS) \
 		--output=output/ancestry.gv $(_AUTO_TIMELINES)
 	@dot -O -Tpng -Tsvg output/ancestry.gv
 

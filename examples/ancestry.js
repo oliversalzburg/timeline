@@ -77,7 +77,7 @@ const data = new Map(
 );
 
 // Generate palette for universe.
-const p = palette("dark");
+const p = palette(args.debug ? "light" : "dark");
 for (const timeline of data.values()) {
 	p.add(timeline.meta.id, timeline.meta.color);
 }

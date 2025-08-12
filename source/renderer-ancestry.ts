@@ -8,7 +8,7 @@ import {
 	uncertainEventToDate,
 	uncertainEventToDateString,
 } from "./genealogy.js";
-import { matchLuminance } from "./palette.js";
+import { matchLuminance, setOpacity } from "./palette.js";
 import type { RendererOptions } from "./renderer.js";
 import type { Identity, Marriage, TimelineAncestryRenderer } from "./types.js";
 
@@ -50,8 +50,6 @@ export class Joiner {
 		date?: string,
 		until?: string,
 	) {
-		date = undefined;
-		until = undefined;
 		const ids = [a ?? "NULL", b ?? "NULL"].sort();
 		return `JOINED-${ids.join("+")}@${date ?? "NULL"}-${until ?? "NULL"}`;
 	}
@@ -67,33 +65,46 @@ export const render = (
 	}
 
 	const colors = mustExist(options.palette?.lookup);
+	const defaultBackground =
+		options.debug || options.theme === "light" ? "#FFFFFF" : "#000000";
+	const defaultForeground =
+		options.debug || options.theme === "light" ? "#000000" : "#FFFFFF";
 
 	const d = dot();
 	d.raw("digraph ancestry {");
 	d.raw(
-		`node [fontcolor="white"; fontname="${FONT_NAME}"; fontsize="${FONT_SIZE}";]`,
+		`node [fontcolor="${defaultForeground}"; fontname="${FONT_NAME}"; fontsize="${FONT_SIZE}";]`,
 	);
 	d.raw(
-		`edge [color="white"; fontcolor="white"; fontname="${FONT_NAME}"; fontsize="${FONT_SIZE}";]`,
+		`edge [color="${defaultForeground}"; fontcolor="${defaultForeground}"; fontname="${FONT_NAME}"; fontsize="${FONT_SIZE}";]`,
 	);
-	d.raw(`bgcolor="${options.theme === "light" ? "white" : "black"}"`);
+	d.raw(`bgcolor="${defaultBackground}"`);
 	d.raw('comment=" "');
 	d.raw('concentrate="true"');
-	d.raw(`fontcolor="white"`);
+	d.raw(`fontcolor="${defaultForeground}"`);
 	d.raw(`fontname="${FONT_NAME}"`);
 	d.raw(`fontsize="${FONT_SIZE}"`);
 	d.raw('label=" "');
 	d.raw(`rankdir="RL"`);
-	d.raw(`ranksep="0.5"`);
+	d.raw(`ranksep="1"`);
 	d.raw(`tooltip=" "`);
 
 	const name = (_?: Identity | null | undefined) => _?.name ?? _?.id ?? _;
+	const opacityFromDistance = (distance?: number) =>
+		options.debug
+			? 255
+			: Math.max(
+					30,
+					distance !== undefined ? Math.max(0, 255 - distance * 30) : 0,
+				);
 
 	const computeNodeProperties = (
 		title: string,
 		contributors: Set<Identity>,
 		leader?: Identity,
+		distance = Number.POSITIVE_INFINITY,
 	) => {
+		const opacity = opacityFromDistance(distance);
 		const contributorsTimelines = [...contributors.values()].map(
 			(_) => timelines[graph.ids.indexOf(_.id)],
 		);
@@ -102,9 +113,11 @@ export const render = (
 				? timelines[graph.ids.indexOf(leader.id)]
 				: undefined;
 
-		const color =
+		const color = setOpacity(
 			colors.get(leaderTimeline?.meta.id ?? contributorsTimelines[0]?.meta.id)
-				?.pen ?? "#808080FF";
+				?.pen ?? "#808080FF",
+			opacity,
+		);
 		const fillcolors = contributorsTimelines.reduce((fillColors, timeline) => {
 			const fill = colors.get(timeline?.meta.id)?.fill ?? TRANSPARENT;
 
@@ -114,20 +127,25 @@ export const render = (
 			}
 
 			fillColors.push(
-				timeline === leaderTimeline ||
-					fill === TRANSPARENT ||
-					leaderTimeline === undefined
-					? fill
-					: matchLuminance(
-							fill,
-							mustExist(colors.get(mustExist(leaderTimeline).meta.id)).fill,
-						),
+				setOpacity(
+					timeline === leaderTimeline ||
+						fill === TRANSPARENT ||
+						leaderTimeline === undefined
+						? fill
+						: matchLuminance(
+								fill,
+								mustExist(colors.get(mustExist(leaderTimeline).meta.id)).fill,
+							),
+					opacity,
+				),
 			);
 			return fillColors;
 		}, new Array<string>());
-		const fontcolor =
+		const fontcolor = setOpacity(
 			colors.get(leaderTimeline?.meta.id ?? contributorsTimelines[0]?.meta.id)
-				?.font ?? "#808080FF";
+				?.font ?? defaultForeground,
+			opacity,
+		);
 		const prefixes = contributorsTimelines
 			.values()
 			.reduce((_, timeline) => _ + (timeline?.meta.prefix ?? ""), "");
@@ -158,10 +176,51 @@ export const render = (
 		return nodeProperties;
 	};
 
+	const computeMarriageProperties = (ego: string, spouse: string) => {
+		const egoIsMale =
+			graph.identity(ego)?.relations?.some((_) => "fatherOf" in _) === true;
+		const egoIsFemale =
+			graph.identity(ego)?.relations?.some((_) => "motherOf" in _) === true;
+		if (egoIsMale && egoIsFemale) {
+			throw new InvalidOperationError(
+				`graph marks '${ego}' with conflicting parenthood attributes father+mother`,
+			);
+		}
+
+		const spouseIsMale =
+			graph.identity(spouse)?.relations?.some((_) => "fatherOf" in _) === true;
+		const spouseIsFemale =
+			graph.identity(spouse)?.relations?.some((_) => "motherOf" in _) === true;
+		if (spouseIsMale && spouseIsFemale) {
+			throw new InvalidOperationError(
+				`graph marks '${spouse}' with conflicting parenthood attributes father+mother`,
+			);
+		}
+
+		let father: string | undefined;
+		let mother: string | undefined;
+		if (egoIsMale || spouseIsFemale) {
+			father = ego;
+			mother = spouse;
+		} else if (egoIsFemale || spouseIsMale) {
+			father = spouse;
+			mother = ego;
+		}
+
+		return { father, mother };
+	};
+
 	for (const node of graph.nodes) {
 		const identity = node;
 		if (identity instanceof Joiner) {
 			const joiner = identity as Joiner;
+
+			if (joiner.type === "dna") {
+				const joins = graph.joins(joiner.who[0], joiner.who[1]);
+				if (joins.some((_) => _.type === "marriage")) {
+					continue;
+				}
+			}
 
 			const joinedId = Joiner.makeJoinId(
 				joiner.who[0],
@@ -169,7 +228,9 @@ export const render = (
 				joiner.date,
 			);
 			if (d.has(joinedId)) {
-				continue;
+				throw new InvalidOperationError(
+					`unexpected join ID collision on '${joinedId}'`,
+				);
 			}
 
 			const date = uncertainEventToDate(identity)?.valueOf();
@@ -180,29 +241,44 @@ export const render = (
 						? new Date(date).toDateString()
 						: "";
 
+			const ego = joiner.who[0];
+			const spouse = joiner.who[1];
 			const marriage =
 				identity.type === "marriage"
 					? mustExist(
-							graph.marriage(joiner.who[0], joiner.who[1])[0],
-							`can't find marriage between '${joiner.who[0]}' and '${joiner.who[1]}'`,
+							graph.marriage(ego, spouse)[0],
+							`can't find marriage between '${ego}' and '${spouse}'`,
 						)
 					: undefined;
 			const marriageOnSpouse =
 				identity.type === "marriage"
 					? mustExist(
-							graph.marriage(joiner.who[1], joiner.who[0])[0],
-							`can't find marriage between '${joiner.who[1]}' and '${joiner.who[0]}'`,
+							graph.marriage(spouse, ego)[0],
+							`can't find marriage between '${spouse}' and '${ego}'`,
 						)
 					: undefined;
 
 			const contributors = joiner.who.map((_) =>
 				mustExist(graph.identity(graph.rootId(_)), `unknown identity: '${_}'`),
 			);
+			const contributorNodes = contributors.map((_) => graph.node(_.id));
+			const { father } = computeMarriageProperties(ego, spouse);
 			const names = contributors.map((_) => name(_) ?? _);
 
 			const nodeProperties = computeNodeProperties(
 				`${marriage?.as ?? names[0]}\n⚭${date ? ` ${dateString}` : ""}\n${marriageOnSpouse?.as ?? names[1]}`,
 				new Set(contributors),
+				father ? (graph.identity(father) ?? undefined) : undefined,
+				contributorNodes.reduce(
+					(min, current) =>
+						Math.min(
+							min,
+							current instanceof Child
+								? (current.distance ?? Number.POSITIVE_INFINITY)
+								: Number.POSITIVE_INFINITY,
+						),
+					Number.POSITIVE_INFINITY,
+				),
 			);
 
 			d.node(joinedId, {
@@ -226,40 +302,37 @@ export const render = (
 				egoIdentity.born,
 				options.dateRenderer,
 			);
+			const didDie = egoIdentity.died !== undefined;
 			const diedString =
 				egoIdentity.died === null
 					? ""
-					: uncertainEventToDateString(egoIdentity.died, options.dateRenderer);
+					: egoIdentity === undefined
+						? undefined
+						: uncertainEventToDateString(
+								egoIdentity.died,
+								options.dateRenderer,
+							);
 			const diedSymbol =
 				egoIdentity.died?.inMilitaryService === true ||
 				egoIdentity.died?.inMilitaryService === null
 					? "⚔︎"
 					: "✝︎";
 
-			const relations = egoIdentity.relations ?? [];
-			const _marriages = relations.filter((_) => "marriedTo" in _);
-			const fatherhoods = relations.filter((_) => "fatherOf" in _);
-			const motherhoods = relations.filter((_) => "motherOf" in _);
-
-			let _chromosomes: "M" | "W" | undefined;
-			if (0 < fatherhoods.length) {
-				_chromosomes = "M";
-			}
-
-			if (0 < motherhoods.length) {
-				_chromosomes = "W";
-			}
-
 			const title =
 				(egoIdentity.name ?? egoIdentity.id) +
-				(bornString !== undefined ? `\n* ${bornString}` : "") +
-				(diedString !== undefined ? `\n${diedSymbol} ${diedString}` : "") +
-				`\n${ego.distance ?? "?"}`;
+				(options.debug ? ` (${ego.distance?.toFixed() ?? "?"})` : "") +
+				(bornString !== "" ? `\n* ${bornString}` : "") +
+				(didDie
+					? diedString !== ""
+						? `\n${diedSymbol} ${diedString}`
+						: `\n${diedSymbol}`
+					: "");
 
 			const nodeProperties = computeNodeProperties(
 				title,
 				new Set([egoIdentity]),
 				egoIdentity,
+				ego.distance,
 			);
 
 			d.node(egoIdentity.id, nodeProperties);
@@ -286,7 +359,14 @@ export const render = (
 		for (const relation of relations) {
 			try {
 				const timeline = timelines[graph.ids.indexOf(subject.identity)];
-				const color = colors.get(timeline?.meta.id)?.pen ?? "#808080FF";
+				const node = graph.node(subject.identity);
+				const opacity = opacityFromDistance(
+					node instanceof Child ? node.distance : undefined,
+				);
+				const color = setOpacity(
+					colors.get(timeline?.meta.id)?.pen ?? "#808080FF",
+					opacity,
+				);
 				const style = mustExist(
 					options.styleSheet?.get(options.ranks?.get(timeline?.meta.id) ?? -1),
 				);
@@ -305,7 +385,15 @@ export const render = (
 						);
 					}
 
-					const joinerId = Joiner.makeJoinId(father, mother);
+					const dnaRoot = uncertainEventToDate(
+						graph.marriageInDnaScope(childIdentity.id),
+					);
+
+					const joinerId = Joiner.makeJoinId(
+						father,
+						mother,
+						dnaRoot?.toISOString(),
+					);
 					d.link(subject.identity, joinerId, {
 						arrowhead: "none",
 						color,
@@ -320,6 +408,7 @@ export const render = (
 					// We only link the mother
 					//d.link(joinerId, relation.fatherOf, { headport: "e", tailport: "w" });
 				} else if ("motherOf" in relation) {
+					const subjectIdentity = mustExist(graph.identity(subject.identity));
 					const childIdentity = mustExist(
 						graph.identity(relation.motherOf),
 						`identity '${subject.identity}' declares to be mother of unknown identity: '${relation.motherOf}'`,
@@ -333,13 +422,23 @@ export const render = (
 						);
 					}
 
-					const joinerId = Joiner.makeJoinId(father, mother);
-					const age = undefined;
-					// 	subject.identity.born?.date !== undefined &&
-					// 	offspring.identity.born?.date !== undefined
-					// 		? new Date(offspring.identity.born?.date).valueOf() -
-					// 			new Date(subject.identity.born.date).valueOf()
-					// 		: undefined;
+					const dnaRoot = uncertainEventToDate(
+						graph.marriageInDnaScope(childIdentity.id),
+					);
+
+					const joinerId = Joiner.makeJoinId(
+						father,
+						mother,
+						dnaRoot?.toISOString(),
+					);
+					const subjectBorn = uncertainEventToDate(subjectIdentity.born);
+					const childBorn = uncertainEventToDate(childIdentity.born);
+					const age =
+						options.debug &&
+						subjectBorn !== undefined &&
+						childBorn !== undefined
+							? childBorn.valueOf() - subjectBorn.valueOf()
+							: undefined;
 
 					d.link(subject.identity, joinerId, {
 						arrowhead: "none",
@@ -355,8 +454,11 @@ export const render = (
 
 					const timelineMotherOf =
 						timelines[graph.ids.indexOf(relation.motherOf)];
-					const colorMotherOf =
-						colors.get(timelineMotherOf?.meta.id)?.pen ?? "#808080FF";
+					const nodeMotherOf = graph.node(relation.motherOf) as Child;
+					const colorMotherOf = setOpacity(
+						colors.get(timelineMotherOf?.meta.id)?.pen ?? "#808080FF",
+						opacityFromDistance(nodeMotherOf.distance),
+					);
 					const styleMotherOf = mustExist(
 						options.styleSheet?.get(
 							options.ranks?.get(timelineMotherOf?.meta.id) ?? -1,
@@ -380,23 +482,32 @@ export const render = (
 					});
 				} else if ("marriedTo" in relation) {
 					const marriage = relation as Marriage;
-					const subjectIdentity = graph.identity(subject.identity);
+					const subjectIdentity = mustExist(graph.identity(subject.identity));
+					const subjectBorn = uncertainEventToDate(subjectIdentity.born);
+					const date = uncertainEventToDate(relation);
 					const age =
-						subjectIdentity?.born?.date !== undefined &&
-						relation.date !== undefined
-							? new Date(relation.date).valueOf() -
-								new Date(subjectIdentity.born.date).valueOf()
+						options.debug && subjectBorn !== undefined && date !== undefined
+							? date.valueOf() - subjectBorn.valueOf()
 							: undefined;
 
 					const ego = subject.identity;
 					const marriedTo = marriage.marriedTo;
-					const joinerId = Joiner.makeJoinId(ego, marriedTo, relation.date);
-					// TODO: Only link, if no shared children during marriage.
+
+					const joinerId = Joiner.makeJoinId(
+						ego,
+						marriedTo,
+						date?.toISOString(),
+					);
+					const children =
+						date !== undefined
+							? 0 < graph.childrenDuring(ego, date).length
+							: false;
+
 					d.link(ego, joinerId, {
 						arrowhead: "none",
 						color,
 						headport: "e",
-						penwidth: style.outline ? style.penwidth : 0.5,
+						penwidth: style.outline && children ? style.penwidth : 0.5,
 						style:
 							style.style?.includes("dashed") || style.link === false
 								? "dashed"
