@@ -33,6 +33,11 @@ properties:
       name:
         title: Name
         type: string
+      urls:
+        title: URLs
+        type: array
+        items:
+          type: string
       # Location
       established:
         title: Establishment Information
@@ -140,6 +145,13 @@ properties:
         type: array
         items:
           anyOf:
+            - title: Link
+              type: object
+              required:
+                - linkedTo
+              properties:
+                linkedTo:
+                  type: string
             - title: Marriage
               type: object
               required:

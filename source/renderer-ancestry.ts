@@ -320,7 +320,7 @@ export const render = (
 
 			const title =
 				(egoIdentity.name ?? egoIdentity.id) +
-				(options.debug ? ` (${ego.distance?.toFixed() ?? "?"})` : "") +
+				(options.debug ? ` (${ego.distance?.toFixed() ?? "∞"})` : "") +
 				(bornString !== "" ? `\n* ${bornString}` : "") +
 				(didDie
 					? diedString !== ""
