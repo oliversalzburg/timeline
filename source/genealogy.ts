@@ -12,11 +12,17 @@ export const parseStringAsDate = (input?: string, offset = 0) => {
 	if (input === undefined) {
 		return undefined;
 	}
+	let date: Date | undefined;
 	if (input.length === 4) {
 		const year = Number(input);
-		return new Date(new Date(year, 0).valueOf() + offset);
+		date = new Date(new Date(year, 0).valueOf() + offset);
 	}
-	return new Date(Date.parse(input) + offset);
+
+	date ??= new Date(Date.parse(input) + offset);
+	if (Number.isNaN(date.valueOf())) {
+		throw new InvalidOperationError(`date string '${input}' is invalid`);
+	}
+	return date;
 };
 
 export const uncertainEventToDate = (input?: Event | null) => {
@@ -456,6 +462,10 @@ export const identityGraph = (
 		const subjects = marriage(motherNode.identity, fatherNode.identity);
 		return subjects[0];
 	};
+
+	const trim = (distance=100)=>{
+		
+	}
 
 	return {
 		ids,
