@@ -10,6 +10,7 @@ import {
 } from "./genealogy.js";
 import { matchLuminance, setOpacity } from "./palette.js";
 import type { RendererOptions } from "./renderer.js";
+import type { Style } from "./styles.js";
 import type { Identity, Marriage, TimelineAncestryRenderer } from "./types.js";
 
 export class Child {
@@ -98,6 +99,13 @@ export const render = (
 					distance !== undefined ? Math.max(0, 255 - distance * 30) : 0,
 				);
 
+	const computePenWidth = (style: Style, isOrigin = false) => {
+		if (options.debug === true) {
+			return isOrigin ? 5 : 1;
+		}
+		return style.outline ? style.penwidth : 0.5;
+	};
+
 	const computeNodeProperties = (
 		title: string,
 		contributors: Set<Identity>,
@@ -168,7 +176,7 @@ export const render = (
 					: `${fillcolors[0]}:${fillcolors[1]}`,
 			fontcolor,
 			label,
-			penwidth: style.outline ? style.penwidth : 0.5,
+			penwidth: computePenWidth(style, distance === 0),
 			shape: "oval",
 			style: style.style?.join(","),
 		};
@@ -398,7 +406,7 @@ export const render = (
 						arrowhead: "none",
 						color,
 						headport: "e",
-						penwidth: style.outline ? style.penwidth : 0.5,
+						penwidth: computePenWidth(style),
 						style:
 							style.style?.includes("dashed") || style.link === false
 								? "dashed"
@@ -444,7 +452,7 @@ export const render = (
 						arrowhead: "none",
 						color,
 						headport: "e",
-						penwidth: style.outline ? style.penwidth : 0.5,
+						penwidth: computePenWidth(style),
 						style:
 							style.style?.includes("dashed") || style.link === false
 								? "dashed"
@@ -472,7 +480,7 @@ export const render = (
 								? millisecondsAsYears(age).toFixed()
 								: undefined,
 						headport: "e",
-						penwidth: styleMotherOf.outline ? styleMotherOf.penwidth : 0.5,
+						penwidth: computePenWidth(styleMotherOf),
 						style:
 							styleMotherOf.style?.includes("dashed") ||
 							styleMotherOf.link === false
@@ -498,7 +506,7 @@ export const render = (
 						marriedTo,
 						date?.toISOString(),
 					);
-					const children =
+					const _children =
 						date !== undefined
 							? 0 < graph.childrenDuring(ego, date).length
 							: false;
@@ -507,7 +515,7 @@ export const render = (
 						arrowhead: "none",
 						color,
 						headport: "e",
-						penwidth: style.outline && children ? style.penwidth : 0.5,
+						penwidth: computePenWidth(style),
 						style:
 							style.style?.includes("dashed") || style.link === false
 								? "dashed"
