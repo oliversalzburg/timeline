@@ -109,7 +109,7 @@ for (const segment of segments) {
 		offsetY + svgHeightAdjusted,
 	);
 
-	process.stderr.write(`${segment}: ${translation}\n`);
+	process.stderr.write(`${segment}: ${svgMeta.width} -> ${translation}\n`);
 
 	svg = svg.replace(/translate\(0 [^)]+\)/, `translate(${translation})`);
 
@@ -123,7 +123,7 @@ buffer.unshift(
 	[
 		`<?xml version="1.0" encoding="UTF-8" standalone="no"?>`,
 		`<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">`,
-		`<svg width="${boundingBox.right - boundingBox.left}pt" height="${boundingBox.bottom}pt" viewBox="0.00 0.00 ${boundingBox.right - boundingBox.left} ${boundingBox.bottom}" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">`,
+		`<svg width="${boundingBox.right - boundingBox.left}pt" height="${boundingBox.bottom}pt" viewBox="0.00 ${boundingBox.left} ${boundingBox.right - boundingBox.left} ${boundingBox.bottom}" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">`,
 	].join("\n"),
 );
 buffer.push("</svg>");

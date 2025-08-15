@@ -63,6 +63,7 @@ export const render = (
 	const graph = identityGraph(timelines);
 	if (options.origin !== undefined) {
 		graph.distance(options.origin);
+		graph.trim();
 	}
 
 	const colors = mustExist(options.palette?.lookup);
@@ -235,6 +236,11 @@ export const render = (
 				joiner.who[1],
 				joiner.date,
 			);
+
+			if (graph.node(joinedId) === null) {
+				continue;
+			}
+
 			if (d.has(joinedId)) {
 				throw new InvalidOperationError(
 					`unexpected join ID collision on '${joinedId}'`,
@@ -267,7 +273,10 @@ export const render = (
 					: undefined;
 
 			const contributors = joiner.who.map((_) =>
-				mustExist(graph.identity(graph.rootId(_)), `unknown identity: '${_}'`),
+				mustExist(
+					graph.identity(graph.rootId(_)),
+					`can't look up contributing unknown identity: '${_}'`,
+				),
 			);
 			const contributorNodes = contributors.map((_) => graph.node(_.id));
 			const { father } = computeMarriageProperties(ego, spouse);
@@ -506,6 +515,11 @@ export const render = (
 						marriedTo,
 						date?.toISOString(),
 					);
+
+					if (graph.node(joinerId) === undefined) {
+						continue;
+					}
+
 					const _children =
 						date !== undefined
 							? 0 < graph.childrenDuring(ego, date).length

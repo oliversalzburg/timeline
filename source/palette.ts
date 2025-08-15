@@ -25,7 +25,7 @@ export const fillColorForPen = (
 	const rgb = hsl2rgb(
 		hsl[0],
 		hsl[1],
-		Math.min(1, hsl[2] * (theme === "light" ? 1.8 : 0.5)),
+		Math.min(1, hsl[2] * (theme === "light" ? 1.9 : 0.5)),
 	);
 	return [
 		Math.trunc(rgb[0] * 255),

@@ -105,9 +105,9 @@ export const uncertainEventToDateString = (
 export interface IdentityGraph {
 	ids: Array<string | null>;
 	identities: Array<Identity | null>;
-	nodes: Array<Child | Alias | Joiner>;
-	identity: (id: string) => Identity | null;
-	node: (id: string) => Child | Alias | Joiner;
+	nodes: Array<Child | Alias | Joiner | null>;
+	identity: (id: string) => Identity | undefined;
+	node: (id: string) => Child | Alias | Joiner | undefined;
 	motherOf: (id: string) => Child | Alias;
 	fatherOf: (id: string) => Child | Alias;
 	marriage: (id: string, spouse?: string) => Array<Marriage>;
@@ -116,17 +116,19 @@ export interface IdentityGraph {
 	distance: (a: string, b?: string) => void;
 	joins: (a: string, b: string) => Array<Joiner>;
 	childrenDuring: (id: string, after: Date, before?: Date) => Array<string>;
+	trim: (distance?: number) => void;
 }
 export const identityGraph = (
 	timelines: Array<Timeline & { meta: { identity?: Identity } }>,
 ): IdentityGraph => {
 	const ids = new Array<string | null>(timelines.length);
 	const identities = new Array<Identity | null>(timelines.length);
-	const nodes = new Array<Child | Alias | Joiner>(timelines.length);
+	const nodes = new Array<Child | Alias | Joiner | null>(timelines.length);
 
 	for (const _ in timelines) {
 		identities[_] = timelines[_].meta.identity ?? null;
 		ids[_] = identities[_] === null ? null : identities[_].id;
+		nodes[_] = null;
 	}
 
 	let randomIndex = 1;
@@ -160,8 +162,8 @@ export const identityGraph = (
 		rootIdForNode(nodes[ids.indexOf(id)] as Child | Alias);
 	const rootIdForNode = (_: Child | Alias) =>
 		_ instanceof Alias ? _.origin : _.identity;
-	const identity = (id: string) => identities[ids.indexOf(id)];
-	const node = (id: string) => nodes[ids.indexOf(id)];
+	const identity = (id: string) => identities[ids.indexOf(id)] ?? undefined;
+	const node = (id: string) => nodes[ids.indexOf(id)] ?? undefined;
 	const fatherOf = (id: string) =>
 		nodes[
 			identities.findIndex(
@@ -175,9 +177,12 @@ export const identityGraph = (
 			)
 		] as Child | Alias;
 	const marriage = (id: string, spouse?: string) =>
-		marriedToIn(mustExist(identity(id), `unknown identity '${id}'`)).filter(
-			(_) => (spouse !== undefined ? _.marriedTo === spouse : true),
-		);
+		marriedToIn(
+			mustExist(
+				identity(id),
+				`can't look up marriage for unknown identity '${id}'`,
+			),
+		).filter((_) => (spouse !== undefined ? _.marriedTo === spouse : true));
 
 	// Parse identities and construct relationship graph.
 	for (const _ in identities) {
@@ -213,10 +218,6 @@ export const identityGraph = (
 
 			if (!ids.includes(joinId)) {
 				const who = [identities[_].id, relation.marriedTo];
-				if (marriedAs !== undefined) {
-					who.push(marriedAs);
-				}
-
 				const marriageOnSpouse = marriage(
 					relation.marriedTo,
 					identities[_].id,
@@ -451,9 +452,12 @@ export const identityGraph = (
 		}
 	};
 
-	const joins = (a: string, b: string) =>
+	const joins = (a: string, b?: string) =>
 		nodes.filter(
-			(_) => _ instanceof Joiner && _.who.includes(a) && _.who.includes(b),
+			(_) =>
+				_ instanceof Joiner &&
+				_.who.includes(a) &&
+				(b === undefined || _.who.includes(b)),
 		) as Array<Joiner>;
 
 	const marriageInDnaScope = (ego: string): Marriage | undefined => {
@@ -463,9 +467,30 @@ export const identityGraph = (
 		return subjects[0];
 	};
 
-	const trim = (distance=100)=>{
-		
-	}
+	const trim = (distance = 100) => {
+		for (const _ in identities) {
+			if (identities[_] === null) {
+				continue;
+			}
+
+			const subjectNode = node(identities[_].id);
+			if (subjectNode instanceof Child === false) {
+				continue;
+			}
+
+			if (distance < (subjectNode.distance ?? Number.POSITIVE_INFINITY)) {
+				const joinNodes = joins(mustExist(ids[_]));
+				for (const joinNode of joinNodes) {
+					const joinNodeIndex = nodes.indexOf(joinNode);
+					ids[joinNodeIndex] = null;
+					nodes[joinNodeIndex] = null;
+				}
+				identities[_] = null;
+				ids[_] = null;
+				nodes[_] = null;
+			}
+		}
+	};
 
 	return {
 		ids,
@@ -481,5 +506,6 @@ export const identityGraph = (
 		distance,
 		joins,
 		childrenDuring,
+		trim,
 	};
 };

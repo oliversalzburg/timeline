@@ -49,7 +49,7 @@ export const rank = (
 		const meta = timeline.meta;
 		if ("identity" in meta) {
 			const identity = meta.identity;
-			const child = ancestryGraph.node(identity.id);
+			const child = mustExist(ancestryGraph.node(identity.id));
 			if ("distance" in child && child.distance !== undefined) {
 				rank = 100 - child.distance;
 			}
