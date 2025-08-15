@@ -63,7 +63,9 @@ export const render = (
 	const graph = identityGraph(timelines);
 	if (options.origin !== undefined) {
 		graph.distance(options.origin);
-		graph.trim();
+		if (options.debug !== true) {
+			graph.trim();
+		}
 	}
 
 	const colors = mustExist(options.palette?.lookup);
@@ -224,6 +226,7 @@ export const render = (
 		if (identity instanceof Joiner) {
 			const joiner = identity as Joiner;
 
+			// Skip creating DNA joiner nodes, if the same people are also married.
 			if (joiner.type === "dna") {
 				const joins = graph.joins(joiner.who[0], joiner.who[1]);
 				if (joins.some((_) => _.type === "marriage")) {

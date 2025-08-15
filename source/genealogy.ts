@@ -118,6 +118,7 @@ export interface IdentityGraph {
 	childrenDuring: (id: string, after: Date, before?: Date) => Array<string>;
 	trim: (distance?: number) => void;
 }
+
 export const identityGraph = (
 	timelines: Array<Timeline & { meta: { identity?: Identity } }>,
 ): IdentityGraph => {
@@ -125,15 +126,20 @@ export const identityGraph = (
 	const identities = new Array<Identity | null>(timelines.length);
 	const nodes = new Array<Child | Alias | Joiner | null>(timelines.length);
 
+	// Initialize slots for provided timelines.
+	// Every timeline identity will receive its dedicated slot for a node.
+	// Additional nodes are appended to the collections.
 	for (const _ in timelines) {
 		identities[_] = timelines[_].meta.identity ?? null;
 		ids[_] = identities[_] === null ? null : identities[_].id;
 		nodes[_] = null;
 	}
 
-	let randomIndex = 1;
+	// Helper code to generate missing parent identities.
+	let generatedMaleIndex = 0;
+	let generatedFemaleIndex = 0;
 	const generateMale = (): Child => {
-		const name = `Unbekannter Mann ${randomIndex++}`;
+		const name = `Unbekannter Mann ${++generatedMaleIndex}`;
 		const child = new Child(name);
 		identities.push({ id: name, name, relations: [] });
 		ids.push(name);
@@ -141,7 +147,7 @@ export const identityGraph = (
 		return child;
 	};
 	const generateFemale = (): Child => {
-		const name = `Unbekannte Frau ${randomIndex++}`;
+		const name = `Unbekannte Frau ${++generatedFemaleIndex}`;
 		const child = new Child(name);
 		identities.push({ id: name, name, relations: [] });
 		ids.push(name);
@@ -468,6 +474,7 @@ export const identityGraph = (
 	};
 
 	const trim = (distance = 100) => {
+		// Initial pass. Delete childless nodes, and joins they are involved in.
 		for (const _ in identities) {
 			if (identities[_] === null) {
 				continue;
@@ -479,6 +486,14 @@ export const identityGraph = (
 			}
 
 			if (distance < (subjectNode.distance ?? Number.POSITIVE_INFINITY)) {
+				// Don't trim parents during this pass.
+				if (
+					subjectNode.distance !== undefined &&
+					0 < subjectNode.children.length
+				) {
+					continue;
+				}
+
 				const joinNodes = joins(mustExist(ids[_]));
 				for (const joinNode of joinNodes) {
 					const joinNodeIndex = nodes.indexOf(joinNode);
