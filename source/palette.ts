@@ -207,6 +207,10 @@ export const matchLuminance = (toAdjust: string, target: string): string => {
 };
 
 export const setOpacity = (color: string, opacity: number): string => {
+	if (color === TRANSPARENT) {
+		return TRANSPARENT;
+	}
+
 	const componentsBase = mustExist(color.substring(1).match(/../g)).map((x) =>
 		Number.parseInt(x, 16),
 	);

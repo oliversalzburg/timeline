@@ -79,7 +79,7 @@ export const render = (
 		options.debug || options.theme === "light" ? "#FFFFFF" : "#000000";
 	const defaultForeground =
 		options.debug || options.theme === "light" ? "#000000" : "#FFFFFF";
-	const rankdir: RankDir = "TD";
+	const rankdir: RankDir = "RL";
 
 	const d = dot();
 	d.raw("digraph ancestry {");
@@ -94,8 +94,8 @@ export const render = (
 	d.raw('concentrate="true"');
 	d.raw(`fontcolor="${defaultForeground}"`);
 	d.raw(`fontname="${FONT_NAME}"`);
-	d.raw(`fontsize="${FONT_SIZE}"`);
-	d.raw('label=" "');
+	d.raw(`fontsize="${FONT_SIZE * 10}"`);
+	d.raw(`label="${options.origin}"`);
 	d.raw(`rankdir="${rankdir}"`);
 	d.raw(`ranksep="3"`);
 	d.raw(`tooltip=" "`);
@@ -204,10 +204,8 @@ export const render = (
 		return nodeProperties;
 	};
 
-	const pointTowards = (
-		rankdir: RankDir,
-	): { headport: PortPos; tailport: PortPos } => {
-		switch (rankdir) {
+	const pointTowards = (): { headport: PortPos; tailport: PortPos } => {
+		switch (rankdir as RankDir) {
 			case "LR":
 				return {
 					headport: "w",
@@ -347,11 +345,13 @@ export const render = (
 
 			d.node(joinedId, {
 				...nodeProperties,
-				fontsize: identity.type === "dna" ? undefined : FONT_SIZE + 2,
+				fontsize: identity.type === "dna" ? 0 : FONT_SIZE + 2,
 				height: identity.type === "dna" ? 0 : 2,
-				label: identity.type === "dna" ? "" : nodeProperties.label,
-				shape: identity.type === "dna" ? "none" : "oval",
-				style: identity.type === "dna" ? "invis" : nodeProperties.style,
+				label: identity.type === "dna" ? undefined : nodeProperties.label,
+				margin: identity.type === "dna" ? 0 : undefined,
+				penwidth: identity.type === "dna" ? 0 : nodeProperties.penwidth,
+				shape: identity.type === "dna" ? "point" : "oval",
+				style: identity.type === "dna" ? undefined : nodeProperties.style,
 				width: identity.type === "dna" ? 0 : 3,
 			});
 			continue;
@@ -450,6 +450,7 @@ export const render = (
 							`identity '${subject.identity}' is father of '${childIdentity.id}', but mother is undefined.`,
 						);
 					}
+
 					if (0 < graph.marriage(father, mother).length) {
 						continue;
 					}
@@ -464,7 +465,7 @@ export const render = (
 						dnaRoot?.toISOString(),
 					);
 					d.link(subject.identity, joinerId, {
-						...pointTowards(rankdir),
+						...pointTowards(),
 						arrowhead: "none",
 						color,
 						penwidth: computePenWidth(style),
@@ -508,17 +509,6 @@ export const render = (
 							? childBorn.valueOf() - subjectBorn.valueOf()
 							: undefined;
 
-					d.link(subject.identity, joinerId, {
-						...pointTowards(rankdir),
-						arrowhead: "none",
-						color,
-						penwidth: computePenWidth(style),
-						style:
-							style.style?.includes("dashed") || style.link === false
-								? "dashed"
-								: "solid",
-					});
-
 					const timelineMotherOf =
 						timelines[graph.ids.indexOf(relation.motherOf)];
 					const nodeMotherOf = graph.node(relation.motherOf) as Child;
@@ -533,7 +523,7 @@ export const render = (
 					);
 
 					d.link(joinerId, relation.motherOf, {
-						...pointTowards(rankdir),
+						...pointTowards(),
 						color: colorMotherOf,
 						headlabel:
 							age !== undefined
@@ -543,6 +533,21 @@ export const render = (
 						style:
 							styleMotherOf.style?.includes("dashed") ||
 							styleMotherOf.link === false
+								? "dashed"
+								: "solid",
+					});
+
+					if (0 < graph.marriage(father, mother).length) {
+						continue;
+					}
+
+					d.link(subject.identity, joinerId, {
+						...pointTowards(),
+						arrowhead: "none",
+						color,
+						penwidth: computePenWidth(style),
+						style:
+							style.style?.includes("dashed") || style.link === false
 								? "dashed"
 								: "solid",
 					});
@@ -569,13 +574,8 @@ export const render = (
 						continue;
 					}
 
-					const _children =
-						date !== undefined
-							? 0 < graph.childrenDuring(ego, date).length
-							: false;
-
 					d.link(ego, joinerId, {
-						...pointTowards(rankdir),
+						...pointTowards(),
 						arrowhead: "none",
 						color,
 						penwidth: computePenWidth(style),
