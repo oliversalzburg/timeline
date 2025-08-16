@@ -79,12 +79,24 @@ export const render = (
 		options.debug || options.theme === "light" ? "#FFFFFF" : "#000000";
 	const defaultForeground =
 		options.debug || options.theme === "light" ? "#000000" : "#FFFFFF";
+	const fonts = [
+		// Serif
+		"DejaVu Serif",
+		// Florar
+		"Mollani",
+		// Fraktur
+		"Morsten",
+		// Elegant
+		"Switzerland",
+		"Billa Mount",
+	];
+	const fontNode = "DejaVu Serif";
 	const rankdir: RankDir = "RL";
 
 	const d = dot();
 	d.raw("digraph ancestry {");
 	d.raw(
-		`node [fontcolor="${defaultForeground}"; fontname="${FONT_NAME}"; fontsize="${FONT_SIZE}";]`,
+		`node [fontcolor="${defaultForeground}"; fontname="${fontNode}"; fontsize="${FONT_SIZE}";]`,
 	);
 	d.raw(
 		`edge [color="${defaultForeground}"; fontcolor="${defaultForeground}"; fontname="${FONT_NAME}"; fontsize="${FONT_SIZE}";]`,
@@ -92,10 +104,11 @@ export const render = (
 	d.raw(`bgcolor="${defaultBackground}"`);
 	d.raw('comment=" "');
 	d.raw('concentrate="true"');
-	d.raw(`fontcolor="${defaultForeground}"`);
-	d.raw(`fontname="${FONT_NAME}"`);
-	d.raw(`fontsize="${FONT_SIZE * 10}"`);
+	d.raw(`fontcolor="${setOpacity(defaultForeground, 80)}"`);
+	d.raw(`fontname="Billa Mount"`);
+	d.raw(`fontsize="${FONT_SIZE * 20}"`);
 	d.raw(`label="${options.origin}"`);
+	d.raw(`labeljust="l"`);
 	d.raw(`rankdir="${rankdir}"`);
 	d.raw(`ranksep="3"`);
 	d.raw(`tooltip=" "`);
@@ -193,38 +206,40 @@ export const render = (
 					: `${fillcolors[0]}:${fillcolors[1]}`,
 			fixedsize: true,
 			fontcolor,
-			height: 1,
+			height: 0.75,
 			label,
 			penwidth: computePenWidth(style, distance === 0),
 			shape: "box", //"oval",
 			style: style.style?.join(","),
-			width: 3,
+			width: 3.5,
 		};
 
 		return nodeProperties;
 	};
 
-	const pointTowards = (): { headport: PortPos; tailport: PortPos } => {
+	const pointTowards = (
+		unfixed = false,
+	): { headport?: PortPos; tailport?: PortPos } => {
 		switch (rankdir as RankDir) {
 			case "LR":
 				return {
-					headport: "w",
-					tailport: "e",
+					headport: unfixed ? undefined : "w",
+					tailport: unfixed ? undefined : "e",
 				};
 			case "RL":
 				return {
-					headport: "e",
-					tailport: "w",
+					headport: unfixed ? undefined : "e",
+					tailport: unfixed ? undefined : "w",
 				};
 			case "TD":
 				return {
-					headport: "n",
-					tailport: "s",
+					headport: unfixed ? undefined : "n",
+					tailport: unfixed ? undefined : "s",
 				};
 			case "DT":
 				return {
-					headport: "s",
-					tailport: "n",
+					headport: unfixed ? undefined : "s",
+					tailport: unfixed ? undefined : "n",
 				};
 		}
 	};
@@ -345,14 +360,14 @@ export const render = (
 
 			d.node(joinedId, {
 				...nodeProperties,
-				fontsize: identity.type === "dna" ? 0 : FONT_SIZE + 2,
-				height: identity.type === "dna" ? 0 : 2,
+				fontsize: identity.type === "dna" ? 0 : FONT_SIZE,
+				height: identity.type === "dna" ? 0 : 1,
 				label: identity.type === "dna" ? undefined : nodeProperties.label,
 				margin: identity.type === "dna" ? 0 : undefined,
 				penwidth: identity.type === "dna" ? 0 : nodeProperties.penwidth,
 				shape: identity.type === "dna" ? "point" : "oval",
 				style: identity.type === "dna" ? undefined : nodeProperties.style,
-				width: identity.type === "dna" ? 0 : 3,
+				width: identity.type === "dna" ? 0 : 4,
 			});
 			continue;
 		}

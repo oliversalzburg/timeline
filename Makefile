@@ -76,7 +76,7 @@ pedigree: $(_AUTO_TIMELINES) lib node_modules | output
 	@node --enable-source-maps examples/ancestry.js \
 		$(_ANCESTRY_FLAGS) \
 		--output=output/ancestry.gv $(_AUTO_TIMELINES)
-	@dot -Gpad=2 -O -Tpng -Tsvg output/ancestry.gv
+	@dot -Gpad=2 -O -Tpng -Tsvg -Tsvg:cairo output/ancestry.gv
 
 # Compress an SVG by applying lossy XML transformations.
 %.min.svg: %.svg
