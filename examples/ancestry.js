@@ -121,7 +121,11 @@ const ranks = new Map(
 	data.values().map((_) => [_.meta.id, rank(_, ancestryGraph)]),
 );
 // Genreate stylesheet.
-const styleSheet = styles([...ranks.values()]).toStyleSheet();
+const rankValues = [...ranks.values()];
+const styleSheet = styles(rankValues).toStyleSheet();
+process.stdout.write(
+	`Generated style sheet has ${styleSheet.size} entries for ${new Set(rankValues).size} unique ranks.\n`,
+);
 
 // Write GraphViz graph
 process.stdout.write(`Generating GraphViz graph for ancestry chart...\n`);

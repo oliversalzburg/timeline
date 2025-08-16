@@ -47,6 +47,23 @@ if ("identity" in timeline.meta === false) {
 	process.exit(0);
 }
 
+if ("urls" in timeline.meta.identity === false) {
+	process.stderr.write(
+		`Warning: Missing 'urls' section in identity in '${args.target}'.\n`,
+	);
+} else {
+	if (!timeline.meta.identity.urls?.some((_) => _.match(/ancestry.com/))) {
+		process.stderr.write(
+			`Notice: Missing 'ancestry.com' URL in identity in '${args.target}'.\n`,
+		);
+	}
+	if (!timeline.meta.identity.urls?.some((_) => _.match(/familysearch.org/))) {
+		process.stderr.write(
+			`Notice: Missing 'familysearch.org' URL in identity in '${args.target}'.\n`,
+		);
+	}
+}
+
 const name = timeline.meta.identity.name ?? timeline.meta.identity.id;
 if (timeline.meta.identity.born === undefined) {
 	process.stderr.write(

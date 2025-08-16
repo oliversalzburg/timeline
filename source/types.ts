@@ -90,6 +90,7 @@ export interface Death extends Event {
 }
 export interface Identity {
 	id: string;
+	urls?: Array<string>;
 	established?: Event | null;
 	dissolved?: Event | null;
 	position?: Location;

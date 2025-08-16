@@ -1,7 +1,13 @@
 import { mustExist } from "@oliversalzburg/js-utils/data/nil.js";
 import { InvalidOperationError } from "@oliversalzburg/js-utils/errors/InvalidOperationError.js";
 import { FONT_NAME, FONT_SIZE, TRANSPARENT } from "./constants.js";
-import { dot, makeHtmlString, type NodeProperties } from "./dot.js";
+import {
+	dot,
+	makeHtmlString,
+	type NodeProperties,
+	type PortPos,
+	type RankDir,
+} from "./dot.js";
 import {
 	identityGraph,
 	millisecondsAsYears,
@@ -73,6 +79,7 @@ export const render = (
 		options.debug || options.theme === "light" ? "#FFFFFF" : "#000000";
 	const defaultForeground =
 		options.debug || options.theme === "light" ? "#000000" : "#FFFFFF";
+	const rankdir: RankDir = "TD";
 
 	const d = dot();
 	d.raw("digraph ancestry {");
@@ -89,8 +96,8 @@ export const render = (
 	d.raw(`fontname="${FONT_NAME}"`);
 	d.raw(`fontsize="${FONT_SIZE}"`);
 	d.raw('label=" "');
-	d.raw(`rankdir="RL"`);
-	d.raw(`ranksep="1"`);
+	d.raw(`rankdir="${rankdir}"`);
+	d.raw(`ranksep="3"`);
 	d.raw(`tooltip=" "`);
 
 	const name = (_?: Identity | null | undefined) => _?.name ?? _?.id ?? _;
@@ -106,7 +113,8 @@ export const render = (
 		if (options.debug === true) {
 			return isOrigin ? 5 : 1;
 		}
-		return style.outline ? style.penwidth : 0.5;
+		const p = style.penwidth / 3;
+		return style.outline ? p * p : 0.5;
 	};
 
 	const computeNodeProperties = (
@@ -119,6 +127,7 @@ export const render = (
 		const contributorsTimelines = [...contributors.values()].map(
 			(_) => timelines[graph.ids.indexOf(_.id)],
 		);
+
 		const leaderTimeline =
 			leader !== undefined
 				? timelines[graph.ids.indexOf(leader.id)]
@@ -129,6 +138,7 @@ export const render = (
 				?.pen ?? "#808080FF",
 			opacity,
 		);
+
 		const fillcolors = contributorsTimelines.reduce((fillColors, timeline) => {
 			const fill = colors.get(timeline?.meta.id)?.fill ?? TRANSPARENT;
 
@@ -152,17 +162,21 @@ export const render = (
 			);
 			return fillColors;
 		}, new Array<string>());
+
 		const fontcolor = setOpacity(
 			colors.get(leaderTimeline?.meta.id ?? contributorsTimelines[0]?.meta.id)
 				?.font ?? defaultForeground,
 			opacity,
 		);
+
 		const prefixes = contributorsTimelines
 			.values()
 			.reduce((_, timeline) => _ + (timeline?.meta.prefix ?? ""), "");
+
 		const label = `${0 < prefixes.length ? `${prefixes}\u00A0` : ""}${makeHtmlString(
 			`${title}`,
 		)}`;
+
 		const style = mustExist(
 			options.styleSheet?.get(
 				options.ranks?.get(
@@ -177,14 +191,44 @@ export const render = (
 				fillcolors.length === 1
 					? fillcolors[0]
 					: `${fillcolors[0]}:${fillcolors[1]}`,
+			fixedsize: true,
 			fontcolor,
+			height: 1,
 			label,
 			penwidth: computePenWidth(style, distance === 0),
-			shape: "oval",
+			shape: "box", //"oval",
 			style: style.style?.join(","),
+			width: 3,
 		};
 
 		return nodeProperties;
+	};
+
+	const pointTowards = (
+		rankdir: RankDir,
+	): { headport: PortPos; tailport: PortPos } => {
+		switch (rankdir) {
+			case "LR":
+				return {
+					headport: "w",
+					tailport: "e",
+				};
+			case "RL":
+				return {
+					headport: "e",
+					tailport: "w",
+				};
+			case "TD":
+				return {
+					headport: "n",
+					tailport: "s",
+				};
+			case "DT":
+				return {
+					headport: "s",
+					tailport: "n",
+				};
+		}
 	};
 
 	const computeMarriageProperties = (ego: string, spouse: string) => {
@@ -303,10 +347,12 @@ export const render = (
 
 			d.node(joinedId, {
 				...nodeProperties,
-				height: identity.type === "dna" ? 0 : undefined,
-				shape: identity.type === "dna" ? "point" : "ellipse",
+				fontsize: identity.type === "dna" ? undefined : FONT_SIZE + 2,
+				height: identity.type === "dna" ? 0 : 2,
+				label: identity.type === "dna" ? "" : nodeProperties.label,
+				shape: identity.type === "dna" ? "none" : "oval",
 				style: identity.type === "dna" ? "invis" : nodeProperties.style,
-				width: identity.type === "dna" ? 0 : undefined,
+				width: identity.type === "dna" ? 0 : 3,
 			});
 			continue;
 		}
@@ -404,6 +450,9 @@ export const render = (
 							`identity '${subject.identity}' is father of '${childIdentity.id}', but mother is undefined.`,
 						);
 					}
+					if (0 < graph.marriage(father, mother).length) {
+						continue;
+					}
 
 					const dnaRoot = uncertainEventToDate(
 						graph.marriageInDnaScope(childIdentity.id),
@@ -415,15 +464,14 @@ export const render = (
 						dnaRoot?.toISOString(),
 					);
 					d.link(subject.identity, joinerId, {
+						...pointTowards(rankdir),
 						arrowhead: "none",
 						color,
-						headport: "e",
 						penwidth: computePenWidth(style),
 						style:
 							style.style?.includes("dashed") || style.link === false
 								? "dashed"
 								: "solid",
-						tailport: "w",
 					});
 					// We only link the mother
 					//d.link(joinerId, relation.fatherOf, { headport: "e", tailport: "w" });
@@ -461,15 +509,14 @@ export const render = (
 							: undefined;
 
 					d.link(subject.identity, joinerId, {
+						...pointTowards(rankdir),
 						arrowhead: "none",
 						color,
-						headport: "e",
 						penwidth: computePenWidth(style),
 						style:
 							style.style?.includes("dashed") || style.link === false
 								? "dashed"
 								: "solid",
-						tailport: "w",
 					});
 
 					const timelineMotherOf =
@@ -486,19 +533,18 @@ export const render = (
 					);
 
 					d.link(joinerId, relation.motherOf, {
+						...pointTowards(rankdir),
 						color: colorMotherOf,
 						headlabel:
 							age !== undefined
 								? millisecondsAsYears(age).toFixed()
 								: undefined,
-						headport: "e",
 						penwidth: computePenWidth(styleMotherOf),
 						style:
 							styleMotherOf.style?.includes("dashed") ||
 							styleMotherOf.link === false
 								? "dashed"
 								: "solid",
-						tailport: "w",
 					});
 				} else if ("marriedTo" in relation) {
 					const marriage = relation as Marriage;
@@ -529,9 +575,9 @@ export const render = (
 							: false;
 
 					d.link(ego, joinerId, {
+						...pointTowards(rankdir),
 						arrowhead: "none",
 						color,
-						headport: "e",
 						penwidth: computePenWidth(style),
 						style:
 							style.style?.includes("dashed") || style.link === false
@@ -541,7 +587,6 @@ export const render = (
 							age !== undefined
 								? millisecondsAsYears(age).toFixed()
 								: undefined,
-						tailport: "w",
 					});
 				}
 			} catch (fault) {

@@ -45,6 +45,7 @@ export type PortPos =
 	| "nw"
 	| "c"
 	| "_";
+export type RankDir = "LR" | "RL" | "TD" | "DT";
 export type Shape =
 	| "assembly"
 	| "box"
