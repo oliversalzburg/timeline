@@ -118,7 +118,7 @@ export const render = (
 	d.raw('center="true"');
 	d.raw('comment=" "');
 	//d.raw('concentrate="true"');
-	d.raw(`fontcolor="${setOpacity(defaultForeground, 100)}"`);
+	d.raw(`fontcolor="${defaultForeground}"`);
 	d.raw(`fontname="Blackside Personal Use Only"`);
 	d.raw(`fontsize="${FONT_SIZE * 10}"`);
 	if (originIdentity !== undefined && options.dateRenderer !== undefined) {
@@ -326,6 +326,8 @@ export const render = (
 					identity === originIdentity || originAntecedents?.includes(identity)
 						? defaultForeground
 						: color,
+				fontname: identity === originIdentity ? `${fontNode} bold` : undefined,
+				fontsize: identity === originIdentity ? FONT_SIZE + 4 : undefined,
 				//label: `${name(identity)} (${distance})`,
 				label: `${name(identity)}`,
 				penwidth: 0,
