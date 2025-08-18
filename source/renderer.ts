@@ -14,7 +14,6 @@ import { STYLE_TRANSFER_MARKER, type Style, styles } from "./styles.js";
 import type {
 	RenderMode,
 	TimelineAncestryRenderer,
-	TimelineEntry,
 	TimelineReferenceRenderer,
 } from "./types.js";
 
@@ -86,6 +85,7 @@ export const plan = <
 		events: Array<PlanEvent<TTimelines>>;
 		timelines: Array<TTimelines>;
 		timestamps: Array<number>;
+		weights: Map<TTimelines, number>;
 	}>();
 
 	// A list of every timestamp that is used in any of the given timelines.
@@ -139,9 +139,10 @@ export const plan = <
 				isTransferMarker: true,
 			});
 		}
+		const timelines = [...segmentTimelines];
 		segments.push({
 			events: segmentEvents,
-			timelines: [...segmentTimelines],
+			timelines,
 			timestamps: [
 				...new Set(
 					segmentEvents.map((_) =>
@@ -151,6 +152,12 @@ export const plan = <
 					),
 				),
 			].sort((a, b) => a - b),
+			weights: new Map(
+				timelines.map((_) => [
+					_,
+					segmentEvents.filter((event) => event.timeline === _).length - 1,
+				]),
+			),
 		});
 
 		segmentRanks = 0;
@@ -203,11 +210,12 @@ export const plan = <
 					timestamp: timeline.records[localHistoryIndex][0],
 					isTransferMarker: false,
 				});
+				++segmentRanks;
 				++localHistoryIndex;
 			}
 			localHistoryIndexes[timelineIndex] = localHistoryIndex;
 		}
-		if ((options.segment ?? Number.POSITIVE_INFINITY) < ++segmentRanks) {
+		if ((options.segment ?? Number.POSITIVE_INFINITY) < segmentRanks) {
 			endSegment();
 			startSegment();
 		}
@@ -382,7 +390,6 @@ export const render = <
 			skipDraw: !isTimestampInRange(timestamp),
 			style: style.style?.join(","),
 			tooltip,
-			ts: timestamp,
 			width: isTransferMarker ? 1 : undefined,
 		};
 
@@ -573,6 +580,7 @@ export const render = <
 						event.index !== undefined
 							? event.timeline.records[event.index][1].title
 							: event.title;
+					const timelineWeight = segment.weights.get(event.timeline);
 
 					processedTitles.push(timelineEvent);
 					if (0 === previousEntries.length) {
@@ -598,6 +606,10 @@ export const render = <
 								style.link && !event.isTransferMarker
 									? `${formatMilliseconds(timePassed)} passed`
 									: undefined,
+							weight:
+								style.link && timelineWeight !== undefined
+									? timelineWeight
+									: undefined,
 						});
 					}
 				}
@@ -612,7 +624,7 @@ export const render = <
 
 		// Link up all entries in a single time chain.
 		let previousTimestamp: number | undefined;
-		let previousTimestampEntries = new Array<TimelineEntry>();
+		let previousTimestampEntries = new Array<PlanEvent<TTimelines>>();
 		timePassed = 0;
 		for (const timestamp of timestampsSegment) {
 			timePassed = previousTimestamp
@@ -620,7 +632,7 @@ export const render = <
 				: 0;
 
 			// We need to remember these for the next timestamp iteration.
-			const processedEntries = new Array<TimelineEntry>();
+			const processedEntries = new Array<PlanEvent<TTimelines>>();
 
 			// We now iterate over all global events at the current timestamp.
 			const events = segment.events
@@ -634,14 +646,7 @@ export const render = <
 					continue;
 				}
 
-				if (
-					event.isTransferMarker &&
-					!mustExist(
-						styleSheet.get(
-							mustExist(ranks.get(mustExist(event.timeline.meta.id))),
-						),
-					).link
-				) {
+				if (event.isTransferMarker) {
 					continue;
 				}
 

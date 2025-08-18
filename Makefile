@@ -8,6 +8,7 @@ _HORIZON := $(START)-$(END)
 
 PREFIX ?= universe-
 
+_SOURCES := $(wildcard source/*.ts source/*/*.ts)
 _UNIVERSE_NAME := $(PREFIX)$(_HORIZON)
 _UNIVERSE := output/$(_UNIVERSE_NAME)
 _SEGMENTS := $(wildcard $(_UNIVERSE)-segment*.gv)
@@ -46,7 +47,7 @@ default: build docs universe
 
 build: lib/timeline.js
 
-lib: node_modules
+lib: node_modules $(_SOURCES)
 	@npm exec -- tsc --build tsconfig.json
 
 schema:
