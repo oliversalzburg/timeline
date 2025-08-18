@@ -1,2 +1,2 @@
-check-jsonschema ==0.33.2
+check-jsonschema ==0.33.3
 gprof2dot
