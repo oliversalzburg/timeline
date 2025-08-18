@@ -8,7 +8,6 @@ import { formatMilliseconds } from "@oliversalzburg/js-utils/format/milliseconds
 import { FONT_NAME, FONT_SIZE, TRANSPARENT } from "./constants.js";
 import { dot, makeHtmlString, type NodeProperties } from "./dot.js";
 import { type IdentityGraph, uncertainEventToDate } from "./genealogy.js";
-import { roundToDay } from "./operator.js";
 import { matchLuminance, type PaletteMeta, palette } from "./palette.js";
 import { STYLE_TRANSFER_MARKER, type Style, styles } from "./styles.js";
 import type {
@@ -90,9 +89,7 @@ export const plan = <
 
 	// A list of every timestamp that is used in any of the given timelines.
 	const timestampsUnique = [
-		...new Set(
-			timelines.flatMap((t) => roundToDay(t).records.map(([time, _]) => time)),
-		),
+		...new Set(timelines.flatMap((t) => t.records.map(([time, _]) => time))),
 	];
 
 	// Determine if a given timestamp is in the current window.
@@ -180,6 +177,23 @@ export const plan = <
 			});
 		}
 	};
+
+	// Fast-forward index pointers to start of horizon.
+	for (
+		let timelineIndex = 0;
+		timelineIndex < timelines.length;
+		++timelineIndex
+	) {
+		const timeline = timelines[timelineIndex];
+		let localHistoryIndex = localHistoryIndexes[timelineIndex];
+		while (
+			localHistoryIndex < timeline.records.length &&
+			timeline.records[localHistoryIndex][0] < globalHistory[0]
+		) {
+			++localHistoryIndex;
+		}
+		localHistoryIndexes[timelineIndex] = localHistoryIndex;
+	}
 
 	while (globalHistoryIndex < globalHistory.length) {
 		const timestamp = globalHistory[globalHistoryIndex];
@@ -471,14 +485,16 @@ export const render = <
 						}
 					}
 				} else {
-					const style = mustExist(
+					const _style = mustExist(
 						styleSheet.get(
 							mustExist(ranks.get(mustExist(transferMarker.timeline.meta.id))),
 						),
 					);
+					/*
 					if (!style.link) {
 						continue;
 					}
+						*/
 					leader = transferMarker.timeline;
 					contributors.add(transferMarker.timeline);
 				}
@@ -519,6 +535,7 @@ export const render = <
 						linkedEvents[eventIndex].title,
 						{
 							style: options.debug ? "dashed" : "invis",
+							weight: 1_000_000,
 						},
 					);
 				}
@@ -580,7 +597,7 @@ export const render = <
 						event.index !== undefined
 							? event.timeline.records[event.index][1].title
 							: event.title;
-					const timelineWeight = segment.weights.get(event.timeline);
+					const _timelineWeight = segment.weights.get(event.timeline);
 
 					processedTitles.push(timelineEvent);
 					if (0 === previousEntries.length) {
@@ -606,10 +623,10 @@ export const render = <
 								style.link && !event.isTransferMarker
 									? `${formatMilliseconds(timePassed)} passed`
 									: undefined,
-							weight:
+							/*weight:
 								style.link && timelineWeight !== undefined
 									? timelineWeight
-									: undefined,
+									: undefined,*/
 						});
 					}
 				}
@@ -639,14 +656,61 @@ export const render = <
 				.filter((_) => _.timestamp === timestamp)
 				.sort((a, b) => a.title.localeCompare(b.title));
 
+			const isTimestampTransfer = events.some(
+				(event) => event.isTransferMarker,
+			);
+			if (isTimestampTransfer) {
+				const bestTransferMarker = events.reduce(
+					(previous, current) => {
+						const style = mustExist(
+							styleSheet.get(
+								mustExist(ranks.get(mustExist(current.timeline.meta.id))),
+							),
+						);
+						const weight = segment.weights.get(current.timeline);
+
+						if (style.link && weight !== undefined && previous.score < weight) {
+							previous.timeline = current.timeline;
+							previous.score = weight;
+							previous.event = current;
+						}
+						return previous;
+					},
+					{
+						score: Number.NEGATIVE_INFINITY,
+						timeline: timelines[0],
+						event: events[0],
+					},
+				);
+				processedEntries.push(bestTransferMarker.event);
+				if (bestTransferMarker.event.title.startsWith("TX-OUT")) {
+					if (0 === previousTimestampEntries.length) {
+						continue;
+					}
+
+					for (const previousEntry of previousTimestampEntries) {
+						// Draw rank-forcing link between merged timeline entries.
+						// This forces all entries into a globally linear order.
+						d.link(previousEntry.title, bestTransferMarker.event.title, {
+							skipDraw: !isTimestampInRange(timestamp),
+							style: options.debug ? "dashed" : "invis",
+							tooltip:
+								options.debug && !bestTransferMarker.event.isTransferMarker
+									? `${formatMilliseconds(timePassed)} passed`
+									: undefined,
+						});
+					}
+				}
+				previousTimestamp = timestamp;
+				previousTimestampEntries = processedEntries;
+				continue;
+			}
+
 			for (const event of events) {
 				if (processedEntries.find((_) => _.title === event.title)) {
 					// Events in multiple timelines share time and title.
-					// By skipping here, we automatically end up with only a single node with that identity.
-					continue;
-				}
-
-				if (event.isTransferMarker) {
+					// By skipping here, we automatically end up with only a
+					// single node with that identity.
 					continue;
 				}
 
