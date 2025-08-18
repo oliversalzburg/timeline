@@ -241,7 +241,7 @@ for (const [prefix, config] of Object.entries(PREFIXES)) {
 
 	const cells = [
 		`<TD FIXEDSIZE="TRUE" WIDTH="24" HEIGHT="24"><IMG SRC="${config.src}"/></TD>`,
-		`<TD>\$1</TD>`,
+		`<TD>$1</TD>`,
 	];
 	const row = `<TR>${cells.join()}</TR>`;
 	const table = `<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0" CELLSPACING="5">${row}</TABLE>`;

@@ -77,7 +77,9 @@ const data = new Map(
 );
 
 // Generate palette for universe.
-const p = palette(args.debug ? "light" : "dark");
+/** @type {import("source/types.js").RenderMode} */
+const theme = args.debug || args.theme === "light" ? "light" : "dark";
+const p = palette(theme);
 for (const timeline of data.values()) {
 	p.add(timeline.meta.id, timeline.meta.color);
 }
@@ -134,13 +136,14 @@ const renderOptions = {
 	debug: Boolean(args.debug),
 	dateRenderer: (/** @type {number} */ date) => {
 		const _ = new Date(date);
-		return `${["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"][_.getDay()]}, ${_.getDate().toFixed(0).padStart(2, "0")}.${(_.getMonth() + 1).toFixed(0).padStart(2, "0")}.${_.getFullYear()}`;
+		return `${_.getDate().toFixed(0)}.${(_.getMonth() + 1).toFixed(0)}.${_.getFullYear()}`;
 	},
 	now: NOW,
 	origin: typeof args.origin === "string" ? args.origin : undefined,
 	palette: paletteMeta,
 	ranks,
 	styleSheet,
+	theme,
 };
 const dotGraph = render(finalTimelines, renderOptions);
 

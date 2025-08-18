@@ -22,6 +22,13 @@ export type Arrow =
 	| "tee"
 	| "vee";
 export type Color = string;
+export type EdgeStyle =
+	| "bold"
+	| "dashed"
+	| "dotted"
+	| "invis"
+	| "solid"
+	| "tapered";
 export type NodeStyle =
 	| "bold"
 	| "dashed"
@@ -45,7 +52,7 @@ export type PortPos =
 	| "nw"
 	| "c"
 	| "_";
-export type RankDir = "LR" | "RL" | "TD" | "DT";
+export type RankDir = "LR" | "RL" | "TB" | "BT";
 export type Shape =
 	| "assembly"
 	| "box"
@@ -107,7 +114,7 @@ export type Shape =
 	| "underline"
 	| "utr";
 
-export interface LinkProperties {
+export interface EdgeProperties {
 	arrowhead: Arrow;
 	arrowtail: Arrow;
 	color: Color;
@@ -132,7 +139,7 @@ export interface LinkProperties {
 	samehead: string;
 	sametail: string;
 	skipDraw: boolean;
-	style: "bold" | "dashed" | "dotted" | "invis" | "solid" | "tapered";
+	style: EdgeStyle;
 	tailclip: boolean;
 	taillabel: string;
 	tailport: PortPos;
@@ -231,7 +238,7 @@ export const dot = () => {
 	const renderLink = (
 		a: string,
 		b: string,
-		options?: Partial<LinkProperties>,
+		options?: Partial<EdgeProperties>,
 	) => {
 		const aId = nodeIds.get(a);
 		if (aId === undefined) {

@@ -129,7 +129,8 @@ const finalEntryCount = finalTimelines.reduce(
 	0,
 );
 
-// Write GraphViz graph to stdout.
+/** @type {import("source/types.js").RenderMode} */
+const theme = args.debug || args.theme === "light" ? "light" : "dark";
 const renderOptions = {
 	debug: Boolean(args.debug),
 	dateRenderer: (/** @type {number} */ date) => {
@@ -147,6 +148,7 @@ const renderOptions = {
 		typeof args["skip-after"] === "string"
 			? new Date(args["skip-after"]).valueOf()
 			: undefined,
+	theme,
 };
 
 const ancestryGraph = identityGraph(

@@ -98,7 +98,7 @@ for (const [variant, meta] of variants.entries()) {
 		// Strip title nodes, as those are only event indices in our data.
 		.replaceAll(/<title>[^<]*<\/title>/g, "")
 		// Add tabindex="0" to all nodes, to allow them to receive focus.
-		.replaceAll(/( class="node [^"]+">)/g, ' tabindex="0"\$1');
+		.replaceAll(/( class="node [^"]+">)/g, ' tabindex="0"$1');
 
 	const html = templateHtml
 		.replace(

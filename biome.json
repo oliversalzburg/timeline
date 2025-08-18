@@ -14,12 +14,12 @@
 	"files": {
 		"includes": [
 			"**",
-			"!.venv/**",
-			"!coverage/**",
-			"!fixtures/**",
-			"!lib/**",
-			"!node_modules/**",
-			"!output/**"
+			"!.venv",
+			"!coverage",
+			"!fixtures",
+			"!lib",
+			"!node_modules",
+			"!output"
 		],
 		"maxSize": 15728640
 	},

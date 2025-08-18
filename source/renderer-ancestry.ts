@@ -1,23 +1,18 @@
 import { mustExist } from "@oliversalzburg/js-utils/data/nil.js";
-import { InvalidOperationError } from "@oliversalzburg/js-utils/errors/InvalidOperationError.js";
 import { FONT_NAME, FONT_SIZE, TRANSPARENT } from "./constants.js";
 import {
 	dot,
+	type EdgeStyle,
 	makeHtmlString,
 	type NodeProperties,
 	type PortPos,
 	type RankDir,
 } from "./dot.js";
-import {
-	identityGraph,
-	millisecondsAsYears,
-	uncertainEventToDate,
-	uncertainEventToDateString,
-} from "./genealogy.js";
+import { Graph } from "./genealogy2.js";
 import { matchLuminance, setOpacity } from "./palette.js";
 import type { RendererOptions } from "./renderer.js";
 import type { Style } from "./styles.js";
-import type { Identity, Marriage, TimelineAncestryRenderer } from "./types.js";
+import type { Identity, TimelineAncestryRenderer } from "./types.js";
 
 export class Child {
 	identity: string;
@@ -66,20 +61,38 @@ export const render = (
 	timelines: Array<TimelineAncestryRenderer>,
 	options: Partial<RendererOptions> = {},
 ) => {
-	const graph = identityGraph(timelines);
-	if (options.origin !== undefined) {
-		graph.distance(options.origin);
-		if (options.debug !== true) {
-			graph.trim();
-		}
-	}
+	//const graph = identityGraph(timelines);
+	const graph2 = new Graph(timelines);
+	const hops =
+		options.origin !== undefined
+			? graph2.calculateHopsFrom(options.origin, {
+					allowChildHop: true,
+					allowMarriageHop: false,
+					allowParentHop: true,
+				})
+			: new Map<string, number>();
+	const originIdentity = options.origin
+		? graph2.resolveRootIdentity(options.origin)
+		: undefined;
+	const originAntecedents =
+		originIdentity !== undefined
+			? graph2.antecedents(originIdentity.id)
+			: undefined;
+	const originDescendants =
+		originIdentity !== undefined
+			? graph2.descendants(originIdentity.id)
+			: undefined;
+	const originBloodline =
+		originIdentity !== undefined
+			? graph2.bloodline(originIdentity.id)
+			: undefined;
 
 	const colors = mustExist(options.palette?.lookup);
 	const defaultBackground =
 		options.debug || options.theme === "light" ? "#FFFFFF" : "#000000";
 	const defaultForeground =
 		options.debug || options.theme === "light" ? "#000000" : "#FFFFFF";
-	const fonts = [
+	const _fonts = [
 		// Serif
 		"DejaVu Serif",
 		// Florar
@@ -102,13 +115,19 @@ export const render = (
 		`edge [color="${defaultForeground}"; fontcolor="${defaultForeground}"; fontname="${FONT_NAME}"; fontsize="${FONT_SIZE}";]`,
 	);
 	d.raw(`bgcolor="${defaultBackground}"`);
+	d.raw('center="true"');
 	d.raw('comment=" "');
-	d.raw('concentrate="true"');
-	d.raw(`fontcolor="${setOpacity(defaultForeground, 80)}"`);
-	d.raw(`fontname="Billa Mount"`);
-	d.raw(`fontsize="${FONT_SIZE * 20}"`);
-	d.raw(`label="${options.origin}"`);
+	//d.raw('concentrate="true"');
+	d.raw(`fontcolor="${setOpacity(defaultForeground, 100)}"`);
+	d.raw(`fontname="Blackside Personal Use Only"`);
+	d.raw(`fontsize="${FONT_SIZE * 10}"`);
+	if (originIdentity !== undefined && options.dateRenderer !== undefined) {
+		d.raw(`label="${originIdentity.name ?? originIdentity.id}"`);
+	}
 	d.raw(`labeljust="l"`);
+	d.raw(`labelloc="b"`);
+	d.raw(`margin="0"`);
+	d.raw(`pad="0"`);
 	d.raw(`rankdir="${rankdir}"`);
 	d.raw(`ranksep="3"`);
 	d.raw(`tooltip=" "`);
@@ -130,30 +149,36 @@ export const render = (
 		return style.outline ? p * p : 0.5;
 	};
 
-	const computeNodeProperties = (
+	const _computeNodeProperties = (
 		title: string,
 		contributors: Set<Identity>,
 		leader?: Identity,
 		distance = Number.POSITIVE_INFINITY,
 	) => {
 		const opacity = opacityFromDistance(distance);
-		const contributorsTimelines = [...contributors.values()].map(
-			(_) => timelines[graph.ids.indexOf(_.id)],
+		const contributorsTimelines = [...contributors.values()].map((_) =>
+			graph2.timelineOf(_.id),
 		);
 
 		const leaderTimeline =
-			leader !== undefined
-				? timelines[graph.ids.indexOf(leader.id)]
-				: undefined;
+			leader !== undefined ? graph2.timelineOf(leader.id) : undefined;
 
 		const color = setOpacity(
-			colors.get(leaderTimeline?.meta.id ?? contributorsTimelines[0]?.meta.id)
-				?.pen ?? "#808080FF",
+			(leaderTimeline !== undefined || contributorsTimelines[0] !== undefined
+				? colors.get(
+						(leaderTimeline?.meta.id ??
+							contributorsTimelines[0]?.meta.id) as string,
+					)
+				: undefined
+			)?.pen ?? "#808080FF",
 			opacity,
 		);
 
 		const fillcolors = contributorsTimelines.reduce((fillColors, timeline) => {
-			const fill = colors.get(timeline?.meta.id)?.fill ?? TRANSPARENT;
+			const fill =
+				(timeline !== undefined
+					? colors.get(timeline?.meta.id)?.fill
+					: undefined) ?? TRANSPARENT;
 
 			// Whatever we want to draw, _one_ transparent fill should be enough.
 			if (fill === TRANSPARENT && fillColors.includes(TRANSPARENT)) {
@@ -177,8 +202,13 @@ export const render = (
 		}, new Array<string>());
 
 		const fontcolor = setOpacity(
-			colors.get(leaderTimeline?.meta.id ?? contributorsTimelines[0]?.meta.id)
-				?.font ?? defaultForeground,
+			(leaderTimeline !== undefined || contributorsTimelines[0] !== undefined
+				? colors.get(
+						(leaderTimeline?.meta.id ??
+							contributorsTimelines[0]?.meta.id) as string,
+					)
+				: undefined
+			)?.font ?? defaultForeground,
 			opacity,
 		);
 
@@ -192,9 +222,12 @@ export const render = (
 
 		const style = mustExist(
 			options.styleSheet?.get(
-				options.ranks?.get(
-					leaderTimeline?.meta.id ?? contributorsTimelines[0]?.meta.id,
-				) ?? 1,
+				(leaderTimeline !== undefined || contributorsTimelines[0] !== undefined
+					? options.ranks?.get(
+							(leaderTimeline?.meta.id ??
+								contributorsTimelines[0]?.meta.id) as string,
+						)
+					: undefined) ?? 1,
 			),
 		);
 
@@ -231,19 +264,19 @@ export const render = (
 					headport: unfixed ? undefined : "e",
 					tailport: unfixed ? undefined : "w",
 				};
-			case "TD":
+			case "TB":
 				return {
 					headport: unfixed ? undefined : "n",
 					tailport: unfixed ? undefined : "s",
 				};
-			case "DT":
+			case "BT":
 				return {
 					headport: unfixed ? undefined : "s",
 					tailport: unfixed ? undefined : "n",
 				};
 		}
 	};
-
+	/*
 	const computeMarriageProperties = (ego: string, spouse: string) => {
 		const egoIsMale =
 			graph.identity(ego)?.relations?.some((_) => "fatherOf" in _) === true;
@@ -277,7 +310,67 @@ export const render = (
 
 		return { father, mother };
 	};
+*/
+	for (const identity of graph2.identities) {
+		const distance = hops.get(identity.id);
+		//console.log(originDescendants?.includes(identity), distance);
+		if (distance === undefined || !Number.isFinite(distance) || 5 < distance) {
+			continue;
+		}
+		const opacity = opacityFromDistance(distance);
+		const color = setOpacity(defaultForeground, opacity);
+		d.node(
+			identity.id,
+			{
+				fontcolor:
+					identity === originIdentity || originAntecedents?.includes(identity)
+						? defaultForeground
+						: color,
+				//label: `${name(identity)} (${distance})`,
+				label: `${name(identity)}`,
+				penwidth: 0,
+			},
+			/*computeNodeProperties(identity.id, new Set([identity])),*/
+		);
+	}
+	for (const identity of graph2.identities) {
+		const distance = hops.get(identity.id);
+		if (distance === undefined || !Number.isFinite(distance) || 5 < distance) {
+			continue;
+		}
 
+		for (const child of graph2.childrenOf(identity.id) ?? []) {
+			const childDistance = hops.get(child.id);
+			if (
+				childDistance === undefined ||
+				!Number.isFinite(childDistance) ||
+				5 < childDistance
+			) {
+				continue;
+			}
+
+			const opacity = opacityFromDistance(childDistance);
+			const color = setOpacity(defaultForeground, opacity);
+
+			let linkStyle: EdgeStyle | undefined = originDescendants?.includes(child)
+				? "solid"
+				: undefined;
+			linkStyle ??=
+				child === originIdentity || originAntecedents?.includes(child)
+					? "bold"
+					: undefined;
+			linkStyle ??= originBloodline?.includes(child) ? "dashed" : undefined;
+			linkStyle ??= "dotted";
+
+			d.link(identity.id, child.id, {
+				...pointTowards(),
+				color,
+				style: linkStyle,
+				weight: childDistance < 10 ? 1000 : 1,
+			});
+		}
+	}
+	/*
 	for (const node of graph.nodes) {
 		const identity = node;
 		if (identity instanceof Joiner) {
@@ -612,7 +705,7 @@ export const render = (
 			}
 		}
 	}
-
+*/
 	d.raw("}");
 	return d.toString();
 };
