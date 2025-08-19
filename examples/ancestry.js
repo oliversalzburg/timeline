@@ -113,7 +113,7 @@ if (!finalTimelines.some((_) => _.meta.identity.id === origin)) {
 	process.exit(1);
 }
 
-const graph = new Graph(finalTimelines);
+const graph = new Graph(finalTimelines, origin);
 const _hops = graph.calculateHopsFrom(origin, {
 	allowChildHop: true,
 	allowMarriageHop: false,
@@ -125,7 +125,7 @@ process.stdout.write(`Chart contains ${finalTimelines.length} identities.\n`);
 // Generate stylesheet for entire universe.
 /** @type {import("source/types.js").RenderMode} */
 const theme = args.theme === "light" ? "light" : "dark";
-const ss = new Styling(finalTimelines).styles();
+const ss = new Styling(finalTimelines, theme).styles(graph);
 
 // Write GraphViz graph.
 process.stdout.write(`Generating GraphViz graph for ancestry chart...\n`);

@@ -60,10 +60,10 @@ export class Joiner {
 
 export const render = (
 	timelines: Array<TimelineAncestryRenderer>,
-	options: Partial<RendererOptions> = {},
+	options: RendererOptions,
 ) => {
 	//const graph = identityGraph(timelines);
-	const graph2 = new Graph(timelines);
+	const graph2 = new Graph(timelines, options.origin);
 	const hops =
 		options.origin !== undefined
 			? graph2.calculateHopsFrom(options.origin, {

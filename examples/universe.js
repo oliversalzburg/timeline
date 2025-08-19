@@ -138,7 +138,7 @@ const identityTimelines =
 	/** @type {Array<import("../source/types.js").TimelineAncestryRenderer>} */ ([
 		...data.values().filter((timeline) => "identity" in timeline.meta),
 	]);
-const graph = new Graph(identityTimelines);
+const graph = new Graph(identityTimelines, origin);
 const hops = graph.calculateHopsFrom(origin, {
 	allowChildHop: true,
 	allowMarriageHop: false,
@@ -152,7 +152,7 @@ process.stdout.write(
 // Generate stylesheet for entire universe.
 /** @type {import("source/types.js").RenderMode} */
 const theme = args.theme === "light" ? "light" : "dark";
-const ss = new Styling(finalTimelines).styles();
+const ss = new Styling(finalTimelines, theme).styles(graph);
 
 // Write GraphViz graph.
 process.stdout.write("Rendering universe...\n");

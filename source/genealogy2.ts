@@ -4,7 +4,10 @@ import type { Identity, Timeline } from "./types.js";
 export class Graph<
 	TTimeline extends Timeline & { meta: { identity?: Identity } },
 > {
-	constructor(public timelines: Array<TTimeline>) {}
+	constructor(
+		public readonly timelines: Array<TTimeline>,
+		public readonly origin: string,
+	) {}
 
 	get identities() {
 		return this.timelines
@@ -12,10 +15,10 @@ export class Graph<
 			.filter((identity) => identity !== undefined);
 	}
 
-	resolveIdentity(id: string) {
+	resolveIdentity(id = this.origin) {
 		return this.identities.find((identity) => identity.id === id);
 	}
-	resolveRootIdentity(id: string) {
+	resolveRootIdentity(id = this.origin) {
 		return this.identities.find(
 			(identity) =>
 				identity.id === id ||
@@ -24,31 +27,31 @@ export class Graph<
 				),
 		);
 	}
-	timelineOf(id: string) {
+	timelineOf(id = this.origin) {
 		return this.timelines.find((timeline) => timeline.meta.identity?.id === id);
 	}
 
-	marriagesOf(id: string) {
+	marriagesOf(id = this.origin) {
 		return this.resolveRootIdentity(id)?.relations?.filter(
 			(relation) => "marriedTo" in relation,
 		);
 	}
 
-	fatherOf(id: string) {
+	fatherOf(id = this.origin) {
 		return this.identities.find((identity) =>
 			identity.relations?.some(
 				(relation) => "fatherOf" in relation && relation.fatherOf === id,
 			),
 		);
 	}
-	motherOf(id: string) {
+	motherOf(id = this.origin) {
 		return this.identities.find((identity) =>
 			identity.relations?.some(
 				(relation) => "motherOf" in relation && relation.motherOf === id,
 			),
 		);
 	}
-	childrenOf(id: string) {
+	childrenOf(id = this.origin) {
 		return this.resolveRootIdentity(id)
 			?.relations?.filter(
 				(relation) => "fatherOf" in relation || "motherOf" in relation,
@@ -60,7 +63,7 @@ export class Graph<
 			.filter((child) => child !== undefined);
 	}
 
-	antecedents(id: string, maxDepth = 100): Array<Identity> | undefined {
+	antecedents(id = this.origin, maxDepth = 100): Array<Identity> | undefined {
 		if (maxDepth === 0) {
 			return [];
 		}
@@ -75,7 +78,7 @@ export class Graph<
 		);
 	}
 
-	descendants(id: string, maxDepth = 100): Array<Identity> | undefined {
+	descendants(id = this.origin, maxDepth = 100): Array<Identity> | undefined {
 		if (maxDepth === 0) {
 			return [];
 		}
@@ -92,7 +95,7 @@ export class Graph<
 		);
 	}
 
-	bloodline(id: string, maxDepth = 100): Array<Identity> | undefined {
+	bloodline(id = this.origin, maxDepth = 100): Array<Identity> | undefined {
 		if (maxDepth === 0) {
 			return [];
 		}
@@ -114,7 +117,7 @@ export class Graph<
 	}
 
 	calculateHopsFrom(
-		id: string,
+		id = this.origin,
 		options: Partial<{
 			allowChildHop: boolean;
 			allowMarriageHop: boolean;

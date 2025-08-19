@@ -11,11 +11,25 @@ export interface PaletteEntry {
 	source: string | undefined;
 }
 
+export const rgbToString = (rgb: RGBTuple): string =>
+	`#${rgb
+		.map((_) => _.toString(16).padStart(2, "0"))
+		.join("")
+		.toUpperCase()}FF`;
 export const rgbaToString = (rgba: RGBATuple): string =>
 	`#${rgba
 		.map((_) => _.toString(16).padStart(2, "0"))
 		.join("")
 		.toUpperCase()}`;
+
+export const rgbFromString = (rgb: string): RGBTuple =>
+	mustExist(rgb.substring(1).match(/../g)).map((x) =>
+		Number.parseInt(x, 16),
+	) as RGBTuple;
+export const rgbaFromString = (rgba: string): RGBATuple =>
+	mustExist(rgba.substring(1).match(/../g)).map((x) =>
+		Number.parseInt(x, 16),
+	) as RGBATuple;
 
 export const fillColorForPen = (
 	color: RGBTuple | RGBATuple,
