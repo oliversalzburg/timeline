@@ -1,14 +1,12 @@
 #!/bin/env node
 
 import { readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { Styling } from "source/style.js";
 import { parse } from "yaml";
 import { Graph } from "../lib/genealogy2.js";
 import { load } from "../lib/loader.js";
 import { anonymize, sort, uniquify } from "../lib/operator.js";
-import { palette } from "../lib/palette.js";
-import { rank } from "../lib/renderer.js";
 import { render } from "../lib/renderer-ancestry.js";
-import { styles } from "../lib/styles.js";
 
 /** @import {RendererOptions} from "../lib/renderer.js" */
 
@@ -82,15 +80,6 @@ const data = new Map(
 		.map(([filename, data]) => [filename, load(data, filename)]),
 );
 
-// Generate palette for entire universe.
-/** @type {import("source/types.js").RenderMode} */
-const theme = args.theme === "light" ? "light" : "dark";
-const p = palette(theme);
-for (const timeline of data.values()) {
-	p.add(timeline.meta.id, timeline.meta.color);
-}
-const paletteMeta = p.toPalette();
-
 const seed = [...crypto.getRandomValues(new Uint32Array(10))]
 	.map((_) => _.toString(16))
 	.join("");
@@ -125,7 +114,7 @@ if (!finalTimelines.some((_) => _.meta.identity.id === origin)) {
 }
 
 const graph = new Graph(finalTimelines);
-const hops = graph.calculateHopsFrom(origin, {
+const _hops = graph.calculateHopsFrom(origin, {
 	allowChildHop: true,
 	allowMarriageHop: false,
 	allowParentHop: true,
@@ -133,22 +122,10 @@ const hops = graph.calculateHopsFrom(origin, {
 
 process.stdout.write(`Chart contains ${finalTimelines.length} identities.\n`);
 
-// Determine ranks of universe.
-const ranks = new Map(
-	data
-		.values()
-		.map((_) => [
-			_.meta.id,
-			rank(_, hops.get(_.meta.identity.id) ?? Number.POSITIVE_INFINITY),
-		]),
-);
-
-// Generate stylesheet.
-const rankValues = [...ranks.values()];
-const styleSheet = styles(rankValues).toStyleSheet();
-process.stdout.write(
-	`Generated style sheet has ${styleSheet.size} entries for ${new Set(rankValues).size} unique ranks.\n`,
-);
+// Generate stylesheet for entire universe.
+/** @type {import("source/types.js").RenderMode} */
+const theme = args.theme === "light" ? "light" : "dark";
+const ss = new Styling(finalTimelines).styles();
 
 // Write GraphViz graph.
 process.stdout.write(`Generating GraphViz graph for ancestry chart...\n`);
@@ -161,9 +138,7 @@ const renderOptions = {
 	},
 	now: NOW,
 	origin,
-	palette: paletteMeta,
-	ranks,
-	styleSheet,
+	styleSheet: ss,
 	theme,
 };
 const dotGraph = render(finalTimelines, renderOptions);

@@ -46,7 +46,11 @@ describe("Renderer", () => {
 		const document: TimelineDocument = { ...random };
 		const now = Date.UTC(2025, 5, 15);
 		const timeline = load(document, "document");
-		const artifact = render([timeline], { now });
+		const artifact = render([timeline], {
+			now,
+			origin: "document",
+			theme: "dark",
+		});
 		expect(artifact.graph).to.have.lengthOf(1);
 		expect(
 			snapshotHasRegression(snapshotIdentity(this, ".gv"), artifact.graph[0]),
@@ -58,7 +62,11 @@ describe("Renderer", () => {
 		const document: TimelineDocument = { ...history };
 		const now = Date.UTC(2025, 5, 15);
 		const timeline = load(document, "document");
-		const artifact = render([timeline], { now });
+		const artifact = render([timeline], {
+			now,
+			origin: "document",
+			theme: "dark",
+		});
 		expect(artifact.graph).to.have.lengthOf(1);
 		expect(
 			snapshotHasRegression(snapshotIdentity(this, ".gv"), artifact.graph[0]),
@@ -70,7 +78,11 @@ describe("Renderer", () => {
 		const documents: Array<TimelineDocument> = [{ ...random }, { ...history }];
 		const now = Date.UTC(2025, 5, 15);
 		const timelines = documents.map((_, index) => load(_, index.toFixed()));
-		const artifact = render(timelines, { now });
+		const artifact = render(timelines, {
+			now,
+			origin: "document",
+			theme: "dark",
+		});
 		expect(artifact.graph).to.have.lengthOf(1);
 		expect(
 			snapshotHasRegression(snapshotIdentity(this, ".gv"), artifact.graph[0]),
@@ -92,6 +104,8 @@ describe("Renderer", () => {
 			],
 			{
 				now,
+				origin: "document",
+				theme: "dark",
 			},
 		);
 		expect(artifact.graph).to.have.lengthOf(1);
@@ -114,6 +128,8 @@ describe("Renderer", () => {
 			],
 			{
 				now,
+				origin: "document",
+				theme: "dark",
 			},
 		);
 		expect(artifact.graph).to.have.lengthOf(1);
@@ -136,6 +152,8 @@ describe("Renderer", () => {
 			],
 			{
 				now,
+				origin: "document",
+				theme: "dark",
 			},
 		);
 		expect(artifact.graph).to.have.lengthOf(1);
@@ -156,6 +174,8 @@ describe("Renderer", () => {
 			],
 			{
 				now,
+				origin: "document",
+				theme: "dark",
 			},
 		);
 		expect(artifact.graph).to.have.lengthOf(1);

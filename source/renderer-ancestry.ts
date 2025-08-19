@@ -11,6 +11,7 @@ import {
 import { Graph } from "./genealogy2.js";
 import { matchLuminance, setOpacity } from "./palette.js";
 import type { RendererOptions } from "./renderer.js";
+import { StyleStatic } from "./style.js";
 import type { Style } from "./styles.js";
 import type { Identity, TimelineAncestryRenderer } from "./types.js";
 
@@ -87,7 +88,6 @@ export const render = (
 			? graph2.bloodline(originIdentity.id)
 			: undefined;
 
-	const colors = mustExist(options.palette?.lookup);
 	const defaultBackground =
 		options.debug || options.theme === "light" ? "#FFFFFF" : "#000000";
 	const defaultForeground =
@@ -141,12 +141,19 @@ export const render = (
 					distance !== undefined ? Math.max(0, 255 - distance * 30) : 0,
 				);
 
-	const computePenWidth = (style: Style, isOrigin = false) => {
+	const _computePenWidth = (style: Style, isOrigin = false) => {
 		if (options.debug === true) {
 			return isOrigin ? 5 : 1;
 		}
 		const p = style.penwidth / 3;
 		return style.outline ? p * p : 0.5;
+	};
+
+	const getStyle = (_?: TimelineAncestryRenderer) => {
+		if (options.styleSheet === undefined) {
+			return StyleStatic;
+		}
+		return mustExist(options.styleSheet.get(mustExist(_)));
 	};
 
 	const _computeNodeProperties = (
@@ -165,20 +172,16 @@ export const render = (
 
 		const color = setOpacity(
 			(leaderTimeline !== undefined || contributorsTimelines[0] !== undefined
-				? colors.get(
-						(leaderTimeline?.meta.id ??
-							contributorsTimelines[0]?.meta.id) as string,
-					)
+				? getStyle(leaderTimeline)
 				: undefined
-			)?.pen ?? "#808080FF",
+			)?.pencolor ?? "#808080FF",
 			opacity,
 		);
 
 		const fillcolors = contributorsTimelines.reduce((fillColors, timeline) => {
 			const fill =
-				(timeline !== undefined
-					? colors.get(timeline?.meta.id)?.fill
-					: undefined) ?? TRANSPARENT;
+				(timeline !== undefined ? getStyle(timeline)?.fillcolor : undefined) ??
+				TRANSPARENT;
 
 			// Whatever we want to draw, _one_ transparent fill should be enough.
 			if (fill === TRANSPARENT && fillColors.includes(TRANSPARENT)) {
@@ -191,10 +194,7 @@ export const render = (
 						fill === TRANSPARENT ||
 						leaderTimeline === undefined
 						? fill
-						: matchLuminance(
-								fill,
-								mustExist(colors.get(mustExist(leaderTimeline).meta.id)).fill,
-							),
+						: matchLuminance(fill, getStyle(leaderTimeline).fillcolor),
 					opacity,
 				),
 			);
@@ -203,12 +203,9 @@ export const render = (
 
 		const fontcolor = setOpacity(
 			(leaderTimeline !== undefined || contributorsTimelines[0] !== undefined
-				? colors.get(
-						(leaderTimeline?.meta.id ??
-							contributorsTimelines[0]?.meta.id) as string,
-					)
+				? getStyle(leaderTimeline)
 				: undefined
-			)?.font ?? defaultForeground,
+			)?.fontcolor ?? defaultForeground,
 			opacity,
 		);
 
@@ -220,16 +217,7 @@ export const render = (
 			`${title}`,
 		)}`;
 
-		const style = mustExist(
-			options.styleSheet?.get(
-				(leaderTimeline !== undefined || contributorsTimelines[0] !== undefined
-					? options.ranks?.get(
-							(leaderTimeline?.meta.id ??
-								contributorsTimelines[0]?.meta.id) as string,
-						)
-					: undefined) ?? 1,
-			),
-		);
+		const style = getStyle(leaderTimeline);
 
 		const nodeProperties: Partial<NodeProperties> = {
 			color,
@@ -241,7 +229,7 @@ export const render = (
 			fontcolor,
 			height: 0.75,
 			label,
-			penwidth: computePenWidth(style, distance === 0),
+			penwidth: style.penwidth,
 			shape: "box", //"oval",
 			style: style.style?.join(","),
 			width: 3.5,

@@ -9,8 +9,9 @@ import { FONT_NAME, FONT_SIZE, TRANSPARENT } from "./constants.js";
 import { dot, makeHtmlString, type NodeProperties } from "./dot.js";
 import { uncertainEventToDate } from "./genealogy.js";
 import type { Graph } from "./genealogy2.js";
-import { matchLuminance, type PaletteMeta, palette } from "./palette.js";
-import { STYLE_TRANSFER_MARKER, type Style, styles } from "./styles.js";
+import { matchLuminance } from "./palette.js";
+import { type Style, StyleStatic } from "./style.js";
+import { STYLE_TRANSFER_MARKER } from "./styles.js";
 import type {
 	RenderMode,
 	TimelineAncestryRenderer,
@@ -18,16 +19,14 @@ import type {
 } from "./types.js";
 
 export interface RendererOptions {
-	dateRenderer: (date: number) => string;
-	palette?: PaletteMeta<string>;
-	ranks?: Map<string, number>;
-	styleSheet?: Map<number, Style>;
-	debug: boolean;
+	dateRenderer?: (date: number) => string;
+	styleSheet?: Map<TimelineReferenceRenderer | TimelineAncestryRenderer, Style>;
+	debug?: boolean;
 	now: number;
 	origin: string;
-	segment: number | undefined;
-	skipAfter: number | undefined;
-	skipBefore: number | undefined;
+	segment?: number | undefined;
+	skipAfter?: number | undefined;
+	skipBefore?: number | undefined;
 	theme: RenderMode;
 }
 
@@ -258,14 +257,11 @@ export const render = <
 >(
 	timelines: Array<TTimelines>,
 	options: RendererOptions,
-	_identityGraph: Graph<TTimelines>,
-	hops?: Map<string, number>,
+	_identityGraph?: Graph<TTimelines> | undefined,
+	hops?: Map<string, number> | undefined,
 ): {
 	graph: Array<string>;
 	ids: Set<string>;
-	palette: PaletteMeta<string>;
-	ranks: Map<string, number>;
-	styles: Map<number, Style>;
 } => {
 	const now = options?.now ?? Date.now();
 	const origin: TTimelines =
@@ -291,38 +287,21 @@ export const render = <
 		(options.skipBefore ?? Number.NEGATIVE_INFINITY) < timestamp &&
 		timestamp < (options.skipAfter ?? Number.POSITIVE_INFINITY);
 
-	let paletteMeta = options.palette;
-	if (paletteMeta === undefined) {
-		// We default to dark, as the assume the default output media to be a display.
-		// For printing use cases, we'd prefer to use light.
-		const p = palette<string>(options.theme ?? "dark");
-
-		for (const timeline of timelines) {
-			p.add(timeline.meta.id, timeline.meta.color);
-		}
-
-		paletteMeta = p.toPalette();
-	}
-	const colors = paletteMeta.lookup;
-
 	const classes = new Map<string, string>(
 		timelines.map((_) => [_.meta.id, `t${hashCyrb53(_.meta.id)}`]),
 	);
-	const ranks =
-		options.ranks ??
-		new Map<string, number>(
-			timelines.map((_) => [
-				_.meta.id,
-				rank(
-					_,
-					"identity" in _.meta
-						? hops?.get(_.meta.identity.id)
-						: Number.POSITIVE_INFINITY,
-				),
-			]),
-		);
-	const styleSheet =
-		options.styleSheet ?? styles([...ranks.values()]).toStyleSheet();
+	const ranks = new Map<string, number>(
+		timelines.map((_) => [
+			_.meta.id,
+			rank(
+				_,
+				"identity" in _.meta
+					? hops?.get(_.meta.identity.id)
+					: Number.POSITIVE_INFINITY,
+			),
+		]),
+	);
+	const styleSheet = options.styleSheet;
 
 	let eventIndex = 0;
 	const allNodeIds = new Set<string>();
@@ -332,6 +311,13 @@ export const render = <
 		const id = `Z${date.getFullYear().toFixed().padStart(4, "0")}-${(date.getMonth() + 1).toFixed().padStart(2, "0")}-${date.getDate().toFixed().padStart(2, "0")}-${eventIndex++}`;
 		allNodeIds.add(id);
 		return id;
+	};
+
+	const getStyle = (_?: TTimelines) => {
+		if (styleSheet === undefined) {
+			return StyleStatic;
+		}
+		return mustExist(styleSheet.get(mustExist(_)));
 	};
 
 	const computeNodeProperties = (
@@ -344,16 +330,11 @@ export const render = <
 		const classList = isTransferMarker
 			? ["tx", ...contributors.values().map((_) => classes.get(_.meta.id))]
 			: ["event", ...contributors.values().map((_) => classes.get(_.meta.id))];
-		const color = isTransferMarker
-			? "transparent"
-			: mustExist(
-					colors.get(mustExist(leader, "missing leader").meta.id),
-					"missing color",
-				).pen;
+		const color = isTransferMarker ? "transparent" : getStyle(leader).pencolor;
 		const fillcolors = isTransferMarker
 			? ["#FF0000FF"]
 			: contributors.values().reduce((fillColors, timeline) => {
-					const fill = mustExist(colors.get(timeline.meta.id)).fill;
+					const fill = getStyle(timeline).fillcolor;
 
 					// Whatever we want to draw, _one_ transparent fill should be enough.
 					if (fill === TRANSPARENT && fillColors.includes(TRANSPARENT)) {
@@ -363,16 +344,13 @@ export const render = <
 					fillColors.push(
 						timeline === leader || fill === TRANSPARENT
 							? fill
-							: matchLuminance(
-									fill,
-									mustExist(colors.get(mustExist(leader).meta.id)).fill,
-								),
+							: matchLuminance(fill, getStyle(leader).fillcolor),
 					);
 					return fillColors;
 				}, new Array<string>());
 		const fontcolor = isTransferMarker
 			? "#000000FF"
-			: mustExist(colors.get(mustExist(leader).meta.id)).font;
+			: getStyle(leader).fontcolor;
 		const id = isTransferMarker ? undefined : registerId(timestamp);
 
 		const prefixes = contributors
@@ -395,11 +373,7 @@ export const render = <
 					timePassedSinceThen,
 				)} her`;
 
-		const style = isTransferMarker
-			? STYLE_TRANSFER_MARKER
-			: mustExist(
-					styleSheet.get(mustExist(ranks.get(mustExist(leader?.meta.id)))),
-				);
+		const style = isTransferMarker ? STYLE_TRANSFER_MARKER : getStyle(leader);
 
 		const nodeProperties: Partial<NodeProperties> = {
 			class: classList.join(" "),
@@ -414,12 +388,12 @@ export const render = <
 			height: isTransferMarker ? 0 : undefined,
 			id,
 			label,
-			penwidth: style.outline ? style.penwidth : 0,
+			penwidth: style.penwidth,
 			shape: style.shape,
 			skipDraw: !isTimestampInRange(timestamp),
 			style: style.style?.join(","),
 			tooltip,
-			width: isTransferMarker ? 0.65 : undefined,
+			width: isTransferMarker ? 0.625 : undefined,
 		};
 
 		return nodeProperties;
@@ -504,11 +478,7 @@ export const render = <
 					contributors.add(transferMarker.timeline);
 				}
 
-				const style = mustExist(
-					styleSheet.get(
-						mustExist(ranks.get(mustExist(transferMarker.timeline.meta.id))),
-					),
-				);
+				const style = getStyle(transferMarker.timeline);
 				if (!transferMarker.isTransferMarker || style.link) {
 					const nodeProperties = computeNodeProperties(
 						transferMarker.isTransferMarker,
@@ -528,14 +498,7 @@ export const render = <
 			if (isTransferMarkerSection) {
 				d.raw("{");
 				d.raw('rank="same"');
-				const linkedEvents = events.filter(
-					(_) =>
-						mustExist(
-							styleSheet.get(
-								mustExist(ranks.get(mustExist(_.timeline.meta.id))),
-							),
-						).link,
-				);
+				const linkedEvents = events.filter((_) => getStyle(_.timeline).link);
 				for (
 					let eventIndex = 1;
 					eventIndex < linkedEvents.length;
@@ -557,10 +520,7 @@ export const render = <
 		// Link items in their individual timelines together.
 		let timePassed = 0;
 		for (const timeline of timelinesSegment) {
-			const color = mustExist(colors.get(timeline.meta.id)).pen;
-			const style = mustExist(
-				styleSheet.get(mustExist(ranks.get(mustExist(timeline.meta.id)))),
-			);
+			const style = getStyle(timeline);
 
 			if (!style.link) {
 				continue;
@@ -618,26 +578,18 @@ export const render = <
 					for (const previousEntry of previousEntries) {
 						d.link(previousEntry, timelineEvent, {
 							arrowhead: event.isTransferMarker ? "none" : undefined,
-							color,
+							color: style.pencolor,
 							headport: event.isTransferMarker ? "n" : undefined,
-							penwidth: style.link
-								? style.outline
-									? style.penwidth
-									: 0
-								: undefined,
+							penwidth: style.penwidth,
 							samehead: timeline.meta.id,
 							sametail: timeline.meta.id,
 							skipDraw: !isTimestampInRange(timestamp),
-							style: style.link ? "solid" : "invis",
+							style: style.link,
 							tailport: previousWasTransferMarker ? "s" : undefined,
-							tooltip:
-								style.link && !event.isTransferMarker
-									? `${formatMilliseconds(timePassed)} passed`
-									: undefined,
-							weight:
-								style.link && timelineWeight !== undefined
-									? timelineWeight
-									: undefined,
+							tooltip: !event.isTransferMarker
+								? `${formatMilliseconds(timePassed)} passed`
+								: undefined,
+							weight: timelineWeight !== undefined ? timelineWeight : undefined,
 						});
 					}
 				}
@@ -673,11 +625,7 @@ export const render = <
 			if (isTimestampTransfer) {
 				const bestTransferMarker = events.reduce(
 					(previous, current) => {
-						const style = mustExist(
-							styleSheet.get(
-								mustExist(ranks.get(mustExist(current.timeline.meta.id))),
-							),
-						);
+						const style = getStyle(current.timeline);
 						const weight = segment.weights.get(current.timeline);
 
 						if (style.link && weight !== undefined && previous.score < weight) {
@@ -756,8 +704,5 @@ export const render = <
 	return {
 		graph: graphSegments,
 		ids: allNodeIds,
-		palette: paletteMeta,
-		ranks,
-		styles: styleSheet,
 	};
 };

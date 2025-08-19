@@ -2,15 +2,13 @@
 
 import { readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { hostname, userInfo } from "node:os";
-import { mustExist } from "@oliversalzburg/js-utils/data/nil.js";
 import { parse } from "yaml";
 import { analyze } from "../lib/analyzer.js";
 import { Graph } from "../lib/genealogy2.js";
 import { load } from "../lib/loader.js";
 import { anonymize, sort, uniquify } from "../lib/operator.js";
-import { palette } from "../lib/palette.js";
-import { rank, render } from "../lib/renderer.js";
-import { styles } from "../lib/styles.js";
+import { render } from "../lib/renderer.js";
+import { Styling } from "../lib/style.js";
 
 /** @import {RendererOptions} from "../lib/renderer.js" */
 
@@ -106,15 +104,6 @@ const globalLatest = metrics
 		0,
 	);
 
-// Generate palette for entire universe.
-/** @type {import("source/types.js").RenderMode} */
-const theme = args.theme === "light" ? "light" : "dark";
-const p = palette(theme);
-for (const timeline of data.values()) {
-	p.add(timeline.meta.id, timeline.meta.color);
-}
-const paletteMeta = p.toPalette();
-
 const seed = [...crypto.getRandomValues(new Uint32Array(10))]
 	.map((_) => _.toString(16))
 	.join("");
@@ -156,27 +145,14 @@ const hops = graph.calculateHopsFrom(origin, {
 	allowParentHop: true,
 });
 
-// Determine ranks of universe.
-const ranks = new Map(
-	data
-		.values()
-		.map((_) => [
-			_.meta.id,
-			rank(
-				_,
-				"identity" in _.meta
-					? hops.get(_.meta.identity.id)
-					: Number.POSITIVE_INFINITY,
-			),
-		]),
+process.stdout.write(
+	`Universe contains ${identityTimelines.length} identities.\n`,
 );
 
-// Generate stylesheet.
-const rankValues = [...ranks.values()];
-const styleSheet = styles(rankValues).toStyleSheet();
-process.stdout.write(
-	`Generated style sheet has ${styleSheet.size} entries for ${new Set(rankValues).size} unique ranks.\n`,
-);
+// Generate stylesheet for entire universe.
+/** @type {import("source/types.js").RenderMode} */
+const theme = args.theme === "light" ? "light" : "dark";
+const ss = new Styling(finalTimelines).styles();
 
 // Write GraphViz graph.
 process.stdout.write("Rendering universe...\n");
@@ -199,12 +175,10 @@ const renderOptions = {
 		typeof args["skip-after"] === "string"
 			? new Date(args["skip-after"]).valueOf()
 			: undefined,
-	palette: paletteMeta,
-	ranks,
-	styleSheet,
+	styleSheet: ss,
 	theme,
 };
-const dotGraph = render(finalTimelines, renderOptions, graph);
+const dotGraph = render(finalTimelines, renderOptions, graph, hops);
 
 const finalEntryCount = finalTimelines.reduce(
 	(previous, timeline) => previous + timeline.records.length,
@@ -235,53 +209,6 @@ const info = [
 	`Exported Document Window`,
 	`${dFrom} - ${dTo}`,
 ];
-
-if (args.debug) {
-	// Dump palette for debugging purposes.
-	const paletteMeta = dotGraph.palette;
-	const colors = paletteMeta.lookup;
-	const ranks = new Map([...dotGraph.ranks.entries()]);
-	const styles = dotGraph.styles;
-	const describeStyle = (
-		/** @type {import("../lib/styles.js").Style | undefined} */ style,
-	) => {
-		if (style === undefined) {
-			return "";
-		}
-
-		const dashedOrSolid = style.style?.filter((_) =>
-			["dashed", "solid"].includes(_),
-		) ?? ["solid"];
-		const parts = [
-			style.fill ? "filled" : "translucent",
-			style.link ? "linked" : "unlinked",
-			style.outline
-				? `${style.penwidth}pt ${dashedOrSolid[0]} outline`
-				: "flat",
-		];
-		return parts.join(", ");
-	};
-
-	const rankCount = new Set(ranks.values()).size;
-	process.stdout.write(`Style sheet generated for ${rankCount} ranks.\n`);
-	process.stdout.write("Generated palette for universe:\n");
-	for (const [color, timelines] of [...paletteMeta.assignments.entries()].sort(
-		([a], [b]) => a.localeCompare(b),
-	)) {
-		const timelinePalette = mustExist(colors.get(timelines[0]));
-		process.stdout.write(
-			`- ${color} -> Pen: ${timelinePalette.pen} Fill: ${timelinePalette.fill} Font: ${timelinePalette.font}\n`,
-		);
-		for (const id of timelines.sort(
-			(/** @type {string} */ a, /** @type {string} */ b) => a.localeCompare(b),
-		)) {
-			process.stdout.write(
-				`  ${id} (ranked ${ranks.get(id)}: ${describeStyle(styles.get(mustExist(ranks.get(id))))})\n`,
-			);
-		}
-		process.stdout.write("\n");
-	}
-}
 
 process.stdout.write(`Writing graph...\n`);
 if (dotGraph.graph.length === 1) {

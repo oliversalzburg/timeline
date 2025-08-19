@@ -101,6 +101,11 @@ properties:
           date:
             title: Exact Day of Birth
             type: string
+          sexus:
+            title: Sexus of Person
+            enum:
+              - Femininum
+              - Maskulinum
           when:
             title: Uncertain Date of Birth
             type: object
