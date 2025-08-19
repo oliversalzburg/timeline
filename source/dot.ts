@@ -160,7 +160,7 @@ export interface NodeProperties {
 	height: number;
 	id: string;
 	label: string;
-	margin: number;
+	margin: number | string;
 	ordering: "out" | "in";
 	penwidth: number;
 	peripheries: number;

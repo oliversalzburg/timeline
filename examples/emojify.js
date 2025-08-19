@@ -252,7 +252,9 @@ for (const [prefix, config] of Object.entries(PREFIXES)) {
 }
 
 if (copyOnly) {
-	process.stdout.write(`Successfully prepared images for ${args.target}.\n`);
+	process.stdout.write(
+		`Successfully prepared images for ${contentLocation}.\n`,
+	);
 	process.exit(0);
 }
 

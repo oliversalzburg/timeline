@@ -28,6 +28,7 @@ endif
 
 _PEDIGREE_FLAGS := "--origin=$(ORIGIN)"
 _UNIVERSE_FLAGS := "--origin=$(ORIGIN)" --skip-before=$(START) --skip-after=$(END)
+_UNIVERSE_SEGMENT_FLAG := "--segment=150"
 ifneq ($(DEBUG),)
 	_PEDIGREE_FLAGS += --debug
 	_UNIVERSE_FLAGS += --debug
@@ -191,7 +192,7 @@ atomic: $(_AUTO_TIMELINES) lib node_modules | output
 segmented: $(_AUTO_TIMELINES) lib node_modules | output
 	@node --enable-source-maps examples/universe.js $(_UNIVERSE_FLAGS) \
 		--output=$(_UNIVERSE).gv \
-		--segment=100 \
+		$(_UNIVERSE_SEGMENT_FLAG) \
 		$(_AUTO_TIMELINES)
 	@date +"%FT%T%z Generated segmented GraphViz document '$@'."
 

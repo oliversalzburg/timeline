@@ -63,7 +63,7 @@ export const STYLE_TRANSFER_MARKER: Style = {
 	link: true,
 	outline: false,
 	penwidth: 1,
-	shape: "box",
+	shape: "rect",
 	style: ["solid"],
 };
 export const STYLE_TRANSPARENT = 0;

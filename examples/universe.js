@@ -2,14 +2,15 @@
 
 import { readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { hostname, userInfo } from "node:os";
-import { basename } from "node:path";
 import { mustExist } from "@oliversalzburg/js-utils/data/nil.js";
 import { parse } from "yaml";
 import { analyze } from "../lib/analyzer.js";
-import { identityGraph } from "../lib/genealogy.js";
+import { Graph } from "../lib/genealogy2.js";
 import { load } from "../lib/loader.js";
 import { anonymize, sort, uniquify } from "../lib/operator.js";
-import { render } from "../lib/renderer.js";
+import { palette } from "../lib/palette.js";
+import { rank, render } from "../lib/renderer.js";
+import { styles } from "../lib/styles.js";
 
 /** @import {RendererOptions} from "../lib/renderer.js" */
 
@@ -62,7 +63,11 @@ if (!outputPath.endsWith(".gv")) {
 	process.exit(1);
 }
 
-//process.stdout.write(`Processing:\n${files.map((_) => `  ${_}\n`).join("")}`);
+const origin = typeof args.origin === "string" ? args.origin : undefined;
+if (origin === undefined) {
+	process.stdout.write("No --origin provided.\n");
+	process.exit(1);
+}
 
 const rawData = new Map(files.map((_) => [_, readFileSync(_, "utf-8")]));
 
@@ -73,13 +78,14 @@ const plainData = new Map(
 
 // Load raw data to normalized model.
 const data = new Map(
-	/** @type {Array<[string, import("../source/types.js").Timeline]>} */ ([
+	/** @type {Array<[string, import("../source/types.js").TimelineReferenceRenderer | import("../source/types.js").TimelineAncestryRenderer]>} */ ([
 		...plainData
 			.entries()
 			.map(([filename, data]) => [filename, load(data, filename)]),
 	]),
 );
 
+// Calculate universe metrics.
 const metrics = new Map(
 	data
 		.entries()
@@ -100,37 +106,82 @@ const globalLatest = metrics
 		0,
 	);
 
-// Generate the "universe" graph.
-process.stdout.write("Rendering universe...\n");
+// Generate palette for entire universe.
+/** @type {import("source/types.js").RenderMode} */
+const theme = args.theme === "light" ? "light" : "dark";
+const p = palette(theme);
+for (const timeline of data.values()) {
+	p.add(timeline.meta.id, timeline.meta.color);
+}
+const paletteMeta = p.toPalette();
+
+const seed = [...crypto.getRandomValues(new Uint32Array(10))]
+	.map((_) => _.toString(16))
+	.join("");
+
+/** @type {Array<import("source/types.js").TimelineReferenceRenderer | import("source/types.js").TimelineAncestryRenderer>} */
 const finalTimelines = [
 	...data
 		.entries()
-		.filter(
-			([filename, timeline]) =>
-				!basename(filename).startsWith("_") && 0 < timeline.records.length,
-		)
 		.map(([_, timeline]) =>
 			uniquify(
 				sort(
 					timeline.meta.private && args.private !== true
-						? anonymize(
-								timeline,
-								[...crypto.getRandomValues(new Uint32Array(10))]
-									.map((_) => _.toString(16))
-									.join(""),
-							)
+						? anonymize(timeline, seed)
 						: timeline,
 				),
 			),
 		),
 ];
-const finalEntryCount = finalTimelines.reduce(
-	(previous, timeline) => previous + timeline.records.length,
-	0,
+
+if (
+	!finalTimelines.some(
+		(_) => "identity" in _.meta && _.meta.identity.id === origin,
+	)
+) {
+	process.stdout.write(
+		"The provided --origin identity doesn't match any of the provided timelines.\n",
+	);
+	process.exit(1);
+}
+
+const identityTimelines =
+	/** @type {Array<import("../source/types.js").TimelineAncestryRenderer>} */ ([
+		...data.values().filter((timeline) => "identity" in timeline.meta),
+	]);
+const graph = new Graph(identityTimelines);
+const hops = graph.calculateHopsFrom(origin, {
+	allowChildHop: true,
+	allowMarriageHop: false,
+	allowParentHop: true,
+});
+
+// Determine ranks of universe.
+const ranks = new Map(
+	data
+		.values()
+		.map((_) => [
+			_.meta.id,
+			rank(
+				_,
+				"identity" in _.meta
+					? hops.get(_.meta.identity.id)
+					: Number.POSITIVE_INFINITY,
+			),
+		]),
 );
 
-/** @type {import("source/types.js").RenderMode} */
-const theme = args.debug || args.theme === "light" ? "light" : "dark";
+// Generate stylesheet.
+const rankValues = [...ranks.values()];
+const styleSheet = styles(rankValues).toStyleSheet();
+process.stdout.write(
+	`Generated style sheet has ${styleSheet.size} entries for ${new Set(rankValues).size} unique ranks.\n`,
+);
+
+// Write GraphViz graph.
+process.stdout.write("Rendering universe...\n");
+
+/** @type {RendererOptions} */
 const renderOptions = {
 	debug: Boolean(args.debug),
 	dateRenderer: (/** @type {number} */ date) => {
@@ -138,7 +189,7 @@ const renderOptions = {
 		return `${["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"][_.getDay()]}, ${_.getDate().toFixed(0).padStart(2, "0")}.${(_.getMonth() + 1).toFixed(0).padStart(2, "0")}.${_.getFullYear()}`;
 	},
 	now: NOW,
-	origin: typeof args.origin === "string" ? args.origin : undefined,
+	origin,
 	segment: typeof args.segment === "string" ? Number(args.segment) : undefined,
 	skipBefore:
 		typeof args["skip-before"] === "string"
@@ -148,20 +199,17 @@ const renderOptions = {
 		typeof args["skip-after"] === "string"
 			? new Date(args["skip-after"]).valueOf()
 			: undefined,
+	palette: paletteMeta,
+	ranks,
+	styleSheet,
 	theme,
 };
+const dotGraph = render(finalTimelines, renderOptions, graph);
 
-const ancestryGraph = identityGraph(
-	/** @type {Array<import("../source/types.js").TimelineAncestryRenderer>} */ ([
-		...data.values().filter((timeline) => "identity" in timeline.meta),
-	]),
+const finalEntryCount = finalTimelines.reduce(
+	(previous, timeline) => previous + timeline.records.length,
+	0,
 );
-if (typeof args.origin === "string") {
-	ancestryGraph.distance(args.origin);
-}
-
-const dotGraph = render(finalTimelines, renderOptions, ancestryGraph);
-
 const buildDate = new Date(NOW);
 const offset = buildDate.getTimezoneOffset();
 const dBuild = buildDate.toUTCString();
@@ -235,6 +283,7 @@ if (args.debug) {
 	}
 }
 
+process.stdout.write(`Writing graph...\n`);
 if (dotGraph.graph.length === 1) {
 	writeFileSync(outputPath, dotGraph.graph[0]);
 } else {
@@ -254,3 +303,4 @@ if (dotGraph.graph.length === 1) {
 }
 
 writeFileSync(outputPath.replace(/\.gv$/, ".info"), `${info.join("\n")}\n`);
+process.stdout.write("GraphViz graph for universe written successfully.\n");

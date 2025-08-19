@@ -7,7 +7,8 @@ import { hashCyrb53 } from "@oliversalzburg/js-utils/data/string.js";
 import { formatMilliseconds } from "@oliversalzburg/js-utils/format/milliseconds.js";
 import { FONT_NAME, FONT_SIZE, TRANSPARENT } from "./constants.js";
 import { dot, makeHtmlString, type NodeProperties } from "./dot.js";
-import { type IdentityGraph, uncertainEventToDate } from "./genealogy.js";
+import { uncertainEventToDate } from "./genealogy.js";
+import type { Graph } from "./genealogy2.js";
 import { matchLuminance, type PaletteMeta, palette } from "./palette.js";
 import { STYLE_TRANSFER_MARKER, type Style, styles } from "./styles.js";
 import type {
@@ -24,9 +25,9 @@ export interface RendererOptions {
 	debug: boolean;
 	now: number;
 	origin: string;
-	segment: number;
-	skipAfter: number;
-	skipBefore: number;
+	segment: number | undefined;
+	skipAfter: number | undefined;
+	skipBefore: number | undefined;
 	theme: RenderMode;
 }
 
@@ -36,22 +37,15 @@ export interface RendererOptions {
  */
 export const rank = (
 	timeline: Maybe<TimelineReferenceRenderer | TimelineAncestryRenderer>,
-	ancestryGraph?: IdentityGraph,
+	distance?: number,
 ) => {
 	let rank: number | undefined;
 	if (
-		ancestryGraph !== undefined &&
+		distance !== undefined &&
 		!isNil(timeline?.meta) &&
 		timeline.meta.rank === undefined
 	) {
-		const meta = timeline.meta;
-		if ("identity" in meta) {
-			const identity = meta.identity;
-			const child = mustExist(ancestryGraph.node(identity.id));
-			if ("distance" in child && child.distance !== undefined) {
-				rank = 100 - child.distance;
-			}
-		}
+		rank = 100 - distance;
 	}
 	return (
 		rank ??
@@ -97,12 +91,24 @@ export const plan = <
 		(options.skipBefore ?? Number.NEGATIVE_INFINITY) < timestamp &&
 		timestamp < (options.skipAfter ?? Number.POSITIVE_INFINITY);
 
-	const hasTimelineEnded = (timeline: TTimelines, timestamp: number): boolean =>
-		timeline.records[timeline.records.length - 1][0] < timestamp;
+	const hasTimelineEnded = (
+		timeline: TTimelines,
+		timestamp: number,
+	): boolean => {
+		if (!Array.isArray(timeline.records) || timeline.records.length === 0) {
+			return true;
+		}
+		return timeline.records[timeline.records.length - 1][0] < timestamp;
+	};
 	const hasTimelineStarted = (
 		timeline: TTimelines,
 		timestamp: number,
-	): boolean => timeline.records[0][0] <= timestamp;
+	): boolean => {
+		if (!Array.isArray(timeline.records) || timeline.records.length === 0) {
+			return false;
+		}
+		return timeline.records[0][0] <= timestamp;
+	};
 
 	const eventHorizon = timestampsUnique.filter(isTimestampInRange);
 	const globalHistory = eventHorizon.sort((a, b) => a - b);
@@ -251,8 +257,9 @@ export const render = <
 		| TimelineAncestryRenderer,
 >(
 	timelines: Array<TTimelines>,
-	options: Partial<RendererOptions> = {},
-	ancestryGraph?: IdentityGraph,
+	options: RendererOptions,
+	_identityGraph: Graph<TTimelines>,
+	hops?: Map<string, number>,
 ): {
 	graph: Array<string>;
 	ids: Set<string>;
@@ -304,7 +311,15 @@ export const render = <
 	const ranks =
 		options.ranks ??
 		new Map<string, number>(
-			timelines.map((_) => [_.meta.id, rank(_, ancestryGraph)]),
+			timelines.map((_) => [
+				_.meta.id,
+				rank(
+					_,
+					"identity" in _.meta
+						? hops?.get(_.meta.identity.id)
+						: Number.POSITIVE_INFINITY,
+				),
+			]),
 		);
 	const styleSheet =
 		options.styleSheet ?? styles([...ranks.values()]).toStyleSheet();
@@ -404,7 +419,7 @@ export const render = <
 			skipDraw: !isTimestampInRange(timestamp),
 			style: style.style?.join(","),
 			tooltip,
-			width: isTransferMarker ? 1 : undefined,
+			width: isTransferMarker ? 0.65 : undefined,
 		};
 
 		return nodeProperties;
@@ -485,29 +500,25 @@ export const render = <
 						}
 					}
 				} else {
-					const _style = mustExist(
-						styleSheet.get(
-							mustExist(ranks.get(mustExist(transferMarker.timeline.meta.id))),
-						),
-					);
-					/*
-					if (!style.link) {
-						continue;
-					}
-						*/
 					leader = transferMarker.timeline;
 					contributors.add(transferMarker.timeline);
 				}
 
-				const nodeProperties = computeNodeProperties(
-					transferMarker.isTransferMarker,
-					timestamp,
-					title,
-					contributors,
-					leader,
+				const style = mustExist(
+					styleSheet.get(
+						mustExist(ranks.get(mustExist(transferMarker.timeline.meta.id))),
+					),
 				);
-
-				d.node(title, nodeProperties);
+				if (!transferMarker.isTransferMarker || style.link) {
+					const nodeProperties = computeNodeProperties(
+						transferMarker.isTransferMarker,
+						timestamp,
+						title,
+						contributors,
+						leader,
+					);
+					d.node(title, nodeProperties);
+				}
 			}
 
 			const isTransferMarkerSection =
@@ -597,7 +608,7 @@ export const render = <
 						event.index !== undefined
 							? event.timeline.records[event.index][1].title
 							: event.title;
-					const _timelineWeight = segment.weights.get(event.timeline);
+					const timelineWeight = segment.weights.get(event.timeline);
 
 					processedTitles.push(timelineEvent);
 					if (0 === previousEntries.length) {
@@ -623,10 +634,10 @@ export const render = <
 								style.link && !event.isTransferMarker
 									? `${formatMilliseconds(timePassed)} passed`
 									: undefined,
-							/*weight:
+							weight:
 								style.link && timelineWeight !== undefined
 									? timelineWeight
-									: undefined,*/
+									: undefined,
 						});
 					}
 				}

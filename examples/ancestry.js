@@ -2,7 +2,7 @@
 
 import { readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { parse } from "yaml";
-import { identityGraph } from "../lib/genealogy.js";
+import { Graph } from "../lib/genealogy2.js";
 import { load } from "../lib/loader.js";
 import { anonymize, sort, uniquify } from "../lib/operator.js";
 import { palette } from "../lib/palette.js";
@@ -61,6 +61,12 @@ if (!outputPath.endsWith(".gv")) {
 	process.exit(1);
 }
 
+const origin = typeof args.origin === "string" ? args.origin : undefined;
+if (origin === undefined) {
+	process.stdout.write("No --origin provided.\n");
+	process.exit(1);
+}
+
 const rawData = new Map(files.map((_) => [_, readFileSync(_, "utf-8")]));
 
 // Parse raw data with appropriate parser.
@@ -76,21 +82,25 @@ const data = new Map(
 		.map(([filename, data]) => [filename, load(data, filename)]),
 );
 
-// Generate palette for universe.
+// Generate palette for entire universe.
 /** @type {import("source/types.js").RenderMode} */
-const theme = args.debug || args.theme === "light" ? "light" : "dark";
+const theme = args.theme === "light" ? "light" : "dark";
 const p = palette(theme);
 for (const timeline of data.values()) {
 	p.add(timeline.meta.id, timeline.meta.color);
 }
 const paletteMeta = p.toPalette();
 
+const seed = [...crypto.getRandomValues(new Uint32Array(10))]
+	.map((_) => _.toString(16))
+	.join("");
+
 /** @type {Array<import("source/types.js").TimelineAncestryRenderer>} */
 const finalTimelines = [
 	...data
 		.entries()
 		.filter(
-			([_filename, timeline]) =>
+			([, timeline]) =>
 				timeline.meta.private &&
 				"identity" in timeline.meta &&
 				"id" in timeline.meta.identity &&
@@ -100,36 +110,47 @@ const finalTimelines = [
 			uniquify(
 				sort(
 					timeline.meta.private && args.private !== true
-						? anonymize(
-								timeline,
-								[...crypto.getRandomValues(new Uint32Array(10))]
-									.map((_) => _.toString(16))
-									.join(""),
-							)
+						? anonymize(timeline, seed)
 						: timeline,
 				),
 			),
 		),
 ];
 
-process.stdout.write(`Chart contains ${finalTimelines.length} identities.\n`);
-const ancestryGraph = identityGraph(finalTimelines);
-if (typeof args.origin === "string") {
-	ancestryGraph.distance(args.origin);
+if (!finalTimelines.some((_) => _.meta.identity.id === origin)) {
+	process.stdout.write(
+		"The provided --origin identity doesn't match any of the provided timelines.\n",
+	);
+	process.exit(1);
 }
+
+const graph = new Graph(finalTimelines);
+const hops = graph.calculateHopsFrom(origin, {
+	allowChildHop: true,
+	allowMarriageHop: false,
+	allowParentHop: true,
+});
+
+process.stdout.write(`Chart contains ${finalTimelines.length} identities.\n`);
 
 // Determine ranks of universe.
 const ranks = new Map(
-	data.values().map((_) => [_.meta.id, rank(_, ancestryGraph)]),
+	data
+		.values()
+		.map((_) => [
+			_.meta.id,
+			rank(_, hops.get(_.meta.identity.id) ?? Number.POSITIVE_INFINITY),
+		]),
 );
-// Genreate stylesheet.
+
+// Generate stylesheet.
 const rankValues = [...ranks.values()];
 const styleSheet = styles(rankValues).toStyleSheet();
 process.stdout.write(
 	`Generated style sheet has ${styleSheet.size} entries for ${new Set(rankValues).size} unique ranks.\n`,
 );
 
-// Write GraphViz graph
+// Write GraphViz graph.
 process.stdout.write(`Generating GraphViz graph for ancestry chart...\n`);
 
 const renderOptions = {
@@ -139,7 +160,7 @@ const renderOptions = {
 		return `${_.getDate().toFixed(0)}.${(_.getMonth() + 1).toFixed(0)}.${_.getFullYear()}`;
 	},
 	now: NOW,
-	origin: typeof args.origin === "string" ? args.origin : undefined,
+	origin,
 	palette: paletteMeta,
 	ranks,
 	styleSheet,
