@@ -132,6 +132,39 @@ const age = Math.floor(
 		: (death.valueOf() - birth.valueOf()) / MILLISECONDS.ONE_YEAR,
 );
 
+const marriages =
+	timeline.meta.identity.relations?.filter(
+		(relation) => "marriedTo" in relation,
+	) ?? [];
+
+/**
+ * @param date {Date} -
+ */
+const nameAtDate = (date) => {
+	let marriageBeforeDate;
+	let bestDate;
+	for (const marriage of marriages) {
+		const marriageDate = uncertainEventToDate(marriage);
+		if (marriageDate !== undefined && date.valueOf() < marriageDate.valueOf()) {
+			continue;
+		}
+		if (marriageBeforeDate === undefined) {
+			marriageBeforeDate = marriage;
+			bestDate = marriageDate;
+			continue;
+		}
+		if (
+			marriageDate !== undefined &&
+			bestDate !== undefined &&
+			bestDate.valueOf() < marriageDate.valueOf()
+		) {
+			marriageBeforeDate = marriage;
+			bestDate = marriageDate;
+		}
+	}
+	return marriageBeforeDate?.as ?? name;
+};
+
 /** @type {import("../lib/types.js").TimelinePlain} */
 const document = {
 	...timeline,
@@ -144,13 +177,17 @@ const document = {
 		[birth.valueOf(), { title: `👶 Geburt ${name}` }],
 		...recurringYearly(
 			new Date(birthYear, birthMonth - 1, birthDay, 0, 0, 0, 0),
-			(index) => `${index}. Geburtstag ${name}`,
+			(index) =>
+				`${index}. Geburtstag ${nameAtDate(new Date(birthYear, birthMonth - 1, birthDay, 0, 0, 0, 0))}`,
 			age,
 		),
 	],
 };
 if (death !== undefined) {
-	document.records.push([death.valueOf(), { title: `☠️ ${name} verstorben` }]);
+	document.records.push([
+		death.valueOf(),
+		{ title: `☠️ ${nameAtDate(death)} verstorben` },
+	]);
 }
 
 const serialized = serialize(document);
