@@ -20,7 +20,7 @@ import type {
 
 export interface RendererOptions {
 	dateRenderer?: (date: number) => string;
-	styleSheet?: Map<TimelineReferenceRenderer | TimelineAncestryRenderer, Style>;
+	styleSheet?: Map<string, Style>;
 	debug?: boolean;
 	now: number;
 	origin: string;
@@ -314,10 +314,13 @@ export const render = <
 	};
 
 	const getStyle = (_?: TTimelines) => {
-		if (styleSheet === undefined) {
+		if (styleSheet === undefined || _ === undefined) {
 			return StyleStatic;
 		}
-		return mustExist(styleSheet.get(mustExist(_)));
+		return mustExist(
+			styleSheet.get(_.meta.id),
+			`missing style for '${_.meta.id}'`,
+		);
 	};
 
 	const computeNodeProperties = (
@@ -378,10 +381,11 @@ export const render = <
 		const nodeProperties: Partial<NodeProperties> = {
 			class: classList.join(" "),
 			color,
-			fillcolor:
-				fillcolors.length === 1
+			fillcolor: style.style.includes("filled")
+				? fillcolors.length === 1
 					? fillcolors[0]
-					: `${fillcolors[0]}:${fillcolors[1]}`,
+					: `${fillcolors[0]}:${fillcolors[1]}`
+				: undefined,
 			fixedsize: isTransferMarker ? true : undefined,
 			fontcolor,
 			fontsize: isTransferMarker ? 0 : undefined,
@@ -391,9 +395,9 @@ export const render = <
 			penwidth: style.penwidth,
 			shape: style.shape,
 			skipDraw: !isTimestampInRange(timestamp),
-			style: style.style?.join(","),
+			style: style.style.join(","),
 			tooltip,
-			width: isTransferMarker ? 0.625 : undefined,
+			width: isTransferMarker ? 1 : undefined,
 		};
 
 		return nodeProperties;

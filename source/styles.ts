@@ -6,7 +6,7 @@ export interface Style {
 	link: boolean | LinkStyle;
 	penwidth: number;
 	shape: Shape;
-	style?: Array<string>;
+	style: Array<string>;
 }
 
 export const DEFAULT_STYLES: Array<Style> = [
@@ -16,6 +16,7 @@ export const DEFAULT_STYLES: Array<Style> = [
 		link: false,
 		penwidth: 0,
 		shape: "plaintext",
+		style: [],
 	},
 	{
 		fill: false,

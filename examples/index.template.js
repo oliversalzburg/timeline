@@ -411,7 +411,7 @@ const initStarfield = () => {
 				star.update();
 				star.draw();
 			});
-			requestAnimationFrame(updateAndDrawStars);
+			setTimeout(updateAndDrawStars, 20);
 		}
 
 		window.addEventListener("resize", () => {
@@ -421,7 +421,7 @@ const initStarfield = () => {
 
 		setCanvasSize();
 		initStars();
-		requestAnimationFrame(updateAndDrawStars);
+		setTimeout(updateAndDrawStars, 20);
 	});
 };
 

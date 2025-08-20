@@ -28,7 +28,7 @@ endif
 
 _PEDIGREE_FLAGS := "--origin=$(ORIGIN)"
 _UNIVERSE_FLAGS := "--origin=$(ORIGIN)" --skip-before=$(START) --skip-after=$(END)
-_UNIVERSE_SEGMENT_FLAG := "--segment=150"
+_UNIVERSE_SEGMENT_FLAG := "--segment=500"
 ifneq ($(DEBUG),)
 	_PEDIGREE_FLAGS += --debug
 	_UNIVERSE_FLAGS += --debug
@@ -211,7 +211,7 @@ _site/index.html: $(_UNIVERSE).zen.html | _site
 
 # Clean up all build artifacts.
 clean:
-	@rm --force --recursive _site lib
+	@rm --force --recursive _site lib output
 	@find -iname "callgrind.out.*" -delete
 	@find -iwholename "schemas/*.schema.json" -delete
 # Additionally delete all stored dependencies.

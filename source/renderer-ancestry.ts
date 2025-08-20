@@ -150,10 +150,10 @@ export const render = (
 	};
 
 	const getStyle = (_?: TimelineAncestryRenderer) => {
-		if (options.styleSheet === undefined) {
+		if (options.styleSheet === undefined || _ === undefined) {
 			return StyleStatic;
 		}
-		return mustExist(options.styleSheet.get(mustExist(_)));
+		return mustExist(options.styleSheet.get(_.meta.id));
 	};
 
 	const _computeNodeProperties = (

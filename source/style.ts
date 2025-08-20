@@ -13,18 +13,16 @@ import {
 import type { Identity, RenderMode, RGBTuple, Timeline } from "./types.js";
 
 export interface Style {
-	fill: boolean;
 	fillcolor: string;
 	fontcolor: string;
 	link: false | EdgeStyle;
 	pencolor: string;
 	penwidth: number;
 	shape: Shape;
-	style?: Array<NodeStyle>;
+	style: Array<NodeStyle>;
 }
 
 export const StyleStatic: Style = {
-	fill: false,
 	fillcolor: TRANSPARENT,
 	fontcolor: "#808080FF",
 	link: "dashed",
@@ -88,9 +86,9 @@ export class Styling<
 		);
 	}
 
-	styles(identityGraph: Graph<TTimeline>): Map<TTimeline, Style> {
+	styles(identityGraph: Graph<TTimeline>): Map<string, Style> {
 		const palette = this.palette();
-		const styleSheet = new Map<TTimeline, Style>();
+		const styleSheet = new Map<string, Style>();
 
 		const originTimeline = mustExist(
 			this.timelines.find((_) => _.meta.identity?.id === identityGraph.origin),
@@ -105,9 +103,19 @@ export class Styling<
 						),
 					),
 				) ?? [];
-		const _descendantsTimelines =
+		const descendantsTimelines =
 			identityGraph
 				.descendants()
+				?.map((_) =>
+					mustExist(
+						this.timelines.find(
+							(timeline) => timeline.meta.identity?.id === _.id,
+						),
+					),
+				) ?? [];
+		const bloodlineTimelines =
+			identityGraph
+				.bloodline()
 				?.map((_) =>
 					mustExist(
 						this.timelines.find(
@@ -124,22 +132,22 @@ export class Styling<
 			.values()
 			.reduce((best, _) => (Number.isFinite(_) && best < _ ? _ : best), 0);
 
-		styleSheet.set(originTimeline, {
-			fill: true,
-			fillcolor: rgbToString(mustExist(palette.get(originTimeline))),
-			fontcolor: "red",
-			link: "bold",
-			pencolor: rgbaToString(
+		styleSheet.set(originTimeline.meta.id, {
+			fillcolor: rgbaToString(
+				fillColorForPen(mustExist(palette.get(originTimeline)), this.theme),
+			),
+			fontcolor: rgbaToString(
 				matchFontColorTo(mustExist(palette.get(originTimeline))),
 			),
+			link: "bold",
+			pencolor: rgbToString(mustExist(palette.get(originTimeline))),
 			penwidth: 5,
 			shape: "box",
-			style: ["bold", "filled"],
+			style: ["bold", "filled", "rounded"],
 		});
 
 		for (const timeline of antecedentsTimelines) {
-			styleSheet.set(timeline, {
-				fill: true,
+			styleSheet.set(timeline.meta.id, {
 				fillcolor: rgbaToString(
 					fillColorForPen(mustExist(palette.get(timeline)), this.theme),
 				),
@@ -156,16 +164,73 @@ export class Styling<
 							5,
 				),
 				shape: "box",
-				style: ["filled", "solid"],
+				style: ["filled", "rounded"],
+			});
+		}
+		for (const timeline of descendantsTimelines) {
+			styleSheet.set(timeline.meta.id, {
+				fillcolor: rgbaToString(
+					fillColorForPen(mustExist(palette.get(timeline)), this.theme),
+				),
+				fontcolor: rgbaToString(
+					matchFontColorTo(mustExist(palette.get(timeline))),
+				),
+				link: "solid",
+				pencolor: rgbToString(mustExist(palette.get(timeline))),
+				penwidth: Math.max(
+					1,
+					5 - mustExist(hops.get(mustExist(timeline.meta.identity).id)),
+				),
+				shape: "box",
+				style: ["filled", "rounded"],
+			});
+		}
+		for (const timeline of bloodlineTimelines) {
+			if (styleSheet.has(timeline.meta.id)) {
+				continue;
+			}
+			styleSheet.set(timeline.meta.id, {
+				fillcolor: rgbaToString(
+					fillColorForPen(mustExist(palette.get(timeline)), this.theme),
+				),
+				fontcolor: rgbaToString(
+					matchFontColorTo(mustExist(palette.get(timeline))),
+				),
+				link: "dashed",
+				pencolor: rgbToString(mustExist(palette.get(timeline))),
+				penwidth: 1,
+				shape: "box",
+				style: ["dashed", "rounded"],
+			});
+		}
+		for (const timeline of this.timelines) {
+			if (styleSheet.has(timeline.meta.id)) {
+				continue;
+			}
+			if ("identity" in timeline.meta === false) {
+				continue;
+			}
+
+			styleSheet.set(timeline.meta.id, {
+				fillcolor: rgbaToString(
+					fillColorForPen(mustExist(palette.get(timeline)), this.theme),
+				),
+				fontcolor: rgbaToString(
+					matchFontColorTo(mustExist(palette.get(timeline))),
+				),
+				link: "dotted",
+				pencolor: rgbToString(mustExist(palette.get(timeline))),
+				penwidth: 1,
+				shape: "box",
+				style: ["dotted", "rounded"],
 			});
 		}
 
 		for (const timeline of this.timelines) {
-			if (styleSheet.has(timeline)) {
+			if (styleSheet.has(timeline.meta.id)) {
 				continue;
 			}
-			styleSheet.set(timeline, {
-				fill: false,
+			styleSheet.set(timeline.meta.id, {
 				fillcolor: rgbaToString(
 					this.theme === "light" ? [255, 255, 255, 0] : [0, 0, 0, 0],
 				),
@@ -178,7 +243,7 @@ export class Styling<
 				pencolor: rgbToString(mustExist(palette.get(timeline))),
 				penwidth: 1,
 				shape: "box",
-				style: ["dotted"],
+				style: ["dotted", "rounded"],
 			});
 		}
 

@@ -2,6 +2,7 @@
 
 import { readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { hostname, userInfo } from "node:os";
+import { mustExist } from "@oliversalzburg/js-utils/data/nil.js";
 import { parse } from "yaml";
 import { analyze } from "../lib/analyzer.js";
 import { Graph } from "../lib/genealogy2.js";
@@ -135,18 +136,30 @@ if (
 }
 
 const identityTimelines =
-	/** @type {Array<import("../source/types.js").TimelineAncestryRenderer>} */ ([
-		...data.values().filter((timeline) => "identity" in timeline.meta),
-	]);
+	/** @type {Array<import("../source/types.js").TimelineAncestryRenderer>} */ (
+		finalTimelines.filter((timeline) => "identity" in timeline.meta)
+	);
 const graph = new Graph(identityTimelines, origin);
 const hops = graph.calculateHopsFrom(origin, {
 	allowChildHop: true,
 	allowMarriageHop: false,
 	allowParentHop: true,
 });
+const trimmedTimelines = finalTimelines.filter(
+	(_) =>
+		!identityTimelines.includes(
+			/** @type {import("../source/types.js").TimelineAncestryRenderer} */ (_),
+		) ||
+		mustExist(
+			hops.get(
+				/** @type {import("../source/types.js").TimelineAncestryRenderer} */ (_)
+					.meta.identity.id,
+			),
+		) < 4,
+);
 
 process.stdout.write(
-	`Universe contains ${identityTimelines.length} identities.\n`,
+	`Universe contains ${identityTimelines.length} identities, trimmed to ${trimmedTimelines.length} timelines.\n`,
 );
 
 // Generate stylesheet for entire universe.
@@ -178,9 +191,9 @@ const renderOptions = {
 	styleSheet: ss,
 	theme,
 };
-const dotGraph = render(finalTimelines, renderOptions, graph, hops);
+const dotGraph = render(trimmedTimelines, renderOptions, graph, hops);
 
-const finalEntryCount = finalTimelines.reduce(
+const finalEntryCount = trimmedTimelines.reduce(
 	(previous, timeline) => previous + timeline.records.length,
 	0,
 );
