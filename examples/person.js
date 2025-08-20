@@ -42,35 +42,40 @@ const data = parse(rawData);
 const timeline = load(data, args.target);
 
 if ("identity" in timeline.meta === false) {
-	process.stderr.write(`Warning: No identity in '${args.target}'.\n`);
+	process.stderr.write(`Info: No identity in '${args.target}'. Ignoring.\n`);
 	process.stdout.write(rawData);
 	process.exit(0);
-}
-
-if ("urls" in timeline.meta.identity === false) {
-	process.stderr.write(
-		`Warning: Missing 'urls' section in identity in '${args.target}'.\n`,
-	);
-} else {
-	if (!timeline.meta.identity.urls?.some((_) => _.match(/ancestry.com/))) {
-		process.stderr.write(
-			`Notice: Missing 'ancestry.com' URL in identity in '${args.target}'.\n`,
-		);
-	}
-	if (!timeline.meta.identity.urls?.some((_) => _.match(/familysearch.org/))) {
-		process.stderr.write(
-			`Notice: Missing 'familysearch.org' URL in identity in '${args.target}'.\n`,
-		);
-	}
 }
 
 const name = timeline.meta.identity.name ?? timeline.meta.identity.id;
 if (timeline.meta.identity.born === undefined) {
 	process.stderr.write(
-		`Warning: No birth in identity in '${args.target}'. Might not be treated as a person.\n`,
+		`Info: No birth record in identity in '${args.target}'. Not a person. Ignoring.\n`,
 	);
 	process.stdout.write(rawData);
 	process.exit(0);
+}
+
+// Require genealogy links for private identities.
+if (timeline.meta.private) {
+	if ("urls" in timeline.meta.identity === false) {
+		process.stderr.write(
+			`Warning: Missing 'urls' section in identity in '${args.target}'.\n`,
+		);
+	} else {
+		if (!timeline.meta.identity.urls?.some((_) => _.match(/ancestry.com/))) {
+			process.stderr.write(
+				`Notice: Missing 'ancestry.com' URL in identity in '${args.target}'.\n`,
+			);
+		}
+		if (
+			!timeline.meta.identity.urls?.some((_) => _.match(/familysearch.org/))
+		) {
+			process.stderr.write(
+				`Notice: Missing 'familysearch.org' URL in identity in '${args.target}'.\n`,
+			);
+		}
+	}
 }
 
 let birth;
@@ -93,7 +98,7 @@ if (timeline.meta.identity.born === null) {
 
 if (isNil(birth)) {
 	process.stderr.write(
-		`Warning: Unspecific birth in identity in '${args.target}'.\n`,
+		`Notice: Unspecific birth in identity in '${args.target}'.\n`,
 	);
 	process.stdout.write(rawData);
 	process.exit(0);
@@ -109,6 +114,15 @@ if (timeline.meta.identity.died === null) {
 	death = uncertainEventToDate(timeline.meta.identity.died);
 }
 
+const deathRecord = timeline.records.find(([, entry]) =>
+	entry.title.startsWith("☠️"),
+);
+if (deathRecord !== undefined) {
+	process.stderr.write(
+		`Warning: Apparent death timeline entry '${deathRecord[1].title.replaceAll("\n", "\\n")}' in dead identity '${args.target}' should probably be a death record.\n`,
+	);
+}
+
 const birthYear = birth.getFullYear();
 const birthMonth = birth.getMonth() + 1;
 const birthDay = birth.getDate();
@@ -119,7 +133,7 @@ const age = Math.floor(
 );
 
 /** @type {import("../lib/types.js").TimelinePlain} */
-const records = {
+const document = {
 	...timeline,
 	records: [
 		...timeline.records,
@@ -135,6 +149,9 @@ const records = {
 		),
 	],
 };
+if (death !== undefined) {
+	document.records.push([death.valueOf(), { title: `☠️ ${name} verstorben` }]);
+}
 
-const serialized = serialize(records);
+const serialized = serialize(document);
 process.stdout.write(`---\n${serialized}\n`);

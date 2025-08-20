@@ -196,12 +196,12 @@ segmented: $(_AUTO_TIMELINES) lib node_modules | output
 		$(_AUTO_TIMELINES)
 	@date +"%FT%T%z Generated segmented GraphViz document '$@'."
 
-%.auto.yml: %.yml lib node_modules
+%.auto.yml: %.yml lib node_modules examples/person.js
 	@>$@ node --enable-source-maps examples/person.js --target=$<
 
 # Not actually referenced in the implementation. Contains the library code
 # for usage somewhere else.
-lib/timeline.js: node_modules | lib
+lib/timeline.js: node_modules build.js | lib
 	@node build.js
 
 # Not really important. Artifact generation for GitHub Pages publishing.
