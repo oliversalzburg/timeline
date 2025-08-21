@@ -139,6 +139,11 @@ const PREFIXES = {
 		name: "penguin",
 		src: "1F427.svg",
 	},
+	"\u{1F480}": {
+		emoji: "💀",
+		name: "skull",
+		src: "1F480.svg",
+	},
 	"\u{1F48A}": {
 		emoji: "💊",
 		name: "pill",
@@ -188,6 +193,11 @@ const PREFIXES = {
 		emoji: "⚽",
 		name: "soccer ball",
 		src: "26BD.svg",
+	},
+	"\u26D4": {
+		emoji: "⛔",
+		name: "no entry",
+		src: "26D4.svg",
 	},
 	"\u270A": {
 		emoji: "✊",

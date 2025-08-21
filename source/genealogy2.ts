@@ -1,4 +1,5 @@
 import { coalesceArray, mustExist } from "@oliversalzburg/js-utils/data/nil.js";
+import { uncertainEventToDate } from "./genealogy.js";
 import type { Identity, Timeline } from "./types.js";
 
 export class Graph<
@@ -18,6 +19,7 @@ export class Graph<
 	resolveIdentity(id = this.origin) {
 		return this.identities.find((identity) => identity.id === id);
 	}
+
 	resolveRootIdentity(id = this.origin) {
 		return this.identities.find(
 			(identity) =>
@@ -27,6 +29,33 @@ export class Graph<
 				),
 		);
 	}
+
+	resolveIdentityNameAtDate(id = this.origin, date = new Date()) {
+		const aliases =
+			this.marriagesOf(id)
+				?.map(
+					(marriage) => [uncertainEventToDate(marriage), marriage.as] as const,
+				)
+				.filter(([, alias]) => alias !== undefined)
+				.sort(
+					([a], [b]) =>
+						(a?.valueOf() ?? Number.NEGATIVE_INFINITY) -
+						(b?.valueOf() ?? Number.NEGATIVE_INFINITY),
+				) ?? [];
+		if (0 < aliases?.length) {
+			return mustExist(
+				aliases.findLast(
+					([aliasDate]) =>
+						(aliasDate?.valueOf() ?? Number.NEGATIVE_INFINITY) <
+						date?.valueOf(),
+				),
+			)[1];
+		}
+
+		const identity = mustExist(this.resolveRootIdentity(id));
+		return identity.name ?? identity?.id;
+	}
+
 	timelineOf(id = this.origin) {
 		return this.timelines.find((timeline) => timeline.meta.identity?.id === id);
 	}
@@ -44,6 +73,7 @@ export class Graph<
 			),
 		);
 	}
+
 	motherOf(id = this.origin) {
 		return this.identities.find((identity) =>
 			identity.relations?.some(
@@ -51,6 +81,7 @@ export class Graph<
 			),
 		);
 	}
+
 	childrenOf(id = this.origin) {
 		return this.resolveRootIdentity(id)
 			?.relations?.filter(

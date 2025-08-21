@@ -136,6 +136,14 @@ const marriages =
 	timeline.meta.identity.relations?.filter(
 		(relation) => "marriedTo" in relation,
 	) ?? [];
+for (const marriage of marriages) {
+	const marriageDate = uncertainEventToDate(marriage);
+	if (marriageDate === undefined) {
+		process.stderr.write(
+			`Warning: Marriage with '${marriage.marriedTo}' in identity '${args.target}' is missing a date and will cause issues with name changes of the identity.\n`,
+		);
+	}
+}
 
 /**
  * @param date {Date} -
@@ -178,7 +186,7 @@ const document = {
 		...recurringYearly(
 			new Date(birthYear, birthMonth - 1, birthDay, 0, 0, 0, 0),
 			(index) =>
-				`${index}. Geburtstag ${nameAtDate(new Date(birthYear, birthMonth - 1, birthDay, 0, 0, 0, 0))}`,
+				`${index}. Geburtstag ${nameAtDate(new Date(birthYear + index, birthMonth - 1, birthDay, 0, 0, 0, 0))}`,
 			age,
 		),
 	],

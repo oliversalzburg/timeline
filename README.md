@@ -34,4 +34,8 @@ remake --profile --jobs --keep-going --output-sync profile
 gprof2dot -e0 -n0 --format=callgrind callgrind.out.* > callgrind.out.dot
 ```
 
+```
+apt-get install pandoc librsvg2-bin texlive-latex-extra texlive-latex-recommended texlive-xetex texlive-luatex context groff libjs-mathjax node-katex citation-style-language-styles
+```
+
 All rights reserved.

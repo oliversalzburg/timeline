@@ -1,4 +1,8 @@
-import { mustExist } from "@oliversalzburg/js-utils/data/nil.js";
+import {
+	isNil,
+	type Maybe,
+	mustExist,
+} from "@oliversalzburg/js-utils/data/nil.js";
 import { FONT_NAME, FONT_SIZE, TRANSPARENT } from "./constants.js";
 import {
 	dot,
@@ -8,6 +12,7 @@ import {
 	type PortPos,
 	type RankDir,
 } from "./dot.js";
+import { uncertainEventToDateString } from "./genealogy.js";
 import { Graph } from "./genealogy2.js";
 import { matchLuminance, setOpacity } from "./palette.js";
 import type { RendererOptions } from "./renderer.js";
@@ -62,7 +67,8 @@ export const render = (
 	timelines: Array<TimelineAncestryRenderer>,
 	options: RendererOptions,
 ) => {
-	//const graph = identityGraph(timelines);
+	const depth = 7;
+
 	const graph2 = new Graph(timelines, options.origin);
 	const hops =
 		options.origin !== undefined
@@ -302,7 +308,11 @@ export const render = (
 	for (const identity of graph2.identities) {
 		const distance = hops.get(identity.id);
 		//console.log(originDescendants?.includes(identity), distance);
-		if (distance === undefined || !Number.isFinite(distance) || 5 < distance) {
+		if (
+			distance === undefined ||
+			!Number.isFinite(distance) ||
+			depth < distance
+		) {
 			continue;
 		}
 		const opacity = opacityFromDistance(distance);
@@ -325,7 +335,11 @@ export const render = (
 	}
 	for (const identity of graph2.identities) {
 		const distance = hops.get(identity.id);
-		if (distance === undefined || !Number.isFinite(distance) || 5 < distance) {
+		if (
+			distance === undefined ||
+			!Number.isFinite(distance) ||
+			depth < distance
+		) {
 			continue;
 		}
 
@@ -334,7 +348,7 @@ export const render = (
 			if (
 				childDistance === undefined ||
 				!Number.isFinite(childDistance) ||
-				5 < childDistance
+				depth < childDistance
 			) {
 				continue;
 			}
@@ -698,4 +712,135 @@ export const render = (
 */
 	d.raw("}");
 	return d.toString();
+};
+
+export const renderMarkdown = (
+	timelines: Array<TimelineAncestryRenderer>,
+	options: RendererOptions,
+) => {
+	const graph = new Graph(timelines, options.origin);
+	const hops =
+		options.origin !== undefined
+			? graph.calculateHopsFrom(options.origin, {
+					allowChildHop: true,
+					allowMarriageHop: false,
+					allowParentHop: true,
+				})
+			: new Map<string, number>();
+	const originIdentity = mustExist(graph.resolveRootIdentity(options.origin));
+	const originAntecedents = graph.antecedents(originIdentity.id) ?? [];
+	const originDescendants = graph.descendants(originIdentity.id) ?? [];
+
+	const documents = new Array<{ filename: string; content: string }>();
+	const buffer = new Array<string>();
+	const renderMaybe = (maybe: Maybe<string>) =>
+		isNil(maybe) || maybe === ""
+			? "`(INFORMATION FEHLT)`"
+			: maybe.replaceAll(/Unbekannt/g, "`UNBEKANNT`");
+
+	const title = `Stammbaum von ${graph.resolveIdentityNameAtDate(originIdentity.id)}`;
+
+	buffer.push("---");
+	//buffer.push(`title: ${title}`);
+	//buffer.push(`author: Oliver Salzburg`);
+	buffer.push(`email: oliver.salzburg@gmail.com`);
+	//buffer.push(`date: ${new Date().toISOString()}`);
+	buffer.push(`copyright: © 2025 Oliver Salzburg. Alle Rechte vorbehalten.`);
+	buffer.push(`rights: © 2025 Oliver Salzburg. Alle Rechte vorbehalten.`);
+	buffer.push(`mainfont: Open Sans`);
+	buffer.push(`geometry: a4paper`);
+	buffer.push(`numbersections: false`);
+	buffer.push(`block-headings: true`);
+	buffer.push(`header-includes:`);
+	buffer.push(`- \\pagenumbering{gobble}`);
+	buffer.push("...");
+
+	buffer.push(`# ${title}\n`);
+	buffer.push(
+		`geboren ${renderMaybe(originIdentity.name ?? originIdentity.id)} am ${renderMaybe(uncertainEventToDateString(originIdentity.born, options.dateRenderer))} in ${renderMaybe(originIdentity.born?.where)}.`,
+	);
+	buffer.push(`\n![](ancestry.gv.png)`);
+
+	if (0 < originDescendants.length) {
+		let consumed = 0;
+
+		buffer.push(`\n## Meine Kinder\n`);
+		for (const descendant of originDescendants) {
+			if (hops.get(descendant.id) !== 1) {
+				continue;
+			}
+
+			buffer.push(`1. **${graph.resolveIdentityNameAtDate(descendant.id)}**  `);
+			buffer.push(
+				`   geboren ${renderMaybe(descendant.name ?? descendant.id)} am ${renderMaybe(uncertainEventToDateString(descendant.born, options.dateRenderer))} in ${renderMaybe(descendant.born?.where)}.\n`,
+			);
+			++consumed;
+		}
+
+		if (consumed < originDescendants.length) {
+			buffer.push(`\n## Meine Enkel\n`);
+			for (const descendant of originDescendants) {
+				if (hops.get(descendant.id) !== 2) {
+					continue;
+				}
+
+				buffer.push(
+					`1. **${graph.resolveIdentityNameAtDate(descendant.id)}**  `,
+				);
+				buffer.push(
+					`   geboren ${renderMaybe(descendant.name ?? descendant.id)} am ${renderMaybe(uncertainEventToDateString(descendant.born, options.dateRenderer))} in ${renderMaybe(descendant.born?.where)}.\n`,
+				);
+				++consumed;
+			}
+		}
+
+		if (consumed < originDescendants.length) {
+			buffer.push(`\n## Meine Urenkel\n`);
+			for (const descendant of originDescendants) {
+				if (hops.get(descendant.id) !== 3) {
+					continue;
+				}
+
+				buffer.push(
+					`1. **${graph.resolveIdentityNameAtDate(descendant.id)}**  `,
+				);
+				buffer.push(
+					`   geboren ${renderMaybe(descendant.name ?? descendant.id)} am ${renderMaybe(uncertainEventToDateString(descendant.born, options.dateRenderer))} in ${renderMaybe(descendant.born?.where)}.\n`,
+				);
+				++consumed;
+			}
+		}
+	}
+
+	if (0 < originAntecedents.length) {
+		buffer.push(`\n## Meine Vorfahren\n`);
+
+		let consumed = 0;
+		let generation = 1;
+
+		while (consumed < originAntecedents.length) {
+			buffer.push(`\n### ${generation}. Generation\n`);
+			for (const antecedent of originAntecedents) {
+				if (hops.get(antecedent.id) !== generation) {
+					continue;
+				}
+
+				buffer.push(
+					`1. **${graph.resolveIdentityNameAtDate(antecedent.id)}**  `,
+				);
+				buffer.push(
+					`   geboren ${renderMaybe(antecedent.name ?? antecedent.id)} am ${renderMaybe(uncertainEventToDateString(antecedent.born, options.dateRenderer))} in ${renderMaybe(antecedent.born?.where)}.\n`,
+				);
+				++consumed;
+			}
+			++generation;
+		}
+	}
+
+	documents.push({
+		filename: "index.md",
+		content: `${buffer.join("\n")}\n`,
+	});
+
+	return documents;
 };

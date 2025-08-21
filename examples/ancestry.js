@@ -1,12 +1,12 @@
 #!/bin/env node
 
 import { readdirSync, readFileSync, writeFileSync } from "node:fs";
-import { Styling } from "source/style.js";
 import { parse } from "yaml";
 import { Graph } from "../lib/genealogy2.js";
 import { load } from "../lib/loader.js";
 import { anonymize, sort, uniquify } from "../lib/operator.js";
-import { render } from "../lib/renderer-ancestry.js";
+import { render, renderMarkdown } from "../lib/renderer-ancestry.js";
+import { Styling } from "../lib/style.js";
 
 /** @import {RendererOptions} from "../lib/renderer.js" */
 
@@ -142,9 +142,11 @@ const renderOptions = {
 	theme,
 };
 const dotGraph = render(finalTimelines, renderOptions);
+const markdown = renderMarkdown(finalTimelines, renderOptions);
 
 process.stdout.write(`Writing graph...\n`);
 writeFileSync(outputPath, dotGraph);
+writeFileSync(`${outputPath}.md`, markdown[0].content);
 
 process.stdout.write(
 	"GraphViz graph for ancestry chart written successfully.\n",

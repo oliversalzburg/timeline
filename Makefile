@@ -86,6 +86,7 @@ pedigree: $(_AUTO_TIMELINES) lib node_modules | output
 		$(_PEDIGREE_FLAGS) \
 		--output=output/ancestry.gv $(_AUTO_TIMELINES)
 	@dot -Gpad=2 -O -Tpng -Tsvg -Tsvg:cairo output/ancestry.gv
+	@cd output; pandoc --from markdown --to pdf --pdf-engine xelatex --output ancestry.pdf ancestry.gv.md
 
 # Compress an SVG by applying lossy XML transformations.
 %.min.svg: %.svg
