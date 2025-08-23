@@ -70,31 +70,31 @@ export const render = (
 	timelines: Array<TimelineAncestryRenderer>,
 	options: RendererOptions,
 ) => {
-	const depth = 7;
+	const depth = 10;
 
-	const graph2 = new Graph(timelines, options.origin);
+	const graph = new Graph(timelines, options.origin);
 	const hops =
 		options.origin !== undefined
-			? graph2.calculateHopsFrom(options.origin, {
+			? graph.calculateHopsFrom(options.origin, {
 					allowChildHop: true,
 					allowMarriageHop: false,
 					allowParentHop: true,
 				})
 			: new Map<string, number>();
 	const originIdentity = options.origin
-		? graph2.resolveRootIdentity(options.origin)
+		? graph.resolveIdentity(options.origin)
 		: undefined;
 	const originAntecedents =
 		originIdentity !== undefined
-			? graph2.antecedents(originIdentity.id)
+			? graph.antecedents(originIdentity.id)
 			: undefined;
 	const originDescendants =
 		originIdentity !== undefined
-			? graph2.descendants(originIdentity.id)
+			? graph.descendants(originIdentity.id)
 			: undefined;
 	const originBloodline =
 		originIdentity !== undefined
-			? graph2.bloodline(originIdentity.id)
+			? graph.bloodline(originIdentity.id)
 			: undefined;
 
 	const defaultBackground =
@@ -173,11 +173,11 @@ export const render = (
 	) => {
 		const opacity = opacityFromDistance(distance);
 		const contributorsTimelines = [...contributors.values()].map((_) =>
-			graph2.timelineOf(_.id),
+			graph.timelineOf(_.id),
 		);
 
 		const leaderTimeline =
-			leader !== undefined ? graph2.timelineOf(leader.id) : undefined;
+			leader !== undefined ? graph.timelineOf(leader.id) : undefined;
 
 		const color = setOpacity(
 			(leaderTimeline !== undefined || contributorsTimelines[0] !== undefined
@@ -308,7 +308,7 @@ export const render = (
 		return { father, mother };
 	};
 */
-	for (const identity of graph2.identities) {
+	for (const identity of graph.identities) {
 		const distance = hops.get(identity.id);
 		//console.log(originDescendants?.includes(identity), distance);
 		if (
@@ -336,7 +336,7 @@ export const render = (
 			/*computeNodeProperties(identity.id, new Set([identity])),*/
 		);
 	}
-	for (const identity of graph2.identities) {
+	for (const identity of graph.identities) {
 		const distance = hops.get(identity.id);
 		if (
 			distance === undefined ||
@@ -346,7 +346,7 @@ export const render = (
 			continue;
 		}
 
-		for (const child of graph2.childrenOf(identity.id) ?? []) {
+		for (const child of graph.childrenOf(identity.id) ?? []) {
 			const childDistance = hops.get(child.id);
 			if (
 				childDistance === undefined ||
@@ -738,7 +738,7 @@ export const renderMarkdown = (
 				(uncertainEventToDate(b.born)?.valueOf() ?? Number.NEGATIVE_INFINITY),
 		);
 
-	const originIdentity = mustExist(graph.resolveRootIdentity(options.origin));
+	const originIdentity = mustExist(graph.resolveIdentity(options.origin));
 	const originAntecedents = sortIdentitiesByBirthdate(
 		graph.antecedents(originIdentity.id) ?? [],
 	);
@@ -790,7 +790,7 @@ export const renderMarkdown = (
 			`verstorben ${renderMaybe(uncertainEventToDateString(originIdentity.died, options.dateRenderer))} in ${renderMaybe(originIdentity.died?.where)}  `,
 		);
 	}
-	buffer.push(`\n![](ancestry.gv.png)`);
+	buffer.push(`\n![](ancestry.gv.cairo.svg)`);
 	buffer.push(
 		`Stand: ${options.dateRenderer?.(Date.now())} (\`i${graph.identities.length}\`) – ${originBloodline.length} Verwandte bekannt`,
 	);

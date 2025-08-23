@@ -20,10 +20,11 @@ export class Graph<
 		return this.identities.find((identity) => identity.id === id);
 	}
 
-	resolveRootIdentity(id = this.origin) {
-		return this.identities.find(
+	resolveRootIdentities(id = this.origin) {
+		return this.identities.filter(
 			(identity) =>
 				identity.id === id ||
+				identity.name === id ||
 				identity.relations?.some(
 					(relation) => "as" in relation && relation.as === id,
 				),
@@ -52,7 +53,7 @@ export class Graph<
 			)[1];
 		}
 
-		const identity = mustExist(this.resolveRootIdentity(id));
+		const identity = mustExist(this.resolveIdentity(id));
 		return identity.name ?? identity?.id;
 	}
 
@@ -61,9 +62,11 @@ export class Graph<
 	}
 
 	marriagesOf(id = this.origin) {
-		return this.resolveRootIdentity(id)?.relations?.filter(
-			(relation) => "marriedTo" in relation,
-		);
+		return this.resolveRootIdentities(id)
+			?.flatMap((_) =>
+				_.relations?.filter((relation) => "marriedTo" in relation),
+			)
+			.filter((_) => _ !== undefined);
 	}
 
 	fatherOf(id = this.origin) {
@@ -83,12 +86,16 @@ export class Graph<
 	}
 
 	childrenOf(id = this.origin) {
-		return this.resolveRootIdentity(id)
-			?.relations?.filter(
-				(relation) => "fatherOf" in relation || "motherOf" in relation,
-			)
-			.map((relation) =>
-				"fatherOf" in relation ? relation.fatherOf : relation.motherOf,
+		return this.resolveRootIdentities(id)
+			.flatMap(
+				(_) =>
+					_.relations
+						?.filter(
+							(relation) => "fatherOf" in relation || "motherOf" in relation,
+						)
+						.map((relation) =>
+							"fatherOf" in relation ? relation.fatherOf : relation.motherOf,
+						) ?? [],
 			)
 			.map((childId) => this.resolveIdentity(childId))
 			.filter((child) => child !== undefined);
@@ -163,7 +170,7 @@ export class Graph<
 		);
 
 		distances.set(id, 0);
-		const root = mustExist(this.resolveRootIdentity(id));
+		const root = mustExist(this.resolveIdentity(id));
 		distances.set(root.id, 0);
 
 		let changes = 1;
@@ -213,7 +220,7 @@ export class Graph<
 				const marriages = this.marriagesOf(identity.id);
 				if (options.allowMarriageHop !== false && marriages !== undefined) {
 					for (const marriage of marriages) {
-						const spouse = this.resolveRootIdentity(marriage.marriedTo);
+						const spouse = this.resolveIdentity(marriage.marriedTo);
 						const spouseDistance =
 							(spouse !== undefined ? distances.get(spouse.id) : undefined) ??
 							Number.POSITIVE_INFINITY;

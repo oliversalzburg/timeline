@@ -64,7 +64,7 @@ describe("Renderer", () => {
 		const timeline = load(document, "document");
 		const artifact = render([timeline], {
 			now,
-			origin: "document",
+			origin: "0",
 			theme: "dark",
 		});
 		expect(artifact.graph).to.have.lengthOf(1);
@@ -80,7 +80,7 @@ describe("Renderer", () => {
 		const timelines = documents.map((_, index) => load(_, index.toFixed()));
 		const artifact = render(timelines, {
 			now,
-			origin: "document",
+			origin: "0",
 			theme: "dark",
 		});
 		expect(artifact.graph).to.have.lengthOf(1);
