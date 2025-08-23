@@ -134,7 +134,7 @@ const renderOptions = {
 	debug: Boolean(args.debug),
 	dateRenderer: (/** @type {number} */ date) => {
 		const _ = new Date(date);
-		return `${_.getDate().toFixed(0)}.${(_.getMonth() + 1).toFixed(0)}.${_.getFullYear()}`;
+		return `${_.getDate().toFixed(0).padStart(2, "0")}.${(_.getMonth() + 1).toFixed(0).padStart(2, "0")}.${_.getFullYear()}`;
 	},
 	now: NOW,
 	origin,

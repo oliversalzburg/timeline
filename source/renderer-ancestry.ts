@@ -12,7 +12,10 @@ import {
 	type PortPos,
 	type RankDir,
 } from "./dot.js";
-import { uncertainEventToDateString } from "./genealogy.js";
+import {
+	uncertainEventToDate,
+	uncertainEventToDateString,
+} from "./genealogy.js";
 import { Graph } from "./genealogy2.js";
 import { matchLuminance, setOpacity } from "./palette.js";
 import type { RendererOptions } from "./renderer.js";
@@ -727,16 +730,38 @@ export const renderMarkdown = (
 					allowParentHop: true,
 				})
 			: new Map<string, number>();
+
+	const sortIdentitiesByBirthdate = (identities: Array<Identity>) =>
+		identities.toSorted(
+			(a, b) =>
+				(uncertainEventToDate(a.born)?.valueOf() ?? Number.NEGATIVE_INFINITY) -
+				(uncertainEventToDate(b.born)?.valueOf() ?? Number.NEGATIVE_INFINITY),
+		);
+
 	const originIdentity = mustExist(graph.resolveRootIdentity(options.origin));
-	const originAntecedents = graph.antecedents(originIdentity.id) ?? [];
-	const originDescendants = graph.descendants(originIdentity.id) ?? [];
+	const originAntecedents = sortIdentitiesByBirthdate(
+		graph.antecedents(originIdentity.id) ?? [],
+	);
+	const originDescendants = sortIdentitiesByBirthdate(
+		graph.descendants(originIdentity.id) ?? [],
+	);
+	const originBloodline = sortIdentitiesByBirthdate(
+		graph.bloodline(originIdentity.id) ?? [],
+	);
 
 	const documents = new Array<{ filename: string; content: string }>();
 	const buffer = new Array<string>();
 	const renderMaybe = (maybe: Maybe<string>) =>
 		isNil(maybe) || maybe === ""
-			? "`(INFORMATION FEHLT)`"
-			: maybe.replaceAll(/Unbekannt/g, "`UNBEKANNT`");
+			? "`<INFORMATION FEHLT>`"
+			: maybe.replaceAll(/Unbekannt/g, "`<UNBEKANNT>`");
+	const renderBirthnamePrefixMaybe = (_: Identity) => {
+		const name = graph.resolveIdentityNameAtDate(_.id);
+		if (name === (_.name ?? _.id)) {
+			return "";
+		}
+		return `_${_.name ?? _.id}_ `;
+	};
 
 	const title = `Stammbaum von ${graph.resolveIdentityNameAtDate(originIdentity.id)}`;
 
@@ -748,18 +773,27 @@ export const renderMarkdown = (
 	buffer.push(`copyright: © 2025 Oliver Salzburg. Alle Rechte vorbehalten.`);
 	buffer.push(`rights: © 2025 Oliver Salzburg. Alle Rechte vorbehalten.`);
 	buffer.push(`mainfont: Open Sans`);
-	buffer.push(`geometry: a4paper`);
+	buffer.push(`geometry: [ a4paper, margin=20mm ]`);
+	buffer.push(`output: pdf_document`);
 	buffer.push(`numbersections: false`);
 	buffer.push(`block-headings: true`);
-	buffer.push(`header-includes:`);
-	buffer.push(`- \\pagenumbering{gobble}`);
+	//buffer.push(`header-includes:`);
+	//buffer.push(`- \\pagenumbering{gobble}`);
 	buffer.push("...");
 
 	buffer.push(`# ${title}\n`);
 	buffer.push(
-		`geboren ${renderMaybe(originIdentity.name ?? originIdentity.id)} am ${renderMaybe(uncertainEventToDateString(originIdentity.born, options.dateRenderer))} in ${renderMaybe(originIdentity.born?.where)}.`,
+		`geboren ${renderBirthnamePrefixMaybe(originIdentity)}${renderMaybe(uncertainEventToDateString(originIdentity.born, options.dateRenderer))} in ${renderMaybe(originIdentity.born?.where)}  `,
 	);
+	if (originIdentity.died !== undefined) {
+		buffer.push(
+			`verstorben ${renderMaybe(uncertainEventToDateString(originIdentity.died, options.dateRenderer))} in ${renderMaybe(originIdentity.died?.where)}  `,
+		);
+	}
 	buffer.push(`\n![](ancestry.gv.png)`);
+	buffer.push(
+		`Stand: ${options.dateRenderer?.(Date.now())} (\`i${graph.identities.length}\`) – ${originBloodline.length} Verwandte bekannt`,
+	);
 
 	if (0 < originDescendants.length) {
 		let consumed = 0;
@@ -772,8 +806,14 @@ export const renderMarkdown = (
 
 			buffer.push(`1. **${graph.resolveIdentityNameAtDate(descendant.id)}**  `);
 			buffer.push(
-				`   geboren ${renderMaybe(descendant.name ?? descendant.id)} am ${renderMaybe(uncertainEventToDateString(descendant.born, options.dateRenderer))} in ${renderMaybe(descendant.born?.where)}.\n`,
+				`   geboren ${renderBirthnamePrefixMaybe(descendant)}${renderMaybe(uncertainEventToDateString(descendant.born, options.dateRenderer))} in ${renderMaybe(descendant.born?.where)}  `,
 			);
+			if (descendant.died !== undefined) {
+				buffer.push(
+					`   verstorben ${renderMaybe(uncertainEventToDateString(descendant.died, options.dateRenderer))} in ${renderMaybe(descendant.died?.where)}  `,
+				);
+			}
+			buffer.push("\n");
 			++consumed;
 		}
 
@@ -788,8 +828,14 @@ export const renderMarkdown = (
 					`1. **${graph.resolveIdentityNameAtDate(descendant.id)}**  `,
 				);
 				buffer.push(
-					`   geboren ${renderMaybe(descendant.name ?? descendant.id)} am ${renderMaybe(uncertainEventToDateString(descendant.born, options.dateRenderer))} in ${renderMaybe(descendant.born?.where)}.\n`,
+					`   geboren ${renderBirthnamePrefixMaybe(descendant)}${renderMaybe(uncertainEventToDateString(descendant.born, options.dateRenderer))} in ${renderMaybe(descendant.born?.where)}  `,
 				);
+				if (descendant.died !== undefined) {
+					buffer.push(
+						`   verstorben ${renderMaybe(uncertainEventToDateString(descendant.died, options.dateRenderer))} in ${renderMaybe(descendant.died?.where)}  `,
+					);
+				}
+				buffer.push("\n");
 				++consumed;
 			}
 		}
@@ -805,8 +851,14 @@ export const renderMarkdown = (
 					`1. **${graph.resolveIdentityNameAtDate(descendant.id)}**  `,
 				);
 				buffer.push(
-					`   geboren ${renderMaybe(descendant.name ?? descendant.id)} am ${renderMaybe(uncertainEventToDateString(descendant.born, options.dateRenderer))} in ${renderMaybe(descendant.born?.where)}.\n`,
+					`   geboren ${renderBirthnamePrefixMaybe(descendant)}${renderMaybe(uncertainEventToDateString(descendant.born, options.dateRenderer))} in ${renderMaybe(descendant.born?.where)}  `,
 				);
+				if (descendant.died !== undefined) {
+					buffer.push(
+						`   verstorben ${renderMaybe(uncertainEventToDateString(descendant.died, options.dateRenderer))} in ${renderMaybe(descendant.died?.where)}  `,
+					);
+				}
+				buffer.push("\n");
 				++consumed;
 			}
 		}
@@ -829,11 +881,60 @@ export const renderMarkdown = (
 					`1. **${graph.resolveIdentityNameAtDate(antecedent.id)}**  `,
 				);
 				buffer.push(
-					`   geboren ${renderMaybe(antecedent.name ?? antecedent.id)} am ${renderMaybe(uncertainEventToDateString(antecedent.born, options.dateRenderer))} in ${renderMaybe(antecedent.born?.where)}.\n`,
+					`   geboren ${renderBirthnamePrefixMaybe(antecedent)}${renderMaybe(uncertainEventToDateString(antecedent.born, options.dateRenderer))} in ${renderMaybe(antecedent.born?.where)}  `,
 				);
+				if (antecedent.died !== undefined) {
+					buffer.push(
+						`   verstorben ${renderMaybe(uncertainEventToDateString(antecedent.died, options.dateRenderer))} in ${renderMaybe(antecedent.died?.where)}  `,
+					);
+				}
+				buffer.push("\n");
 				++consumed;
 			}
 			++generation;
+		}
+	}
+
+	if (0 < originBloodline.length) {
+		buffer.push(`\n## Weitere Nachkommen meiner Vorfahren\n`);
+
+		const memberByHops = new Map(
+			originBloodline
+				.filter(
+					(_) =>
+						!originDescendants.includes(_) &&
+						!originAntecedents.includes(_) &&
+						originIdentity !== _,
+				)
+				.sort((a, b) => mustExist(hops.get(a.id)) - mustExist(hops.get(b.id)))
+				.reduce((cache, identitiy) => {
+					const jump = mustExist(hops.get(identitiy.id));
+					if (!cache.has(jump)) {
+						cache.set(jump, []);
+					}
+					mustExist(cache.get(jump)).push(identitiy);
+					return cache;
+				}, new Map<number, Array<Identity>>()),
+		);
+
+		for (const [degree, members] of memberByHops.entries()) {
+			if (0 === members.length || !Number.isFinite(degree)) {
+				continue;
+			}
+
+			buffer.push(`\n### ${degree}. Grad\n`);
+			for (const member of members) {
+				buffer.push(`1. **${graph.resolveIdentityNameAtDate(member.id)}**  `);
+				buffer.push(
+					`   geboren ${renderBirthnamePrefixMaybe(member)}${renderMaybe(uncertainEventToDateString(member.born, options.dateRenderer))} in ${renderMaybe(member.born?.where)}  `,
+				);
+				if (member.died !== undefined) {
+					buffer.push(
+						`   verstorben ${renderMaybe(uncertainEventToDateString(member.died, options.dateRenderer))} in ${renderMaybe(member.died?.where)}  `,
+					);
+				}
+				buffer.push("\n");
+			}
 		}
 	}
 
