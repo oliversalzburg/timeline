@@ -38,59 +38,67 @@ properties:
         type: array
         items:
           type: string
+      # Period
+      started:
+        type: string
+      ended:
+        type: string
       # Location
       established:
         title: Establishment Information
         type:
           - object
           - "null"
-        date:
-          title: Exact Day of Establishment
-          type: string
-        when:
-          title: Uncertain Date of Establishment
-          type: object
-          properties:
-            after:
-              type: string
-            before:
-              type: string
-            showAs:
-              type: string
+        properties:
+          date:
+            title: Exact Day of Establishment
+            type: string
+          when:
+            title: Uncertain Date of Establishment
+            type: object
+            properties:
+              after:
+                type: string
+              before:
+                type: string
+              showAs:
+                type: string
       dissolved:
         title: Dissolvement Information
         type:
           - object
           - "null"
-        date:
-          title: Exact Day of Dissolvement
-          type: string
-        when:
-          title: Uncertain Date of Dissolvement
-          type: object
-          properties:
-            after:
-              type: string
-            before:
-              type: string
-            showAs:
-              type: string
+        properties:
+          date:
+            title: Exact Day of Dissolvement
+            type: string
+          when:
+            title: Uncertain Date of Dissolvement
+            type: object
+            properties:
+              after:
+                type: string
+              before:
+                type: string
+              showAs:
+                type: string
       position:
         title: Location Information
         type: object
-        latlong:
-          title: Exact Location
-          type: string
-        where:
-          title: Uncertain Location
-          type: object
-          properties:
-            around:
-              type: string
-            within:
-              type: string
-            showAs:
-              type: string
+        properties:
+          latlong:
+            title: Exact Location
+            type: string
+          where:
+            title: Uncertain Location
+            type: object
+            properties:
+              around:
+                type: string
+              within:
+                type: string
+              showAs:
+                type: string
       # Person
       born:
         title: Birth Information
@@ -100,6 +108,9 @@ properties:
         properties:
           date:
             title: Exact Day of Birth
+            type: string
+          in:
+            title: Exact Location of Birth
             type: string
           sexus:
             title: Sexus of Person
