@@ -3,7 +3,14 @@ import {
 	type Maybe,
 	mustExist,
 } from "@oliversalzburg/js-utils/data/nil.js";
-import { FONT_NAME, FONT_SIZE, TRANSPARENT } from "./constants.js";
+import {
+	FONT_NAME,
+	FONT_SIZE,
+	TRANSPARENT,
+	UNICODE_BORN,
+	UNICODE_DIED,
+	UNICODE_MARRIED,
+} from "./constants.js";
 import {
 	dot,
 	type EdgeStyle,
@@ -22,49 +29,6 @@ import type { RendererOptions } from "./renderer.js";
 import { StyleStatic } from "./style.js";
 import type { Style } from "./styles.js";
 import type { Identity, TimelineAncestryRenderer } from "./types.js";
-
-export class Child {
-	identity: string;
-	constructor(identity: string) {
-		this.identity = identity;
-		this.children = [];
-		this.marriages = [];
-	}
-	father?: string;
-	mother?: string;
-	marriages: Array<string>;
-	children: Array<string>;
-	distance?: number;
-}
-export class Alias {
-	identity: string;
-	origin: string;
-	constructor(identity: string, origin: string) {
-		this.identity = identity;
-		this.origin = origin;
-	}
-}
-export class Joiner {
-	who: Array<string>;
-	type?: "marriage" | "dna";
-	date?: string;
-	until?: string;
-	mergeFrom?: Joiner;
-	mergeInto?: Joiner;
-	constructor(who: Array<string>, type?: "marriage" | "dna") {
-		this.who = who;
-		this.type = type;
-	}
-	static makeJoinId(
-		a: string | undefined,
-		b: string | undefined,
-		date?: string,
-		until?: string,
-	) {
-		const ids = [a ?? "NULL", b ?? "NULL"].sort();
-		return `JOINED-${ids.join("+")}@${date ?? "NULL"}-${until ?? "NULL"}`;
-	}
-}
 
 export const render = (
 	timelines: Array<TimelineAncestryRenderer>,
@@ -772,7 +736,7 @@ export const renderMarkdown = (
 	//buffer.push(`date: ${new Date().toISOString()}`);
 	buffer.push(`copyright: © 2025 Oliver Salzburg. Alle Rechte vorbehalten.`);
 	buffer.push(`rights: © 2025 Oliver Salzburg. Alle Rechte vorbehalten.`);
-	buffer.push(`mainfont: Open Sans`);
+	buffer.push(`mainfont: DejaVu Sans`);
 	buffer.push(`geometry: [ a4paper, margin=20mm ]`);
 	buffer.push(`output: pdf_document`);
 	buffer.push(`numbersections: false`);
@@ -783,11 +747,22 @@ export const renderMarkdown = (
 
 	buffer.push(`# ${title}\n`);
 	buffer.push(
-		`geboren ${renderBirthnamePrefixMaybe(originIdentity)}${renderMaybe(uncertainEventToDateString(originIdentity.born, options.dateRenderer))} in ${renderMaybe(originIdentity.born?.where)}  `,
+		`\\${UNICODE_BORN} geboren ${renderBirthnamePrefixMaybe(originIdentity)}${renderMaybe(uncertainEventToDateString(originIdentity.born, options.dateRenderer))} in ${renderMaybe(originIdentity.born?.where)}  `,
 	);
+	const marriages = graph.marriagesOf(originIdentity.id);
+	for (const marriage of marriages) {
+		const marriageDate = uncertainEventToDate(marriage);
+		const marriageDateString = uncertainEventToDateString(
+			marriage,
+			options.dateRenderer,
+		);
+		buffer.push(
+			`   \\${UNICODE_MARRIED} verheiratet ${marriageDateString} mit ${graph.resolveIdentityNameAtDate(marriage.marriedTo, marriageDate)} in ${renderMaybe(marriage.where)}  `,
+		);
+	}
 	if (originIdentity.died !== undefined) {
 		buffer.push(
-			`verstorben ${renderMaybe(uncertainEventToDateString(originIdentity.died, options.dateRenderer))} in ${renderMaybe(originIdentity.died?.where)}  `,
+			`${UNICODE_DIED} verstorben ${renderMaybe(uncertainEventToDateString(originIdentity.died, options.dateRenderer))} in ${renderMaybe(originIdentity.died?.where)}  `,
 		);
 	}
 	buffer.push(`\n![](ancestry.gv.cairo.svg)`);
@@ -806,11 +781,22 @@ export const renderMarkdown = (
 
 			buffer.push(`1. **${graph.resolveIdentityNameAtDate(descendant.id)}**  `);
 			buffer.push(
-				`   geboren ${renderBirthnamePrefixMaybe(descendant)}${renderMaybe(uncertainEventToDateString(descendant.born, options.dateRenderer))} in ${renderMaybe(descendant.born?.where)}  `,
+				`   \\${UNICODE_BORN} geboren ${renderBirthnamePrefixMaybe(descendant)}${renderMaybe(uncertainEventToDateString(descendant.born, options.dateRenderer))} in ${renderMaybe(descendant.born?.where)}  `,
 			);
+			const marriages = graph.marriagesOf(descendant.id);
+			for (const marriage of marriages) {
+				const marriageDate = uncertainEventToDate(marriage);
+				const marriageDateString = uncertainEventToDateString(
+					marriage,
+					options.dateRenderer,
+				);
+				buffer.push(
+					`   \\${UNICODE_MARRIED} verheiratet ${marriageDateString} mit ${graph.resolveIdentityNameAtDate(marriage.marriedTo, marriageDate)} in ${renderMaybe(marriage.where)}  `,
+				);
+			}
 			if (descendant.died !== undefined) {
 				buffer.push(
-					`   verstorben ${renderMaybe(uncertainEventToDateString(descendant.died, options.dateRenderer))} in ${renderMaybe(descendant.died?.where)}  `,
+					`   ${UNICODE_DIED} verstorben ${renderMaybe(uncertainEventToDateString(descendant.died, options.dateRenderer))} in ${renderMaybe(descendant.died?.where)}  `,
 				);
 			}
 			buffer.push("\n");
@@ -828,11 +814,11 @@ export const renderMarkdown = (
 					`1. **${graph.resolveIdentityNameAtDate(descendant.id)}**  `,
 				);
 				buffer.push(
-					`   geboren ${renderBirthnamePrefixMaybe(descendant)}${renderMaybe(uncertainEventToDateString(descendant.born, options.dateRenderer))} in ${renderMaybe(descendant.born?.where)}  `,
+					`   \\${UNICODE_BORN} geboren ${renderBirthnamePrefixMaybe(descendant)}${renderMaybe(uncertainEventToDateString(descendant.born, options.dateRenderer))} in ${renderMaybe(descendant.born?.where)}  `,
 				);
 				if (descendant.died !== undefined) {
 					buffer.push(
-						`   verstorben ${renderMaybe(uncertainEventToDateString(descendant.died, options.dateRenderer))} in ${renderMaybe(descendant.died?.where)}  `,
+						`   ${UNICODE_DIED} verstorben ${renderMaybe(uncertainEventToDateString(descendant.died, options.dateRenderer))} in ${renderMaybe(descendant.died?.where)}  `,
 					);
 				}
 				buffer.push("\n");
@@ -851,11 +837,11 @@ export const renderMarkdown = (
 					`1. **${graph.resolveIdentityNameAtDate(descendant.id)}**  `,
 				);
 				buffer.push(
-					`   geboren ${renderBirthnamePrefixMaybe(descendant)}${renderMaybe(uncertainEventToDateString(descendant.born, options.dateRenderer))} in ${renderMaybe(descendant.born?.where)}  `,
+					`   \\${UNICODE_BORN} geboren ${renderBirthnamePrefixMaybe(descendant)}${renderMaybe(uncertainEventToDateString(descendant.born, options.dateRenderer))} in ${renderMaybe(descendant.born?.where)}  `,
 				);
 				if (descendant.died !== undefined) {
 					buffer.push(
-						`   verstorben ${renderMaybe(uncertainEventToDateString(descendant.died, options.dateRenderer))} in ${renderMaybe(descendant.died?.where)}  `,
+						`   ${UNICODE_DIED} verstorben ${renderMaybe(uncertainEventToDateString(descendant.died, options.dateRenderer))} in ${renderMaybe(descendant.died?.where)}  `,
 					);
 				}
 				buffer.push("\n");
@@ -881,11 +867,22 @@ export const renderMarkdown = (
 					`1. **${graph.resolveIdentityNameAtDate(antecedent.id)}**  `,
 				);
 				buffer.push(
-					`   geboren ${renderBirthnamePrefixMaybe(antecedent)}${renderMaybe(uncertainEventToDateString(antecedent.born, options.dateRenderer))} in ${renderMaybe(antecedent.born?.where)}  `,
+					`   \\${UNICODE_BORN} geboren ${renderBirthnamePrefixMaybe(antecedent)}${renderMaybe(uncertainEventToDateString(antecedent.born, options.dateRenderer))} in ${renderMaybe(antecedent.born?.where)}  `,
 				);
+				const marriages = graph.marriagesOf(antecedent.id);
+				for (const marriage of marriages) {
+					const marriageDate = uncertainEventToDate(marriage);
+					const marriageDateString = uncertainEventToDateString(
+						marriage,
+						options.dateRenderer,
+					);
+					buffer.push(
+						`   \\${UNICODE_MARRIED} verheiratet ${marriageDateString} mit ${graph.resolveIdentityNameAtDate(marriage.marriedTo, marriageDate)} in ${renderMaybe(marriage.where)}  `,
+					);
+				}
 				if (antecedent.died !== undefined) {
 					buffer.push(
-						`   verstorben ${renderMaybe(uncertainEventToDateString(antecedent.died, options.dateRenderer))} in ${renderMaybe(antecedent.died?.where)}  `,
+						`   ${UNICODE_DIED} verstorben ${renderMaybe(uncertainEventToDateString(antecedent.died, options.dateRenderer))} in ${renderMaybe(antecedent.died?.where)}  `,
 					);
 				}
 				buffer.push("\n");
@@ -924,13 +921,20 @@ export const renderMarkdown = (
 
 			buffer.push(`\n### ${degree}. Grad\n`);
 			for (const member of members) {
+				const marriages = graph.marriagesOf(member.id);
 				buffer.push(`1. **${graph.resolveIdentityNameAtDate(member.id)}**  `);
 				buffer.push(
-					`   geboren ${renderBirthnamePrefixMaybe(member)}${renderMaybe(uncertainEventToDateString(member.born, options.dateRenderer))} in ${renderMaybe(member.born?.where)}  `,
+					`   \\${UNICODE_BORN} geboren ${renderBirthnamePrefixMaybe(member)}${renderMaybe(uncertainEventToDateString(member.born, options.dateRenderer))} in ${renderMaybe(member.born?.where)}  `,
 				);
+				for (const marriage of marriages) {
+					const marriageDate = uncertainEventToDate(marriage);
+					buffer.push(
+						`   \\${UNICODE_MARRIED} verheiratet mit ${graph.resolveIdentityNameAtDate(marriage.marriedTo, marriageDate)} in ${renderMaybe(marriage.where)}  `,
+					);
+				}
 				if (member.died !== undefined) {
 					buffer.push(
-						`   verstorben ${renderMaybe(uncertainEventToDateString(member.died, options.dateRenderer))} in ${renderMaybe(member.died?.where)}  `,
+						`   ${UNICODE_DIED} verstorben ${renderMaybe(uncertainEventToDateString(member.died, options.dateRenderer))} in ${renderMaybe(member.died?.where)}  `,
 					);
 				}
 				buffer.push("\n");

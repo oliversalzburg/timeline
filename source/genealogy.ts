@@ -143,16 +143,19 @@ export class Graph<
 						(b?.valueOf() ?? Number.NEGATIVE_INFINITY),
 				) ?? [];
 		if (0 < aliases?.length) {
-			return mustExist(
-				aliases.findLast(
-					([aliasDate]) =>
-						(aliasDate?.valueOf() ?? Number.NEGATIVE_INFINITY) <
-						date?.valueOf(),
-				),
-			)[1];
+			const alias = aliases.findLast(
+				([aliasDate]) =>
+					(aliasDate?.valueOf() ?? Number.NEGATIVE_INFINITY) < date?.valueOf(),
+			);
+			if (!isNil(alias)) {
+				return alias[1];
+			}
 		}
 
-		const identity = mustExist(this.resolveIdentity(id));
+		const identity = mustExist(
+			this.resolveIdentity(id),
+			`unable to resolve identity '${id}'`,
+		);
 		return identity.name ?? identity?.id;
 	}
 
