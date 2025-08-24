@@ -5,7 +5,7 @@ import { hostname, userInfo } from "node:os";
 import { mustExist } from "@oliversalzburg/js-utils/data/nil.js";
 import { parse } from "yaml";
 import { analyze } from "../lib/analyzer.js";
-import { Graph } from "../lib/genealogy2.js";
+import { Graph } from "../lib/genealogy.js";
 import { load } from "../lib/loader.js";
 import { anonymize, sort, uniquify } from "../lib/operator.js";
 import { render } from "../lib/renderer.js";

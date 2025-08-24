@@ -2,7 +2,7 @@
 
 import { readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { parse } from "yaml";
-import { Graph } from "../lib/genealogy2.js";
+import { Graph } from "../lib/genealogy.js";
 import { load } from "../lib/loader.js";
 import { anonymize, sort, uniquify } from "../lib/operator.js";
 import { render, renderMarkdown } from "../lib/renderer-ancestry.js";

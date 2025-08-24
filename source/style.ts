@@ -2,7 +2,7 @@ import { mustExist } from "@oliversalzburg/js-utils/data/nil.js";
 import { hslPalette } from "@oliversalzburg/js-utils/graphics/palette.js";
 import { TRANSPARENT } from "./constants.js";
 import type { EdgeStyle, NodeStyle, Shape } from "./dot.js";
-import type { Graph } from "./genealogy2.js";
+import type { Graph } from "./genealogy.js";
 import {
 	fillColorForPen,
 	matchFontColorTo,

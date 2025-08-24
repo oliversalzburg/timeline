@@ -13,10 +13,10 @@ import {
 	type RankDir,
 } from "./dot.js";
 import {
+	Graph,
 	uncertainEventToDate,
 	uncertainEventToDateString,
 } from "./genealogy.js";
-import { Graph } from "./genealogy2.js";
 import { matchLuminance, setOpacity } from "./palette.js";
 import type { RendererOptions } from "./renderer.js";
 import { StyleStatic } from "./style.js";
@@ -70,7 +70,7 @@ export const render = (
 	timelines: Array<TimelineAncestryRenderer>,
 	options: RendererOptions,
 ) => {
-	const depth = 10;
+	const depth = 6;
 
 	const graph = new Graph(timelines, options.origin);
 	const hops =
