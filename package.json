@@ -17,7 +17,7 @@
 		}
 	},
 	"devDependencies": {
-		"@biomejs/biome": "2.2.0",
+		"@biomejs/biome": "2.2.2",
 		"@oliversalzburg/js-utils": "0.5.0",
 		"@types/node": "22.17.2",
 		"@types/web": "0.0.262",
