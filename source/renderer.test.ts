@@ -49,6 +49,7 @@ describe("Renderer", () => {
 		const artifact = render([timeline], {
 			now,
 			origin: "document",
+			renderAnonymization: "disabled",
 			theme: "dark",
 		});
 		expect(artifact.graph).to.have.lengthOf(1);
@@ -65,6 +66,7 @@ describe("Renderer", () => {
 		const artifact = render([timeline], {
 			now,
 			origin: "document",
+			renderAnonymization: "disabled",
 			theme: "dark",
 		});
 		expect(artifact.graph).to.have.lengthOf(1);
@@ -81,6 +83,7 @@ describe("Renderer", () => {
 		const artifact = render(timelines, {
 			now,
 			origin: "0",
+			renderAnonymization: "disabled",
 			theme: "dark",
 		});
 		expect(artifact.graph).to.have.lengthOf(1);
@@ -105,6 +108,7 @@ describe("Renderer", () => {
 			{
 				now,
 				origin: "document",
+				renderAnonymization: "disabled",
 				theme: "dark",
 			},
 		);
@@ -129,6 +133,7 @@ describe("Renderer", () => {
 			{
 				now,
 				origin: "document",
+				renderAnonymization: "disabled",
 				theme: "dark",
 			},
 		);
@@ -153,6 +158,7 @@ describe("Renderer", () => {
 			{
 				now,
 				origin: "document",
+				renderAnonymization: "disabled",
 				theme: "dark",
 			},
 		);
@@ -175,6 +181,7 @@ describe("Renderer", () => {
 			{
 				now,
 				origin: "document",
+				renderAnonymization: "disabled",
 				theme: "dark",
 			},
 		);

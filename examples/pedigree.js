@@ -5,7 +5,7 @@ import { parse } from "yaml";
 import { Graph } from "../lib/genealogy.js";
 import { load } from "../lib/loader.js";
 import { anonymize, sort, uniquify } from "../lib/operator.js";
-import { render, renderMarkdown } from "../lib/renderer-ancestry.js";
+import { renderReport, renderSimple } from "../lib/renderer-identity.js";
 import { Styling } from "../lib/style.js";
 
 /** @import {RendererOptions} from "../lib/renderer.js" */
@@ -130,6 +130,7 @@ const ss = new Styling(finalTimelines, theme).styles(graph);
 // Write GraphViz graph.
 process.stdout.write(`Generating GraphViz graph for ancestry chart...\n`);
 
+/** @type {RendererOptions} */
 const renderOptions = {
 	debug: Boolean(args.debug),
 	dateRenderer: (/** @type {number} */ date) => {
@@ -138,11 +139,12 @@ const renderOptions = {
 	},
 	now: NOW,
 	origin,
+	renderAnonymization: "enabled",
 	styleSheet: ss,
 	theme,
 };
-const dotGraph = render(finalTimelines, renderOptions);
-const markdown = renderMarkdown(finalTimelines, renderOptions);
+const dotGraph = renderSimple(finalTimelines, renderOptions);
+const markdown = renderReport(finalTimelines, renderOptions);
 
 process.stdout.write(`Writing graph...\n`);
 writeFileSync(outputPath, dotGraph);

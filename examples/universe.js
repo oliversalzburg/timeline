@@ -179,6 +179,7 @@ const renderOptions = {
 	},
 	now: NOW,
 	origin,
+	renderAnonymization: "enabled",
 	segment: typeof args.segment === "string" ? Number(args.segment) : undefined,
 	skipBefore:
 		typeof args["skip-before"] === "string"

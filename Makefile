@@ -11,6 +11,7 @@ PREFIX ?= universe-
 _SOURCES := $(wildcard source/*.ts source/*/*.ts)
 _UNIVERSE_NAME := $(PREFIX)$(_HORIZON)
 _UNIVERSE := output/$(_UNIVERSE_NAME)
+_PEDIGREE := output/pedigree
 _SEGMENTS := $(wildcard $(_UNIVERSE)-segment*.gv)
 _TIMELINES := $(filter-out %.auto.yml, $(wildcard ~/timelines/*.yml ~/timelines/*/*.yml))
 _AUTO_TIMELINES := $(patsubst %.yml,%.auto.yml,$(_TIMELINES))
@@ -49,6 +50,7 @@ default: build docs universe
 build: lib/timeline.js
 
 lib: node_modules $(_SOURCES)
+	@echo "Building library..."
 	@npm exec -- tsc --build tsconfig.json
 
 schema:
@@ -75,18 +77,24 @@ $(_UNIVERSE).svg &: \
 	@node --enable-source-maps contrib/svgcat.js \
 		--target=$@ $^
 
+$(_PEDIGREE).gv $(_PEDIGREE).gv.md &: $(_AUTO_TIMELINES) lib node_modules | output
+	@node --enable-source-maps examples/pedigree.js \
+		$(_PEDIGREE_FLAGS) \
+		--output=$(_PEDIGREE).gv $(_AUTO_TIMELINES)
+$(_PEDIGREE).gv.png $(_PEDIGREE).gv.svg $(_PEDIGREE).gv.cairo.svg &: $(_PEDIGREE).gv
+	@dot -Gpad=2 -O -Tpng -Tsvg -Tsvg:cairo $(_PEDIGREE).gv
+$(_PEDIGREE).pdf: $(_PEDIGREE).gv.md $(_PEDIGREE).gv.cairo.svg
+	@cd output; pandoc --from markdown --to pdf --pdf-engine lualatex --output $(notdir $@) $(notdir $(_PEDIGREE)).gv.md
+
 universe:
 	$(MAKE) segmented
 	$(MAKE) $(_UNIVERSE)-img.svg $(_UNIVERSE)-img.min.svg
 	@node --enable-source-maps examples/build-site.js \
 		--output=output $(_UNIVERSE).gv
 
-pedigree: $(_AUTO_TIMELINES) lib node_modules | output
-	@node --enable-source-maps examples/ancestry.js \
-		$(_PEDIGREE_FLAGS) \
-		--output=output/ancestry.gv $(_AUTO_TIMELINES)
-	@dot -Gpad=2 -O -Tpng -Tsvg -Tsvg:cairo output/ancestry.gv
-	@cd output; pandoc --from markdown --to pdf --pdf-engine lualatex --output ancestry.pdf ancestry.gv.md
+pedigree:
+	rm --force $(_PEDIGREE).*
+	$(MAKE) $(_PEDIGREE).pdf
 
 # Compress an SVG by applying lossy XML transformations.
 %.min.svg: %.svg
@@ -212,7 +220,7 @@ _site/index.html: $(_UNIVERSE).zen.html | _site
 
 # Clean up all build artifacts.
 clean:
-	@rm --force --recursive _site lib output
+	@rm --force --recursive _site lib output/*
 	@find -iname "callgrind.out.*" -delete
 	@find -iwholename "schemas/*.schema.json" -delete
 # Additionally delete all stored dependencies.

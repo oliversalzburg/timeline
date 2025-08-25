@@ -7,7 +7,6 @@ import {
 	FONT_NAME,
 	FONT_SIZE,
 	TRANSPARENT,
-	UNICODE_BORN,
 	UNICODE_DIED,
 	UNICODE_MARRIED,
 } from "./constants.js";
@@ -30,11 +29,178 @@ import { StyleStatic } from "./style.js";
 import type { Style } from "./styles.js";
 import type { Identity, TimelineAncestryRenderer } from "./types.js";
 
-export const render = (
+export const renderSimple = (
 	timelines: Array<TimelineAncestryRenderer>,
 	options: RendererOptions,
 ) => {
-	const depth = 6;
+	const depth = 7;
+
+	const graph = new Graph(timelines, options.origin);
+	const hops =
+		options.origin !== undefined
+			? graph.calculateHopsFrom(options.origin, {
+					allowChildHop: true,
+					allowMarriageHop: false,
+					allowParentHop: true,
+				})
+			: new Map<string, number>();
+	const originIdentity = mustExist(graph.resolveIdentity(options.origin));
+	const originAntecedents =
+		originIdentity !== undefined
+			? graph.antecedents(originIdentity.id)
+			: undefined;
+	const originDescendants =
+		originIdentity !== undefined
+			? graph.descendants(originIdentity.id)
+			: undefined;
+	const originBloodline =
+		originIdentity !== undefined
+			? graph.bloodline(originIdentity.id)
+			: undefined;
+
+	const defaultBackground = options.theme === "light" ? "#FFFFFF" : "#000000";
+	const defaultForeground = options.theme === "light" ? "#000000" : "#FFFFFF";
+	const fontNode =
+		options.renderAnonymization === "enabled" ? "DummyText2" : "DejaVu Serif";
+
+	const rankdir: RankDir = "RL";
+
+	const d = dot();
+	d.raw("digraph ancestry {");
+	d.raw(
+		`node [fontcolor="${defaultForeground}"; fontname="${fontNode}"; fontsize="${FONT_SIZE * 2}";]`,
+	);
+	d.raw(`edge [color="${defaultForeground}";]`);
+	d.raw(`bgcolor="${defaultBackground}"`);
+	//d.raw('center="true"');
+	d.raw('comment=" "');
+	//d.raw('concentrate="true"');
+	/*
+	d.raw(`fontcolor="${defaultForeground}"`);
+	d.raw(`fontname="Blackside Personal Use Only"`);
+	d.raw(`fontsize="${FONT_SIZE * 10}"`);
+	if (originIdentity !== undefined && options.dateRenderer !== undefined) {
+		d.raw(`label="${originIdentity.name ?? originIdentity.id}"`);
+	}
+	d.raw(`labeljust="l"`);
+	d.raw(`labelloc="b"`);
+	*/
+	d.raw(`margin="0"`);
+	d.raw(`pad="0"`);
+	d.raw(`rankdir="${rankdir}"`);
+	d.raw(`ranksep="3"`);
+	d.raw(`tooltip=" "`);
+
+	const name = (_?: Identity | null | undefined) => _?.name ?? _?.id ?? _;
+	const opacityFromDistance = (distance?: number) =>
+		options.debug
+			? 255
+			: Math.max(
+					30,
+					distance !== undefined ? Math.max(0, 255 - distance * 30) : 0,
+				);
+
+	const pointTowards = (
+		unfixed = false,
+	): { headport?: PortPos; tailport?: PortPos } => {
+		switch (rankdir as RankDir) {
+			case "LR":
+				return {
+					headport: unfixed ? undefined : "w",
+					tailport: unfixed ? undefined : "e",
+				};
+			case "RL":
+				return {
+					headport: unfixed ? undefined : "e",
+					tailport: unfixed ? undefined : "w",
+				};
+			case "TB":
+				return {
+					headport: unfixed ? undefined : "n",
+					tailport: unfixed ? undefined : "s",
+				};
+			case "BT":
+				return {
+					headport: unfixed ? undefined : "s",
+					tailport: unfixed ? undefined : "n",
+				};
+		}
+	};
+
+	for (const identity of graph.identities) {
+		const distance = hops.get(identity.id);
+		if (
+			distance === undefined ||
+			!Number.isFinite(distance) ||
+			depth < distance
+		) {
+			continue;
+		}
+		const opacity = opacityFromDistance(distance);
+		const color = setOpacity(defaultForeground, opacity);
+		d.node(identity.id, {
+			fontcolor:
+				identity === originIdentity || originAntecedents?.includes(identity)
+					? defaultForeground
+					: color,
+			fontname: identity === originIdentity ? `${fontNode} bold` : undefined,
+			fontsize: identity === originIdentity ? FONT_SIZE + 4 : undefined,
+			label: `${name(identity)}`,
+			penwidth: identity.id === originIdentity.id ? 1 : 0,
+			shape: identity.id === originIdentity.id ? "circle" : "plain",
+		});
+	}
+	for (const identity of graph.identities) {
+		const distance = hops.get(identity.id);
+		if (
+			distance === undefined ||
+			!Number.isFinite(distance) ||
+			depth < distance
+		) {
+			continue;
+		}
+
+		for (const child of graph.childrenOf(identity.id) ?? []) {
+			const childDistance = hops.get(child.id);
+			if (
+				childDistance === undefined ||
+				!Number.isFinite(childDistance) ||
+				depth < childDistance
+			) {
+				continue;
+			}
+
+			const opacity = opacityFromDistance(childDistance);
+			const color = setOpacity(defaultForeground, opacity);
+
+			let linkStyle: EdgeStyle | undefined = originDescendants?.includes(child)
+				? "solid"
+				: undefined;
+			linkStyle ??=
+				child === originIdentity || originAntecedents?.includes(child)
+					? "bold"
+					: undefined;
+			linkStyle ??= originBloodline?.includes(child) ? "dashed" : undefined;
+			linkStyle ??= "dotted";
+
+			d.link(identity.id, child.id, {
+				...pointTowards(),
+				color,
+				style: linkStyle,
+				weight: childDistance < 10 ? 1000 : 1,
+			});
+		}
+	}
+
+	d.raw("}");
+	return d.toString();
+};
+
+export const renderUniverse = (
+	timelines: Array<TimelineAncestryRenderer>,
+	options: RendererOptions,
+) => {
+	const depth = 100;
 
 	const graph = new Graph(timelines, options.origin);
 	const hops =
@@ -76,7 +242,7 @@ export const render = (
 		"Switzerland",
 		"Billa Mount",
 	];
-	const fontNode = "DejaVu Serif";
+	const fontNode = "DummyText2"; //"DejaVu Serif";
 	const rankdir: RankDir = "RL";
 
 	const d = dot();
@@ -683,7 +849,7 @@ export const render = (
 	return d.toString();
 };
 
-export const renderMarkdown = (
+export const renderReport = (
 	timelines: Array<TimelineAncestryRenderer>,
 	options: RendererOptions,
 ) => {
@@ -717,10 +883,10 @@ export const renderMarkdown = (
 
 	const documents = new Array<{ filename: string; content: string }>();
 	const buffer = new Array<string>();
-	const renderMaybe = (maybe: Maybe<string>) =>
+	const renderMaybe = (maybe: Maybe<string>, label?: string) =>
 		isNil(maybe) || maybe === ""
-			? "`<INFORMATION FEHLT>`"
-			: maybe.replaceAll(/Unbekannt/g, "`<UNBEKANNT>`");
+			? `[${label !== undefined ? `${label} ` : ""}fehlt]{.mark}`
+			: maybe.replaceAll(/Unbekannt/g, "[Unbekannt]{.mark}");
 	const renderBirthnamePrefixMaybe = (_: Identity) => {
 		const name = graph.resolveIdentityNameAtDate(_.id);
 		if (name === (_.name ?? _.id)) {
@@ -729,165 +895,159 @@ export const renderMarkdown = (
 		return `_${_.name ?? _.id}_ `;
 	};
 
-	const title = `Stammbaum von ${graph.resolveIdentityNameAtDate(originIdentity.id)}`;
+	const _name = graph.resolveIdentityNameAtDate(originIdentity.id);
+	const title = "Mein Stammbaum";
+	const dateString =
+		options.dateRenderer !== undefined
+			? options.dateRenderer(options.now)
+			: new Date(options.now).toLocaleDateString();
+
+	const renderIdentity = (subject: Identity, output = buffer) => {
+		output.push(`### ${graph.resolveIdentityNameAtDate(subject.id)}`);
+		output.push(
+			`geboren ${renderBirthnamePrefixMaybe(subject)}${renderMaybe(uncertainEventToDateString(subject.born, options.dateRenderer), "Datum")} in ${renderMaybe(subject.born?.where, "Ort")}  `,
+		);
+		const marriages = graph.marriagesOf(subject.id);
+		for (const marriage of marriages) {
+			const marriageDate = uncertainEventToDate(marriage);
+			const marriageDateString = uncertainEventToDateString(
+				marriage,
+				options.dateRenderer,
+			);
+			output.push(
+				`${UNICODE_MARRIED} ${renderMaybe(marriageDateString, "Datum")} mit ${graph.resolveIdentityNameAtDate(marriage.marriedTo, marriageDate)} in ${renderMaybe(marriage.where, "Ort")}  `,
+			);
+		}
+		if (subject.died !== undefined) {
+			output.push(
+				`${UNICODE_DIED} ${renderMaybe(uncertainEventToDateString(subject.died, options.dateRenderer), "Datum")} in ${renderMaybe(subject.died?.where, "Ort")}  `,
+			);
+		}
+		output.push("");
+	};
+
+	const bufferEgo = new Array<string>();
+	renderIdentity(originIdentity, bufferEgo);
 
 	buffer.push("---");
-	//buffer.push(`title: ${title}`);
-	//buffer.push(`author: Oliver Salzburg`);
-	buffer.push(`email: oliver.salzburg@gmail.com`);
-	//buffer.push(`date: ${new Date().toISOString()}`);
+	buffer.push(`title: ${title}`);
+	buffer.push(`author: |-`);
+	//buffer.push(`  ${name}\n`);
+	buffer.push(...bufferEgo.map((_) => `  ${_}\n`));
+	//buffer.push(`email: oliver.salzburg@gmail.com`);
+	buffer.push(`date: |-`);
+	buffer.push(`  Stand: ${dateString} ^i${graph.identities.length}^\n`);
+	buffer.push(`  ${originBloodline.length} Verwandte bekannt`);
 	buffer.push(`copyright: © 2025 Oliver Salzburg. Alle Rechte vorbehalten.`);
 	buffer.push(`rights: © 2025 Oliver Salzburg. Alle Rechte vorbehalten.`);
 	buffer.push(`mainfont: DejaVu Sans`);
 	buffer.push(`geometry: [ a4paper, margin=20mm ]`);
-	buffer.push(`output: pdf_document`);
-	buffer.push(`numbersections: false`);
-	buffer.push(`block-headings: true`);
+	buffer.push(`output:`);
+	buffer.push(`  pdf_document:`);
+	buffer.push(`    md_extensions: +inline_code_attributes`);
+	//buffer.push(`numbersections: false`);
+	//buffer.push(`block-headings: true`);
 	//buffer.push(`header-includes:`);
 	//buffer.push(`- \\pagenumbering{gobble}`);
 	buffer.push("...");
 
-	buffer.push(`# ${title}\n`);
-	buffer.push(
-		`\\${UNICODE_BORN} geboren ${renderBirthnamePrefixMaybe(originIdentity)}${renderMaybe(uncertainEventToDateString(originIdentity.born, options.dateRenderer))} in ${renderMaybe(originIdentity.born?.where)}  `,
-	);
-	const marriages = graph.marriagesOf(originIdentity.id);
-	for (const marriage of marriages) {
-		const marriageDate = uncertainEventToDate(marriage);
-		const marriageDateString = uncertainEventToDateString(
-			marriage,
-			options.dateRenderer,
-		);
-		buffer.push(
-			`   \\${UNICODE_MARRIED} verheiratet ${marriageDateString} mit ${graph.resolveIdentityNameAtDate(marriage.marriedTo, marriageDate)} in ${renderMaybe(marriage.where)}  `,
-		);
-	}
-	if (originIdentity.died !== undefined) {
-		buffer.push(
-			`${UNICODE_DIED} verstorben ${renderMaybe(uncertainEventToDateString(originIdentity.died, options.dateRenderer))} in ${renderMaybe(originIdentity.died?.where)}  `,
-		);
-	}
-	buffer.push(`\n![](ancestry.gv.cairo.svg)`);
-	buffer.push(
-		`Stand: ${options.dateRenderer?.(Date.now())} (\`i${graph.identities.length}\`) – ${originBloodline.length} Verwandte bekannt`,
-	);
+	//buffer.push(`# ${title}\n`);
+
+	buffer.push(`![](pedigree.gv.cairo.svg)\n`);
 
 	if (0 < originDescendants.length) {
 		let consumed = 0;
 
-		buffer.push(`\n## Meine Kinder\n`);
+		buffer.push(`\\newpage`);
+		buffer.push(`# Meine Kinder`);
 		for (const descendant of originDescendants) {
 			if (hops.get(descendant.id) !== 1) {
 				continue;
 			}
 
-			buffer.push(`1. **${graph.resolveIdentityNameAtDate(descendant.id)}**  `);
-			buffer.push(
-				`   \\${UNICODE_BORN} geboren ${renderBirthnamePrefixMaybe(descendant)}${renderMaybe(uncertainEventToDateString(descendant.born, options.dateRenderer))} in ${renderMaybe(descendant.born?.where)}  `,
-			);
-			const marriages = graph.marriagesOf(descendant.id);
-			for (const marriage of marriages) {
-				const marriageDate = uncertainEventToDate(marriage);
-				const marriageDateString = uncertainEventToDateString(
-					marriage,
-					options.dateRenderer,
-				);
-				buffer.push(
-					`   \\${UNICODE_MARRIED} verheiratet ${marriageDateString} mit ${graph.resolveIdentityNameAtDate(marriage.marriedTo, marriageDate)} in ${renderMaybe(marriage.where)}  `,
-				);
-			}
-			if (descendant.died !== undefined) {
-				buffer.push(
-					`   ${UNICODE_DIED} verstorben ${renderMaybe(uncertainEventToDateString(descendant.died, options.dateRenderer))} in ${renderMaybe(descendant.died?.where)}  `,
-				);
-			}
-			buffer.push("\n");
+			renderIdentity(descendant);
 			++consumed;
 		}
 
 		if (consumed < originDescendants.length) {
-			buffer.push(`\n## Meine Enkel\n`);
+			buffer.push(`# Meine Enkel`);
 			for (const descendant of originDescendants) {
 				if (hops.get(descendant.id) !== 2) {
 					continue;
 				}
 
-				buffer.push(
-					`1. **${graph.resolveIdentityNameAtDate(descendant.id)}**  `,
-				);
-				buffer.push(
-					`   \\${UNICODE_BORN} geboren ${renderBirthnamePrefixMaybe(descendant)}${renderMaybe(uncertainEventToDateString(descendant.born, options.dateRenderer))} in ${renderMaybe(descendant.born?.where)}  `,
-				);
-				if (descendant.died !== undefined) {
-					buffer.push(
-						`   ${UNICODE_DIED} verstorben ${renderMaybe(uncertainEventToDateString(descendant.died, options.dateRenderer))} in ${renderMaybe(descendant.died?.where)}  `,
-					);
-				}
-				buffer.push("\n");
+				renderIdentity(descendant);
 				++consumed;
 			}
 		}
 
 		if (consumed < originDescendants.length) {
-			buffer.push(`\n## Meine Urenkel\n`);
+			buffer.push(`# Meine Urenkel`);
 			for (const descendant of originDescendants) {
 				if (hops.get(descendant.id) !== 3) {
 					continue;
 				}
 
-				buffer.push(
-					`1. **${graph.resolveIdentityNameAtDate(descendant.id)}**  `,
-				);
-				buffer.push(
-					`   \\${UNICODE_BORN} geboren ${renderBirthnamePrefixMaybe(descendant)}${renderMaybe(uncertainEventToDateString(descendant.born, options.dateRenderer))} in ${renderMaybe(descendant.born?.where)}  `,
-				);
-				if (descendant.died !== undefined) {
-					buffer.push(
-						`   ${UNICODE_DIED} verstorben ${renderMaybe(uncertainEventToDateString(descendant.died, options.dateRenderer))} in ${renderMaybe(descendant.died?.where)}  `,
-					);
+				renderIdentity(descendant);
+				++consumed;
+			}
+		}
+
+		if (consumed < originDescendants.length) {
+			buffer.push(`# Meine Ururenkel`);
+			for (const descendant of originDescendants) {
+				if (hops.get(descendant.id) !== 4) {
+					continue;
 				}
-				buffer.push("\n");
+
+				renderIdentity(descendant);
 				++consumed;
 			}
 		}
 	}
 
+	const generationToCommonName = (generation: number) => {
+		switch (generation) {
+			case 0:
+				return "Mein Ego";
+			case 1:
+				return "Meine Eltern";
+			case 2:
+				return "Meine Großeltern";
+			case 3:
+				return "Meine Urgroßeltern";
+			case 4:
+				return "Meine Ururgroßeltern (Alteltern)";
+			case 5:
+				return "Meine Urururgroßeltern (Altgroßeltern)";
+			case 6:
+				return `Meine Ur(×${generation - 2})großeltern (Alturgroßeltern)`;
+			case 7:
+				return `Meine Ur(×${generation - 2})großeltern (Obereltern)`;
+			case 8:
+				return `Meine Ur(×${generation - 2})großeltern (Obergroßeltern)`;
+			case 9:
+				return `Meine Ur(×${generation - 2})großeltern (Oberurgroßeltern)`;
+			default:
+				return `Meine Ur(×${generation - 2})großeltern`;
+		}
+	};
+
 	if (0 < originAntecedents.length) {
-		buffer.push(`\n## Meine Vorfahren\n`);
+		buffer.push(`\\newpage`);
+		buffer.push(`# Meine Vorfahren`);
 
 		let consumed = 0;
 		let generation = 1;
 
 		while (consumed < originAntecedents.length) {
-			buffer.push(`\n### ${generation}. Generation\n`);
+			buffer.push(`## ${generationToCommonName(generation)}`);
 			for (const antecedent of originAntecedents) {
 				if (hops.get(antecedent.id) !== generation) {
 					continue;
 				}
 
-				buffer.push(
-					`1. **${graph.resolveIdentityNameAtDate(antecedent.id)}**  `,
-				);
-				buffer.push(
-					`   \\${UNICODE_BORN} geboren ${renderBirthnamePrefixMaybe(antecedent)}${renderMaybe(uncertainEventToDateString(antecedent.born, options.dateRenderer))} in ${renderMaybe(antecedent.born?.where)}  `,
-				);
-				const marriages = graph.marriagesOf(antecedent.id);
-				for (const marriage of marriages) {
-					const marriageDate = uncertainEventToDate(marriage);
-					const marriageDateString = uncertainEventToDateString(
-						marriage,
-						options.dateRenderer,
-					);
-					buffer.push(
-						`   \\${UNICODE_MARRIED} verheiratet ${marriageDateString} mit ${graph.resolveIdentityNameAtDate(marriage.marriedTo, marriageDate)} in ${renderMaybe(marriage.where)}  `,
-					);
-				}
-				if (antecedent.died !== undefined) {
-					buffer.push(
-						`   ${UNICODE_DIED} verstorben ${renderMaybe(uncertainEventToDateString(antecedent.died, options.dateRenderer))} in ${renderMaybe(antecedent.died?.where)}  `,
-					);
-				}
-				buffer.push("\n");
+				renderIdentity(antecedent);
 				++consumed;
 			}
 			++generation;
@@ -895,7 +1055,8 @@ export const renderMarkdown = (
 	}
 
 	if (0 < originBloodline.length) {
-		buffer.push(`\n## Weitere Nachkommen meiner Vorfahren\n`);
+		buffer.push(`\\newpage`);
+		buffer.push(`# Weitere Nachkommen meiner Vorfahren`);
 
 		const memberByHops = new Map(
 			originBloodline
@@ -921,25 +1082,9 @@ export const renderMarkdown = (
 				continue;
 			}
 
-			buffer.push(`\n### ${degree}. Grad\n`);
+			buffer.push(`## ${degree}. Grad`);
 			for (const member of members) {
-				const marriages = graph.marriagesOf(member.id);
-				buffer.push(`1. **${graph.resolveIdentityNameAtDate(member.id)}**  `);
-				buffer.push(
-					`   \\${UNICODE_BORN} geboren ${renderBirthnamePrefixMaybe(member)}${renderMaybe(uncertainEventToDateString(member.born, options.dateRenderer))} in ${renderMaybe(member.born?.where)}  `,
-				);
-				for (const marriage of marriages) {
-					const marriageDate = uncertainEventToDate(marriage);
-					buffer.push(
-						`   \\${UNICODE_MARRIED} verheiratet mit ${graph.resolveIdentityNameAtDate(marriage.marriedTo, marriageDate)} in ${renderMaybe(marriage.where)}  `,
-					);
-				}
-				if (member.died !== undefined) {
-					buffer.push(
-						`   ${UNICODE_DIED} verstorben ${renderMaybe(uncertainEventToDateString(member.died, options.dateRenderer))} in ${renderMaybe(member.died?.where)}  `,
-					);
-				}
-				buffer.push("\n");
+				renderIdentity(member);
 			}
 		}
 	}
