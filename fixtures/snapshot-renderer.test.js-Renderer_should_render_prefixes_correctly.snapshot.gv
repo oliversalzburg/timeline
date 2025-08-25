@@ -9,5 +9,5 @@ digraph timeline {
     rankdir="TD";
     ranksep="0.5";
     tooltip=" ";
-    1 [class="event td2def5209db8e1c9"; color="#B24C4CFF"; fillcolor="#592626FF"; fontcolor="#FFFFFFFF"; id="Z2025-06-15-0"; label=<🎭 Now<BR ALIGN="CENTER"/>Sun Jun 15 2025>; penwidth="1"; shape="box"; style="solid,rounded,filled"; tooltip="0ms seit Sun Jun 15 2025\n0ms her"; ts="1749945600000";];
+    1 [class="event td408927559ee23e3"; color="#808080FF"; fontcolor="#808080FF"; id="Z2025-06-15-0"; label=<🎭 Now<BR ALIGN="CENTER"/>Sun Jun 15 2025>; penwidth="1"; shape="box"; style="dotted"; tooltip="0ms seit Sun Jun 15 2025\n0ms her";];
 }

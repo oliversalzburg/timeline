@@ -64,7 +64,7 @@ describe("Renderer", () => {
 		const timeline = load(document, "document");
 		const artifact = render([timeline], {
 			now,
-			origin: "0",
+			origin: "document",
 			theme: "dark",
 		});
 		expect(artifact.graph).to.have.lengthOf(1);
@@ -168,7 +168,7 @@ describe("Renderer", () => {
 		const artifact = render(
 			[
 				{
-					meta: { id: "test", private: true, rank: 1, prefix: "🎭" },
+					meta: { id: "document", private: true, rank: 1, prefix: "🎭" },
 					records: [[now, { title: "Now" }]],
 				},
 			],

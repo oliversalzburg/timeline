@@ -269,7 +269,8 @@ export const render = <
 			? mustExist(
 					timelines.find(
 						(_) =>
-							"identity" in _.meta && _.meta.identity.id === options.origin,
+							("identity" in _.meta && _.meta.identity.id === options.origin) ||
+							_.meta.id === options.origin,
 					),
 					`no timeline has identity '${options.origin}'`,
 				)

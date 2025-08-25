@@ -144,9 +144,11 @@ export const render = (
 			leader !== undefined ? graph.timelineOf(leader.id) : undefined;
 
 		const color = setOpacity(
-			(leaderTimeline !== undefined || contributorsTimelines[0] !== undefined
+			(leaderTimeline !== undefined
 				? getStyle(leaderTimeline)
-				: undefined
+				: contributorsTimelines[0] !== undefined
+					? getStyle(contributorsTimelines[0])
+					: undefined
 			)?.pencolor ?? "#808080FF",
 			opacity,
 		);
