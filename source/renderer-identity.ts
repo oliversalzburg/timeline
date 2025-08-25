@@ -9,6 +9,9 @@ import {
 	TRANSPARENT,
 	UNICODE_DIED,
 	UNICODE_MARRIED,
+	UNICODE_SEX_FEMALE,
+	UNICODE_SEX_MALE,
+	UNICODE_SEX_UNKNOWN,
 } from "./constants.js";
 import {
 	dot,
@@ -27,7 +30,7 @@ import { matchLuminance, setOpacity } from "./palette.js";
 import type { RendererOptions } from "./renderer.js";
 import { StyleStatic } from "./style.js";
 import type { Style } from "./styles.js";
-import type { Identity, TimelineAncestryRenderer } from "./types.js";
+import type { Identity, Sexus, TimelineAncestryRenderer } from "./types.js";
 
 export const renderSimple = (
 	timelines: Array<TimelineAncestryRenderer>,
@@ -887,6 +890,12 @@ export const renderReport = (
 		isNil(maybe) || maybe === ""
 			? `[${label !== undefined ? `${label} ` : ""}fehlt]{.mark}`
 			: maybe.replaceAll(/Unbekannt/g, "[Unbekannt]{.mark}");
+	const renderSexus = (sexus: Maybe<Sexus>) =>
+		sexus === "Femininum"
+			? UNICODE_SEX_FEMALE
+			: sexus === "Maskulinum"
+				? UNICODE_SEX_MALE
+				: UNICODE_SEX_UNKNOWN;
 	const renderBirthnamePrefixMaybe = (_: Identity) => {
 		const name = graph.resolveIdentityNameAtDate(_.id);
 		if (name === (_.name ?? _.id)) {
@@ -904,6 +913,12 @@ export const renderReport = (
 
 	const renderIdentity = (subject: Identity, output = buffer) => {
 		output.push(`### ${graph.resolveIdentityNameAtDate(subject.id)}`);
+		const sexus =
+			!isNil(subject.born) && "sexus" in subject.born
+				? renderSexus(subject.born.sexus)
+				: undefined;
+		const sexusString = sexus !== undefined ? `${sexus} ` : "";
+		const sexusAnalytics = renderMaybe(sexus, "Sexus");
 		const nameBirth = renderBirthnamePrefixMaybe(subject);
 		const _dateBirth = uncertainEventToDate(subject.born);
 		const dateBirthString = uncertainEventToDateString(
@@ -918,7 +933,7 @@ export const renderReport = (
 
 		if (options.rendererAnalytics === "enabled") {
 			output.push(
-				`geboren ${nameBirth}${dateBirthAnalytics} in ${locationBirthAnalytics}  `,
+				`${sexusAnalytics} geboren ${nameBirth}${dateBirthAnalytics} in ${locationBirthAnalytics}  `,
 			);
 		} else {
 			if (
@@ -927,7 +942,7 @@ export const renderReport = (
 				locationBirthString !== undefined
 			) {
 				output.push(
-					`geboren ${nameBirth}${dateBirthString ?? ""}${locationBirthString ?? ""}  `,
+					`${sexusString}geboren ${nameBirth}${dateBirthString ?? ""}${locationBirthString ?? ""}  `,
 				);
 			}
 		}

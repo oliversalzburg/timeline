@@ -84,7 +84,10 @@ export interface Location {
 		showAs?: string;
 	};
 }
-export interface Birth extends Event {}
+export type Sexus = "Femininum" | "Maskulinum";
+export interface Birth extends Event {
+	sexus?: Sexus;
+}
 export interface Death extends Event {
 	inMilitaryService?: boolean | null;
 }
