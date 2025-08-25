@@ -139,8 +139,8 @@ const renderOptions = {
 	},
 	now: NOW,
 	origin,
-	rendererAnalytics: "disabled",
-	rendererAnonymization: "disabled",
+	rendererAnalytics: args.analytics === true ? "enabled" : "disabled",
+	rendererAnonymization: args.anonymize === true ? "enabled" : "disabled",
 	styleSheet: ss,
 	theme,
 };

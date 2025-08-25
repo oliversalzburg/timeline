@@ -1,15 +1,13 @@
 .PHONY: default build clean docs git-hook pretty lint test coverage universe
-.SECONDARY:
 
-START ?= 1800
-END ?= 2030
+_SOURCES := $(wildcard contrib/* examples/* source/*.ts source/*/*.ts)
+_SOURCES_TS := $(wildcard source/*.ts source/*/*.ts)
+_LIBS_JS := $(patsubst %.ts,%.js,$(_SOURCES_TS))
+_LIBS_JS_MAP := $(patsubst %.ts,%.js.map,$(_SOURCES_TS))
+_LIBS_D_TS := $(patsubst %.ts,%.d.ts,$(_SOURCES_TS))
+_LIBS_D_TS_MAP := $(patsubst %.ts,%.d.ts.map,$(_SOURCES_TS))
 
-_HORIZON := $(START)-$(END)
-
-PREFIX ?= universe-
-
-_SOURCES := $(wildcard source/*.ts source/*/*.ts)
-_UNIVERSE_NAME := $(PREFIX)$(_HORIZON)
+_UNIVERSE_NAME := universe
 _UNIVERSE := output/$(_UNIVERSE_NAME)
 _PEDIGREE := output/pedigree
 _SEGMENTS := $(wildcard $(_UNIVERSE)-segment*.gv)
@@ -47,20 +45,13 @@ endif
 
 default: build docs universe
 
-build: lib/timeline.js
+build: lib/tsconfig.source.tsbuildinfo
 
-lib: node_modules $(_SOURCES)
+lib/tsconfig.source.tsbuildinfo $(_LIBS_D_TS) $(_LIBS_D_TS_MAP) $(_LIBS_JS) $(_LIBS_JS_MAP) &: node_modules $(_SOURCES_TS)
 	@echo "Building library..."
 	@npm exec -- tsc --build tsconfig.json
 
-schema:
-	@for i in schemas/*.yml; do \
-		yq --output-format=json \
-		eval '(.. | select(key == "$$ref" and type == "!!str")) |= sub(".schema.yml", ".schema.json")' \
-		"$$i" > "$${i%.yml}.json"; \
-		done
-
-_site output:
+_site lib output:
 	mkdir -p $@
 
 output/images: | output
@@ -213,11 +204,6 @@ segmented: $(_AUTO_TIMELINES) lib node_modules | output
 lib/timeline.js: node_modules build.js | lib
 	@node build.js
 
-# Not really important. Artifact generation for GitHub Pages publishing.
-docs: _site/index.html
-_site/index.html: $(_UNIVERSE).zen.html | _site
-	cp $(_UNIVERSE).zen.html _site/index.html
-
 # Clean up all build artifacts.
 clean:
 	@rm --force --recursive _site lib output/*
@@ -284,3 +270,10 @@ ifneq "$(CI)" ""
 	sudo apt-get update; sudo apt-get install graphviz scour virtualenv
 endif
 	npm install
+
+schema:
+	@for i in schemas/*.yml; do \
+		yq --output-format=json \
+		eval '(.. | select(key == "$$ref" and type == "!!str")) |= sub(".schema.yml", ".schema.json")' \
+		"$$i" > "$${i%.yml}.json"; \
+		done
