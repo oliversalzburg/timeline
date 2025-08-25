@@ -68,7 +68,7 @@ export const uncertainEventToDateString = (
 ) => {
 	const date = uncertainEventToDate(input);
 	if (isNil(date)) {
-		return "";
+		return undefined;
 	}
 
 	if (input?.when?.showAs !== undefined) {

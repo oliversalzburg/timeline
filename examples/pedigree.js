@@ -139,7 +139,8 @@ const renderOptions = {
 	},
 	now: NOW,
 	origin,
-	renderAnonymization: "enabled",
+	rendererAnalytics: "disabled",
+	rendererAnonymization: "disabled",
 	styleSheet: ss,
 	theme,
 };

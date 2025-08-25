@@ -28,7 +28,8 @@ export interface RendererOptions {
 	skipAfter?: number | undefined;
 	skipBefore?: number | undefined;
 	theme: RenderMode;
-	renderAnonymization: "enabled" | "disabled";
+	rendererAnalytics: "enabled" | "disabled";
+	rendererAnonymization: "enabled" | "disabled";
 }
 
 /**

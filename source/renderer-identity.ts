@@ -33,7 +33,7 @@ export const renderSimple = (
 	timelines: Array<TimelineAncestryRenderer>,
 	options: RendererOptions,
 ) => {
-	const depth = 7;
+	const depth = 3;
 
 	const graph = new Graph(timelines, options.origin);
 	const hops =
@@ -61,7 +61,7 @@ export const renderSimple = (
 	const defaultBackground = options.theme === "light" ? "#FFFFFF" : "#000000";
 	const defaultForeground = options.theme === "light" ? "#000000" : "#FFFFFF";
 	const fontNode =
-		options.renderAnonymization === "enabled" ? "DummyText2" : "DejaVu Serif";
+		options.rendererAnonymization === "enabled" ? "DummyText2" : "DejaVu Serif";
 
 	const rankdir: RankDir = "RL";
 
@@ -904,24 +904,82 @@ export const renderReport = (
 
 	const renderIdentity = (subject: Identity, output = buffer) => {
 		output.push(`### ${graph.resolveIdentityNameAtDate(subject.id)}`);
-		output.push(
-			`geboren ${renderBirthnamePrefixMaybe(subject)}${renderMaybe(uncertainEventToDateString(subject.born, options.dateRenderer), "Datum")} in ${renderMaybe(subject.born?.where, "Ort")}  `,
+		const nameBirth = renderBirthnamePrefixMaybe(subject);
+		const _dateBirth = uncertainEventToDate(subject.born);
+		const dateBirthString = uncertainEventToDateString(
+			subject.born,
+			options.dateRenderer,
 		);
+		const dateBirthAnalytics = renderMaybe(dateBirthString, "Datum");
+		const locationBirth = subject.born?.where;
+		const locationBirthString =
+			locationBirth !== undefined ? ` in ${locationBirth}` : undefined;
+		const locationBirthAnalytics = renderMaybe(locationBirth, "Ort");
+
+		if (options.rendererAnalytics === "enabled") {
+			output.push(
+				`geboren ${nameBirth}${dateBirthAnalytics} in ${locationBirthAnalytics}  `,
+			);
+		} else {
+			if (
+				nameBirth !== "" ||
+				dateBirthString !== undefined ||
+				locationBirthString !== undefined
+			) {
+				output.push(
+					`geboren ${nameBirth}${dateBirthString ?? ""}${locationBirthString ?? ""}  `,
+				);
+			}
+		}
+
 		const marriages = graph.marriagesOf(subject.id);
 		for (const marriage of marriages) {
-			const marriageDate = uncertainEventToDate(marriage);
-			const marriageDateString = uncertainEventToDateString(
+			const dateMarriage = uncertainEventToDate(marriage);
+			const dateMarriageString = uncertainEventToDateString(
 				marriage,
 				options.dateRenderer,
+			)?.concat(" ");
+			const dateMarriageAnalytics = renderMaybe(dateMarriageString, "Datum");
+			const spouse = graph.resolveIdentityNameAtDate(
+				marriage.marriedTo,
+				dateMarriage,
 			);
-			output.push(
-				`${UNICODE_MARRIED} ${renderMaybe(marriageDateString, "Datum")} mit ${graph.resolveIdentityNameAtDate(marriage.marriedTo, marriageDate)} in ${renderMaybe(marriage.where, "Ort")}  `,
-			);
+			const locationMarriage = marriage.where;
+			const locationMarriageString =
+				locationMarriage !== undefined ? ` in ${locationMarriage}` : undefined;
+			const locationMarriageAnalytics = renderMaybe(marriage.where, "Ort");
+			if (options.rendererAnalytics === "enabled") {
+				output.push(
+					`${UNICODE_MARRIED} ${dateMarriageAnalytics} mit ${spouse} in ${locationMarriageAnalytics}  `,
+				);
+			} else {
+				output.push(
+					`${UNICODE_MARRIED} ${dateMarriageString ?? ""}mit ${spouse}${locationMarriageString ?? ""}  `,
+				);
+			}
 		}
+
 		if (subject.died !== undefined) {
-			output.push(
-				`${UNICODE_DIED} ${renderMaybe(uncertainEventToDateString(subject.died, options.dateRenderer), "Datum")} in ${renderMaybe(subject.died?.where, "Ort")}  `,
+			const _dateDied = uncertainEventToDate(subject.died);
+			const dateDiedString = uncertainEventToDateString(
+				subject.died,
+				options.dateRenderer,
 			);
+			const dateDiedAnalytics = renderMaybe(dateDiedString, "Datum");
+			const locationDied = subject.died?.where;
+			const locationDiedString =
+				locationDied !== undefined ? ` in ${locationDied}` : undefined;
+			const locationDiedAnalytics = renderMaybe(locationDied, "Ort");
+
+			if (options.rendererAnalytics === "enabled") {
+				output.push(
+					`${UNICODE_DIED} ${dateDiedAnalytics} in ${locationDiedAnalytics}  `,
+				);
+			} else {
+				output.push(
+					`${UNICODE_DIED} ${dateDiedString ?? ""}${locationDiedString ?? ""}  `,
+				);
+			}
 		}
 		output.push("");
 	};
