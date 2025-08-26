@@ -144,7 +144,10 @@ if (format === "simple") {
 if (format === "report") {
 	const markdown = renderReport(finalTimelines, {
 		...renderOptions,
-		pedigreeChartPath: originId.replace(/\.yml$/, "-pedigree-light.svg"),
+		pedigreeChartPath: originId.replace(
+			/\.yml$/,
+			`${args.anonymize === true ? "-demo" : ""}-pedigree-light.svg`,
+		),
 	});
 	targetStream.write(markdown[0].content);
 }

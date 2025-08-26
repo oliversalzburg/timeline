@@ -84,7 +84,7 @@ output/images : | output
 		--origin=$< \
 		--target=$@ \
 		--theme=light
-%-demo.md : %-demo.universe %-pedigree-light.svg
+%-demo.md : %-demo.universe %-demo-pedigree-light.svg
 	node --enable-source-maps examples/pedigree.js \
 		$(_PEDIGREE_FLAGS) \
 		--anonymize \
@@ -107,26 +107,35 @@ output/images : | output
 		--origin=$< \
 		--target=$@ \
 		--theme=light
+# We intentionally don't pass --anonymize here, because we're already operating
+# on the anonymized -demo.universe.
+%-demo-pedigree-light.gv : %-demo.universe
+	node --enable-source-maps examples/pedigree.js \
+		$(_PEDIGREE_FLAGS) \
+		--format=simple \
+		--origin=$< \
+		--target=$@ \
+		--theme=light
 
 %.svg : %.gv
 	@dot -Gpad=0 -Tsvg:cairo -o $@ $<
 
-%-analytics.pdf: %-analytics.md %-pedigree-light.svg
+%-analytics.pdf : %-analytics.md %-pedigree-light.svg
 	@cd $(dir $@); pandoc \
 		--from markdown \
 		--to pdf \
 		--pdf-engine lualatex \
 		--output $(notdir $@) \
 		$(notdir $<)
-%-demo.pdf: %-demo.md %-pedigree-light.svg
-	@cd $(dir $@); pandoc \
+%-demo.pdf : %-demo.md %-demo-pedigree-light.svg
+	cd $(dir $@); pandoc \
 		--from markdown \
 		--to pdf \
 		--pdf-engine lualatex \
 		--output $(notdir $@) \
 		$(notdir $<)
-%.pdf: %.md %-pedigree-light.svg
-	@cd $(dir $@); pandoc \
+%.pdf : %.md %-pedigree-light.svg
+	cd $(dir $@); pandoc \
 		--from markdown \
 		--to pdf \
 		--pdf-engine lualatex \

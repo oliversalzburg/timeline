@@ -3,6 +3,10 @@ import {
 	isNil,
 	mustExist,
 } from "@oliversalzburg/js-utils/data/nil.js";
+import {
+	Random,
+	seedFromString,
+} from "@oliversalzburg/js-utils/data/random.js";
 import { InvalidOperationError } from "@oliversalzburg/js-utils/errors/InvalidOperationError.js";
 import type { RendererOptions } from "./renderer.js";
 import type { Event, Identity, Timeline } from "./types.js";
@@ -341,5 +345,73 @@ export class Graph<
 		}
 
 		return distances;
+	}
+
+	mapIdentities(mapper: (id: Identity) => Identity) {
+		const newTimelines = this.timelines.map((timeline) =>
+			timeline.meta.identity !== undefined
+				? {
+						...timeline,
+						meta: {
+							...timeline.meta,
+							identity: mapper(timeline.meta.identity),
+						},
+					}
+				: timeline,
+		);
+		return new Graph(newTimelines, this.origin);
+	}
+
+	anonymize(seed: string) {
+		const random = new Random(seedFromString(seed));
+		const nameCache = new Map<string, string>();
+		const getName = (id: string) => {
+			if (nameCache.has(id)) {
+				return mustExist(nameCache.get(id));
+			}
+			const name = random.nextString(19);
+			nameCache.set(id, name);
+			return name;
+		};
+		const result = [];
+		for (const timeline of this.timelines) {
+			if (timeline.meta.identity === undefined) {
+				result.push(timeline);
+				continue;
+			}
+
+			result.push({
+				...timeline,
+				meta: {
+					...timeline.meta,
+					identity: {
+						id: getName(timeline.meta.identity.id),
+						born: {
+							date: new Date().toISOString(),
+						},
+						relations: timeline.meta.identity.relations
+							?.map((relation) => {
+								if ("marriedTo" in relation) {
+									return {
+										marriedTo: getName(relation.marriedTo),
+									};
+								}
+								if ("fatherOf" in relation) {
+									return { fatherOf: getName(relation.fatherOf) };
+								}
+								if ("motherOf" in relation) {
+									return { motherOf: getName(relation.motherOf) };
+								}
+								if ("linkedTo" in relation) {
+									return undefined;
+								}
+								throw new InvalidOperationError("Unknown relation type.");
+							})
+							.filter((_) => _ !== undefined),
+					},
+				},
+			});
+		}
+		return new Graph(result, getName(this.origin));
 	}
 }

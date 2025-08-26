@@ -2,7 +2,6 @@ import {
 	Random,
 	seedFromString,
 } from "@oliversalzburg/js-utils/data/random.js";
-import { InvalidOperationError } from "@oliversalzburg/js-utils/errors/InvalidOperationError.js";
 import type { Identity, Timeline, TimelineRecord } from "./types.js";
 
 export const add = (timeline: Timeline, record: TimelineRecord): Timeline => {
@@ -258,23 +257,6 @@ export const anonymizeIdentity = (
 					? anonymizeString(subject.born?.where, random)
 					: undefined,
 		},
-		relations: subject.relations
-			?.map((relation) => {
-				if ("marriedTo" in relation) {
-					return { marriedTo: anonymizeString(relation.marriedTo, seed) };
-				}
-				if ("fatherOf" in relation) {
-					return { fatherOf: anonymizeString(relation.fatherOf, seed) };
-				}
-				if ("motherOf" in relation) {
-					return { motherOf: anonymizeString(relation.motherOf, seed) };
-				}
-				if ("linkedTo" in relation) {
-					return undefined;
-				}
-				throw new InvalidOperationError("Unknown relation type.");
-			})
-			.filter((_) => _ !== undefined),
 	};
 };
 

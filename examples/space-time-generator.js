@@ -3,8 +3,9 @@
 import { createWriteStream, readdirSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { parse } from "yaml";
+import { Graph } from "../lib/genealogy.js";
 import { load } from "../lib/loader.js";
-import { anonymize, anonymizeIdentity } from "../lib/operator.js";
+import { anonymize } from "../lib/operator.js";
 import { serialize } from "../lib/serializer.js";
 
 // Parse command line arguments.
@@ -55,10 +56,10 @@ const timelinePaths = readdirSync(args.root, {
 	.map((_) => `${_.parentPath}/${_.name}`)
 	.sort();
 
-const allTimelineData = [];
-let originTimelineData;
+const allTimelines = [];
+let originTimeline;
 for (const timelinePath of timelinePaths) {
-	let timelineData = readFileSync(timelinePath, "utf8");
+	const timelineData = readFileSync(timelinePath, "utf8");
 	if (!timelineData.startsWith("---")) {
 		process.stderr.write(
 			`${timelinePath} is missing document separator! File is skipped.\n`,
@@ -66,31 +67,40 @@ for (const timelinePath of timelinePaths) {
 		continue;
 	}
 
-	// Register document ID and re-serialize it.
 	const timelineObject = parse(timelineData);
-
-	let timeline = load(timelineObject, timelinePath);
-	if (args.anonymize) {
-		timeline = anonymize(timeline, seed);
-		if ("identity" in timeline.meta) {
-			timeline.meta.identity = anonymizeIdentity(
-				/** @type {import("../source/types.js").Identity} */ (
-					timeline.meta.identity
-				),
-				seed + timeline.meta.id,
-			);
-		}
-	}
-	timelineData = serialize(timeline, timeline.meta, true);
-
+	const timeline = load(timelineObject, timelinePath);
 	if (timelinePath === originPath) {
-		originTimelineData = timelineData;
+		originTimeline = timeline;
 		continue;
 	}
-	allTimelineData.push(timelineData);
+	allTimelines.push(timeline);
 }
 
-if (originTimelineData === undefined) {
+if (originTimeline === undefined) {
+	process.stderr.write(`${originPath} was not ingested. Failed.\n`);
+	process.exit(1);
+}
+
+if (args.anonymize) {
+	const graph = new Graph(
+		[originTimeline, ...allTimelines],
+		"invalid",
+	).anonymize(seed);
+
+	allTimelines.length = 0;
+	originTimeline = undefined;
+
+	for (const timeline of graph.timelines) {
+		if (timeline.meta.id === originPath) {
+			originTimeline = anonymize(timeline, seed + timeline.meta.id);
+			continue;
+		}
+		const anonymized = anonymize(timeline, seed + timeline.meta.id);
+		allTimelines.push(anonymized);
+	}
+}
+
+if (originTimeline === undefined) {
 	process.stderr.write(`${originPath} was not ingested. Failed.\n`);
 	process.exit(1);
 }
@@ -108,7 +118,7 @@ targetStream.on("error", () => {
 });
 
 targetStream.write(
-	`---\n${originTimelineData}\n---\n${allTimelineData.join("\n---\n")}`,
+	`---\n${serialize(originTimeline, originTimeline.meta, true)}\n---\n${allTimelines.map((_) => serialize(_, _.meta, true)).join("\n---\n")}`,
 );
 
 if (targetStream !== process.stdout) {
