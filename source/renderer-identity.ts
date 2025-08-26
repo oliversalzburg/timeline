@@ -890,12 +890,18 @@ export const renderReport = (
 		isNil(maybe) || maybe === ""
 			? `[${label !== undefined ? `${label} ` : ""}fehlt]{.mark}`
 			: maybe.replaceAll(/Unbekannt/g, "[Unbekannt]{.mark}");
+
+	/**
+	 * This is WRONG. The sexus is not the sex of the person.
+	 * Using sex symbols for the sexus is entirely invalid, and only temporary.
+	 */
 	const renderSexus = (sexus: Maybe<Sexus>) =>
 		sexus === "Femininum"
 			? UNICODE_SEX_FEMALE
 			: sexus === "Maskulinum"
 				? UNICODE_SEX_MALE
 				: UNICODE_SEX_UNKNOWN;
+
 	const renderBirthnamePrefixMaybe = (_: Identity) => {
 		const name = graph.resolveIdentityNameAtDate(_.id);
 		if (name === (_.name ?? _.id)) {

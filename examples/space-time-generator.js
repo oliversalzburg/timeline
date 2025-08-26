@@ -2,7 +2,10 @@
 
 import { createWriteStream, readdirSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { parse, stringify } from "yaml";
+import { parse } from "yaml";
+import { load } from "../lib/loader.js";
+import { anonymize } from "../lib/operator.js";
+import { serialize } from "../lib/serializer.js";
 
 // Parse command line arguments.
 const args = process.argv
@@ -35,6 +38,10 @@ if (typeof args.origin !== "string") {
 	process.exit(1);
 }
 
+const seed = [...crypto.getRandomValues(new Uint32Array(10))]
+	.map((_) => _.toString(16))
+	.join("");
+
 const targetPath = typeof args.target === "string" ? args.target : undefined;
 const originPath = resolve(args.origin);
 const timelinePaths = readdirSync(args.root, {
@@ -60,9 +67,12 @@ for (const timelinePath of timelinePaths) {
 	}
 
 	// Register document ID and re-serialize it.
-	const timeline = parse(timelineData);
-	timeline.id = timelinePath;
-	timelineData = stringify(timeline);
+	const timelineObject = parse(timelineData);
+	let timeline = load(timelineObject, timelinePath);
+	if (args.anonymize) {
+		timeline = anonymize(timeline, seed);
+	}
+	timelineData = serialize(timeline, timeline.meta, true);
 
 	if (timelinePath === originPath) {
 		originTimelineData = timelineData;

@@ -25,7 +25,7 @@ ifneq ($(DEBUG),)
 	_DOT_FLAGS += -v5
 endif
 
-_PEDIGREE_FLAGS := "--origin=$(ORIGIN)"
+_PEDIGREE_FLAGS :=
 _UNIVERSE_FLAGS := "--origin=$(ORIGIN)" --skip-before=$(START) --skip-after=$(END)
 _UNIVERSE_SEGMENT_FLAG := "--segment=500"
 ifneq ($(DEBUG),)
@@ -63,33 +63,75 @@ output/images : | output
 	@cp contrib/wikimedia/* $@/
 	@node --enable-source-maps examples/emojify.js --copy-only
 
+
+%-demo.universe : %.yml
+	node --enable-source-maps examples/space-time-generator.js \
+		--anonymize \
+		--origin=$< \
+		--root=/home/oliver/timelines \
+		--target=$@
 %.universe : %.yml
 	node --enable-source-maps examples/space-time-generator.js \
-		--origin=$^ \
+		--origin=$< \
 		--root=/home/oliver/timelines \
 		--target=$@
 
+%-analytics.md : %.universe %-pedigree-light.svg
+	node --enable-source-maps examples/pedigree.js \
+		$(_PEDIGREE_FLAGS) \
+		--analytics \
+		--format=report \
+		--origin=$< \
+		--target=$@ \
+		--theme=light
+%-demo.md : %-demo.universe %-pedigree-light.svg
+	node --enable-source-maps examples/pedigree.js \
+		$(_PEDIGREE_FLAGS) \
+		--anonymize \
+		--format=report \
+		--origin=$< \
+		--target=$@ \
+		--theme=light
 %.md : %.universe %-pedigree-light.svg
-	@node --enable-source-maps examples/pedigree.js \
+	node --enable-source-maps examples/pedigree.js \
 		$(_PEDIGREE_FLAGS) \
 		--format=report \
-		--origin=$^ \
+		--origin=$< \
 		--target=$@ \
 		--theme=light
 
 %-pedigree-light.gv : %.universe
-	@node --enable-source-maps examples/pedigree.js \
+	node --enable-source-maps examples/pedigree.js \
 		$(_PEDIGREE_FLAGS) \
 		--format=simple \
-		--origin=$^ \
+		--origin=$< \
 		--target=$@ \
 		--theme=light
 
-%-pedigree-light.svg : %-pedigree-light.gv
+%.svg : %.gv
 	@dot -Gpad=0 -Tsvg:cairo -o $@ $<
 
+%-analytics.pdf: %-analytics.md %-pedigree-light.svg
+	@cd $(dir $@); pandoc \
+		--from markdown \
+		--to pdf \
+		--pdf-engine lualatex \
+		--output $(notdir $@) \
+		$(notdir $<)
+%-demo.pdf: %-demo.md %-pedigree-light.svg
+	@cd $(dir $@); pandoc \
+		--from markdown \
+		--to pdf \
+		--pdf-engine lualatex \
+		--output $(notdir $@) \
+		$(notdir $<)
 %.pdf: %.md %-pedigree-light.svg
-	@cd $(dir $@); pandoc --from markdown --to pdf --pdf-engine lualatex --output $(notdir $@) $(notdir $^)
+	@cd $(dir $@); pandoc \
+		--from markdown \
+		--to pdf \
+		--pdf-engine lualatex \
+		--output $(notdir $@) \
+		$(notdir $<)
 
 $(_UNIVERSE)-img.svg &: \
 	$(foreach _, $(_SEGMENTS), $(patsubst %.gv,%-img.dot.svg,$(_)))

@@ -9,6 +9,7 @@ import type {
 export const serialize = (
 	timeline: Timeline | TimelinePlain,
 	metadata: Record<string | number, unknown> = {},
+	serializeId = false,
 ) => {
 	const document: TimelineDocumentInternal = {
 		...("meta" in timeline && typeof timeline.meta === "object"
@@ -27,6 +28,10 @@ export const serialize = (
 			return serialized;
 		}, {} as TimelineFlexibleInput),
 	};
-	delete document.id;
+
+	if (serializeId !== true) {
+		delete document.id;
+	}
+
 	return stringify(document);
 };

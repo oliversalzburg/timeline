@@ -97,12 +97,11 @@ const finalTimelines = [
 		),
 ];
 
-const originIdentityId = mustExist(data.get(originId)?.meta.identity.id);
-const graph = new Graph(finalTimelines, originIdentityId);
-
-process.stdout.write(
-	`Constructed identity graph from ${finalTimelines.length} timelines.\n`,
+const originIdentityId = mustExist(
+	data.get(originId)?.meta.identity?.id,
+	`Empty or invalid identity for origin ID '${originId}'`,
 );
+const graph = new Graph(finalTimelines, originIdentityId);
 
 // Generate stylesheet for entire universe.
 /** @type {import("source/types.js").RenderMode} */
@@ -110,8 +109,6 @@ const theme = args.theme === "light" ? "light" : "dark";
 const styleSheet = new Styling(finalTimelines, theme).styles(graph);
 
 // Write GraphViz graph.
-process.stdout.write(`Generating GraphViz graph for pedigree chart...\n`);
-
 /** @type {RendererOptions} */
 const renderOptions = {
 	debug: Boolean(args.debug),
