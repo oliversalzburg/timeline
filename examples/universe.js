@@ -1,6 +1,6 @@
 #!/bin/env node
 
-import { readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import { hostname, userInfo } from "node:os";
 import { mustExist } from "@oliversalzburg/js-utils/data/nil.js";
 import { parse } from "yaml";
@@ -37,42 +37,33 @@ const args = process.argv
 		/** @type {Record<string, boolean | string>} */ ({}),
 	);
 
-// Read raw data from input files.
-const files =
-	2 < process.argv.length
-		? process.argv.slice(2).filter((_) => !_.startsWith("--"))
-		: readdirSync("timelines/")
-				.filter((_) => _.endsWith(".yml"))
-				.map((_) => `timelines/${_}`);
-
-if (files.length === 0) {
-	process.stdout.write("No files provided.\n");
+if (typeof args.origin !== "string") {
+	process.stderr.write("Missing --origin.\n");
 	process.exit(1);
 }
 
-const outputPath = typeof args.output === "string" ? args.output : undefined;
-if (outputPath === undefined) {
-	process.stdout.write("No --output filename provided.\n");
+const rawData = readFileSync(args.origin, "utf-8").split("\n---\n");
+const originId = parse(rawData[0]).id;
+
+const targetPath = typeof args.target === "string" ? args.target : undefined;
+if (targetPath === undefined) {
+	process.stdout.write("No --target filename provided.\n");
 	process.exit(1);
 }
-if (!outputPath.endsWith(".gv")) {
+if (!targetPath.endsWith(".gv")) {
 	process.stdout.write(
-		`Invalid output document. File name is expected to end in '.gv'.\nProvided: ${outputPath}\n`,
+		`Invalid output document. File name is expected to end in '.gv'.\nProvided: ${targetPath}\n`,
 	);
 	process.exit(1);
 }
 
-const origin = typeof args.origin === "string" ? args.origin : undefined;
-if (origin === undefined) {
-	process.stdout.write("No --origin provided.\n");
-	process.exit(1);
-}
-
-const rawData = new Map(files.map((_) => [_, readFileSync(_, "utf-8")]));
-
 // Parse raw data with appropriate parser.
+/** @type {Map<string,import("source/types.js").TimelineDocument>} */
 const plainData = new Map(
-	rawData.entries().map(([filename, data]) => [filename, parse(data)]),
+	rawData.map((data) => {
+		const timeline = parse(data);
+		return [timeline.id, timeline];
+	}),
 );
 
 // Load raw data to normalized model.
@@ -124,23 +115,17 @@ const finalTimelines = [
 		),
 ];
 
-if (
-	!finalTimelines.some(
-		(_) => "identity" in _.meta && _.meta.identity.id === origin,
-	)
-) {
-	process.stdout.write(
-		"The provided --origin identity doesn't match any of the provided timelines.\n",
-	);
-	process.exit(1);
-}
-
 const identityTimelines =
 	/** @type {Array<import("../source/types.js").TimelineAncestryRenderer>} */ (
 		finalTimelines.filter((timeline) => "identity" in timeline.meta)
 	);
-const graph = new Graph(identityTimelines, origin);
-const hops = graph.calculateHopsFrom(origin, {
+const originIdentityId = mustExist(
+	// @ts-expect-error
+	data.get(originId)?.meta.identity?.id,
+	`Empty or invalid identity for origin ID '${originId}'`,
+);
+const graph = new Graph(identityTimelines, originIdentityId);
+const hops = graph.calculateHopsFrom(originIdentityId, {
 	allowChildHop: true,
 	allowMarriageHop: false,
 	allowParentHop: true,
@@ -165,7 +150,7 @@ process.stdout.write(
 // Generate stylesheet for entire universe.
 /** @type {import("source/types.js").RenderMode} */
 const theme = args.theme === "light" ? "light" : "dark";
-const ss = new Styling(finalTimelines, theme).styles(graph);
+const styleSheet = new Styling(finalTimelines, theme).styles(graph);
 
 // Write GraphViz graph.
 process.stdout.write("Rendering universe...\n");
@@ -178,7 +163,7 @@ const renderOptions = {
 		return `${["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"][_.getDay()]}, ${_.getDate().toFixed(0).padStart(2, "0")}.${(_.getMonth() + 1).toFixed(0).padStart(2, "0")}.${_.getFullYear()}`;
 	},
 	now: NOW,
-	origin,
+	origin: originIdentityId,
 	rendererAnonymization: "enabled",
 	rendererAnalytics: "enabled",
 	segment: typeof args.segment === "string" ? Number(args.segment) : undefined,
@@ -190,7 +175,7 @@ const renderOptions = {
 		typeof args["skip-after"] === "string"
 			? new Date(args["skip-after"]).valueOf()
 			: undefined,
-	styleSheet: ss,
+	styleSheet,
 	theme,
 };
 const dotGraph = render(trimmedTimelines, renderOptions, graph, hops);
@@ -227,7 +212,7 @@ const info = [
 
 process.stdout.write(`Writing graph...\n`);
 if (dotGraph.graph.length === 1) {
-	writeFileSync(outputPath, dotGraph.graph[0]);
+	writeFileSync(targetPath, dotGraph.graph[0]);
 } else {
 	for (let graphIndex = 0; graphIndex < dotGraph.graph.length; ++graphIndex) {
 		const graph = dotGraph.graph[graphIndex];
@@ -238,11 +223,11 @@ if (dotGraph.graph.length === 1) {
 			/digraph timeline \{/,
 			`digraph segment_${index} { id="segment_${index}";`,
 		);
-		const segmentFilename = outputPath.replace(/\.gv$/, `-segment${index}.gv`);
+		const segmentFilename = targetPath.replace(/\.gv$/, `-segment${index}.gv`);
 		process.stdout.write(`  - Written segment ${segmentFilename}.\n`);
 		writeFileSync(segmentFilename, uniqueGraph);
 	}
 }
 
-writeFileSync(outputPath.replace(/\.gv$/, ".info"), `${info.join("\n")}\n`);
+writeFileSync(targetPath.replace(/\.gv$/, ".info"), `${info.join("\n")}\n`);
 process.stdout.write("GraphViz graph for universe written successfully.\n");

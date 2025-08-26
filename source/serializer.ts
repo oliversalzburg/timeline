@@ -1,5 +1,7 @@
 import { stringify } from "yaml";
 import type {
+	MetaSectionAncestryRenderer,
+	MetaSectionReferenceRenderer,
 	Timeline,
 	TimelineDocumentInternal,
 	TimelineFlexibleInput,
@@ -8,7 +10,7 @@ import type {
 
 export const serialize = (
 	timeline: Timeline | TimelinePlain,
-	metadata: Record<string | number, unknown> = {},
+	metadata: MetaSectionAncestryRenderer | MetaSectionReferenceRenderer,
 	serializeId = false,
 ) => {
 	const document: TimelineDocumentInternal = {

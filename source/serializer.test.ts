@@ -27,7 +27,7 @@ describe("Serializer", () => {
 				[100, { title: "two" }],
 			],
 		};
-		const document = serialize(timeline);
+		const document = serialize(timeline, timeline.meta);
 		expect(snapshotHasRegression(snapshotIdentity(this, ".yml"), document)).to
 			.be.false;
 	});

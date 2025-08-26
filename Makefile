@@ -12,7 +12,6 @@ _UNIVERSE := output/$(_UNIVERSE_NAME)
 _PEDIGREE := output/pedigree
 _SEGMENTS := $(wildcard $(_UNIVERSE)-segment*.gv)
 _TIMELINES := $(filter-out %.auto.yml, $(wildcard ~/timelines/*.yml ~/timelines/*/*.yml))
-_AUTO_TIMELINES := $(patsubst %.yml,%.auto.yml,$(_TIMELINES))
 _DEBUG := output/_$(_UNIVERSE_NAME)
 
 _SCOUR_FLAGS = --enable-viewboxing --enable-id-stripping --enable-comment-stripping --shorten-ids --indent=none
@@ -25,9 +24,6 @@ ifneq ($(DEBUG),)
 	_DOT_FLAGS += -v5
 endif
 
-_PEDIGREE_FLAGS :=
-_UNIVERSE_FLAGS := "--origin=$(ORIGIN)" --skip-before=$(START) --skip-after=$(END)
-_UNIVERSE_SEGMENT_FLAG := "--segment=500"
 ifneq ($(DEBUG),)
 	_PEDIGREE_FLAGS += --debug
 	_UNIVERSE_FLAGS += --debug
@@ -116,9 +112,32 @@ output/images : | output
 		--origin=$< \
 		--target=$@ \
 		--theme=light
+%-universe.svg $(wildcard %-universe-segment*.gv) : %.universe
+	node --enable-source-maps examples/universe.js \
+		$(_UNIVERSE_FLAGS) \
+		--origin=$< \
+		--segment=300 \
+		--target=$(patsubst %.svg,%.gv,$@)
+	$(MAKE) $(patsubst %.gv,%-img.dot,$(wildcard $(patsubst %-universe.svg,%-universe-segment*.gv,$@)))
+	$(MAKE) $(patsubst %.gv,%-img.svg,$(wildcard $(patsubst %-universe.svg,%-universe-segment*.gv,$@)))
+	@node --enable-source-maps contrib/svgcat.js \
+		--target=$@ $(patsubst %.gv,%-img.svg,$(wildcard $(patsubst %-universe.svg,%-universe-segment*.gv,$@)))
 
-%.svg : %.gv
-	@dot -Gpad=0 -Tsvg:cairo -o $@ $<
+%.dot : %.gv
+	dot -Tcanon -o $@ $<
+	@date +"%FT%T%z Normalized GraphViz document '$@'."
+
+# Embed (emoji) prefixes as <IMG> elements in the label.
+# At time of implementation, this output did not render well
+# with cairo.
+%-img.dot : %.dot output/images | output
+	node --enable-source-maps examples/emojify.js \
+		--assets=output/images \
+		--target=$<
+	@date +"%FT%T%z Embedded prefixes into '$@'."
+
+%.svg : %.dot
+	@dot $(_DOT_FLAGS) -Gpad=0 -Tsvg:cairo -o $@ $<
 
 %-analytics.pdf : %-analytics.md %-pedigree-light.svg
 	@cd $(dir $@); pandoc \
@@ -142,52 +161,15 @@ output/images : | output
 		--output $(notdir $@) \
 		$(notdir $<)
 
-$(_UNIVERSE)-img.svg &: \
-	$(foreach _, $(_SEGMENTS), $(patsubst %.gv,%-img.dot.svg,$(_)))
-	@node --enable-source-maps contrib/svgcat.js \
-		--target=$@ $^
+
+
+
 $(_UNIVERSE).svg &: \
 	$(foreach _, $(_SEGMENTS), $(patsubst %.gv,%.dot.svg,$(_)))
 	@node --enable-source-maps contrib/svgcat.js \
 		--target=$@ $^
 
-$(_PEDIGREE)-dark.gv $(_PEDIGREE)-dark.gv.md : $(_AUTO_TIMELINES) | lib/tsconfig.source.tsbuildinfo
-	@node --enable-source-maps examples/pedigree.js \
-		$(_PEDIGREE_FLAGS) \
-		--theme=dark \
-		--output=$@ $^
-$(_PEDIGREE)-light.gv $(_PEDIGREE)-light.gv.md : $(_AUTO_TIMELINES) | lib/tsconfig.source.tsbuildinfo
-	@node --enable-source-maps examples/pedigree.js \
-		$(_PEDIGREE_FLAGS) \
-		--theme=light \
-		--output=$@ $^
 
-$(_PEDIGREE)-light.gv.cairo.svg &: $(_PEDIGREE)-light.gv
-	@dot -Gpad=0 -Tsvg:cairo -o $@ $<
-$(_PEDIGREE)-dark.gv.cairo.svg &: $(_PEDIGREE)-dark.gv
-	@dot -Gpad=0 -Tsvg:cairo -o $@ $<
-
-$(_PEDIGREE)-anon-dark.gv $(_PEDIGREE)-anon-dark.gv.md : $(_AUTO_TIMELINES) | lib/tsconfig.source.tsbuildinfo
-	@node --enable-source-maps examples/pedigree.js \
-		--anonymize \
-		$(_PEDIGREE_FLAGS) \
-		--output=$@ \
-		--theme=dark $^
-$(_PEDIGREE)-anon-light.gv $(_PEDIGREE)-anon-light.gv.md : $(_AUTO_TIMELINES) | lib/tsconfig.source.tsbuildinfo
-	@node --enable-source-maps examples/pedigree.js \
-		--anonymize \
-		$(_PEDIGREE_FLAGS) \
-		--output=$@ \
-		--theme=light $^
-
-$(_PEDIGREE)-anon-light.gv.cairo.svg &: $(_PEDIGREE)-anon-light.gv
-	@dot -Gpad=0 -Tsvg:cairo -o $@ $<
-$(_PEDIGREE)-anon-dark.gv.cairo.svg &: $(_PEDIGREE)-anon-dark.gv
-	@dot -Gpad=0 -Tsvg:cairo -o $@ $<
-
-
-%.pdf: %.gv.md %.gv.cairo.svg
-	@cd $(dir $@); pandoc --from markdown --to pdf --pdf-engine lualatex --output $(notdir $@) $(notdir $^)
 
 universe:
 	$(MAKE) segmented
@@ -237,79 +219,20 @@ else
 endif
 	@date +"%FT%T%z Rendered PNG '$@'."
 
-# Build individual dot layout phases.
-# These can NOT be used incrementally, as the layout engine always starts
-# in phase 1, regardless of the input (to be confirmed!). When this was
-# attempted, the build failed for multiple segments reliably.
-%-p1.dot %-p1.dot.log: %.dot
-ifneq ($(DEBUG),)
-	>$@.log 2>&1 dot $(_DOT_FLAGS) -Tdot -Gphase=1 -o $@ $<
-else
-	dot $(_DOT_FLAGS) -Tdot -Gphase=1 -o $@ $<
-endif
-	@date +"%FT%T%z Generated dot layout phase 1 '$@'."
-%-p2.dot %-p2.dot.log: %.dot
-ifneq ($(DEBUG),)
-	>$@.log 2>&1 dot $(_DOT_FLAGS) -Tdot -Gphase=2 -o $@ $<
-else
-	dot $(_DOT_FLAGS) -Tdot -Gphase=2 -o $@ $<
-endif
-	@date +"%FT%T%z Generated dot layout phase 2 '$@'."
-%-p3.dot %-p3.dot.log: %.dot
-ifneq ($(DEBUG),)
-	>$@.log 2>&1 dot $(_DOT_FLAGS) -Tdot -Gphase=3 -o $@ $<
-else
-	dot $(_DOT_FLAGS) -Tdot -Gphase=3 -o $@ $<
-endif
-	@date +"%FT%T%z Generated dot layout phase 3 '$@'."
-%-p4.dot %-p4.dot.log: %.dot
-ifneq ($(DEBUG),)
-	>$@.log 2>&1 dot $(_DOT_FLAGS) -Tdot -Gphase=4 -o $@ $<
-else
-	dot $(_DOT_FLAGS) -Tdot -Gphase=4 -o $@ $<
-endif
-	@date +"%FT%T%z Generated dot layout phase 4 '$@'."
-%-p999.dot %-p999.dot.log: %.dot
-ifneq ($(DEBUG),)
-	>$@.log 2>&1 dot $(_DOT_FLAGS) -Tdot -Gphase=999 -o $@ $<
-else
-	dot $(_DOT_FLAGS) -Tdot -Gphase=999 -o $@ $<
-endif
-	@date +"%FT%T%z Generated dot layout phase 999 '$@'."
 
-# Embed (emoji) prefixes as <IMG> elements in the label.
-# At time of implementation, this output did not render well
-# with cairo.
-%-img.dot: %.dot output/images | output
-	@node --enable-source-maps examples/emojify.js \
-		--assets=output/images \
-		--target=$<
-	@date +"%FT%T%z Embedded prefixes into '$@'."
-
-%.dot %.dot.log: %.gv
-ifneq ($(DEBUG),)
-	>$@.log 2>&1 dot -v5 -Tcanon -o $@ $<
-else
-	@dot -Tcanon -o $@ $<
-endif
-	@date +"%FT%T%z Normalized GraphViz document '$@'."
 
 # Render a GraphViz document in DOT language, which represents the
 # requested slice from the universe.
-atomic: $(_AUTO_TIMELINES) lib node_modules | output
+atomic:  lib node_modules | output
 	@node --enable-source-maps examples/universe.js $(_UNIVERSE_FLAGS) \
-		--output=$(_UNIVERSE).gv \
-		$(_AUTO_TIMELINES)
+		--output=$(_UNIVERSE).gv
 	@date +"%FT%T%z Generated atomic GraphViz document '$@'."
-segmented: $(_AUTO_TIMELINES) lib node_modules | output
+segmented:  lib node_modules | output
 	@node --enable-source-maps examples/universe.js $(_UNIVERSE_FLAGS) \
 		--output=$(_UNIVERSE).gv \
-		$(_UNIVERSE_SEGMENT_FLAG) \
-		$(_AUTO_TIMELINES)
+		$(_UNIVERSE_SEGMENT_FLAG)
 	@date +"%FT%T%z Generated segmented GraphViz document '$@'."
 
-%.auto.yml: %.yml lib node_modules examples/person.js
-	@>$@ node --enable-source-maps examples/person.js --target=$<
 
 # Not actually referenced in the implementation. Contains the library code
 # for usage somewhere else.

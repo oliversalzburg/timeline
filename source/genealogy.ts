@@ -380,35 +380,45 @@ export class Graph<
 				continue;
 			}
 
+			if (
+				timeline.meta.private === false ||
+				"born" in timeline.meta.identity === false
+			) {
+				result.push(timeline);
+				continue;
+			}
+
+			const identity = {
+				id: getName(timeline.meta.identity.id),
+				born: {
+					date: new Date().toISOString(),
+				},
+				relations: timeline.meta.identity.relations
+					?.map((relation) => {
+						if ("marriedTo" in relation) {
+							return {
+								marriedTo: getName(relation.marriedTo),
+							};
+						}
+						if ("fatherOf" in relation) {
+							return { fatherOf: getName(relation.fatherOf) };
+						}
+						if ("motherOf" in relation) {
+							return { motherOf: getName(relation.motherOf) };
+						}
+						if ("linkedTo" in relation) {
+							return undefined;
+						}
+						throw new InvalidOperationError("Unknown relation type.");
+					})
+					.filter((_) => _ !== undefined),
+			};
+
 			result.push({
 				...timeline,
 				meta: {
 					...timeline.meta,
-					identity: {
-						id: getName(timeline.meta.identity.id),
-						born: {
-							date: new Date().toISOString(),
-						},
-						relations: timeline.meta.identity.relations
-							?.map((relation) => {
-								if ("marriedTo" in relation) {
-									return {
-										marriedTo: getName(relation.marriedTo),
-									};
-								}
-								if ("fatherOf" in relation) {
-									return { fatherOf: getName(relation.fatherOf) };
-								}
-								if ("motherOf" in relation) {
-									return { motherOf: getName(relation.motherOf) };
-								}
-								if ("linkedTo" in relation) {
-									return undefined;
-								}
-								throw new InvalidOperationError("Unknown relation type.");
-							})
-							.filter((_) => _ !== undefined),
-					},
+					identity,
 				},
 			});
 		}

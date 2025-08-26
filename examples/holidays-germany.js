@@ -474,9 +474,10 @@ const endYear = startYear + yearCount;
 
 process.stderr.write(`German Holidays from ${startYear} until ${endYear}:\n`);
 
-/** @type {import("../lib/types.js").TimelinePlain} */
+/** @type {import("../lib/types.js").TimelineReferenceRenderer} */
 const timeline = {
 	meta: {
+		id: "",
 		color: TRANSPARENT,
 		private: false,
 	},
@@ -493,5 +494,5 @@ const timeline = {
 		),
 };
 
-const serialized = serialize(timeline);
+const serialized = serialize(timeline, timeline.meta);
 process.stdout.write(`${serialized}\n`);

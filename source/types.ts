@@ -21,10 +21,7 @@ export interface TimelinePlain {
 	records: Array<TimelineRecord>;
 }
 export interface Timeline extends TimelinePlain {
-	meta: {
-		id: string;
-		private: boolean;
-	};
+	meta: MetaSection;
 }
 
 export interface TimelineMetrics {
@@ -38,7 +35,11 @@ export type RGBTuple = [number, number, number];
 export type RGBATuple = [number, number, number, number];
 export type RenderMode = "dark" | "light";
 
-export interface MetaSectionReferenceRenderer {
+export interface MetaSection {
+	id: string;
+	private: boolean;
+}
+export interface MetaSectionReferenceRenderer extends MetaSection {
 	color?: string;
 	prefix?: string;
 	rank?: number;
@@ -47,7 +48,7 @@ export interface TimelineDocumentReferenceRenderer
 	extends TimelineDocument,
 		MetaSectionReferenceRenderer {}
 export interface TimelineReferenceRenderer extends Timeline {
-	meta: MetaSectionReferenceRenderer & { id: string; private: boolean };
+	meta: MetaSectionReferenceRenderer;
 	records: Array<TimelineRecord>;
 }
 
@@ -107,6 +108,6 @@ export interface MetaSectionAncestryRenderer
 	identity: Identity;
 }
 export interface TimelineAncestryRenderer extends Timeline {
-	meta: MetaSectionAncestryRenderer & { id: string; private: boolean };
+	meta: MetaSectionAncestryRenderer;
 	records: Array<TimelineRecord>;
 }

@@ -173,7 +173,7 @@ const nameAtDate = (date) => {
 	return marriageBeforeDate?.as ?? name;
 };
 
-/** @type {import("../lib/types.js").TimelinePlain} */
+/** @type {import("../lib/types.js").Timeline} */
 const document = {
 	...timeline,
 	records: [
@@ -198,5 +198,5 @@ if (death !== undefined) {
 	]);
 }
 
-const serialized = serialize(document);
+const serialized = serialize(document, document.meta);
 process.stdout.write(`---\n${serialized}\n`);
