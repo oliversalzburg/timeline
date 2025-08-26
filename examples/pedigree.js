@@ -1,6 +1,7 @@
 #!/bin/env node
 
-import { readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { createWriteStream, readFileSync } from "node:fs";
+import { mustExist } from "@oliversalzburg/js-utils/data/nil.js";
 import { parse } from "yaml";
 import { Graph } from "../lib/genealogy.js";
 import { load } from "../lib/loader.js";
@@ -34,50 +35,40 @@ const args = process.argv
 		/** @type {Record<string, boolean | string>} */ ({}),
 	);
 
-// Read raw data from input files.
-const files =
-	2 < process.argv.length
-		? process.argv.slice(2).filter((_) => !_.startsWith("--"))
-		: readdirSync("timelines/")
-				.filter((_) => _.endsWith(".yml"))
-				.map((_) => `timelines/${_}`);
-
-if (files.length === 0) {
-	process.stdout.write("No files provided.\n");
+if (typeof args.origin !== "string") {
+	process.stderr.write("Missing --origin.\n");
 	process.exit(1);
 }
 
-const outputPath = typeof args.output === "string" ? args.output : undefined;
-if (outputPath === undefined) {
-	process.stdout.write("No --output filename provided.\n");
-	process.exit(1);
-}
-if (!outputPath.endsWith(".gv")) {
-	process.stdout.write(
-		`Invalid output document. File name is expected to end in '.gv'.\nProvided: ${outputPath}\n`,
-	);
-	process.exit(1);
-}
+const targetPath = typeof args.target === "string" ? args.target : undefined;
 
-const origin = typeof args.origin === "string" ? args.origin : undefined;
-if (origin === undefined) {
-	process.stdout.write("No --origin provided.\n");
+const rawData = readFileSync(args.origin, "utf-8").split("\n---\n");
+const originId = parse(rawData[0]).id;
+const format =
+	args.format === "simple"
+		? "simple"
+		: args.format === "report"
+			? "report"
+			: undefined;
+
+if (format === undefined) {
+	process.stderr.write("Expected --format=report or --format=simple.\n");
 	process.exit(1);
 }
-
-const rawData = new Map(files.map((_) => [_, readFileSync(_, "utf-8")]));
 
 // Parse raw data with appropriate parser.
+/** @type {Map<string,import("source/types.js").TimelineDocument>} */
 const plainData = new Map(
-	rawData.entries().map(([filename, data]) => [filename, parse(data)]),
+	rawData.map((data) => {
+		const timeline = parse(data);
+		return [timeline.id, timeline];
+	}),
 );
 
 // Load raw data to normalized model.
 /** @type {Map<string,import("source/types.js").TimelineAncestryRenderer>} */
 const data = new Map(
-	plainData
-		.entries()
-		.map(([filename, data]) => [filename, load(data, filename)]),
+	plainData.entries().map(([id, data]) => [id, load(data, id)]),
 );
 
 const seed = [...crypto.getRandomValues(new Uint32Array(10))]
@@ -106,29 +97,20 @@ const finalTimelines = [
 		),
 ];
 
-if (!finalTimelines.some((_) => _.meta.identity.id === origin)) {
-	process.stdout.write(
-		"The provided --origin identity doesn't match any of the provided timelines.\n",
-	);
-	process.exit(1);
-}
+const originIdentityId = mustExist(data.get(originId)?.meta.identity.id);
+const graph = new Graph(finalTimelines, originIdentityId);
 
-const graph = new Graph(finalTimelines, origin);
-const _hops = graph.calculateHopsFrom(origin, {
-	allowChildHop: true,
-	allowMarriageHop: false,
-	allowParentHop: true,
-});
-
-process.stdout.write(`Chart contains ${finalTimelines.length} identities.\n`);
+process.stdout.write(
+	`Constructed identity graph from ${finalTimelines.length} timelines.\n`,
+);
 
 // Generate stylesheet for entire universe.
 /** @type {import("source/types.js").RenderMode} */
 const theme = args.theme === "light" ? "light" : "dark";
-const ss = new Styling(finalTimelines, theme).styles(graph);
+const styleSheet = new Styling(finalTimelines, theme).styles(graph);
 
 // Write GraphViz graph.
-process.stdout.write(`Generating GraphViz graph for ancestry chart...\n`);
+process.stdout.write(`Generating GraphViz graph for pedigree chart...\n`);
 
 /** @type {RendererOptions} */
 const renderOptions = {
@@ -138,19 +120,34 @@ const renderOptions = {
 		return `${_.getDate().toFixed(0).padStart(2, "0")}.${(_.getMonth() + 1).toFixed(0).padStart(2, "0")}.${_.getFullYear()}`;
 	},
 	now: NOW,
-	origin,
+	origin: originIdentityId,
 	rendererAnalytics: args.analytics === true ? "enabled" : "disabled",
 	rendererAnonymization: args.anonymize === true ? "enabled" : "disabled",
-	styleSheet: ss,
+	styleSheet,
 	theme,
 };
-const dotGraph = renderSimple(finalTimelines, renderOptions);
-const markdown = renderReport(finalTimelines, renderOptions);
 
-process.stdout.write(`Writing graph...\n`);
-writeFileSync(outputPath, dotGraph);
-writeFileSync(`${outputPath}.md`, markdown[0].content);
+const targetStream =
+	targetPath !== undefined
+		? createWriteStream(targetPath, { encoding: "utf8" })
+		: process.stdout;
 
-process.stdout.write(
-	"GraphViz graph for ancestry chart written successfully.\n",
-);
+targetStream.on("error", () => {
+	process.stderr.write(
+		`Output stream error. Maybe not fully consumed. Exiting with failure.\n`,
+	);
+	process.exitCode = 1;
+});
+
+if (format === "simple") {
+	const dotGraph = renderSimple(finalTimelines, renderOptions);
+	targetStream.write(dotGraph);
+}
+
+if (format === "report") {
+	const markdown = renderReport(finalTimelines, {
+		...renderOptions,
+		pedigreeChartPath: originId.replace(/\.yml$/, "-pedigree-light.svg"),
+	});
+	targetStream.write(markdown[0].content);
+}

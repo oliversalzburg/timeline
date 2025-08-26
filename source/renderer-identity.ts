@@ -36,7 +36,7 @@ export const renderSimple = (
 	timelines: Array<TimelineAncestryRenderer>,
 	options: RendererOptions,
 ) => {
-	const depth = 3;
+	const depth = 4;
 
 	const graph = new Graph(timelines, options.origin);
 	const hops =
@@ -71,7 +71,7 @@ export const renderSimple = (
 	const d = dot();
 	d.raw("digraph ancestry {");
 	d.raw(
-		`node [fontcolor="${defaultForeground}"; fontname="${fontNode}"; fontsize="${FONT_SIZE * 2}";]`,
+		`node [fontcolor="${defaultForeground}"; fontname="${fontNode}"; fontsize="${FONT_SIZE}";]`,
 	);
 	d.raw(`edge [color="${defaultForeground}";]`);
 	d.raw(`bgcolor="${defaultBackground}"`);
@@ -150,7 +150,7 @@ export const renderSimple = (
 			fontsize: identity === originIdentity ? FONT_SIZE + 4 : undefined,
 			label: `${name(identity)}`,
 			penwidth: identity.id === originIdentity.id ? 1 : 0,
-			shape: identity.id === originIdentity.id ? "circle" : "plain",
+			shape: identity.id === originIdentity.id ? "oval" : "box",
 		});
 	}
 	for (const identity of graph.identities) {
@@ -854,7 +854,7 @@ export const renderUniverse = (
 
 export const renderReport = (
 	timelines: Array<TimelineAncestryRenderer>,
-	options: RendererOptions,
+	options: RendererOptions & { pedigreeChartPath?: string },
 ) => {
 	const graph = new Graph(timelines, options.origin);
 	const hops =
@@ -904,7 +904,6 @@ export const renderReport = (
 		return `_${_.name ?? _.id}_ `;
 	};
 
-	const _name = graph.resolveIdentityNameAtDate(originIdentity.id);
 	const title = "Mein Stammbaum";
 	const dateString =
 		options.dateRenderer !== undefined
@@ -919,6 +918,11 @@ export const renderReport = (
 				: undefined;
 		const sexusString = sexus !== undefined ? `${sexus} ` : "";
 		const sexusAnalytics = renderMaybe(sexus, "Sexus");
+
+		let hasBirth = false;
+		let hasMarriage = false;
+		let hasDeath = false;
+
 		const nameBirth = renderBirthnamePrefixMaybe(subject);
 		const _dateBirth = uncertainEventToDate(subject.born);
 		const dateBirthString = uncertainEventToDateString(
@@ -935,6 +939,7 @@ export const renderReport = (
 			output.push(
 				`${sexusAnalytics} geboren ${nameBirth}${dateBirthAnalytics} in ${locationBirthAnalytics}  `,
 			);
+			hasBirth = true;
 		} else {
 			if (
 				nameBirth !== "" ||
@@ -944,6 +949,7 @@ export const renderReport = (
 				output.push(
 					`${sexusString}geboren ${nameBirth}${dateBirthString ?? ""}${locationBirthString ?? ""}  `,
 				);
+				hasBirth = true;
 			}
 		}
 
@@ -967,10 +973,12 @@ export const renderReport = (
 				output.push(
 					`${UNICODE_MARRIED} ${dateMarriageAnalytics} mit ${spouse} in ${locationMarriageAnalytics}  `,
 				);
+				hasMarriage = true;
 			} else {
 				output.push(
 					`${UNICODE_MARRIED} ${dateMarriageString ?? ""}mit ${spouse}${locationMarriageString ?? ""}  `,
 				);
+				hasMarriage = true;
 			}
 		}
 
@@ -990,11 +998,17 @@ export const renderReport = (
 				output.push(
 					`${UNICODE_DIED} ${dateDiedAnalytics} in ${locationDiedAnalytics}  `,
 				);
+				hasDeath = true;
 			} else {
 				output.push(
 					`${UNICODE_DIED} ${dateDiedString ?? ""}${locationDiedString ?? ""}  `,
 				);
+				hasDeath = true;
 			}
+		}
+
+		if (!hasBirth && !hasMarriage && !hasDeath) {
+			output.push("lebt  ");
 		}
 		output.push("");
 	};
@@ -1026,7 +1040,9 @@ export const renderReport = (
 
 	//buffer.push(`# ${title}\n`);
 
-	buffer.push(`![](pedigree.gv.cairo.svg)\n`);
+	if (options.pedigreeChartPath !== undefined) {
+		buffer.push(`![](${options.pedigreeChartPath})\n`);
+	}
 
 	if (0 < originDescendants.length) {
 		let consumed = 0;

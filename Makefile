@@ -32,32 +32,64 @@ ifneq ($(DEBUG),)
 	_PEDIGREE_FLAGS += --debug
 	_UNIVERSE_FLAGS += --debug
 endif
-ifneq ($(LIGHT),)
-	_PEDIGREE_FLAGS += --theme=light
-	_UNIVERSE_FLAGS += --theme=light
-else
-	_PEDIGREE_FLAGS += --theme=dark
-	_UNIVERSE_FLAGS += --theme=dark
-endif
 ifneq ($(PRIVATE),)
 	_UNIVERSE_FLAGS += --private
 endif
 
-default: build docs universe
+default : \
+	lib/tsconfig.source.tsbuildinfo \
+	$(_PEDIGREE)-dark.gv \
+	$(_PEDIGREE)-dark.gv.cairo.svg \
+	$(_PEDIGREE)-light.gv \
+	$(_PEDIGREE)-light.gv.cairo.svg \
+	$(_PEDIGREE)-anon-dark.gv \
+	$(_PEDIGREE)-anon-dark.gv.cairo.svg \
+	$(_PEDIGREE)-anon-light.gv \
+	$(_PEDIGREE)-anon-light.gv.cairo.svg \
+	$(_PEDIGREE)-light.pdf \
+	$(_PEDIGREE)-anon-light.pdf
 
-build: lib/tsconfig.source.tsbuildinfo
+#build: lib/tsconfig.source.tsbuildinfo
 
-lib/tsconfig.source.tsbuildinfo $(_LIBS_D_TS) $(_LIBS_D_TS_MAP) $(_LIBS_JS) $(_LIBS_JS_MAP) &: node_modules $(_SOURCES_TS)
+lib/tsconfig.source.tsbuildinfo $(_LIBS_D_TS) $(_LIBS_D_TS_MAP) $(_LIBS_JS) $(_LIBS_JS_MAP) : node_modules $(_SOURCES_TS)
 	@echo "Building library..."
 	@npm exec -- tsc --build tsconfig.json
 
-_site lib output:
+_site lib output :
 	mkdir -p $@
 
-output/images: | output
+output/images : | output
 	@node --enable-source-maps contrib/prepare-emoji.js
 	@cp contrib/wikimedia/* $@/
 	@node --enable-source-maps examples/emojify.js --copy-only
+
+%.universe : %.yml
+	node --enable-source-maps examples/space-time-generator.js \
+		--origin=$^ \
+		--root=/home/oliver/timelines \
+		--target=$@
+
+%.md : %.universe %-pedigree-light.svg
+	@node --enable-source-maps examples/pedigree.js \
+		$(_PEDIGREE_FLAGS) \
+		--format=report \
+		--origin=$^ \
+		--target=$@ \
+		--theme=light
+
+%-pedigree-light.gv : %.universe
+	@node --enable-source-maps examples/pedigree.js \
+		$(_PEDIGREE_FLAGS) \
+		--format=simple \
+		--origin=$^ \
+		--target=$@ \
+		--theme=light
+
+%-pedigree-light.svg : %-pedigree-light.gv
+	@dot -Gpad=0 -Tsvg:cairo -o $@ $<
+
+%.pdf: %.md %-pedigree-light.svg
+	@cd $(dir $@); pandoc --from markdown --to pdf --pdf-engine lualatex --output $(notdir $@) $(notdir $^)
 
 $(_UNIVERSE)-img.svg &: \
 	$(foreach _, $(_SEGMENTS), $(patsubst %.gv,%-img.dot.svg,$(_)))
@@ -68,14 +100,43 @@ $(_UNIVERSE).svg &: \
 	@node --enable-source-maps contrib/svgcat.js \
 		--target=$@ $^
 
-$(_PEDIGREE).gv $(_PEDIGREE).gv.md &: $(_AUTO_TIMELINES) lib node_modules | output
+$(_PEDIGREE)-dark.gv $(_PEDIGREE)-dark.gv.md : $(_AUTO_TIMELINES) | lib/tsconfig.source.tsbuildinfo
 	@node --enable-source-maps examples/pedigree.js \
 		$(_PEDIGREE_FLAGS) \
-		--output=$(_PEDIGREE).gv $(_AUTO_TIMELINES)
-$(_PEDIGREE).gv.png $(_PEDIGREE).gv.svg $(_PEDIGREE).gv.cairo.svg &: $(_PEDIGREE).gv
-	@dot -Gpad=2 -O -Tpng -Tsvg -Tsvg:cairo $(_PEDIGREE).gv
-$(_PEDIGREE).pdf: $(_PEDIGREE).gv.md $(_PEDIGREE).gv.cairo.svg
-	@cd output; pandoc --from markdown --to pdf --pdf-engine lualatex --output $(notdir $@) $(notdir $(_PEDIGREE)).gv.md
+		--theme=dark \
+		--output=$@ $^
+$(_PEDIGREE)-light.gv $(_PEDIGREE)-light.gv.md : $(_AUTO_TIMELINES) | lib/tsconfig.source.tsbuildinfo
+	@node --enable-source-maps examples/pedigree.js \
+		$(_PEDIGREE_FLAGS) \
+		--theme=light \
+		--output=$@ $^
+
+$(_PEDIGREE)-light.gv.cairo.svg &: $(_PEDIGREE)-light.gv
+	@dot -Gpad=0 -Tsvg:cairo -o $@ $<
+$(_PEDIGREE)-dark.gv.cairo.svg &: $(_PEDIGREE)-dark.gv
+	@dot -Gpad=0 -Tsvg:cairo -o $@ $<
+
+$(_PEDIGREE)-anon-dark.gv $(_PEDIGREE)-anon-dark.gv.md : $(_AUTO_TIMELINES) | lib/tsconfig.source.tsbuildinfo
+	@node --enable-source-maps examples/pedigree.js \
+		--anonymize \
+		$(_PEDIGREE_FLAGS) \
+		--output=$@ \
+		--theme=dark $^
+$(_PEDIGREE)-anon-light.gv $(_PEDIGREE)-anon-light.gv.md : $(_AUTO_TIMELINES) | lib/tsconfig.source.tsbuildinfo
+	@node --enable-source-maps examples/pedigree.js \
+		--anonymize \
+		$(_PEDIGREE_FLAGS) \
+		--output=$@ \
+		--theme=light $^
+
+$(_PEDIGREE)-anon-light.gv.cairo.svg &: $(_PEDIGREE)-anon-light.gv
+	@dot -Gpad=0 -Tsvg:cairo -o $@ $<
+$(_PEDIGREE)-anon-dark.gv.cairo.svg &: $(_PEDIGREE)-anon-dark.gv
+	@dot -Gpad=0 -Tsvg:cairo -o $@ $<
+
+
+%.pdf: %.gv.md %.gv.cairo.svg
+	@cd $(dir $@); pandoc --from markdown --to pdf --pdf-engine lualatex --output $(notdir $@) $(notdir $^)
 
 universe:
 	$(MAKE) segmented

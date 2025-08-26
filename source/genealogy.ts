@@ -272,7 +272,10 @@ export class Graph<
 		);
 
 		distances.set(id, 0);
-		const root = mustExist(this.resolveIdentity(id));
+		const root = mustExist(
+			this.resolveIdentity(id),
+			`unable to resolve identity '${id}'`,
+		);
 		distances.set(root.id, 0);
 
 		let changes = 1;
