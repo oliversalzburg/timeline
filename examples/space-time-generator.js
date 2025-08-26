@@ -4,7 +4,7 @@ import { createWriteStream, readdirSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { parse } from "yaml";
 import { load } from "../lib/loader.js";
-import { anonymize } from "../lib/operator.js";
+import { anonymize, anonymizeIdentity } from "../lib/operator.js";
 import { serialize } from "../lib/serializer.js";
 
 // Parse command line arguments.
@@ -68,9 +68,18 @@ for (const timelinePath of timelinePaths) {
 
 	// Register document ID and re-serialize it.
 	const timelineObject = parse(timelineData);
+
 	let timeline = load(timelineObject, timelinePath);
 	if (args.anonymize) {
 		timeline = anonymize(timeline, seed);
+		if ("identity" in timeline.meta) {
+			timeline.meta.identity = anonymizeIdentity(
+				/** @type {import("../source/types.js").Identity} */ (
+					timeline.meta.identity
+				),
+				seed + timeline.meta.id,
+			);
+		}
 	}
 	timelineData = serialize(timeline, timeline.meta, true);
 

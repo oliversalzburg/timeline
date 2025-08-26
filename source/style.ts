@@ -92,6 +92,7 @@ export class Styling<
 
 		const originTimeline = mustExist(
 			this.timelines.find((_) => _.meta.identity?.id === identityGraph.origin),
+			`unable to find timeline for origin identity '${identityGraph.origin}'`,
 		);
 		const antecedentsTimelines =
 			identityGraph

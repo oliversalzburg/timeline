@@ -2,7 +2,8 @@ import {
 	Random,
 	seedFromString,
 } from "@oliversalzburg/js-utils/data/random.js";
-import type { Timeline, TimelineRecord } from "./types.js";
+import { InvalidOperationError } from "@oliversalzburg/js-utils/errors/InvalidOperationError.js";
+import type { Identity, Timeline, TimelineRecord } from "./types.js";
 
 export const add = (timeline: Timeline, record: TimelineRecord): Timeline => {
 	return concat(timeline, [record]);
@@ -204,6 +205,79 @@ export const anonymize = <T extends Timeline>(timeline: T, seed: string): T => {
 	};
 };
 
+export const anonymizeString = (
+	subject: string,
+	randomOrSeed: Random | string,
+): string => {
+	const random =
+		typeof randomOrSeed === "string"
+			? new Random(seedFromString(randomOrSeed))
+			: randomOrSeed;
+	const lengthOriginal = subject.length;
+	const lengthVariance = Math.max(1, Math.floor(lengthOriginal * 0.15));
+	const lengthNew =
+		lengthOriginal + random.nextRange(-lengthVariance, lengthVariance);
+	const wordCount = Math.max(1, Math.floor(lengthNew / random.nextRange(4, 6)));
+	const words = new Array<string>();
+	let lineWidth = 0;
+	while (words.length < wordCount) {
+		const wordRandom = random.nextString(
+			random.nextRange(2, 10),
+			"aeiou".repeat(4) +
+				"abcdefghiklmnoprstu".repeat(3) +
+				"abcdefghijklmnopqrstuvwxyz" +
+				"äöüß",
+		);
+		const word =
+			words.length === 0 || random.nextBoolean()
+				? wordRandom.substring(0, 1).toLocaleUpperCase() +
+					wordRandom.substring(1)
+				: wordRandom;
+		words.push(word);
+
+		lineWidth += word.length;
+		if (25 < lineWidth) {
+			lineWidth = 0;
+			words.push("\n");
+		}
+	}
+	return words.join(" ").trim();
+};
+
+export const anonymizeIdentity = (
+	subject: Identity,
+	seed: string,
+): Identity => {
+	const random = new Random(seedFromString(seed));
+	return {
+		id: anonymizeString(subject.id, random),
+		born: {
+			date: new Date().toISOString(),
+			where:
+				subject.born?.where !== undefined
+					? anonymizeString(subject.born?.where, random)
+					: undefined,
+		},
+		relations: subject.relations
+			?.map((relation) => {
+				if ("marriedTo" in relation) {
+					return { marriedTo: anonymizeString(relation.marriedTo, seed) };
+				}
+				if ("fatherOf" in relation) {
+					return { fatherOf: anonymizeString(relation.fatherOf, seed) };
+				}
+				if ("motherOf" in relation) {
+					return { motherOf: anonymizeString(relation.motherOf, seed) };
+				}
+				if ("linkedTo" in relation) {
+					return undefined;
+				}
+				throw new InvalidOperationError("Unknown relation type.");
+			})
+			.filter((_) => _ !== undefined),
+	};
+};
+
 export const anonymizeRecords = (
 	records: Array<TimelineRecord>,
 	seed: string,
@@ -241,7 +315,7 @@ export const anonymizeRecords = (
 				words.push("\n");
 			}
 		}
-		const title = words.join(" ");
+		const title = anonymizeString(entry.title, random);
 		return [_, { ...entry, title }];
 	});
 };
