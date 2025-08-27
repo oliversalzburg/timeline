@@ -208,14 +208,14 @@ if (dotGraph.graph.length === 1) {
 } else {
 	for (let graphIndex = 0; graphIndex < dotGraph.graph.length; ++graphIndex) {
 		const graph = dotGraph.graph[graphIndex];
-		const _index = graphIndex
+		const index = graphIndex
 			.toFixed()
 			.padStart(dotGraph.graph.length.toFixed().length, "0");
 		const uniqueGraph = graph.replace(
 			/digraph timeline \{/,
-			`digraph segment_${graphIndex} { id="segment_${graphIndex}";`,
+			`digraph segment_${index} { id="segment_${index}";`,
 		);
-		const segmentFilename = targetPath.replace(/\.gvus$/, `${graphIndex}.gvus`);
+		const segmentFilename = targetPath.replace(/\.gvus$/, `${index}.gvus`);
 		process.stdout.write(`  - Written segment ${segmentFilename}.\n`);
 		writeFileSync(segmentFilename, uniqueGraph);
 	}
