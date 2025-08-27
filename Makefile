@@ -112,18 +112,23 @@ output/images : | output
 		--origin=$< \
 		--target=$@ \
 		--theme=light
-%-universe.svg $(wildcard %-universe-segment*.gv) : %.universe
+%-universe.info : %.universe
 	node --enable-source-maps examples/universe.js \
 		$(_UNIVERSE_FLAGS) \
 		--origin=$< \
 		--segment=300 \
-		--target=$(patsubst %.svg,%.gv,$@)
-	$(MAKE) $(patsubst %.gv,%-img.dot,$(wildcard $(patsubst %-universe.svg,%-universe-segment*.gv,$@)))
-	$(MAKE) $(patsubst %.gv,%-img.svg,$(wildcard $(patsubst %-universe.svg,%-universe-segment*.gv,$@)))
-	@node --enable-source-maps contrib/svgcat.js \
-		--target=$@ $(patsubst %.gv,%-img.svg,$(wildcard $(patsubst %-universe.svg,%-universe-segment*.gv,$@)))
+		--target=$(patsubst %-universe.info,%-universe.gvus,$@)
+%-universe.svg : %-universe.info
+	contrib/make.sh $(patsubst %-universe.svg,%,$@)
+%-universe.html : %-universe.info %-universe.svg
+	node --enable-source-maps examples/build-site.js \
+		--format=zen \
+		--target=$@
 
 %.dot : %.gv
+	dot -Tcanon -o $@ $<
+	@date +"%FT%T%z Normalized GraphViz document '$@'."
+%.dotus : %.gvus
 	dot -Tcanon -o $@ $<
 	@date +"%FT%T%z Normalized GraphViz document '$@'."
 
@@ -135,9 +140,16 @@ output/images : | output
 		--assets=output/images \
 		--target=$<
 	@date +"%FT%T%z Embedded prefixes into '$@'."
+%.idotus : %.dotus output/images | output
+	node --enable-source-maps examples/emojify.js \
+		--assets=output/images \
+		--target=$<
+	@date +"%FT%T%z Embedded prefixes into '$@'."
 
 %.svg : %.dot
 	@dot $(_DOT_FLAGS) -Gpad=0 -Tsvg:cairo -o $@ $<
+%.isvgus : %.idotus
+	@dot $(_DOT_FLAGS) -Gpad=0 -Tsvg -o $@ $<
 
 %-analytics.pdf : %-analytics.md %-pedigree-light.svg
 	@cd $(dir $@); pandoc \

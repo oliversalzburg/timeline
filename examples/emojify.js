@@ -36,7 +36,7 @@ if (!copyOnly) {
 		process.stderr.write("Missing --target.\n");
 		process.exit(1);
 	}
-	if (!args.target.endsWith(".dot")) {
+	if (!args.target.endsWith(".dot") && !args.target.endsWith(".dotus")) {
 		process.stdout.write(
 			`Invalid target document. File name is expected to end in '.dot'.\nProvided: ${args.target}\n`,
 		);
@@ -268,7 +268,7 @@ if (copyOnly) {
 	process.exit(0);
 }
 
-const filename = contentName.replace(/\.dot$/, "-img.dot");
+const filename = contentName.replace(/\.dotus$/, ".idotus");
 writeFileSync(join(contentLocation, filename), svgPrefixes);
 
 //process.stdout.write(`Successfully emojified ${args.target} into ${filename}.\n`,);

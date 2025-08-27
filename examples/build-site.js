@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { readFileSync, writeFileSync } from "node:fs";
-import { basename, join } from "node:path";
+import { join } from "node:path";
 
 // Parse command line arguments.
 const args = process.argv
@@ -25,59 +25,32 @@ const args = process.argv
 		/** @type {Record<string, boolean | string>} */ ({}),
 	);
 
-const graphPath = process.argv.slice(2).filter((_) => !_.startsWith("--"))[0];
-if (!graphPath.endsWith(".gv")) {
-	process.stderr.write(
-		`Invalid source document. File name is expected to end in '.gv'.\nProvided: ${graphPath}\n`,
-	);
+if (typeof args.target !== "string") {
+	process.stderr.write("Missing --target.\n");
 	process.exit(1);
 }
 
-/** @type {Record<string,{embedPrefixes:boolean; svgSource:string; withJs:boolean; starfield:boolean;}>} */
+/** @type {Record<string,{svgSource:string; withJs:boolean; starfield:boolean;}>} */
 const VARIANTS = {
 	// Intended for exploration.
 	zen: {
-		embedPrefixes: true,
 		svgSource: ".svg",
 		withJs: true,
 		starfield: true,
 	},
 	// Retains text, has JS navigation.
 	default: {
-		embedPrefixes: true,
 		svgSource: ".svg",
 		withJs: true,
 		starfield: false,
 	},
 	// Best-effort to produce something viewable.
 	static: {
-		embedPrefixes: true,
 		svgSource: ".min.svg",
 		withJs: false,
 		starfield: false,
 	},
 };
-
-const graphName = basename(graphPath).replace(/\.gv$/, "");
-
-const variants = new Map();
-for (const [variant, settings] of Object.entries(VARIANTS)) {
-	variants.set(variant, {
-		...settings,
-		output: join(
-			typeof args.output === "string" ? args.output : process.cwd(),
-			`${graphName}.${variant}.html`,
-		),
-		info: readFileSync(graphPath.replace(/\.gv$/, ".info"), "utf-8"),
-		svg: readFileSync(
-			graphPath.replace(
-				/\.gv$/,
-				(settings.embedPrefixes ? "-img" : "") + settings.svgSource,
-			),
-			"utf-8",
-		),
-	});
-}
 
 const templatePath = join(import.meta.dirname, "index.template");
 const templateCss = readFileSync(`${templatePath}.css`, "utf-8");
@@ -85,13 +58,24 @@ const templateHtml = readFileSync(`${templatePath}.html`, "utf-8");
 const templateJs = readFileSync(`${templatePath}.js`, "utf-8");
 const templateTxt = readFileSync(`${templatePath}.txt`, "utf-8");
 
-for (const [variant, meta] of variants.entries()) {
+for (const [variant, meta] of Object.entries(VARIANTS)) {
+	if (variant !== args.format) {
+		continue;
+	}
+
+	const settings = {
+		...meta,
+		output: args.target,
+		info: readFileSync(args.target.replace(/\.html$/, ".info"), "utf-8"),
+		svg: readFileSync(args.target.replace(/\.html$/, meta.svgSource), "utf-8"),
+	};
+
 	const js = templateJs.replace(
 		"const FEATURE_FLAG_STARFIELD = undefined;",
-		`const FEATURE_FLAG_STARFIELD = ${meta.starfield};`,
+		`const FEATURE_FLAG_STARFIELD = ${settings.starfield};`,
 	);
 
-	const svg = meta.svg
+	const svg = settings.svg
 		// Remove header to allow embedding.
 		.replace(/^<\?xml .+dtd['"]>/s, "")
 		.replace(/^<\?xml .+?>/s, "")
@@ -108,18 +92,18 @@ for (const [variant, meta] of variants.entries()) {
 				`Document generated with Open Time-Travel Engine on ${new Date().toISOString()}`,
 				`Renderer provided following universe metadata block:`,
 				"",
-				meta.info.trim(),
+				settings.info.trim(),
 				"-->",
 			].join("\n"),
 		)
 		.replace("<!--GUIDANCE-->", ["<!--", templateTxt, "-->"].join("\n"))
-		.replace("INITIAL_BODY_CLASS", meta.withJs ? "loading" : "")
+		.replace("INITIAL_BODY_CLASS", settings.withJs ? "loading" : "")
 		.replace("/*CSS*/", templateCss)
-		.replace("/*JS*/", meta.withJs ? js : "")
+		.replace("/*JS*/", settings.withJs ? js : "")
 		.replace("<!--SVG-->", svg);
 
-	process.stdout.write(`${variant}: Writing '${meta.output}'...\n`);
-	writeFileSync(meta.output, html);
+	process.stdout.write(`${variant}: Writing '${settings.output}'...\n`);
+	writeFileSync(settings.output, html);
 }
 
 process.stdout.write("Done\n");

@@ -7,7 +7,7 @@ import { parse } from "yaml";
 import { analyze } from "../lib/analyzer.js";
 import { Graph } from "../lib/genealogy.js";
 import { load } from "../lib/loader.js";
-import { anonymize, sort, uniquify } from "../lib/operator.js";
+import { sort, uniquify } from "../lib/operator.js";
 import { render } from "../lib/renderer.js";
 import { Styling } from "../lib/style.js";
 
@@ -50,9 +50,15 @@ if (targetPath === undefined) {
 	process.stdout.write("No --target filename provided.\n");
 	process.exit(1);
 }
-if (!targetPath.endsWith(".gv")) {
+if (args.segment === undefined && !targetPath.endsWith(".gv")) {
 	process.stdout.write(
 		`Invalid output document. File name is expected to end in '.gv'.\nProvided: ${targetPath}\n`,
+	);
+	process.exit(1);
+}
+if (args.segment === true && !targetPath.endsWith(".gvus")) {
+	process.stdout.write(
+		`Invalid output document. File name is expected to end in '.gvus'.\nProvided: ${targetPath}\n`,
 	);
 	process.exit(1);
 }
@@ -96,23 +102,9 @@ const globalLatest = metrics
 		0,
 	);
 
-const seed = [...crypto.getRandomValues(new Uint32Array(10))]
-	.map((_) => _.toString(16))
-	.join("");
-
 /** @type {Array<import("source/types.js").TimelineReferenceRenderer | import("source/types.js").TimelineAncestryRenderer>} */
 const finalTimelines = [
-	...data
-		.entries()
-		.map(([_, timeline]) =>
-			uniquify(
-				sort(
-					timeline.meta.private && args.private !== true
-						? anonymize(timeline, seed)
-						: timeline,
-				),
-			),
-		),
+	...data.entries().map(([_, timeline]) => uniquify(sort(timeline))),
 ];
 
 const identityTimelines =
@@ -164,8 +156,8 @@ const renderOptions = {
 	},
 	now: NOW,
 	origin: originIdentityId,
-	rendererAnonymization: "enabled",
-	rendererAnalytics: "enabled",
+	rendererAnalytics: args.analytics === true ? "enabled" : "disabled",
+	rendererAnonymization: args.anonymize === true ? "enabled" : "disabled",
 	segment: typeof args.segment === "string" ? Number(args.segment) : undefined,
 	skipBefore:
 		typeof args["skip-before"] === "string"
@@ -216,18 +208,21 @@ if (dotGraph.graph.length === 1) {
 } else {
 	for (let graphIndex = 0; graphIndex < dotGraph.graph.length; ++graphIndex) {
 		const graph = dotGraph.graph[graphIndex];
-		const index = graphIndex
+		const _index = graphIndex
 			.toFixed()
 			.padStart(dotGraph.graph.length.toFixed().length, "0");
 		const uniqueGraph = graph.replace(
 			/digraph timeline \{/,
-			`digraph segment_${index} { id="segment_${index}";`,
+			`digraph segment_${graphIndex} { id="segment_${graphIndex}";`,
 		);
-		const segmentFilename = targetPath.replace(/\.gv$/, `-segment${index}.gv`);
+		const segmentFilename = targetPath.replace(/\.gvus$/, `${graphIndex}.gvus`);
 		process.stdout.write(`  - Written segment ${segmentFilename}.\n`);
 		writeFileSync(segmentFilename, uniqueGraph);
 	}
 }
 
-writeFileSync(targetPath.replace(/\.gv$/, ".info"), `${info.join("\n")}\n`);
+writeFileSync(
+	targetPath.replace(/\.gv(?:us)?$/, ".info"),
+	`${info.join("\n")}\n`,
+);
 process.stdout.write("GraphViz graph for universe written successfully.\n");
