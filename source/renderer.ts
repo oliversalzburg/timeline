@@ -282,7 +282,7 @@ export const render = <
 			? (uncertainEventToDate(origin.meta.identity.born)?.valueOf() ??
 				origin.records[0][0])
 			: now;
-	const originString = options?.dateRenderer
+	const _originString = options?.dateRenderer
 		? options.dateRenderer(originTimestamp)
 		: new Date(originTimestamp).toDateString();
 
@@ -366,18 +366,21 @@ export const render = <
 			? options.dateRenderer(timestamp)
 			: new Date(timestamp).toDateString();
 		const label = isTransferMarker
-			? " "
+			? undefined
 			: `${0 < prefixes.length ? `${prefixes}\u00A0` : ""}${makeHtmlString(
 					`${title}\\n${dateString}`,
 				)}`;
 
-		const timePassedSinceOrigin = timestamp - originTimestamp;
-		const timePassedSinceThen = now - timestamp;
+		const _timePassedSinceOrigin = timestamp - originTimestamp;
+		const _timePassedSinceThen = now - timestamp;
+		/*
 		const tooltip = isTransferMarker
 			? undefined
 			: `${formatMilliseconds(timePassedSinceOrigin)} seit ${originString}\\n${formatMilliseconds(
 					timePassedSinceThen,
 				)} her`;
+				 */
+		const tooltip = undefined;
 
 		const style = isTransferMarker ? STYLE_TRANSFER_MARKER : getStyle(leader);
 
@@ -411,13 +414,13 @@ export const render = <
 		d.raw(`node [fontname="${FONT_NAME}"; fontsize="${FONT_SIZE}";]`);
 		d.raw(`edge [fontname="${FONT_NAME}"; fontsize="${FONT_SIZE}";]`);
 		d.raw(`bgcolor="${TRANSPARENT}"`);
-		d.raw('comment=" "');
+		d.raw('comment=""');
 		d.raw(`fontname="${FONT_NAME}"`);
 		d.raw(`fontsize="${FONT_SIZE}"`);
-		d.raw('label=" "');
+		d.raw('label=""');
 		d.raw(`rankdir="TD"`);
 		d.raw(`ranksep="0.5"`);
-		d.raw(`tooltip=" "`);
+		d.raw(`tooltip=""`);
 		return d;
 	};
 
@@ -538,7 +541,7 @@ export const render = <
 			// The entries at the previous timestamp.
 			let previousEntries = new Array<string>();
 			// How many milliseconds passed since the previous timestamp.
-			let timePassed = 0;
+			let _timePassed = 0;
 
 			const eventsInSegment = segment.events.filter(
 				(_) => _.timeline.meta.id === timeline.meta.id,
@@ -556,7 +559,7 @@ export const render = <
 					continue;
 				}
 
-				timePassed = previousTimestamp
+				_timePassed = previousTimestamp
 					? Math.max(1, timestamp - previousTimestamp)
 					: 0;
 
@@ -593,9 +596,11 @@ export const render = <
 							skipDraw: !isTimestampInRange(timestamp),
 							style: style.link,
 							tailport: previousWasTransferMarker ? "s" : undefined,
+							/*
 							tooltip: !event.isTransferMarker
 								? `${formatMilliseconds(timePassed)} passed`
 								: undefined,
+								*/
 							weight: timelineWeight !== undefined ? timelineWeight : undefined,
 						});
 					}

@@ -60,13 +60,13 @@ output/images : | output
 	@node --enable-source-maps examples/emojify.js --copy-only
 
 
-%-demo.universe : %.yml
+%-demo.universe : %.yml lib/tsconfig.source.tsbuildinfo
 	node --enable-source-maps examples/space-time-generator.js \
 		--anonymize \
 		--origin=$< \
 		--root=/home/oliver/timelines \
 		--target=$@
-%.universe : %.yml
+%.universe : %.yml lib/tsconfig.source.tsbuildinfo
 	node --enable-source-maps examples/space-time-generator.js \
 		--origin=$< \
 		--root=/home/oliver/timelines \
@@ -118,7 +118,7 @@ output/images : | output
 		--origin=$< \
 		--segment=300 \
 		--target=$(patsubst %-universe.info,%-universe.gvus,$@)
-%-universe.svg : %-universe.info
+%-universe.svg : %-universe.info output/images
 	contrib/make.sh $(patsubst %-universe.svg,%,$@)
 %-universe.html : %-universe.info %-universe.svg
 	node --enable-source-maps examples/build-site.js \
