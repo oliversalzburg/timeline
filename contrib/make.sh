@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -o errexit
+
 BASE=$1
 
 make "${BASE}-universe.info"
@@ -13,4 +15,4 @@ rm ${ISVGUS}
 node --enable-source-maps contrib/svgnest.js \
 		--assets=output/images \
 		--target=$BASE-universe.svg.loose > $BASE-universe.svg
-#rm $BASE-universe.svg.loose
+rm $BASE-universe.svg.loose

@@ -37,12 +37,15 @@ if (typeof args.target !== "string") {
 
 const assets = args.assets;
 const svgInput = readFileSync(args.target, "utf8");
-const imageNodes = svgInput.matchAll(/^<image xlink:href="([^"]*)".+\/>/gm);
+const imageNodes = svgInput.matchAll(
+	/^<image xlink:href="([^"]*)".* x="([^"]+)".* y="([^"]+)".*\/>/gm,
+);
+// { path: _[1], x: Number(_[2]), y: Number(_[3]) }
 const usedImages = new Set(imageNodes.map((_) => _[1]));
 const imageNodeReferences = svgInput.replaceAll(
-	/^<image xlink:href="([^"]*)".+\/>/gm,
-	(_image, filename) =>
-		`<use xlink:href="#USE${filename.replace(/\.svg$/, "").replaceAll("-", "&#45;")}" />`,
+	/^<image xlink:href="([^"]*)".* x="([^"]+)".* y="([^"]+)".*\/>/gm,
+	(_image, filename, x, y) =>
+		`<use xlink:href="#USE${filename.replace(/\.svg$/, "").replaceAll("-", "")}" style="opacity: 0.7;" transform="translate(${x - 10} ${y - 4}) scale(0.5)" />`,
 );
 
 const images = usedImages.values().reduce(
@@ -56,7 +59,8 @@ const images = usedImages.values().reduce(
 			.replace('xmlns="http://www.w3.org/2000/svg"', "")
 			.replace('xmlns:svg="http://www.w3.org/2000/svg"', "")
 			.replace(/ viewBox="[^"]*"/, "")
-			.replaceAll(/<g id="[^"]*"/g, "<g");
+			.replaceAll(/<g id="[^"]*"/g, "<g")
+			.replaceAll(/id="path\d+"/g, "");
 		acc.push(svg);
 		return acc;
 	},

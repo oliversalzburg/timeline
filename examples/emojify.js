@@ -221,15 +221,15 @@ const PREFIXES = {
 	},
 	ddr: {
 		name: "ddr",
-		src: "Flag_of_East_Germany.svg",
+		src: "flag-east-germany.svg",
 	},
 	"german-reich": {
 		name: "german reich",
-		src: "Flag_of_Germany_(1867–1918).svg",
+		src: "flag-germany-1867-1918.svg",
 	},
 	nazi: {
 		name: "nazi germany",
-		src: "Flag_of_Germany_(1935–1945).svg",
+		src: "flag-germany-1935-1945.svg",
 	},
 	messe: {
 		emoji: "",
@@ -238,7 +238,7 @@ const PREFIXES = {
 	},
 	raf: {
 		name: "rote armee fraktion",
-		src: "RAF-Logo.svg",
+		src: "logo-raf.svg",
 	},
 };
 

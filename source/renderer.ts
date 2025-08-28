@@ -366,7 +366,7 @@ export const render = <
 			? options.dateRenderer(timestamp)
 			: new Date(timestamp).toDateString();
 		const label = isTransferMarker
-			? undefined
+			? ""
 			: `${0 < prefixes.length ? `${prefixes}\u00A0` : ""}${makeHtmlString(
 					`${title}\\n${dateString}`,
 				)}`;
@@ -380,7 +380,6 @@ export const render = <
 					timePassedSinceThen,
 				)} her`;
 				 */
-		const tooltip = undefined;
 
 		const style = isTransferMarker ? STYLE_TRANSFER_MARKER : getStyle(leader);
 
@@ -402,7 +401,7 @@ export const render = <
 			shape: style.shape,
 			skipDraw: !isTimestampInRange(timestamp),
 			style: style.style.join(","),
-			tooltip,
+			tooltip: "",
 			width: isTransferMarker ? 1 : undefined,
 		};
 
@@ -414,13 +413,13 @@ export const render = <
 		d.raw(`node [fontname="${FONT_NAME}"; fontsize="${FONT_SIZE}";]`);
 		d.raw(`edge [fontname="${FONT_NAME}"; fontsize="${FONT_SIZE}";]`);
 		d.raw(`bgcolor="${TRANSPARENT}"`);
-		d.raw('comment=""');
+		d.raw('comment=" "');
 		d.raw(`fontname="${FONT_NAME}"`);
 		d.raw(`fontsize="${FONT_SIZE}"`);
-		d.raw('label=""');
+		d.raw('label=" "');
 		d.raw(`rankdir="TD"`);
 		d.raw(`ranksep="0.5"`);
-		d.raw(`tooltip=""`);
+		d.raw(`tooltip=" "`);
 		return d;
 	};
 
@@ -520,6 +519,7 @@ export const render = <
 						{
 							style: options.debug ? "dashed" : "invis",
 							weight: 1_000_000,
+							label: "",
 						},
 					);
 				}
@@ -590,6 +590,7 @@ export const render = <
 							arrowhead: event.isTransferMarker ? "none" : undefined,
 							color: style.pencolor,
 							headport: event.isTransferMarker ? "n" : undefined,
+							label: "",
 							penwidth: style.penwidth,
 							samehead: timeline.meta.id,
 							sametail: timeline.meta.id,
@@ -601,6 +602,7 @@ export const render = <
 								? `${formatMilliseconds(timePassed)} passed`
 								: undefined,
 								*/
+							tooltip: "",
 							weight: timelineWeight !== undefined ? timelineWeight : undefined,
 						});
 					}
@@ -663,6 +665,7 @@ export const render = <
 						// Draw rank-forcing link between merged timeline entries.
 						// This forces all entries into a globally linear order.
 						d.link(previousEntry.title, bestTransferMarker.event.title, {
+							label: "",
 							skipDraw: !isTimestampInRange(timestamp),
 							style: options.debug ? "dashed" : "invis",
 							tooltip:

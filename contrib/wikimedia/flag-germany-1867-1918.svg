@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg id="flag-germany-1867-1918.svg" width="72" height="72" viewBox="0 0 72 72"
+   xmlns="http://www.w3.org/2000/svg">
+   <g id="g5" transform="matrix(0.96875,0,0,0.96875,5,3.7083327)">
+      <path d="M 0,12 H 64 V 54.666668 H 0 Z" id="path1" style="stroke-width:0.0711111" />
+      <path d="M 0,26.222223 H 64 V 54.666668 H 0 Z" fill="#ffffff" id="path2" style="stroke-width:0.0711111" />
+      <path d="M 0,40.444444 H 64 V 54.666668 H 0 Z" fill="#dd0000" id="path3" style="stroke-width:0.0711111" />
+   </g>
+</svg>

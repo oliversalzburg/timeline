@@ -178,7 +178,13 @@ const makePropertyString = (
 ) => {
 	const propertyString = Object.entries(properties)
 		.filter(([key, _]) => key !== "skipDraw" && _ !== undefined)
-		.map(([key, _]) => (key === "label" ? `${key}=<${_}>` : `${key}="${_}"`))
+		.map(([key, _]) =>
+			key === "label"
+				? _ === ""
+					? 'label=""'
+					: `${key}=<${_}>`
+				: `${key}="${_}"`,
+		)
 		.sort()
 		.join("; ");
 	return propertyString !== "" ? `[${propertyString};]` : "";

@@ -1,4 +1,5 @@
 .PHONY: default build clean docs git-hook pretty lint test coverage universe
+.SECONDARY:
 
 _SOURCES := $(wildcard contrib/* examples/* source/*.ts source/*/*.ts)
 _SOURCES_TS := $(wildcard source/*.ts source/*/*.ts)
