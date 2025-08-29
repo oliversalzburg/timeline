@@ -159,7 +159,10 @@ export const plan = <
 			weights: new Map(
 				timelines.map((_) => [
 					_,
-					segmentEvents.filter((event) => event.timeline === _).length - 1,
+					Math.max(
+						0,
+						segmentEvents.filter((event) => event.timeline === _).length - 1,
+					),
 				]),
 			),
 		});
@@ -366,7 +369,7 @@ export const render = <
 			? options.dateRenderer(timestamp)
 			: new Date(timestamp).toDateString();
 		const label = isTransferMarker
-			? ""
+			? " "
 			: `${0 < prefixes.length ? `${prefixes}\u00A0` : ""}${makeHtmlString(
 					`${title}\\n${dateString}`,
 				)}`;
@@ -409,17 +412,23 @@ export const render = <
 	};
 
 	const dotGraph = (d = dot()) => {
-		d.raw("digraph timeline {");
-		d.raw(`node [fontname="${FONT_NAME}"; fontsize="${FONT_SIZE}";]`);
-		d.raw(`edge [fontname="${FONT_NAME}"; fontsize="${FONT_SIZE}";]`);
+		d.raw("digraph {");
+		d.raw(
+			`node [fontname="${options.rendererAnonymization === "enabled" ? "Dummy Text2" : FONT_NAME}"; fontsize="${FONT_SIZE}";]`,
+		);
+		d.raw(
+			`edge [fontname="${options.rendererAnonymization === "enabled" ? "Dummy Text2" : FONT_NAME}"; fontsize="${FONT_SIZE}";]`,
+		);
 		d.raw(`bgcolor="${TRANSPARENT}"`);
 		d.raw('comment=" "');
-		d.raw(`fontname="${FONT_NAME}"`);
+		d.raw(
+			`fontname="${options.rendererAnonymization === "enabled" ? "Dummy Text2" : FONT_NAME}"`,
+		);
 		d.raw(`fontsize="${FONT_SIZE}"`);
-		d.raw('label=" "');
+		//d.raw('label=" "');
 		d.raw(`rankdir="TD"`);
 		d.raw(`ranksep="0.5"`);
-		d.raw(`tooltip=" "`);
+		//d.raw(`tooltip=" "`);
 		return d;
 	};
 
@@ -578,7 +587,7 @@ export const render = <
 						event.index !== undefined
 							? event.timeline.records[event.index][1].title
 							: event.title;
-					const timelineWeight = segment.weights.get(event.timeline);
+					const _timelineWeight = segment.weights.get(event.timeline);
 
 					processedTitles.push(timelineEvent);
 					if (0 === previousEntries.length) {
@@ -603,7 +612,6 @@ export const render = <
 								: undefined,
 								*/
 							tooltip: "",
-							weight: timelineWeight !== undefined ? timelineWeight : undefined,
 						});
 					}
 				}
@@ -655,6 +663,10 @@ export const render = <
 						event: events[0],
 					},
 				);
+				if (!Number.isFinite(bestTransferMarker.score)) {
+					continue;
+				}
+
 				processedEntries.push(bestTransferMarker.event);
 				if (bestTransferMarker.event.title.startsWith("TX-OUT")) {
 					if (0 === previousTimestampEntries.length) {

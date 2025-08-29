@@ -190,7 +190,6 @@ export const renderSimple = (
 				...pointTowards(),
 				color,
 				style: linkStyle,
-				weight: childDistance < 10 ? 1000 : 1,
 			});
 		}
 	}
@@ -508,7 +507,6 @@ export const renderUniverse = (
 				...pointTowards(),
 				color,
 				style: linkStyle,
-				weight: childDistance < 10 ? 1000 : 1,
 			});
 		}
 	}

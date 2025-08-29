@@ -41,7 +41,7 @@ const boundingBox = {
 	left: 0,
 };
 // Magic constant pulled from SVG output: y="<this value for exit markers>"
-const MARKER_Y = "-22.67";
+const MARKER_Y = "-0.42";
 let offsetX = 0;
 let offsetY = 0;
 /** @type {Map<string,{width:number;height:number;marker:Array<Record<string,string>>;x:number}>} */
@@ -82,6 +82,7 @@ for (const segment of segments) {
 
 		const leftMostEntry = 0 < entryMarker.length ? entryMarker[0] : 0;
 		offsetX -= leftMostEntry;
+		process.stderr.write(`${segment}: ${leftMostEntry} -> ${offsetX}\n`);
 
 		_m.x = offsetX;
 
@@ -129,13 +130,20 @@ for (const segment of segments) {
 	offsetY -= 3;
 	const translation = `${Math.round(svgMeta.x * 100) / 100} ${Math.round(offsetY * 100) / 100}`;
 	process.stderr.write(`${segment}: ${svgMeta.width} -> ${translation}\n`);
-	offsetY += Number(MARKER_Y);
-	offsetY -= 3;
 
 	let svg = rawSVG.substring(svgStartContent, svgEnd);
 	svg = svg.replace(/translate\(0 [^)]+\)/, `translate(${translation})`);
 
-	buffer.push(svg);
+	// Clean SVG
+	svg = svg
+		.replace(/<!--.*?-->/gms, "")
+		.replace(/<title>.*?<\/title>/gm, "")
+		.replace(/<g id="graph\d+"/gm, "<g")
+		.replace(/<g id="edge\d+"/gm, "<g")
+		.replace(/<g id="node\d+"/gm, "<g")
+		.replace(/\n+/g, "\n");
+
+	buffer.push(svg.trim());
 }
 const width =
 	Math.round(Math.abs(boundingBox.left - boundingBox.right) * 10) / 10;

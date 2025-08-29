@@ -45,7 +45,7 @@ const usedImages = new Set(imageNodes.map((_) => _[1]));
 const imageNodeReferences = svgInput.replaceAll(
 	/^<image xlink:href="([^"]*)".* x="([^"]+)".* y="([^"]+)".*\/>/gm,
 	(_image, filename, x, y) =>
-		`<use xlink:href="#USE${filename.replace(/\.svg$/, "").replaceAll("-", "")}" style="opacity: 0.7;" transform="translate(${x - 10} ${y - 4}) scale(0.5)" />`,
+		`<use xlink:href="#USE${filename.replace(/\.svg$/, "").replaceAll("-", "")}" style="opacity: 0.7" transform="translate(${x - 12} ${y - 4}) scale(0.5)" />`,
 );
 
 const images = usedImages.values().reduce(

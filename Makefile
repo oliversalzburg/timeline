@@ -33,20 +33,6 @@ ifneq ($(PRIVATE),)
 	_UNIVERSE_FLAGS += --private
 endif
 
-default : \
-	lib/tsconfig.source.tsbuildinfo \
-	$(_PEDIGREE)-dark.gv \
-	$(_PEDIGREE)-dark.gv.cairo.svg \
-	$(_PEDIGREE)-light.gv \
-	$(_PEDIGREE)-light.gv.cairo.svg \
-	$(_PEDIGREE)-anon-dark.gv \
-	$(_PEDIGREE)-anon-dark.gv.cairo.svg \
-	$(_PEDIGREE)-anon-light.gv \
-	$(_PEDIGREE)-anon-light.gv.cairo.svg \
-	$(_PEDIGREE)-light.pdf \
-	$(_PEDIGREE)-anon-light.pdf
-
-#build: lib/tsconfig.source.tsbuildinfo
 
 lib/tsconfig.source.tsbuildinfo $(_LIBS_D_TS) $(_LIBS_D_TS_MAP) $(_LIBS_JS) $(_LIBS_JS_MAP) : node_modules $(_SOURCES_TS)
 	@echo "Building library..."
@@ -119,9 +105,23 @@ output/images : | output
 		--origin=$< \
 		--segment=300 \
 		--target=$(patsubst %-universe.info,%-universe.gvus,$@)
+# We intentionally don't pass --anonymize here, because we're already operating
+# on the anonymized -demo.universe.
+%-demo-universe.info : %-demo.universe
+	node --enable-source-maps examples/universe.js \
+		$(_UNIVERSE_FLAGS) \
+		--origin=$< \
+		--segment=300 \
+		--target=$(patsubst %-demo-universe.info,%-demo-universe.gvus,$@)
 %-universe.svg : %-universe.info output/images
 	contrib/make.sh $(patsubst %-universe.svg,%,$@)
+#%-demo-universe.svg : %-demo-universe.info output/images
+#	contrib/make.sh $(patsubst %-universe.svg,%,$@)
 %-universe.html : %-universe.info %-universe.svg
+	node --enable-source-maps examples/build-site.js \
+		--format=zen \
+		--target=$@
+%-demo-universe.html : %-demo-universe.info %-demo-universe.svg
 	node --enable-source-maps examples/build-site.js \
 		--format=zen \
 		--target=$@
@@ -174,77 +174,10 @@ output/images : | output
 		--output $(notdir $@) \
 		$(notdir $<)
 
-
-
-
-$(_UNIVERSE).svg &: \
-	$(foreach _, $(_SEGMENTS), $(patsubst %.gv,%.dot.svg,$(_)))
-	@node --enable-source-maps contrib/svgcat.js \
-		--target=$@ $^
-
-
-
-universe:
-	$(MAKE) segmented
-	$(MAKE) $(_UNIVERSE)-img.svg $(_UNIVERSE)-img.min.svg
-	@node --enable-source-maps examples/build-site.js \
-		--output=output $(_UNIVERSE).gv
-
-pedigree:
-	rm --force $(_PEDIGREE).*
-	$(MAKE) $(_PEDIGREE).pdf
-
 # Compress an SVG by applying lossy XML transformations.
 %.min.svg: %.svg
 	@scour $(_SCOUR_FLAGS) -i $< -o $@
 	@date +"%FT%T%z Generated minified '$@'."
-
-# Render a vector SVG document from the given GraphViz document,
-# using the Cairo renderer. This renderer transforms text into
-# paths, which makes the SVG layout more consistent between display
-# devices, but loses the ability to search the document for text.
-# Additionally, the Cairo renderer currently produces unexpected output
-# for embedded images. It is unclear if the output or the viewer application
-# is to blame.
-%.dot.cairo.svg %.dot.cairo.svg.log: %.dot
-ifneq ($(DEBUG),)
-	>$@.log 2>&1 dot $(_DOT_FLAGS) -Tsvg:cairo -o $@ $<
-else
-	@dot $(_DOT_FLAGS) -Tsvg:cairo -o $@ $<
-endif
-	@date +"%FT%T%z Rendered Cairo SVG '$@'."
-
-# Render a vector SVG document from the given GraphViz document.
-%.dot.svg %.dot.svg.log: %.dot
-ifneq ($(DEBUG),)
-	>$@.log 2>&1 dot $(_DOT_FLAGS) -Tsvg -o $@ $<
-else
-	@dot $(_DOT_FLAGS) -Tsvg -o $@ $<
-endif
-	@date +"%FT%T%z Rendered SVG '$@'."
-
-# Render a rasterized PNG image from the given GraphViz document.
-%.dot.png %.dot.png.log: %.dot
-ifneq ($(DEBUG),)
-	>$@.log 2>&1 dot $(_DOT_FLAGS) -Tpng -o $@ $<
-else
-	dot $(_DOT_FLAGS) -Tpng -o $@ $<
-endif
-	@date +"%FT%T%z Rendered PNG '$@'."
-
-
-
-# Render a GraphViz document in DOT language, which represents the
-# requested slice from the universe.
-atomic:  lib node_modules | output
-	@node --enable-source-maps examples/universe.js $(_UNIVERSE_FLAGS) \
-		--output=$(_UNIVERSE).gv
-	@date +"%FT%T%z Generated atomic GraphViz document '$@'."
-segmented:  lib node_modules | output
-	@node --enable-source-maps examples/universe.js $(_UNIVERSE_FLAGS) \
-		--output=$(_UNIVERSE).gv \
-		$(_UNIVERSE_SEGMENT_FLAG)
-	@date +"%FT%T%z Generated segmented GraphViz document '$@'."
 
 
 # Not actually referenced in the implementation. Contains the library code

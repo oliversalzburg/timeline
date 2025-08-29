@@ -97,7 +97,7 @@ const focusNode = (id, rapid = false) => {
 console.info("Timeline loaded. SVG should fade in now.");
 document.body.classList.remove("loading");
 
-if (-1 < idFocusedIndex && idFocused !== undefined) {
+if (-1 < idFocusedIndex && idFocused) {
 	const node = document.querySelector(`#${idFocused}`);
 	if (node !== null) {
 		const timeline = nodeTimelines.get(node.id);
