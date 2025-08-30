@@ -8,7 +8,12 @@ import { MILLISECONDS } from "../lib/constants.js";
 import { Graph, uncertainEventToDate } from "../lib/genealogy.js";
 import { recurringYearly } from "../lib/generator.js";
 import { load } from "../lib/loader.js";
-import { anonymize } from "../lib/operator.js";
+import {
+	anonymize,
+	mergeDuringPeriod,
+	sort,
+	sortRecords,
+} from "../lib/operator.js";
 import { serialize } from "../lib/serializer.js";
 
 // Parse command line arguments.
@@ -257,7 +262,7 @@ const fill = (timeline) => {
 			{ title: `☠️ ${nameAtDate(death)} verstorben` },
 		]);
 	}
-	return document;
+	return sort(document);
 };
 /**
  * @param timeline {import("../lib/types.js").TimelineAncestryRenderer | import("../lib/types.js").TimelineReferenceRenderer} -
@@ -293,23 +298,31 @@ const fillOthers = (timeline, graph) => {
 	/** @type {import("../lib/types.js").TimelineRecord} */
 	const birthRecord = [birth.valueOf(), { title: `👶 Geburt ${name}` }];
 
+	timeline.records = sortRecords(
+		timeline.records.concat([conceptionRecord, birthRecord]),
+	);
+
 	const identityMother = graph.motherOf(timeline.meta.identity.id);
 	if (identityMother !== undefined) {
 		const timelineMother = mustExist(graph.timelineOf(identityMother.id));
-		timelineMother.records.push(conceptionRecord, birthRecord);
+		mergeDuringPeriod(conceptionRecord[0], birthRecord[0], [
+			timeline,
+			timelineMother,
+		]);
 	}
+
 	const identityFather = graph.fatherOf(timeline.meta.identity.id);
 	if (identityFather !== undefined) {
 		const timelineFather = mustExist(graph.timelineOf(identityFather.id));
-		timelineFather.records.push(conceptionRecord);
+		timelineFather.records = sortRecords(
+			timelineFather.records.concat([conceptionRecord]),
+		);
 	}
-
-	timeline.records.push(conceptionRecord, birthRecord);
 };
 
 allTimelines = allTimelines.map((_) => fill(_));
 const graph = new Graph([originTimeline, ...allTimelines], "invalid");
-allTimelines.forEach((_) => {
+graph.timelines.forEach((_) => {
 	fillOthers(_, graph);
 });
 

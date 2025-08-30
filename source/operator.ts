@@ -171,11 +171,8 @@ export const mergeDuringPeriod = (
 	const period = new Array<TimelineRecord>();
 	for (const guest of guests) {
 		for (const [timestamp, entry] of guest.records) {
-			if (timestamp < start) {
+			if (timestamp < start || end < timestamp) {
 				continue;
-			}
-			if (end < timestamp) {
-				break;
 			}
 			period.push([timestamp, entry]);
 		}
