@@ -2,7 +2,7 @@
 
 import { createWriteStream, readdirSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { isNil } from "@oliversalzburg/js-utils/data/nil.js";
+import { isNil, mustExist } from "@oliversalzburg/js-utils/data/nil.js";
 import { parse } from "yaml";
 import { MILLISECONDS } from "../lib/constants.js";
 import { Graph, uncertainEventToDate } from "../lib/genealogy.js";
@@ -111,6 +111,7 @@ if (originTimeline === undefined) {
 
 /**
  * @param timeline {import("../lib/types.js").TimelineAncestryRenderer | import("../lib/types.js").TimelineReferenceRenderer} -
+ * @param graph {Graph<import("../lib/types.js").TimelineAncestryRenderer | import("../lib/types.js").TimelineReferenceRenderer>}
  */
 const fill = (timeline) => {
 	if ("identity" in timeline.meta === false) {
@@ -242,11 +243,6 @@ const fill = (timeline) => {
 		...timeline,
 		records: [
 			...timeline.records,
-			[
-				Math.trunc(birth.valueOf() - 9 * MILLISECONDS.ONE_MONTH),
-				{ title: `Estimated Conception\n${name}` },
-			],
-			[birth.valueOf(), { title: `👶 Geburt ${name}` }],
 			...recurringYearly(
 				new Date(birthYear, birthMonth - 1, birthDay, 0, 0, 0, 0),
 				(index) =>
@@ -263,8 +259,59 @@ const fill = (timeline) => {
 	}
 	return document;
 };
+/**
+ * @param timeline {import("../lib/types.js").TimelineAncestryRenderer | import("../lib/types.js").TimelineReferenceRenderer} -
+ * @param graph {Graph<import("../lib/types.js").TimelineAncestryRenderer | import("../lib/types.js").TimelineReferenceRenderer>}
+ */
+const fillOthers = (timeline, graph) => {
+	if ("identity" in timeline.meta === false) {
+		return;
+	}
+
+	const name = timeline.meta.identity.name ?? timeline.meta.identity.id;
+
+	let birth;
+	if (timeline.meta.identity.born === null) {
+		if (timeline.records.length === 0) {
+			return;
+		}
+
+		birth = new Date(timeline.records[0][0]);
+	} else {
+		birth = uncertainEventToDate(timeline.meta.identity.born);
+	}
+
+	if (isNil(birth)) {
+		return;
+	}
+
+	/** @type {import("../lib/types.js").TimelineRecord} */
+	const conceptionRecord = [
+		Math.trunc(birth.valueOf() - 9 * MILLISECONDS.ONE_MONTH),
+		{ title: `Geschätzte Zeugung\n${name}` },
+	];
+	/** @type {import("../lib/types.js").TimelineRecord} */
+	const birthRecord = [birth.valueOf(), { title: `👶 Geburt ${name}` }];
+
+	const identityMother = graph.motherOf(timeline.meta.identity.id);
+	if (identityMother !== undefined) {
+		const timelineMother = mustExist(graph.timelineOf(identityMother.id));
+		timelineMother.records.push(conceptionRecord, birthRecord);
+	}
+	const identityFather = graph.fatherOf(timeline.meta.identity.id);
+	if (identityFather !== undefined) {
+		const timelineFather = mustExist(graph.timelineOf(identityFather.id));
+		timelineFather.records.push(conceptionRecord);
+	}
+
+	timeline.records.push(conceptionRecord, birthRecord);
+};
 
 allTimelines = allTimelines.map((_) => fill(_));
+const graph = new Graph([originTimeline, ...allTimelines], "invalid");
+allTimelines.forEach((_) => {
+	fillOthers(_, graph);
+});
 
 const targetStream =
 	targetPath !== undefined
