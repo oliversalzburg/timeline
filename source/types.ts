@@ -70,6 +70,7 @@ export interface Father {
 }
 export interface Event {
 	date?: string;
+	in?: string;
 	when?: {
 		before?: string;
 		after?: string;

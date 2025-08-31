@@ -9,7 +9,12 @@ import {
 } from "@oliversalzburg/js-utils/data/random.js";
 import { InvalidOperationError } from "@oliversalzburg/js-utils/errors/InvalidOperationError.js";
 import type { RendererOptions } from "./renderer.js";
-import type { Event, Identity, Timeline } from "./types.js";
+import type {
+	Event,
+	Identity,
+	Timeline,
+	TimelineAncestryRenderer,
+} from "./types.js";
 
 export const parseStringAsDate = (input?: string, offset = 0) => {
 	if (input === undefined) {
@@ -103,6 +108,32 @@ export const uncertainEventToDateString = (
 	}
 
 	throw new InvalidOperationError(`unexpected date input: ${input}`);
+};
+
+export const uncertainEventToLocationString = (
+	input?: Event | null,
+	graph?: Graph<TimelineAncestryRenderer>,
+) => {
+	if (isNil(input)) {
+		return undefined;
+	}
+
+	if (input.in !== undefined) {
+		if (graph !== undefined) {
+			const locationIdentity = mustExist(
+				graph.resolveIdentity(input.in),
+				`unkown identity '${input.in}'`,
+			);
+			return locationIdentity.name ?? locationIdentity.id;
+		}
+		return `?${input.where}?`;
+	}
+
+	if (input.where !== undefined) {
+		return `"${input.where}"`;
+	}
+
+	return undefined;
 };
 
 export class Graph<

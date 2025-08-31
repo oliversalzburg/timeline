@@ -25,6 +25,7 @@ import {
 	Graph,
 	uncertainEventToDate,
 	uncertainEventToDateString,
+	uncertainEventToLocationString,
 } from "./genealogy.js";
 import { matchLuminance, setOpacity } from "./palette.js";
 import type { RendererOptions } from "./renderer.js";
@@ -934,7 +935,7 @@ export const renderReport = (
 			options.dateRenderer,
 		);
 		const dateBirthAnalytics = renderMaybe(dateBirthString, "Datum");
-		const locationBirth = subject.born?.where;
+		const locationBirth = uncertainEventToLocationString(subject.born, graph);
 		const locationBirthString =
 			locationBirth !== undefined ? ` in ${locationBirth}` : undefined;
 		const locationBirthAnalytics = renderMaybe(locationBirth, "Ort");
@@ -969,7 +970,7 @@ export const renderReport = (
 				marriage.marriedTo,
 				dateMarriage,
 			);
-			const locationMarriage = marriage.where;
+			const locationMarriage = uncertainEventToLocationString(marriage, graph);
 			const locationMarriageString =
 				locationMarriage !== undefined ? ` in ${locationMarriage}` : undefined;
 			const locationMarriageAnalytics = renderMaybe(marriage.where, "Ort");
@@ -993,7 +994,7 @@ export const renderReport = (
 				options.dateRenderer,
 			);
 			const dateDiedAnalytics = renderMaybe(dateDiedString, "Datum");
-			const locationDied = subject.died?.where;
+			const locationDied = uncertainEventToLocationString(subject.died, graph);
 			const locationDiedString =
 				locationDied !== undefined ? ` in ${locationDied}` : undefined;
 			const locationDiedAnalytics = renderMaybe(locationDied, "Ort");

@@ -84,7 +84,8 @@ const finalTimelines = [
 				timeline.meta.private &&
 				"identity" in timeline.meta &&
 				"id" in timeline.meta.identity &&
-				"born" in timeline.meta.identity,
+				("born" in timeline.meta.identity ||
+					"established" in timeline.meta.identity),
 		)
 		.map(([_, timeline]) =>
 			uniquify(
