@@ -1,5 +1,7 @@
 .PHONY: default build clean docs git-hook pretty lint test coverage universe
 
+_OUTPUT := output
+
 _SOURCES := $(wildcard contrib/* examples/* source/*.ts source/*/*.ts)
 _SOURCES_TS := $(wildcard source/*.ts source/*/*.ts)
 _LIBS_JS := $(patsubst %.ts,%.js,$(_SOURCES_TS))
@@ -7,29 +9,26 @@ _LIBS_JS_MAP := $(patsubst %.ts,%.js.map,$(_SOURCES_TS))
 _LIBS_D_TS := $(patsubst %.ts,%.d.ts,$(_SOURCES_TS))
 _LIBS_D_TS_MAP := $(patsubst %.ts,%.d.ts.map,$(_SOURCES_TS))
 
-_UNIVERSE_NAME := universe
-_UNIVERSE := output/$(_UNIVERSE_NAME)
-_PEDIGREE := output/pedigree
-_SEGMENTS := $(wildcard $(_UNIVERSE)-segment*.gv)
-_TIMELINES := $(filter-out %.auto.yml, $(wildcard ~/timelines/*.yml ~/timelines/*/*.yml))
-_DEBUG := output/_$(_UNIVERSE_NAME)
+DATA_ROOT := ~/timelines
+TIMELINES := $(wildcard $(DATA_ROOT)/*.yml $(DATA_ROOT)/*/*.yml)
+SEGMENTS := $(wildcard $(DATA_ROOT)/*.gvus $(DATA_ROOT)/*/*.gvus)
 
 _SCOUR_FLAGS = --enable-viewboxing --enable-id-stripping --enable-comment-stripping --shorten-ids --indent=none
 ifneq ($(DEBUG),)
 	_SCOUR_FLAGS += --verbose
 endif
 
-_DOT_FLAGS := -Gcenter=false -Gimagepath=output/images -Gmargin=0 -Gpad=0
+DOT_FLAGS := -Gcenter=false -Gimagepath=$(_OUTPUT)/images -Gmargin=0 -Gpad=0
 ifneq ($(DEBUG),)
-	_DOT_FLAGS += -v5
+	DOT_FLAGS += -v5
 endif
 
 ifneq ($(DEBUG),)
-	_PEDIGREE_FLAGS += --debug
-	_UNIVERSE_FLAGS += --debug
+	PEDIGREE_FLAGS += --debug
+	UNIVERSE_FLAGS += --debug
 endif
 ifneq ($(PRIVATE),)
-	_UNIVERSE_FLAGS += --private
+	UNIVERSE_FLAGS += --private
 endif
 
 
@@ -37,10 +36,10 @@ lib/tsconfig.source.tsbuildinfo $(_LIBS_D_TS) $(_LIBS_D_TS_MAP) $(_LIBS_JS) $(_L
 	@echo "Building library..."
 	@npm exec -- tsc --build tsconfig.json
 
-_site lib output :
+_site lib $(_OUTPUT) :
 	mkdir -p $@
 
-output/images : | output
+$(_OUTPUT)/images : | $(_OUTPUT)
 	@node --enable-source-maps contrib/prepare-emoji.js
 	@cp contrib/wikimedia/* $@/
 	@node --enable-source-maps examples/emojify.js --copy-only
@@ -60,7 +59,7 @@ output/images : | output
 
 %-analytics.md : %.universe %-pedigree-light.svg
 	node --enable-source-maps examples/pedigree.js \
-		$(_PEDIGREE_FLAGS) \
+		$(PEDIGREE_FLAGS) \
 		--analytics \
 		--format=report \
 		--origin=$< \
@@ -68,7 +67,7 @@ output/images : | output
 		--theme=light
 %-demo.md : %-demo.universe %-demo-pedigree-light.svg
 	node --enable-source-maps examples/pedigree.js \
-		$(_PEDIGREE_FLAGS) \
+		$(PEDIGREE_FLAGS) \
 		--anonymize \
 		--format=report \
 		--origin=$< \
@@ -76,7 +75,7 @@ output/images : | output
 		--theme=light
 %.md : %.universe %-pedigree-light.svg
 	node --enable-source-maps examples/pedigree.js \
-		$(_PEDIGREE_FLAGS) \
+		$(PEDIGREE_FLAGS) \
 		--format=report \
 		--origin=$< \
 		--target=$@ \
@@ -84,7 +83,7 @@ output/images : | output
 
 %-pedigree-light.gv : %.universe
 	node --enable-source-maps examples/pedigree.js \
-		$(_PEDIGREE_FLAGS) \
+		$(PEDIGREE_FLAGS) \
 		--format=simple \
 		--origin=$< \
 		--target=$@ \
@@ -93,14 +92,14 @@ output/images : | output
 # on the anonymized -demo.universe.
 %-demo-pedigree-light.gv : %-demo.universe
 	node --enable-source-maps examples/pedigree.js \
-		$(_PEDIGREE_FLAGS) \
+		$(PEDIGREE_FLAGS) \
 		--format=simple \
 		--origin=$< \
 		--target=$@ \
 		--theme=light
 %-universe.info : %.universe
 	node --enable-source-maps examples/universe.js \
-		$(_UNIVERSE_FLAGS) \
+		$(UNIVERSE_FLAGS) \
 		--origin=$< \
 		--segment=300 \
 		--target=$(patsubst %-universe.info,%-universe.gvus,$@)
@@ -108,13 +107,13 @@ output/images : | output
 # on the anonymized -demo.universe.
 %-demo-universe.info : %-demo.universe
 	node --enable-source-maps examples/universe.js \
-		$(_UNIVERSE_FLAGS) \
+		$(UNIVERSE_FLAGS) \
 		--origin=$< \
 		--segment=300 \
 		--target=$(patsubst %-demo-universe.info,%-demo-universe.gvus,$@)
-%-universe.svg : %-universe.info output/images
+%-universe.svg : %-universe.info $(_OUTPUT)/images
 	contrib/make.sh $(patsubst %-universe.svg,%,$@)
-#%-demo-universe.svg : %-demo-universe.info output/images
+#%-demo-universe.svg : %-demo-universe.info $(_OUTPUT)/images
 #	contrib/make.sh $(patsubst %-universe.svg,%,$@)
 %-universe.html : %-universe.info %-universe.svg
 	node --enable-source-maps examples/build-site.js \
@@ -135,21 +134,21 @@ output/images : | output
 # Embed (emoji) prefixes as <IMG> elements in the label.
 # At time of implementation, this output did not render well
 # with cairo.
-%-img.dot : %.dot output/images | output
+%-img.dot : %.dot $(_OUTPUT)/images | $(_OUTPUT)
 	node --enable-source-maps examples/emojify.js \
-		--assets=output/images \
+		--assets=$(_OUTPUT)/images \
 		--target=$<
 	@date +"%FT%T%z Embedded prefixes into '$@'."
-%.idotus : %.dotus output/images | output
+%.idotus : %.dotus $(_OUTPUT)/images | $(_OUTPUT)
 	node --enable-source-maps examples/emojify.js \
-		--assets=output/images \
+		--assets=$(_OUTPUT)/images \
 		--target=$<
 	@date +"%FT%T%z Embedded prefixes into '$@'."
 
 %.svg : %.dot
-	@dot $(_DOT_FLAGS) -Gpad=0 -Tsvg:cairo -o $@ $<
+	@dot $(DOT_FLAGS) -Gpad=0 -Tsvg:cairo -o $@ $<
 %.isvgus : %.idotus
-	@dot $(_DOT_FLAGS) -Gpad=0 -Tsvg -o $@ $<
+	@dot $(DOT_FLAGS) -Gpad=0 -Tsvg -o $@ $<
 
 %-analytics.pdf : %-analytics.md %-pedigree-light.svg
 	@cd $(dir $@); pandoc \
@@ -186,7 +185,7 @@ lib/timeline.js: node_modules build.js | lib
 
 # Clean up all build artifacts.
 clean:
-	@rm --force --recursive _site lib output/*
+	@rm --force --recursive _site lib $(_OUTPUT)/*
 	@find -iname "callgrind.out.*" -delete
 	@find -iwholename "schemas/*.schema.json" -delete
 # Additionally delete all stored dependencies.
