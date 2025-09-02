@@ -57,10 +57,7 @@ const timelinePaths = readdirSync(args.root, {
 	recursive: true,
 	withFileTypes: true,
 })
-	.filter(
-		(_) =>
-			_.isFile() && _.name.endsWith(".yml") && !_.name.endsWith(".auto.yml"),
-	)
+	.filter((_) => _.isFile() && _.name.endsWith(".yml"))
 	.map((_) => `${_.parentPath}/${_.name}`)
 	.sort();
 
