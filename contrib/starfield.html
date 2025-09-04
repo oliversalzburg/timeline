@@ -1,0 +1,95 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>Starfield</title>
+		<style>
+            html, body {
+                margin: 0;
+                background-color: black;
+                color: white;
+                font-family: sans-serif;
+            }
+
+            body {
+                display: flex;
+                flex-direction: column;
+                height: 1000000px;
+                overflow: scroll;
+                scrollbar-width: none;
+            }
+            ::-webkit-scrollbar {
+                width: 0px;
+                background: transparent;
+            }
+
+            p {
+                flex: 1;
+                text-align: center;
+            }
+
+            canvas {
+                display: block;
+                position: fixed;
+            }
+        </style>
+	</head>
+	<body class="loading">
+		<canvas id="starfield"></canvas>
+	</body>
+	<script>
+        const starPlanes = Array.from({
+            length: 16
+        }).map(_ => [document.createElement("canvas"), document.createElement("canvas")]);
+        let stars = 2 ** 11;
+        for (const [planeTop,planeBottom] of starPlanes) {
+            for (const plane of [planeTop, planeBottom]) {
+                plane.width = document.body.scrollWidth;
+                plane.height = window.innerHeight;
+                document.body.appendChild(plane);
+                const context = plane.getContext("2d");
+
+                console.info(stars);
+                for (let _ = 0; _ < stars; ++_) {
+                    context.beginPath();
+                    context.arc(Math.random() * plane.width, Math.random() * plane.height, 1, 0, Math.PI * 2);
+                    const grey = Math.floor(Math.random() * 255).toString(16).padStart(2, "0");
+                    context.fillStyle = `#${grey}${grey}${grey}`;
+                    context.fill();
+                }
+            }
+
+            stars *= 0.9;
+        }
+
+        const startTime = Date.now();
+        let lastKnownScrollPosition = 0;
+        let ticking = false;
+        const refresh = (ypos) => {
+            const sinceStart = Date.now() - startTime;
+            for (let z = 0; z < starPlanes.length; ++z) {
+                const offset = (((z + 1) * ((ypos + (sinceStart * 0.01)) * 0.001)) * -1) % window.innerHeight;
+                starPlanes[z][0].style.transform = `translateY(${offset}px)`;
+                starPlanes[z][1].style.transform = `translateY(${offset + window.innerHeight}px)`;
+            }
+        }
+
+        document.addEventListener("scroll", (event) => {
+            lastKnownScrollPosition = window.scrollY;
+
+            if (!ticking) {
+                setTimeout( () => {
+                    refresh(lastKnownScrollPosition);
+                    ticking = false;
+                }
+                , 10);
+
+                ticking = true;
+            }
+        }
+        );
+
+        setInterval( () => refresh(lastKnownScrollPosition), 1000);
+        refresh(0);
+    </script>
+</html>
