@@ -11,11 +11,14 @@ html {
 	scrollbar-width: none;
 	&::-webkit-scrollbar {
 		display: none;
+		width: 0px;
+		background: transparent;
 	}
 }
 
 body {
-	background: rgb(20, 20, 20);
+	position: relative;
+	background: rgb(0 0 0);
 	opacity: 1;
 	transition: ease-in-out opacity 2s;
 
@@ -25,7 +28,10 @@ body {
 }
 
 svg {
-	z-index: 1;
+	display: block;
+
+	user-select: none;
+	pointer-events: stroke;
 
 	.node {
 		scroll-margin: calc(50vh - 50%) calc(50vw - 50%);
@@ -43,6 +49,7 @@ svg {
 }
 
 canvas {
+	display: block;
 	position: fixed;
 	top: 0;
 	left: 0;

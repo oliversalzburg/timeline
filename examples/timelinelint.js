@@ -33,7 +33,6 @@ if (typeof args.root !== "string") {
 	process.exit(1);
 }
 
-const _targetPath = typeof args.target === "string" ? args.target : undefined;
 const timelinePaths = readdirSync(args.root, {
 	recursive: true,
 	withFileTypes: true,

@@ -18,6 +18,7 @@
                 overflow: scroll;
                 scrollbar-width: none;
             }
+
             ::-webkit-scrollbar {
                 width: 0px;
                 background: transparent;
@@ -34,9 +35,7 @@
             }
         </style>
 	</head>
-	<body class="loading">
-		<canvas id="starfield"></canvas>
-	</body>
+	<body class="loading"></body>
 	<script>
         const starPlanes = Array.from({
             length: 16
@@ -49,10 +48,9 @@
                 document.body.appendChild(plane);
                 const context = plane.getContext("2d");
 
-                console.info(stars);
                 for (let _ = 0; _ < stars; ++_) {
                     context.beginPath();
-                    context.arc(Math.random() * plane.width, Math.random() * plane.height, 1, 0, Math.PI * 2);
+                    context.arc(Math.random() * plane.width, Math.random() * plane.height, Math.random(), 0, Math.PI * 2);
                     const grey = Math.floor(Math.random() * 255).toString(16).padStart(2, "0");
                     context.fillStyle = `#${grey}${grey}${grey}`;
                     context.fill();
@@ -62,13 +60,13 @@
             stars *= 0.9;
         }
 
-        const startTime = Date.now();
+        let startTime = Date.now();
         let lastKnownScrollPosition = 0;
         let ticking = false;
         const refresh = (ypos) => {
             const sinceStart = Date.now() - startTime;
             for (let z = 0; z < starPlanes.length; ++z) {
-                const offset = (((z + 1) * ((ypos + (sinceStart * 0.01)) * 0.001)) * -1) % window.innerHeight;
+                const offset = (((z + 1) * ((ypos + (sinceStart * 0.01)) * 0.001)) % window.innerHeight)* -1;
                 starPlanes[z][0].style.transform = `translateY(${offset}px)`;
                 starPlanes[z][1].style.transform = `translateY(${offset + window.innerHeight}px)`;
             }
@@ -89,7 +87,64 @@
         }
         );
 
-        setInterval( () => refresh(lastKnownScrollPosition), 1000);
+        let start;
+        window.addEventListener("gamepadconnected", (e) => {
+            console.log("Gamepad connected at index %d: %s. %d buttons, %d axes.", e.gamepad.index, e.gamepad.id, e.gamepad.buttons.length, e.gamepad.axes.length, );
+            controlLoop();
+        }
+        );
+        window.addEventListener("gamepaddisconnected", (e) => {
+            gamepadInfo.textContent = "Waiting for gamepad.";
+
+            cancelAnimationFrame(start);
+        }
+        );
+
+		const BUTTON_A = 0;
+		const BUTTON_B = 1;
+		const BUTTON_X = 2;
+		const BUTTON_Y = 3;
+		const BUTTON_LB = 4;
+		const BUTTON_RB = 5;
+		const BUTTON_LT = 6;
+		const BUTTON_RT = 7;
+		const BUTTON_BACK = 8;
+		const BUTTON_START = 9;
+		const BUTTON_KNOB_LEFT = 10;
+		const BUTTON_KNOB_RIGHT = 11;
+		const BUTTON_UP = 12;
+		const BUTTON_DOWN = 13;
+		const BUTTON_LEFT = 14;
+		const BUTTON_RIGHT = 15;
+		const BUTTON_XBOX = 16;
+		
+		const AXIS_LEFT_X = 0;
+		const AXIS_LEFT_Y = 1;
+		const AXIS_RIGHT_X = 2;
+		const AXIS_RIGHT_Y = 3;
+
+        const controlLoop = () => {
+            const gamepads = navigator.getGamepads();
+            if (!gamepads) {
+                return;
+            }
+
+            const gp = gamepads[0];
+			
+			startTime+=gp.axes[AXIS_LEFT_Y]*1000;
+			startTime+=gp.axes[AXIS_RIGHT_Y]*1000;
+
+            if (gp.buttons[BUTTON_DOWN].pressed) {
+                startTime-=1000;
+            }
+            if (gp.buttons[BUTTON_UP].pressed) {
+                startTime+=1000;
+            }
+			refresh(lastKnownScrollPosition);
+            start = requestAnimationFrame(controlLoop);
+        }
+
+                setInterval( () => refresh(lastKnownScrollPosition), 1000);
         refresh(0);
     </script>
 </html>

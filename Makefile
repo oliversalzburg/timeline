@@ -45,13 +45,13 @@ $(_OUTPUT)/images : | $(_OUTPUT)
 	@node --enable-source-maps examples/emojify.js --copy-only
 
 
-%-demo.universe : %.yml lib/tsconfig.source.tsbuildinfo
+%-demo.universe : %.yml lib/tsconfig.source.tsbuildinfo $(_SOURCES_TS)
 	node --enable-source-maps examples/space-time-generator.js \
 		--anonymize \
 		--origin=$< \
 		--root=/home/oliver/timelines \
 		--target=$@
-%.universe : %.yml lib/tsconfig.source.tsbuildinfo
+%.universe : %.yml lib/tsconfig.source.tsbuildinfo $(_SOURCES_TS)
 	node --enable-source-maps examples/space-time-generator.js \
 		--origin=$< \
 		--root=/home/oliver/timelines \
@@ -113,13 +113,11 @@ $(_OUTPUT)/images : | $(_OUTPUT)
 		--target=$(patsubst %-demo-universe.info,%-demo-universe.gvus,$@)
 %-universe.svg : %-universe.info $(_OUTPUT)/images
 	contrib/make.sh $(patsubst %-universe.svg,%,$@)
-#%-demo-universe.svg : %-demo-universe.info $(_OUTPUT)/images
-#	contrib/make.sh $(patsubst %-universe.svg,%,$@)
-%-universe.html : %-universe.info %-universe.svg
+%-universe.html : %-universe.info %-universe.svg $(wildcard examples/index.template.*)
 	node --enable-source-maps examples/build-site.js \
 		--format=zen \
 		--target=$@
-%-demo-universe.html : %-demo-universe.info %-demo-universe.svg
+%-demo-universe.html : %-demo-universe.info %-demo-universe.svg $(wildcard examples/index.template.*)
 	node --enable-source-maps examples/build-site.js \
 		--format=zen \
 		--target=$@

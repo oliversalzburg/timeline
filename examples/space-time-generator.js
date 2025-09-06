@@ -47,6 +47,10 @@ if (typeof args.origin !== "string") {
 	process.exit(1);
 }
 
+/**
+ * @import { TimelineAncestryRenderer, TimelineReferenceRenderer } from "../lib/types.js"
+ */
+
 const seed = [...crypto.getRandomValues(new Uint32Array(10))]
 	.map((_) => _.toString(16))
 	.join("");
@@ -61,7 +65,7 @@ const timelinePaths = readdirSync(args.root, {
 	.map((_) => `${_.parentPath}/${_.name}`)
 	.sort();
 
-/** @type {Array<import("../lib/types.js").TimelineAncestryRenderer|import("../lib/types.js").TimelineReferenceRenderer>} */
+/** @type {Array<TimelineAncestryRenderer | TimelineReferenceRenderer>} */
 let allTimelines = [];
 let originTimeline;
 for (const timelinePath of timelinePaths) {
@@ -112,8 +116,7 @@ if (originTimeline === undefined) {
 }
 
 /**
- * @param timeline {import("../lib/types.js").TimelineAncestryRenderer | import("../lib/types.js").TimelineReferenceRenderer} -
- * @param graph {Graph<import("../lib/types.js").TimelineAncestryRenderer | import("../lib/types.js").TimelineReferenceRenderer>}
+ * @param timeline {TimelineAncestryRenderer | TimelineReferenceRenderer} -
  */
 const fill = (timeline) => {
 	if ("identity" in timeline.meta === false) {
@@ -262,8 +265,8 @@ const fill = (timeline) => {
 	return sort(document);
 };
 /**
- * @param timeline {import("../lib/types.js").TimelineAncestryRenderer | import("../lib/types.js").TimelineReferenceRenderer} -
- * @param graph {Graph<import("../lib/types.js").TimelineAncestryRenderer | import("../lib/types.js").TimelineReferenceRenderer>}
+ * @param timeline {TimelineAncestryRenderer | TimelineReferenceRenderer} -
+ * @param graph {Graph<TimelineAncestryRenderer | TimelineReferenceRenderer>}
  */
 const fillOthers = (timeline, graph) => {
 	if ("identity" in timeline.meta === false) {
@@ -317,8 +320,8 @@ const fillOthers = (timeline, graph) => {
 	}
 };
 
-allTimelines = allTimelines.map((_) => fill(_));
-const graph = new Graph([originTimeline, ...allTimelines], "invalid");
+allTimelines = [originTimeline, ...allTimelines].map((_) => fill(_));
+const graph = new Graph(allTimelines, "invalid");
 graph.timelines.forEach((_) => {
 	fillOthers(_, graph);
 });
