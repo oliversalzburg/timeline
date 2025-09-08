@@ -111,13 +111,13 @@ $(_OUTPUT)/images : contrib/prepare-emoji.js | $(_OUTPUT)
 		--origin=$< \
 		--segment=300 \
 		--target=$(patsubst %-demo-universe.info,%-demo-universe.gvus,$@)
-%-universe.svg : %-universe.info $(_OUTPUT)/images
+%-universe.svg : %-universe.info $(_OUTPUT)/images contrib/make.sh
 	contrib/make.sh $(patsubst %-universe.svg,%,$@)
-%-universe.html : %-universe.info %-universe.meta %-universe.svg $(wildcard examples/index.template.*)
+%-universe.html : %-universe.info %-universe.meta %-universe.svg $(wildcard examples/index.template.*) examples/build-site.js
 	node --enable-source-maps examples/build-site.js \
 		--format=zen \
 		--target=$@
-%-demo-universe.html : %-demo-universe.info %-demo-universe.meta %-demo-universe.svg $(wildcard examples/index.template.*)
+%-demo-universe.html : %-demo-universe.info %-demo-universe.meta %-demo-universe.svg $(wildcard examples/index.template.*) examples/build-site.js
 	node --enable-source-maps examples/build-site.js \
 		--format=zen \
 		--target=$@

@@ -228,9 +228,32 @@ writeFileSync(
 writeFileSync(
 	targetPath.replace(/\.gv(?:us)?$/, ".meta"),
 	`${JSON.stringify([
-		...dotGraph.timelineIds
-			.entries()
-			.map(([timeline, ids]) => [dotGraph.timelineClasses.get(timeline), ids]),
+		[
+			...dotGraph.timelineIds
+				.entries()
+				.map(([timeline, ids]) => [
+					dotGraph.timelineClasses.get(timeline),
+					ids,
+				]),
+		],
+		[
+			...dotGraph.timelineIds
+				.entries()
+				.map(([timeline]) => [
+					dotGraph.timelineClasses.get(timeline),
+					styleSheet.get(timeline.meta.id)?.pencolor,
+				]),
+		],
+		[
+			...dotGraph.timelineIds
+				.entries()
+				.map(([timeline]) => [
+					dotGraph.timelineClasses.get(timeline),
+					"identity" in timeline.meta
+						? (timeline.meta.identity.name ?? timeline.meta.identity.id)
+						: timeline.meta.id,
+				]),
+		],
 	])}\n`,
 );
 process.stdout.write("GraphViz graph for universe written successfully.\n");

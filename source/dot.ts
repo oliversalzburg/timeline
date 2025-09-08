@@ -228,6 +228,22 @@ export const dot = () => {
 		}
 	};
 
+	const validateColor = (
+		color: "color" | "fontcolor" | "fillcolor",
+		options?: Partial<NodeProperties>,
+	) => {
+		if (
+			options !== undefined &&
+			color in options &&
+			options[color] !== undefined &&
+			options[color].length !== 9
+		) {
+			throw new InvalidOperationError(
+				`${color} is expected to have #RRGGBBAA format. received '${options.color}'`,
+			);
+		}
+	};
+
 	const renderNode = (_: string, options?: Partial<NodeProperties>) => {
 		if (nodeIds.get(_)) {
 			// Not re-rendering node with already seen title.
@@ -235,6 +251,8 @@ export const dot = () => {
 		}
 		const id = ++nextNodeIndex;
 		nodeIds.set(_, id);
+
+		validateColor("color", options);
 
 		if (options?.skipDraw !== true) {
 			renderRaw(`${id} ${makePropertyString({ label: _, ...options })}`);
@@ -263,6 +281,7 @@ export const dot = () => {
 				`Can't link node with itself: '${a}' <-> '${b}'`,
 			);
 		}
+		validateColor("color", options);
 
 		if (options?.skipDraw !== true) {
 			renderRaw(

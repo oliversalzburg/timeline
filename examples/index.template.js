@@ -22,13 +22,19 @@ const Inputs = {
 	AXIS_RIGHT_Y: 3,
 };
 
-/** @type {Array<[string, Array<string>]>} */
-const idMesh = [["REPLACED BY", ["BUILD-SITE.JS"]]];
+/** @type {[Array<[string, Array<string>]>, Array<[string, string]>, Array<[string, string]>]} */
+const DATA = [[["REPLACED BY", ["BUILD-SITE.JS"]]], [], []];
 
 const main = () => {
 	const svg = document.querySelector("svg");
 	if (svg === null) {
 		throw new Error("Unable to find <svg> element.");
+	}
+
+	/** @type {HTMLParagraphElement | null} */
+	const statusText = document.querySelector("#status .text");
+	if (statusText === null) {
+		throw new Error("Unable to find #status element.");
 	}
 
 	console.info("Timeline loaded. SVG should fade in now.");
@@ -72,7 +78,11 @@ const main = () => {
 		),
 	);
 	/** @type {Map<string, Array<string>>} */
-	const lookupTimelineToEventIDs = new Map(idMesh);
+	const lookupTimelineToEventIDs = new Map(DATA[0]);
+	/** @type {Map<string, string>} */
+	const lookupTimelineToPenColor = new Map(DATA[1]);
+	/** @type {Map<string, string>} */
+	const lookupTimelineToIdentity = new Map(DATA[2]);
 	/** @type {Map<string, Array<string>>} */
 	const lookupTimelinesFromEventId = lookupTimelineToEventIDs
 		.entries()
@@ -116,7 +126,7 @@ const main = () => {
 	const speedTime = 0.001;
 	const speedScroll = 0.001;
 	const starColors = ["#FFFFFF", "#FFDDC1", "#FFC0CB", "#ADD8E6", "#B0E0E6"];
-	let startTime = Date.now();
+	const startTime = Date.now();
 	let lastKnownScrollPosition = 0;
 	const _ticking = false;
 	const _gamepadControlHandle = 0;
@@ -263,7 +273,7 @@ const main = () => {
 		const scrollTo = (slice) => {
 			const step = document.body.scrollHeight / 10;
 			const top = step * slice;
-			console.log(
+			console.info(
 				`Scrolling ${keyIsRapid ? "rapidly" : "smoothly"} to ${top}.`,
 			);
 			window.scrollTo({ top, behavior: keyIsRapid ? "instant" : "smooth" });
@@ -341,9 +351,7 @@ const main = () => {
 
 			// Home - Jump to global start.
 			case "Numpad7": {
-				idFocusedIndex = 0;
-				idFocusedIndex = Math.min(Math.max(0, idFocusedIndex), ids.length - 1);
-				idFocused = ids[idFocusedIndex];
+				navigateX();
 				break;
 			}
 
@@ -356,9 +364,7 @@ const main = () => {
 
 			// Multiple steps backwards
 			case "Numpad9":
-				idFocusedIndex -= 10;
-				idFocusedIndex = Math.min(Math.max(0, idFocusedIndex), ids.length - 1);
-				idFocused = ids[idFocusedIndex];
+				navigateY();
 				break;
 
 			default:
@@ -484,6 +490,44 @@ const main = () => {
 		}
 		focusNode(idFocused, neighbors.intersection[1]);
 	};
+	const navigateX = () => {
+		if (idFocused === undefined || timelineFocused === undefined) {
+			console.warn(
+				"Unable to navigate, due to missing focus information.",
+				idFocused,
+				timelineFocused,
+			);
+			return;
+		}
+		const neighbors = findNodeNeighbors(idFocused, timelineFocused);
+		if (neighbors.intersection.length <= 2) {
+			console.warn(
+				"Unable to navigate, due to lack of intersections.",
+				neighbors,
+			);
+			return;
+		}
+		focusNode(idFocused, neighbors.intersection[2]);
+	};
+	const navigateY = () => {
+		if (idFocused === undefined || timelineFocused === undefined) {
+			console.warn(
+				"Unable to navigate, due to missing focus information.",
+				idFocused,
+				timelineFocused,
+			);
+			return;
+		}
+		const neighbors = findNodeNeighbors(idFocused, timelineFocused);
+		if (neighbors.intersection.length <= 3) {
+			console.warn(
+				"Unable to navigate, due to lack of intersections.",
+				neighbors,
+			);
+			return;
+		}
+		focusNode(idFocused, neighbors.intersection[3]);
+	};
 	const navigateHome = () => {
 		focusNode("Z1983-12-25-0");
 	};
@@ -569,8 +613,6 @@ const main = () => {
 					gp.buttons[Inputs.BUTTON_DOWN].pressed === false &&
 					previousButtons?.[Inputs.BUTTON_DOWN].pressed === true
 				) {
-					startTime -= 1000;
-					lastKnownScrollPosition -= 10;
 					navigateForward();
 					requiresRefresh = true;
 				}
@@ -578,9 +620,21 @@ const main = () => {
 					gp.buttons[Inputs.BUTTON_UP].pressed === false &&
 					previousButtons?.[Inputs.BUTTON_UP].pressed === true
 				) {
-					startTime += 1000;
-					lastKnownScrollPosition += 10;
 					navigateBackward();
+					requiresRefresh = true;
+				}
+				if (
+					gp.buttons[Inputs.BUTTON_LEFT].pressed === false &&
+					previousButtons?.[Inputs.BUTTON_LEFT].pressed === true
+				) {
+					navigateLeft();
+					requiresRefresh = true;
+				}
+				if (
+					gp.buttons[Inputs.BUTTON_RIGHT].pressed === false &&
+					previousButtons?.[Inputs.BUTTON_RIGHT].pressed === true
+				) {
+					navigateRight();
 					requiresRefresh = true;
 				}
 				if (
@@ -589,6 +643,30 @@ const main = () => {
 				) {
 					navigateHome();
 					requiresRefresh = true;
+				}
+				if (
+					gp.buttons[Inputs.BUTTON_A].pressed === false &&
+					previousButtons?.[Inputs.BUTTON_A].pressed === true
+				) {
+					navigateA();
+				}
+				if (
+					gp.buttons[Inputs.BUTTON_B].pressed === false &&
+					previousButtons?.[Inputs.BUTTON_B].pressed === true
+				) {
+					navigateB();
+				}
+				if (
+					gp.buttons[Inputs.BUTTON_X].pressed === false &&
+					previousButtons?.[Inputs.BUTTON_X].pressed === true
+				) {
+					navigateX();
+				}
+				if (
+					gp.buttons[Inputs.BUTTON_Y].pressed === false &&
+					previousButtons?.[Inputs.BUTTON_Y].pressed === true
+				) {
+					navigateY();
 				}
 
 				previousButtons = [...gp.buttons];
@@ -599,11 +677,6 @@ const main = () => {
 
 	let cameraIsIdle = false;
 	const updateCamera = () => {
-		if (camera.x === focusTargetBox.x && camera.y === focusTargetBox.y) {
-			console.debug("Camera update was redundant.");
-			return false;
-		}
-
 		if (cameraIsIdle) {
 			console.debug("Camera update requested while camera was idle.");
 			return true;
@@ -611,6 +684,37 @@ const main = () => {
 
 		// @ts-expect-error focusVisible is legit. trust me, bro
 		nodeFocused?.focus({ focusVisible: true, preventScroll: true });
+
+		if (timelineFocused !== undefined) {
+			const timelineColor = lookupTimelineToPenColor.get(timelineFocused);
+			if (timelineColor === undefined) {
+				console.error(
+					`Unable to look up pen color for timeline ID '${timelineFocused}'. Using fallback focus color.`,
+				);
+			} else {
+				console.debug(`Setting --focus-color='${timelineColor}'`);
+			}
+			document.body.style.setProperty(
+				"--focus-color",
+				(timelineColor === "#00000000" ? "rgb(255 255 255)" : timelineColor) ??
+					"rgb(255 255 255)",
+			);
+
+			const timelineIdentity = lookupTimelineToIdentity.get(timelineFocused);
+			if (timelineIdentity === undefined) {
+				console.error(
+					`Unable to look up identity for timeline ID '${timelineFocused}'. Using fallback status.`,
+				);
+			} else {
+				console.debug(`Setting #status.text='${timelineIdentity}'`);
+			}
+			statusText.textContent = timelineIdentity ?? "???";
+		}
+
+		if (camera.x === focusTargetBox.x && camera.y === focusTargetBox.y) {
+			console.debug("Camera update was redundant.");
+			return false;
+		}
 
 		console.debug("Scrolling to new target...", focusTargetBox);
 		cameraIsIdle = true;
@@ -626,7 +730,7 @@ const main = () => {
 			cameraIsIdle = false;
 			camera = newCamera;
 			console.debug("Camera updated", camera);
-		}, 2000);
+		}, 1000);
 
 		return false;
 	};

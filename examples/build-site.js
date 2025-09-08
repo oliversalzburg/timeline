@@ -72,9 +72,14 @@ for (const [variant, meta] of Object.entries(VARIANTS)) {
 	};
 
 	const js = templateJs.replace(
-		'const idMesh = [["REPLACED BY", ["BUILD-SITE.JS"]]];',
-		`const idMesh = ${settings.meta};`,
+		'const DATA = [[["REPLACED BY", ["BUILD-SITE.JS"]]], [], []];',
+		`const DATA = ${settings.meta};`,
 	);
+
+	if (js.length === templateJs.length) {
+		process.stdout.write(`${variant}: Failed to inject JS! Aborting.\n`);
+		process.exit(1);
+	}
 
 	const svg = settings.svg
 		// Remove header to allow embedding.

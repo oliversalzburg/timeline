@@ -6,11 +6,10 @@ import type { Graph } from "./genealogy.js";
 import {
 	fillColorForPen,
 	matchFontColorTo,
+	rgbaFromString,
 	rgbaToString,
-	rgbFromString,
-	rgbToString,
 } from "./palette.js";
-import type { Identity, RenderMode, RGBTuple, Timeline } from "./types.js";
+import type { Identity, RenderMode, RGBATuple, Timeline } from "./types.js";
 
 export interface Style {
 	fillcolor: string;
@@ -79,9 +78,9 @@ export class Styling<
 			const color = mustExist(flexibleColors.pop());
 			slot.color = rgbaToString([...color, 255]);
 		}
-		return new Map<TTimeline, RGBTuple>(
+		return new Map<TTimeline, RGBATuple>(
 			slots.flatMap((slot) =>
-				slot.timelines.map((_) => [_, rgbFromString(slot.color)]),
+				slot.timelines.map((_) => [_, rgbaFromString(slot.color)]),
 			),
 		);
 	}
@@ -141,7 +140,7 @@ export class Styling<
 				matchFontColorTo(mustExist(palette.get(originTimeline))),
 			),
 			link: "bold",
-			pencolor: rgbToString(mustExist(palette.get(originTimeline))),
+			pencolor: rgbaToString(mustExist(palette.get(originTimeline))),
 			penwidth: 5,
 			shape: "box",
 			style: ["bold", "filled", "rounded"],
@@ -156,7 +155,7 @@ export class Styling<
 					matchFontColorTo(mustExist(palette.get(timeline))),
 				),
 				link: "solid",
-				pencolor: rgbToString(mustExist(palette.get(timeline))),
+				pencolor: rgbaToString(mustExist(palette.get(timeline))),
 				penwidth: Math.max(
 					1,
 					5 -
@@ -177,7 +176,7 @@ export class Styling<
 					matchFontColorTo(mustExist(palette.get(timeline))),
 				),
 				link: "solid",
-				pencolor: rgbToString(mustExist(palette.get(timeline))),
+				pencolor: rgbaToString(mustExist(palette.get(timeline))),
 				penwidth: Math.max(
 					1,
 					5 - mustExist(hops.get(mustExist(timeline.meta.identity).id)),
@@ -198,7 +197,7 @@ export class Styling<
 					matchFontColorTo(mustExist(palette.get(timeline))),
 				),
 				link: "dashed",
-				pencolor: rgbToString(mustExist(palette.get(timeline))),
+				pencolor: rgbaToString(mustExist(palette.get(timeline))),
 				penwidth: 1,
 				shape: "box",
 				style: ["dashed", "rounded"],
@@ -220,7 +219,7 @@ export class Styling<
 					matchFontColorTo(mustExist(palette.get(timeline))),
 				),
 				link: "dotted",
-				pencolor: rgbToString(mustExist(palette.get(timeline))),
+				pencolor: rgbaToString(mustExist(palette.get(timeline))),
 				penwidth: 1,
 				shape: "box",
 				style: ["dotted", "rounded"],
@@ -241,7 +240,7 @@ export class Styling<
 					),
 				),
 				link: false,
-				pencolor: rgbToString(mustExist(palette.get(timeline))),
+				pencolor: rgbaToString(mustExist(palette.get(timeline))),
 				penwidth: 1,
 				shape: "box",
 				style: ["dotted", "rounded"],

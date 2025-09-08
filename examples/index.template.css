@@ -1,3 +1,7 @@
+:root {
+	--focus-color: rgb(255 255 255);
+}
+
 html,
 body {
 	margin: 0;
@@ -39,7 +43,7 @@ svg {
 
 		&:focus,
 		&:has(:focus) {
-			outline: 5px dashed rgb(255, 255, 255);
+			outline: 5px dashed var(--focus-color);
 		}
 	}
 
@@ -55,4 +59,23 @@ canvas {
 	left: 0;
 	user-select: none;
 	pointer-events: none;
+}
+
+#status {
+	display: block;
+	position: fixed;
+	bottom: 0;
+	left: 0;
+	width: 100%;
+	margin: 0;
+	padding: 0;
+	background-color: rgb(0 0 0 / 0.5);
+
+	.text {
+		color: rgb(255 255 255);
+		font-family: sans-serif;
+		font-size: x-large;
+		text-align: left;
+		padding: 1vh 2vw;
+	}
 }

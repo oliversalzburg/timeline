@@ -395,7 +395,7 @@ export const render = <
 
 		const nodeProperties: Partial<NodeProperties> = {
 			class: classList.join(" "),
-			color,
+			color: color === "transparent" ? "#00000000" : color,
 			fillcolor: style.style.includes("filled")
 				? fillcolors.length === 1
 					? fillcolors[0]

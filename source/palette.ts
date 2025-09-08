@@ -23,13 +23,13 @@ export const rgbaToString = (rgba: RGBATuple): string =>
 		.toUpperCase()}`;
 
 export const rgbFromString = (rgb: string): RGBTuple =>
-	mustExist(rgb.substring(1).match(/../g)).map((x) =>
-		Number.parseInt(x, 16),
-	) as RGBTuple;
+	mustExist(rgb.substring(1).match(/../g))
+		.slice(0, 3)
+		.map((x) => Number.parseInt(x, 16)) as RGBTuple;
 export const rgbaFromString = (rgba: string): RGBATuple =>
-	mustExist(rgba.substring(1).match(/../g)).map((x) =>
-		Number.parseInt(x, 16),
-	) as RGBATuple;
+	mustExist(rgba.substring(1).match(/../g))
+		.slice(0, 4)
+		.map((x) => Number.parseInt(x, 16)) as RGBATuple;
 
 export const fillColorForPen = (
 	color: RGBTuple | RGBATuple,
