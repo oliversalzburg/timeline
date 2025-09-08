@@ -522,7 +522,9 @@ export const render = <
 						!transferMarker.isTransferMarker &&
 						nodeProperties.id !== undefined
 					) {
-						idMesh.get(transferMarker.timeline)?.push(nodeProperties.id);
+						for (const _ of contributors) {
+							idMesh.get(_)?.push(nodeProperties.id);
+						}
 					}
 				}
 			}

@@ -71,7 +71,28 @@ const main = () => {
 				.map((id) => [id, _]),
 		),
 	);
-	const _idLookup = new Map(idMesh);
+	/** @type {Map<string, Array<string>>} */
+	const lookupTimelineToEventIDs = new Map(idMesh);
+	/** @type {Map<string, Array<string>>} */
+	const lookupTimelinesFromEventId = lookupTimelineToEventIDs
+		.entries()
+		.reduce((all, [timelineId, ids]) => {
+			ids.forEach((id) => {
+				if (all.has(id)) {
+					all.get(id).push(timelineId);
+				} else {
+					all.set(id, [timelineId]);
+				}
+			});
+			return all;
+		}, new Map());
+	const allEventIDs = lookupTimelineToEventIDs
+		.values()
+		.reduce((all, current) => {
+			all.push(...current);
+			return all;
+		}, []);
+
 	// The ID of the currently focused node.
 	let idFocused = idSet.has(window.location.hash.replace(/^#/, ""))
 		? window.location.hash.replace(/^#/, "")
@@ -101,21 +122,76 @@ const main = () => {
 	const _gamepadControlHandle = 0;
 
 	/**
-	 * @param {string} id -
+	 * @param id {string} -
+	 * @param onTimelineId {string} -
 	 */
-	const focusNode = (id) => {
+	const findNodeNeighbors = (id, onTimelineId) => {
+		const eventDateMatch = id.match(/^Z\d{4}-\d{2}-\d{2}/);
+		if (eventDateMatch === null || eventDateMatch.length === 0) {
+			throw new Error(`Unable to match date in ID '${id}'`);
+		}
+
+		const eventDate = eventDateMatch[0];
+		const onDate = allEventIDs
+			.filter((eventId) => eventId.startsWith(eventDate))
+			.sort();
+		const ownIndexOnDate = onDate.indexOf(id);
+
+		const timelineIds = lookupTimelinesFromEventId.get(id);
+		if (timelineIds === undefined) {
+			throw new Error(`Unable to find timeline ID for event ID '${id}'`);
+		}
+
+		if (!timelineIds.includes(onTimelineId)) {
+			throw new Error(
+				`Event ID '${id}' is not on timeline ID '${onTimelineId}'`,
+			);
+		}
+
+		const eventIds = lookupTimelineToEventIDs.get(onTimelineId);
+		if (eventIds === undefined) {
+			throw new Error(`Unable to find event IDs for timeline ID '${id}'`);
+		}
+
+		const eventIndexOnTimeline = eventIds.indexOf(id);
+
+		return {
+			left: ownIndexOnDate === 0 ? null : onDate[ownIndexOnDate - 1],
+			right:
+				ownIndexOnDate === onDate.length - 1
+					? null
+					: onDate[ownIndexOnDate + 1],
+			up:
+				eventIndexOnTimeline === 0 ? null : eventIds[eventIndexOnTimeline - 1],
+			down:
+				eventIndexOnTimeline === eventIds.length - 1
+					? null
+					: eventIds[eventIndexOnTimeline + 1],
+			intersection: timelineIds,
+		};
+	};
+
+	/**
+	 * @param {string} id -
+	 * @param {string | undefined} onTimelineId -
+	 */
+	const focusNode = (id, onTimelineId = undefined) => {
 		if (!id) {
 			return;
 		}
 
 		const anchor = `#${id}`;
-		/** @type {SVGElement | null} */
-		nodeFocused = document.querySelector(anchor);
+		/** @type {HTMLElement | null} */
+		const node = document.querySelector(anchor);
 
-		if (nodeFocused === null) {
+		if (node === null) {
+			console.error(
+				`Node with ID '${id}' wasn't found in DOM. Unable to focus node.`,
+			);
 			return;
 		}
 
+		nodeFocused = node;
 		window.history.pushState(
 			{ id },
 			"",
@@ -129,10 +205,11 @@ const main = () => {
 		// don't attempt to switch focus. This could cause focus to switch
 		// to another timeline when entering a merge node.
 		timelineFocused =
-			timelineFocused !== undefined &&
+			onTimelineId ??
+			(timelineFocused !== undefined &&
 			timelineNodes.get(timelineFocused)?.includes(id)
 				? timelineFocused
-				: nodeTimelines.get(id);
+				: nodeTimelines.get(id));
 
 		console.info(
 			`Focused node ${idFocused} of timeline ${timelineFocused}. View update is pending.`,
@@ -227,63 +304,39 @@ const main = () => {
 
 			// Jump to global end.
 			case "Numpad1": {
-				idFocusedIndex = ids.length - 1;
-				idFocusedIndex = Math.min(Math.max(0, idFocusedIndex), ids.length - 1);
-				idFocused = ids[idFocusedIndex];
-				break;
+				navigateA();
+				return;
 			}
 
 			// Step forwards in active timeline.
 			case "KeyS":
 			case "Numpad2": {
-				if (!timelineFocused) {
-					return;
-				}
-				const timeline = timelineNodes.get(timelineFocused);
-				if (!timeline) {
-					return;
-				}
-
-				const indexInTimeline =
-					idFocused !== undefined ? timeline.indexOf(idFocused) : 0;
-				const indexInTimelineNew = Math.min(
-					Math.max(0, indexInTimeline + 1),
-					timeline.length - 1,
-				);
-				const idNew = timeline[indexInTimelineNew];
-
-				idFocusedIndex = ids.indexOf(idNew);
-				idFocused = ids[idFocusedIndex];
-				break;
+				navigateForward();
+				return;
 			}
 
 			// Multiple steps forwards
 			case "Numpad3":
-				idFocusedIndex += 10;
-				idFocusedIndex = Math.min(Math.max(0, idFocusedIndex), ids.length - 1);
-				idFocused = ids[idFocusedIndex];
+				navigateB();
 				break;
 
 			// Single step backwards.
 			case "KeyA":
 			case "Numpad4": {
-				--idFocusedIndex;
-				idFocusedIndex = Math.min(Math.max(0, idFocusedIndex), ids.length - 1);
-				idFocused = ids[idFocusedIndex];
-				break;
+				navigateLeft();
+				return;
 			}
 
 			// Re-focus already focused node. Useful when having scrolled away from focus.
 			case "Numpad5":
-				break;
+				navigateHome();
+				return;
 
 			// Single step forwards.
 			case "KeyD":
 			case "Numpad6": {
-				++idFocusedIndex;
-				idFocusedIndex = Math.min(Math.max(0, idFocusedIndex), ids.length - 1);
-				idFocused = ids[idFocusedIndex];
-				break;
+				navigateRight();
+				return;
 			}
 
 			// Home - Jump to global start.
@@ -297,27 +350,8 @@ const main = () => {
 			// Step backwards in active timeline.
 			case "KeyW":
 			case "Numpad8": {
-				if (!timelineFocused) {
-					return;
-				}
-				const timeline = timelineNodes.get(timelineFocused);
-				if (!timeline) {
-					return;
-				}
-
-				const indexInTimeline =
-					idFocused !== undefined
-						? timeline.indexOf(idFocused)
-						: timeline.length - 1;
-				const indexInTimelineNew = Math.min(
-					Math.max(0, indexInTimeline - 1),
-					timeline.length - 1,
-				);
-				const idNew = timeline[indexInTimelineNew];
-
-				idFocusedIndex = ids.indexOf(idNew);
-				idFocused = ids[idFocusedIndex];
-				break;
+				navigateBackward();
+				return;
 			}
 
 			// Multiple steps backwards
@@ -369,50 +403,87 @@ const main = () => {
 	};
 
 	const navigateForward = () => {
-		if (!timelineFocused) {
+		if (idFocused === undefined || timelineFocused === undefined) {
 			return;
 		}
-		const timeline = timelineNodes.get(timelineFocused);
-		if (!timeline) {
+		const neighbors = findNodeNeighbors(idFocused, timelineFocused);
+		if (neighbors.down === null) {
 			return;
 		}
 
-		const indexInTimeline =
-			idFocused !== undefined ? timeline.indexOf(idFocused) : 0;
-		const indexInTimelineNew = Math.min(
-			Math.max(0, indexInTimeline + 1),
-			timeline.length - 1,
-		);
-		const idNew = timeline[indexInTimelineNew];
-
-		idFocusedIndex = ids.indexOf(idNew);
-		idFocused = ids[idFocusedIndex];
-		focusNode(idFocused);
+		focusNode(neighbors.down);
 	};
 	const navigateBackward = () => {
-		if (!timelineFocused) {
+		if (idFocused === undefined || timelineFocused === undefined) {
 			return;
 		}
-		const timeline = timelineNodes.get(timelineFocused);
-		if (!timeline) {
+		const neighbors = findNodeNeighbors(idFocused, timelineFocused);
+		if (neighbors.up === null) {
 			return;
 		}
 
-		const indexInTimeline =
-			idFocused !== undefined
-				? timeline.indexOf(idFocused)
-				: timeline.length - 1;
-		const indexInTimelineNew = Math.min(
-			Math.max(0, indexInTimeline - 1),
-			timeline.length - 1,
-		);
-		const idNew = timeline[indexInTimelineNew];
-
-		idFocusedIndex = ids.indexOf(idNew);
-		idFocused = ids[idFocusedIndex];
-		focusNode(idFocused);
+		focusNode(neighbors.up);
 	};
-	const _navigateLeft = () => {};
+	const navigateLeft = () => {
+		if (idFocused === undefined || timelineFocused === undefined) {
+			return;
+		}
+		const neighbors = findNodeNeighbors(idFocused, timelineFocused);
+		if (neighbors.left === null) {
+			return;
+		}
+
+		focusNode(neighbors.left);
+	};
+	const navigateRight = () => {
+		if (idFocused === undefined || timelineFocused === undefined) {
+			return;
+		}
+		const neighbors = findNodeNeighbors(idFocused, timelineFocused);
+		if (neighbors.right === null) {
+			return;
+		}
+
+		focusNode(neighbors.right);
+	};
+	const navigateA = () => {
+		if (idFocused === undefined || timelineFocused === undefined) {
+			console.warn(
+				"Unable to navigate, due to missing focus information.",
+				idFocused,
+				timelineFocused,
+			);
+			return;
+		}
+		const neighbors = findNodeNeighbors(idFocused, timelineFocused);
+		if (neighbors.intersection.length <= 1) {
+			console.warn(
+				"Unable to navigate, due to lack of intersections.",
+				neighbors,
+			);
+			return;
+		}
+		focusNode(idFocused, neighbors.intersection[0]);
+	};
+	const navigateB = () => {
+		if (idFocused === undefined || timelineFocused === undefined) {
+			console.warn(
+				"Unable to navigate, due to missing focus information.",
+				idFocused,
+				timelineFocused,
+			);
+			return;
+		}
+		const neighbors = findNodeNeighbors(idFocused, timelineFocused);
+		if (neighbors.intersection.length <= 1) {
+			console.warn(
+				"Unable to navigate, due to lack of intersections.",
+				neighbors,
+			);
+			return;
+		}
+		focusNode(idFocused, neighbors.intersection[1]);
+	};
 	const navigateHome = () => {
 		focusNode("Z1983-12-25-0");
 	};
@@ -530,7 +601,7 @@ const main = () => {
 	const updateCamera = () => {
 		if (camera.x === focusTargetBox.x && camera.y === focusTargetBox.y) {
 			console.debug("Camera update was redundant.");
-			return true;
+			return false;
 		}
 
 		if (cameraIsIdle) {
