@@ -5,7 +5,7 @@ import { hostname, userInfo } from "node:os";
 import { mustExist } from "@oliversalzburg/js-utils/data/nil.js";
 import { parse } from "yaml";
 import { analyze } from "../lib/analyzer.js";
-import { Graph } from "../lib/genealogy.js";
+import { Graph, uncertainEventToDate } from "../lib/genealogy.js";
 import { load } from "../lib/loader.js";
 import { sort, uniquify } from "../lib/operator.js";
 import { render } from "../lib/renderer.js";
@@ -220,6 +220,8 @@ if (dotGraph.graph.length === 1) {
 		writeFileSync(segmentFilename, uniqueGraph);
 	}
 }
+const originBirthDate =
+	uncertainEventToDate(graph.resolveIdentity()?.born) ?? new Date();
 
 writeFileSync(
 	targetPath.replace(/\.gv(?:us)?$/, ".info"),
@@ -253,6 +255,10 @@ writeFileSync(
 						? (timeline.meta.identity.name ?? timeline.meta.identity.id)
 						: timeline.meta.id,
 				]),
+		],
+		[
+			graph.resolveIdentity()?.name,
+			`Z${originBirthDate.getFullYear().toFixed().padStart(4, "0")}-${(originBirthDate.getMonth() + 1).toFixed().padStart(2, "0")}-${originBirthDate.getDate().toFixed().padStart(2, "0")}-0`,
 		],
 	])}\n`,
 );

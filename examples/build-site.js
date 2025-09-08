@@ -72,7 +72,7 @@ for (const [variant, meta] of Object.entries(VARIANTS)) {
 	};
 
 	const js = templateJs.replace(
-		'const DATA = [[["REPLACED BY", ["BUILD-SITE.JS"]]], [], []];',
+		'const DATA = [[["REPLACED", ["BY"]]], [], [], ["EXAMPLES", "BUILD-SITE.JS"]];',
 		`const DATA = ${settings.meta};`,
 	);
 

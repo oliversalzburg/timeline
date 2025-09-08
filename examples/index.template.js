@@ -22,8 +22,8 @@ const Inputs = {
 	AXIS_RIGHT_Y: 3,
 };
 
-/** @type {[Array<[string, Array<string>]>, Array<[string, string]>, Array<[string, string]>]} */
-const DATA = [[["REPLACED BY", ["BUILD-SITE.JS"]]], [], []];
+/** @type {[Array<[string, Array<string>]>, Array<[string, string]>, Array<[string, string]>, [string, string]]} */
+const DATA = [[["REPLACED", ["BY"]]], [], [], ["EXAMPLES", "BUILD-SITE.JS"]];
 
 const main = () => {
 	const svg = document.querySelector("svg");
@@ -53,9 +53,6 @@ const main = () => {
 	if (statusButtons === null) {
 		throw new Error("Unable to find #status element.");
 	}
-
-	console.info("Timeline loaded. SVG should fade in now.");
-	document.body.classList.remove("loading");
 
 	// Find all SVG elements that are GraphViz nodes.
 	const nodes = [...document.querySelectorAll(".node").values()];
@@ -125,7 +122,7 @@ const main = () => {
 		? window.location.hash.replace(/^#/, "")
 		: undefined;
 	// The global timeline index of the focused node.
-	let idFocusedIndex = idFocused !== undefined ? ids.indexOf(idFocused) : -1;
+	let _idFocusedIndex = idFocused !== undefined ? ids.indexOf(idFocused) : -1;
 	/** @type {HTMLElement | null} */
 	let nodeFocused =
 		idFocused !== undefined ? document.querySelector(`#${idFocused}`) : null;
@@ -227,7 +224,7 @@ const main = () => {
 		document.title = `${new Date(id.substring(1).split("-").slice(0, -1).join("-")).toLocaleDateString()} - Open Time-Travel Engine`;
 
 		idFocused = id;
-		idFocusedIndex = ids.indexOf(idFocused);
+		_idFocusedIndex = ids.indexOf(idFocused);
 		// If the newly focused node exists on the already focused timeline,
 		// don't attempt to switch focus. This could cause focus to switch
 		// to another timeline when entering a merge node.
@@ -546,7 +543,7 @@ const main = () => {
 		focusNode(idFocused, neighbors.intersection[3]);
 	};
 	const navigateHome = () => {
-		focusNode("Z1983-12-25-0");
+		focusNode(DATA[3][1]);
 	};
 
 	/**
@@ -614,7 +611,7 @@ const main = () => {
 		}
 	};
 
-	let inputEventsPending = true;
+	let inputEventsPending = false;
 	/** @type {Array<{pressed:boolean}> | undefined} */
 	let previousButtons;
 	const handleInputs = () => {
@@ -850,26 +847,24 @@ const main = () => {
 		window.requestAnimationFrame(present);
 	};
 
-	if (-1 < idFocusedIndex && idFocused) {
-		const node = document.querySelector(`#${idFocused}`);
-		if (node !== null) {
-			const timeline = nodeTimelines.get(node.id);
-			console.info(
-				`Selecting node #${idFocused} of timeline ${timeline} from location anchor.`,
-			);
-			focusNode(idFocused);
-		}
-	} else {
-		focusNode(ids[0]);
-	}
-
 	document.addEventListener("click", onClick);
 	document.addEventListener("keyup", onKeyUp);
 	//document.addEventListener("scroll", onScroll);
 	window.addEventListener("resize", init);
 
-	init();
-	present();
+	setTimeout(() => {
+		init();
+		present();
+
+		console.info("Requesting initial focus...");
+		inputEventsPending = true;
+		if (idFocused) {
+			focusNode(idFocused);
+		} else {
+			navigateHome();
+		}
+		document.body.classList.remove("loading");
+	});
 };
 
 document.addEventListener("DOMContentLoaded", () => {

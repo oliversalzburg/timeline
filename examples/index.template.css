@@ -24,7 +24,7 @@ body {
 	position: relative;
 	background: rgb(0 0 0);
 	opacity: 1;
-	transition: ease-in-out opacity 2s;
+	transition: ease-in-out opacity 10s;
 
 	&.loading {
 		opacity: 0;
