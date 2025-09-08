@@ -31,9 +31,26 @@ const main = () => {
 		throw new Error("Unable to find <svg> element.");
 	}
 
+	/** @type {HTMLDivElement | null} */
+	const statusContainer = document.querySelector("#status");
+	if (statusContainer === null) {
+		throw new Error("Unable to find #status element.");
+	}
+
 	/** @type {HTMLParagraphElement | null} */
 	const statusText = document.querySelector("#status .text");
 	if (statusText === null) {
+		throw new Error("Unable to find #status element.");
+	}
+
+	/** @type {NodeListOf<HTMLSpanElement> | null} */
+	const statusOptions = document.querySelectorAll("#status .options .option");
+	if (statusOptions === null) {
+		throw new Error("Unable to find #status element.");
+	}
+	/** @type {NodeListOf<HTMLSpanElement> | null} */
+	const statusButtons = document.querySelectorAll("#status .options .button");
+	if (statusButtons === null) {
 		throw new Error("Unable to find #status element.");
 	}
 
@@ -649,24 +666,28 @@ const main = () => {
 					previousButtons?.[Inputs.BUTTON_A].pressed === true
 				) {
 					navigateA();
+					requiresRefresh = true;
 				}
 				if (
 					gp.buttons[Inputs.BUTTON_B].pressed === false &&
 					previousButtons?.[Inputs.BUTTON_B].pressed === true
 				) {
 					navigateB();
+					requiresRefresh = true;
 				}
 				if (
 					gp.buttons[Inputs.BUTTON_X].pressed === false &&
 					previousButtons?.[Inputs.BUTTON_X].pressed === true
 				) {
 					navigateX();
+					requiresRefresh = true;
 				}
 				if (
 					gp.buttons[Inputs.BUTTON_Y].pressed === false &&
 					previousButtons?.[Inputs.BUTTON_Y].pressed === true
 				) {
 					navigateY();
+					requiresRefresh = true;
 				}
 
 				previousButtons = [...gp.buttons];
@@ -685,7 +706,27 @@ const main = () => {
 		// @ts-expect-error focusVisible is legit. trust me, bro
 		nodeFocused?.focus({ focusVisible: true, preventScroll: true });
 
-		if (timelineFocused !== undefined) {
+		if (idFocused !== undefined && timelineFocused !== undefined) {
+			const newNeighbors = findNodeNeighbors(idFocused, timelineFocused);
+			const navOptions = {
+				A:
+					0 < newNeighbors.intersection.length
+						? newNeighbors.intersection[0]
+						: null,
+				B:
+					1 < newNeighbors.intersection.length
+						? newNeighbors.intersection[1]
+						: null,
+				X:
+					2 < newNeighbors.intersection.length
+						? newNeighbors.intersection[2]
+						: null,
+				Y:
+					3 < newNeighbors.intersection.length
+						? newNeighbors.intersection[3]
+						: null,
+			};
+
 			const timelineColor = lookupTimelineToPenColor.get(timelineFocused);
 			if (timelineColor === undefined) {
 				console.error(
@@ -709,6 +750,60 @@ const main = () => {
 				console.debug(`Setting #status.text='${timelineIdentity}'`);
 			}
 			statusText.textContent = timelineIdentity ?? "???";
+			statusContainer.style.visibility =
+				newNeighbors.intersection.length < 2 ? "hidden" : "visible";
+			for (const statusOption of statusOptions) {
+				if (statusOption.classList.contains("a")) {
+					statusOption.textContent =
+						navOptions.A === null || newNeighbors.intersection.length < 2
+							? ""
+							: (lookupTimelineToIdentity.get(navOptions.A) ?? "");
+				}
+				if (statusOption.classList.contains("b")) {
+					statusOption.textContent =
+						navOptions.B === null || newNeighbors.intersection.length < 2
+							? ""
+							: (lookupTimelineToIdentity.get(navOptions.B) ?? "");
+				}
+				if (statusOption.classList.contains("x")) {
+					statusOption.textContent =
+						navOptions.X === null || newNeighbors.intersection.length < 2
+							? ""
+							: (lookupTimelineToIdentity.get(navOptions.X) ?? "");
+				}
+				if (statusOption.classList.contains("y")) {
+					statusOption.textContent =
+						navOptions.Y === null || newNeighbors.intersection.length < 2
+							? ""
+							: (lookupTimelineToIdentity.get(navOptions.Y) ?? "");
+				}
+			}
+			for (const statusButton of statusButtons) {
+				if (statusButton.classList.contains("a")) {
+					statusButton.style.display =
+						navOptions.A === null || newNeighbors.intersection.length < 2
+							? "none"
+							: "inline-block";
+				}
+				if (statusButton.classList.contains("b")) {
+					statusButton.style.display =
+						navOptions.B === null || newNeighbors.intersection.length < 2
+							? "none"
+							: "inline-block";
+				}
+				if (statusButton.classList.contains("x")) {
+					statusButton.style.display =
+						navOptions.X === null || newNeighbors.intersection.length < 2
+							? "none"
+							: "inline-block";
+				}
+				if (statusButton.classList.contains("y")) {
+					statusButton.style.display =
+						navOptions.Y === null || newNeighbors.intersection.length < 2
+							? "none"
+							: "inline-block";
+				}
+			}
 		}
 
 		if (camera.x === focusTargetBox.x && camera.y === focusTargetBox.y) {

@@ -66,16 +66,65 @@ canvas {
 	position: fixed;
 	bottom: 0;
 	left: 0;
-	width: 100%;
+	width: 100vw;
 	margin: 0;
-	padding: 0;
-	background-color: rgb(0 0 0 / 0.5);
+	background-color: rgb(0 0 0 / 0.7);
+
+	color: rgb(255 255 255);
+	font-family: sans-serif;
 
 	.text {
-		color: rgb(255 255 255);
-		font-family: sans-serif;
-		font-size: x-large;
+		padding: 1vmin 2vmin;
+		font-size: 3vmin;
 		text-align: left;
-		padding: 1vh 2vw;
+	}
+	.options {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		justify-content: end;
+		padding-bottom: 1vmin;
+
+		.button {
+			display: inline-block;
+			color: rgb(255 255 255 / 0.95);
+			opacity: 0.95;
+			font-family: sans-serif;
+			font-weight: bold;
+			font-size: 2vmin;
+			line-height: 2vmin;
+			width: 2.2vmin;
+			height: 2vmin;
+			text-align: center;
+			border-radius: 50% 50%;
+			text-shadow:
+				0 0 0.2vmin rgb(0 0 0 / 0.5),
+				1px 1px 0 black;
+			filter: drop-shadow(0 0 0.1vmin black);
+			user-select: none;
+			margin-right: 1vmin;
+
+			&.a {
+				background-color: rgb(0 128 0 / 0.75);
+				border: 0.2vmin solid rgb(0 128 0);
+			}
+			&.b {
+				background-color: rgb(255 0 0 / 0.75);
+				border: 0.2vmin solid rgb(255 0 0);
+			}
+			&.x {
+				background-color: rgb(0 0 255 / 0.75);
+				border: 0.2vmin solid rgb(0 0 255);
+			}
+			&.y {
+				background-color: rgb(255 255 0 / 0.75);
+				border: 0.2vmin solid rgb(255 255 0);
+			}
+		}
+
+		.option {
+			font-size: 2vmin;
+			margin-right: 2vmin;
+		}
 	}
 }
