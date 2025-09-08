@@ -67,12 +67,13 @@ for (const [variant, meta] of Object.entries(VARIANTS)) {
 		...meta,
 		output: args.target,
 		info: readFileSync(args.target.replace(/\.html$/, ".info"), "utf-8"),
+		meta: readFileSync(args.target.replace(/\.html$/, ".meta"), "utf-8"),
 		svg: readFileSync(args.target.replace(/\.html$/, meta.svgSource), "utf-8"),
 	};
 
 	const js = templateJs.replace(
-		"const FEATURE_FLAG_STARFIELD = undefined;",
-		`const FEATURE_FLAG_STARFIELD = ${settings.starfield};`,
+		'const idMesh = [["REPLACED BY", ["BUILD-SITE.JS"]]];',
+		`const idMesh = ${settings.meta};`,
 	);
 
 	const svg = settings.svg

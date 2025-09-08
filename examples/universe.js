@@ -225,4 +225,12 @@ writeFileSync(
 	targetPath.replace(/\.gv(?:us)?$/, ".info"),
 	`${info.join("\n")}\n`,
 );
+writeFileSync(
+	targetPath.replace(/\.gv(?:us)?$/, ".meta"),
+	`${JSON.stringify([
+		...dotGraph.timelineIds
+			.entries()
+			.map(([timeline, ids]) => [dotGraph.timelineClasses.get(timeline), ids]),
+	])}\n`,
+);
 process.stdout.write("GraphViz graph for universe written successfully.\n");

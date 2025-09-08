@@ -1,25 +1,29 @@
-const _FEATURE_FLAG_STARFIELD = undefined;
-const _BUTTON_A = 0;
-const _BUTTON_B = 1;
-const _BUTTON_X = 2;
-const _BUTTON_Y = 3;
-const _BUTTON_LB = 4;
-const _BUTTON_RB = 5;
-const _BUTTON_LT = 6;
-const _BUTTON_RT = 7;
-const _BUTTON_BACK = 8;
-const _BUTTON_START = 9;
-const _BUTTON_KNOB_LEFT = 10;
-const _BUTTON_KNOB_RIGHT = 11;
-const BUTTON_UP = 12;
-const BUTTON_DOWN = 13;
-const _BUTTON_LEFT = 14;
-const _BUTTON_RIGHT = 15;
-const _BUTTON_XBOX = 16;
-const _AXIS_LEFT_X = 0;
-const AXIS_LEFT_Y = 1;
-const _AXIS_RIGHT_X = 2;
-const AXIS_RIGHT_Y = 3;
+const Inputs = {
+	BUTTON_A: 0,
+	BUTTON_B: 1,
+	BUTTON_X: 2,
+	BUTTON_Y: 3,
+	BUTTON_LB: 4,
+	BUTTON_RB: 5,
+	BUTTON_LT: 6,
+	BUTTON_RT: 7,
+	BUTTON_BACK: 8,
+	BUTTON_START: 9,
+	BUTTON_KNOB_LEFT: 10,
+	BUTTON_KNOB_RIGHT: 11,
+	BUTTON_UP: 12,
+	BUTTON_DOWN: 13,
+	BUTTON_LEFT: 14,
+	BUTTON_RIGHT: 15,
+	BUTTON_XBOX: 16,
+	AXIS_LEFT_X: 0,
+	AXIS_LEFT_Y: 1,
+	AXIS_RIGHT_X: 2,
+	AXIS_RIGHT_Y: 3,
+};
+
+/** @type {Array<[string, Array<string>]>} */
+const idMesh = [["REPLACED BY", ["BUILD-SITE.JS"]]];
 
 const main = () => {
 	const svg = document.querySelector("svg");
@@ -38,6 +42,7 @@ const main = () => {
 	// A set of all the unique IDs. For slightly faster lookups, compared to
 	// an index search through the array.
 	const idSet = new Set(ids);
+	idSet.delete("");
 	// A set of all unique timeline IDs. A unique ID has been generated for each
 	// timeline by the renderer. For the navigation, we don't require any
 	// additional metadata.
@@ -66,12 +71,16 @@ const main = () => {
 				.map((id) => [id, _]),
 		),
 	);
+	const _idLookup = new Map(idMesh);
 	// The ID of the currently focused node.
 	let idFocused = idSet.has(window.location.hash.replace(/^#/, ""))
 		? window.location.hash.replace(/^#/, "")
 		: undefined;
 	// The global timeline index of the focused node.
 	let idFocusedIndex = idFocused !== undefined ? ids.indexOf(idFocused) : -1;
+	/** @type {HTMLElement | null} */
+	let nodeFocused =
+		idFocused !== undefined ? document.querySelector(`#${idFocused}`) : null;
 	// The ID of the timeline the focused node is part of.
 	let timelineFocused =
 		idFocused !== undefined ? nodeTimelines.get(idFocused) : undefined;
@@ -94,16 +103,16 @@ const main = () => {
 	/**
 	 * @param {string} id -
 	 */
-	const focusNode = (id, rapid = false) => {
+	const focusNode = (id) => {
 		if (!id) {
 			return;
 		}
 
 		const anchor = `#${id}`;
 		/** @type {SVGElement | null} */
-		const node = document.querySelector(anchor);
+		nodeFocused = document.querySelector(anchor);
 
-		if (node === null) {
+		if (nodeFocused === null) {
 			return;
 		}
 
@@ -113,7 +122,6 @@ const main = () => {
 			window.location.toString().replace(/(#.*)|$/, anchor),
 		);
 		document.title = `${new Date(id.substring(1).split("-").slice(0, -1).join("-")).toLocaleDateString()} - Open Time-Travel Engine`;
-		node.focus({ preventScroll: true });
 
 		idFocused = id;
 		idFocusedIndex = ids.indexOf(idFocused);
@@ -127,22 +135,17 @@ const main = () => {
 				: nodeTimelines.get(id);
 
 		console.info(
-			`Focused node ${idFocused} of timeline ${timelineFocused}. Scrolling it ${rapid ? "rapidly" : "smoothly"} into view...`,
+			`Focused node ${idFocused} of timeline ${timelineFocused}. View update is pending.`,
 		);
 
-		let left = window.pageXOffset + node.getBoundingClientRect().left;
-		let top = window.pageYOffset + node.getBoundingClientRect().top;
-
-		left = left - document.documentElement.clientWidth / 2;
-		top = top - document.documentElement.clientHeight / 2;
-
-		window.scrollTo({ top, behavior: rapid ? "instant" : "smooth", left });
+		requestFocusShift(id);
 	};
 
 	/**
 	 * @param {MouseEvent} event -
 	 */
 	const onClick = (event) => {
+		inputEventsPending = true;
 		if (event.target === null) {
 			return;
 		}
@@ -166,6 +169,7 @@ const main = () => {
 	 */
 	const onKeyUp = (event) => {
 		console.debug(`keyup: key:${event.key} code:${event.code}`);
+		inputEventsPending = true;
 
 		if (!rapidKeys.has(event.code)) {
 			rapidKeys.set(event.code, 0);
@@ -333,10 +337,91 @@ const main = () => {
 		}
 
 		event.preventDefault();
-		focusNode(idFocused, keyIsRapid);
+		focusNode(idFocused);
 	};
 
-	const onScroll = (_event) => {
+	let focusTargetBox = { x: 0, y: 0 };
+	let camera = { x: 0, y: 0 };
+	/**
+	 * @param id {string | undefined}
+	 */
+	const requestFocusShift = (id) => {
+		if (!id) {
+			return;
+		}
+
+		const anchor = `#${id}`;
+		/** @type {SVGElement | null} */
+		const node = document.querySelector(anchor);
+
+		if (node === null) {
+			return;
+		}
+
+		let left = window.pageXOffset + node.getBoundingClientRect().left;
+		let top = window.pageYOffset + node.getBoundingClientRect().top;
+
+		left = left - document.documentElement.clientWidth / 2;
+		top = top - document.documentElement.clientHeight / 2;
+
+		focusTargetBox = { x: left, y: top };
+		console.debug("New focus box requested", focusTargetBox);
+	};
+
+	const navigateForward = () => {
+		if (!timelineFocused) {
+			return;
+		}
+		const timeline = timelineNodes.get(timelineFocused);
+		if (!timeline) {
+			return;
+		}
+
+		const indexInTimeline =
+			idFocused !== undefined ? timeline.indexOf(idFocused) : 0;
+		const indexInTimelineNew = Math.min(
+			Math.max(0, indexInTimeline + 1),
+			timeline.length - 1,
+		);
+		const idNew = timeline[indexInTimelineNew];
+
+		idFocusedIndex = ids.indexOf(idNew);
+		idFocused = ids[idFocusedIndex];
+		focusNode(idFocused);
+	};
+	const navigateBackward = () => {
+		if (!timelineFocused) {
+			return;
+		}
+		const timeline = timelineNodes.get(timelineFocused);
+		if (!timeline) {
+			return;
+		}
+
+		const indexInTimeline =
+			idFocused !== undefined
+				? timeline.indexOf(idFocused)
+				: timeline.length - 1;
+		const indexInTimelineNew = Math.min(
+			Math.max(0, indexInTimeline - 1),
+			timeline.length - 1,
+		);
+		const idNew = timeline[indexInTimelineNew];
+
+		idFocusedIndex = ids.indexOf(idNew);
+		idFocused = ids[idFocusedIndex];
+		focusNode(idFocused);
+	};
+	const _navigateLeft = () => {};
+	const navigateHome = () => {
+		focusNode("Z1983-12-25-0");
+	};
+
+	/**
+	 * @param _event {Event} -
+	 */
+	const _onScroll = (_event) => {
+		inputEventsPending = true;
 		lastKnownScrollPosition = window.scrollY;
 	};
 
@@ -397,28 +482,89 @@ const main = () => {
 		}
 	};
 
-	const update = () => {
+	let inputEventsPending = true;
+	/** @type {Array<{pressed:boolean}> | undefined} */
+	let previousButtons;
+	const handleInputs = () => {
+		let requiresRefresh = inputEventsPending;
 		const gamepads = navigator.getGamepads();
-		if (gamepads) {
+		if (Array.isArray(gamepads) && 0 < gamepads.length) {
 			const gp = gamepads[0];
 			if (gp !== null) {
-				startTime += gp.axes[AXIS_LEFT_Y] * 1000;
-				startTime += gp.axes[AXIS_RIGHT_Y] * 1000;
+				//startTime += gp.axes[AXIS_LEFT_Y] * 1000;
+				//startTime += gp.axes[AXIS_RIGHT_Y] * 1000;
 
-				if (gp.buttons[BUTTON_DOWN].pressed) {
+				if (
+					gp.buttons[Inputs.BUTTON_DOWN].pressed === false &&
+					previousButtons?.[Inputs.BUTTON_DOWN].pressed === true
+				) {
 					startTime -= 1000;
 					lastKnownScrollPosition -= 10;
+					navigateForward();
+					requiresRefresh = true;
 				}
-				if (gp.buttons[BUTTON_UP].pressed) {
+				if (
+					gp.buttons[Inputs.BUTTON_UP].pressed === false &&
+					previousButtons?.[Inputs.BUTTON_UP].pressed === true
+				) {
 					startTime += 1000;
 					lastKnownScrollPosition += 10;
+					navigateBackward();
+					requiresRefresh = true;
 				}
+				if (
+					gp.buttons[Inputs.BUTTON_XBOX].pressed === false &&
+					previousButtons?.[Inputs.BUTTON_XBOX].pressed === true
+				) {
+					navigateHome();
+					requiresRefresh = true;
+				}
+
+				previousButtons = [...gp.buttons];
 			}
 		}
+		return requiresRefresh;
+	};
+
+	let cameraIsIdle = false;
+	const updateCamera = () => {
+		if (camera.x === focusTargetBox.x && camera.y === focusTargetBox.y) {
+			console.debug("Camera update was redundant.");
+			return true;
+		}
+
+		if (cameraIsIdle) {
+			console.debug("Camera update requested while camera was idle.");
+			return true;
+		}
+
+		// @ts-expect-error focusVisible is legit. trust me, bro
+		nodeFocused?.focus({ focusVisible: true, preventScroll: true });
+
+		console.debug("Scrolling to new target...", focusTargetBox);
+		cameraIsIdle = true;
+		inputEventsPending = false;
+		window.scrollTo({
+			top: focusTargetBox.y,
+			behavior: "smooth",
+			left: focusTargetBox.x,
+		});
+
+		const newCamera = { ...focusTargetBox };
+		setTimeout(() => {
+			cameraIsIdle = false;
+			camera = newCamera;
+			console.debug("Camera updated", camera);
+		}, 2000);
+
+		return false;
 	};
 
 	const present = () => {
-		update();
+		if (handleInputs()) {
+			inputEventsPending = updateCamera();
+		}
+
 		//svg.style.transform = `translateY(${lastKnownScrollPosition}pt)`;
 		const sinceStart = Date.now() - startTime;
 		for (let z = 0; z < starPlanes.length; ++z) {
@@ -449,7 +595,7 @@ const main = () => {
 
 	document.addEventListener("click", onClick);
 	document.addEventListener("keyup", onKeyUp);
-	document.addEventListener("scroll", onScroll);
+	//document.addEventListener("scroll", onScroll);
 	window.addEventListener("resize", init);
 
 	init();

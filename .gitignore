@@ -9,3 +9,4 @@ output/
 timelines/.*
 tsconfig.tsbuildinfo
 build.log
+build.sh

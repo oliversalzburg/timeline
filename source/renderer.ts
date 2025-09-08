@@ -249,6 +249,16 @@ export const plan = <
 	return segments;
 };
 
+export interface RendererMetaResult<
+	TTimelines extends TimelineReferenceRenderer | TimelineAncestryRenderer =
+		| TimelineReferenceRenderer
+		| TimelineAncestryRenderer,
+> {
+	timelineClasses: Map<TTimelines, string>;
+	timelineIds: Map<TTimelines, Array<string>>;
+	graph: Array<string>;
+}
+
 /**
  * The Renderer in the reference implementation generates a GraphViz graph containing all passed
  * timelines. How these timelines are merged, and rendered, is opinionated. It should serve
@@ -264,10 +274,7 @@ export const render = <
 	options: RendererOptions,
 	_identityGraph?: Graph<TTimelines> | undefined,
 	hops?: Map<string, number> | undefined,
-): {
-	graph: Array<string>;
-	ids: Set<string>;
-} => {
+): RendererMetaResult => {
 	const now = options?.now ?? Date.now();
 	const origin: TTimelines =
 		options?.origin !== undefined
@@ -435,6 +442,11 @@ export const render = <
 	const renderPlan = plan(timelines, options);
 	let d = dotGraph();
 	const graphSegments = new Array<string>();
+	const idMesh = new Map<TTimelines, Array<string>>();
+	for (const timeline of timelines) {
+		idMesh.set(timeline, new Array<string>());
+	}
+
 	for (const segment of renderPlan) {
 		const timestampsSegment = segment.timestamps;
 		const timelinesSegment = timelines.filter((_) =>
@@ -506,6 +518,12 @@ export const render = <
 						leader,
 					);
 					d.node(title, nodeProperties);
+					if (
+						!transferMarker.isTransferMarker &&
+						nodeProperties.id !== undefined
+					) {
+						idMesh.get(transferMarker.timeline)?.push(nodeProperties.id);
+					}
 				}
 			}
 
@@ -730,6 +748,14 @@ export const render = <
 
 	return {
 		graph: graphSegments,
-		ids: allNodeIds,
+		timelineClasses: new Map(
+			classes
+				.entries()
+				.map(([id, className]) => [
+					mustExist(timelines.find((_) => _.meta.id === id)),
+					className,
+				]),
+		),
+		timelineIds: idMesh,
 	};
 };

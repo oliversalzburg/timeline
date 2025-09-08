@@ -2,7 +2,7 @@
 
 _OUTPUT := output
 
-_SOURCES := $(wildcard contrib/* examples/* source/*.ts source/*/*.ts)
+#_SOURCES := $(wildcard contrib/* examples/* source/*.ts source/*/*.ts)
 _SOURCES_TS := $(wildcard source/*.ts source/*/*.ts)
 _LIBS_JS := $(patsubst %.ts,%.js,$(_SOURCES_TS))
 _LIBS_JS_MAP := $(patsubst %.ts,%.js.map,$(_SOURCES_TS))
@@ -39,25 +39,25 @@ lib/tsconfig.source.tsbuildinfo $(_LIBS_D_TS) $(_LIBS_D_TS_MAP) $(_LIBS_JS) $(_L
 _site lib $(_OUTPUT) :
 	mkdir -p $@
 
-$(_OUTPUT)/images : | $(_OUTPUT)
+$(_OUTPUT)/images : contrib/prepare-emoji.js | $(_OUTPUT)
 	@node --enable-source-maps contrib/prepare-emoji.js
 	@cp contrib/wikimedia/* $@/
 	@node --enable-source-maps examples/emojify.js --copy-only
 
 
-%-demo.universe : %.yml lib/tsconfig.source.tsbuildinfo $(_SOURCES_TS)
+%-demo.universe : %.yml lib/tsconfig.source.tsbuildinfo $(_SOURCES_TS) examples/space-time-generator.js
 	node --enable-source-maps examples/space-time-generator.js \
 		--anonymize \
 		--origin=$< \
 		--root=/home/oliver/timelines \
 		--target=$@
-%.universe : %.yml lib/tsconfig.source.tsbuildinfo $(_SOURCES_TS)
+%.universe : %.yml lib/tsconfig.source.tsbuildinfo $(_SOURCES_TS) examples/space-time-generator.js
 	node --enable-source-maps examples/space-time-generator.js \
 		--origin=$< \
 		--root=/home/oliver/timelines \
 		--target=$@
 
-%-analytics.md : %.universe %-pedigree-light.svg
+%-analytics.md : %.universe %-pedigree-light.svg examples/pedigree.js
 	node --enable-source-maps examples/pedigree.js \
 		$(PEDIGREE_FLAGS) \
 		--analytics \
@@ -65,7 +65,7 @@ $(_OUTPUT)/images : | $(_OUTPUT)
 		--origin=$< \
 		--target=$@ \
 		--theme=light
-%-demo.md : %-demo.universe %-demo-pedigree-light.svg
+%-demo.md : %-demo.universe %-demo-pedigree-light.svg examples/pedigree.js
 	node --enable-source-maps examples/pedigree.js \
 		$(PEDIGREE_FLAGS) \
 		--anonymize \
@@ -73,7 +73,7 @@ $(_OUTPUT)/images : | $(_OUTPUT)
 		--origin=$< \
 		--target=$@ \
 		--theme=light
-%.md : %.universe %-pedigree-light.svg
+%.md : %.universe %-pedigree-light.svg examples/pedigree.js
 	node --enable-source-maps examples/pedigree.js \
 		$(PEDIGREE_FLAGS) \
 		--format=report \
@@ -81,7 +81,7 @@ $(_OUTPUT)/images : | $(_OUTPUT)
 		--target=$@ \
 		--theme=light
 
-%-pedigree-light.gv : %.universe
+%-pedigree-light.gv : %.universe examples/pedigree.js
 	node --enable-source-maps examples/pedigree.js \
 		$(PEDIGREE_FLAGS) \
 		--format=simple \
@@ -90,14 +90,14 @@ $(_OUTPUT)/images : | $(_OUTPUT)
 		--theme=light
 # We intentionally don't pass --anonymize here, because we're already operating
 # on the anonymized -demo.universe.
-%-demo-pedigree-light.gv : %-demo.universe
+%-demo-pedigree-light.gv : %-demo.universe examples/pedigree.js
 	node --enable-source-maps examples/pedigree.js \
 		$(PEDIGREE_FLAGS) \
 		--format=simple \
 		--origin=$< \
 		--target=$@ \
 		--theme=light
-%-universe.info : %.universe
+%-universe.info %-universe.meta &: %.universe examples/universe.js
 	node --enable-source-maps examples/universe.js \
 		$(UNIVERSE_FLAGS) \
 		--origin=$< \
@@ -105,7 +105,7 @@ $(_OUTPUT)/images : | $(_OUTPUT)
 		--target=$(patsubst %-universe.info,%-universe.gvus,$@)
 # We intentionally don't pass --anonymize here, because we're already operating
 # on the anonymized -demo.universe.
-%-demo-universe.info : %-demo.universe
+%-demo-universe.info : %-demo.universe examples/universe.js
 	node --enable-source-maps examples/universe.js \
 		$(UNIVERSE_FLAGS) \
 		--origin=$< \
@@ -113,11 +113,11 @@ $(_OUTPUT)/images : | $(_OUTPUT)
 		--target=$(patsubst %-demo-universe.info,%-demo-universe.gvus,$@)
 %-universe.svg : %-universe.info $(_OUTPUT)/images
 	contrib/make.sh $(patsubst %-universe.svg,%,$@)
-%-universe.html : %-universe.info %-universe.svg $(wildcard examples/index.template.*)
+%-universe.html : %-universe.info %-universe.meta %-universe.svg $(wildcard examples/index.template.*)
 	node --enable-source-maps examples/build-site.js \
 		--format=zen \
 		--target=$@
-%-demo-universe.html : %-demo-universe.info %-demo-universe.svg $(wildcard examples/index.template.*)
+%-demo-universe.html : %-demo-universe.info %-demo-universe.meta %-demo-universe.svg $(wildcard examples/index.template.*)
 	node --enable-source-maps examples/build-site.js \
 		--format=zen \
 		--target=$@
