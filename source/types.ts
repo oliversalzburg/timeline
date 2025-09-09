@@ -112,3 +112,21 @@ export interface TimelineAncestryRenderer extends Timeline {
 	meta: MetaSectionAncestryRenderer;
 	records: Array<TimelineRecord>;
 }
+export type RenderResultMetadata = [
+	/**
+	 * Key-value pairs of timeline CSS class to all event IDs on that timeline.
+	 */
+	Array<[string, Array<string>]>,
+	/**
+	 * Key-value pairs of timeline CSS class to assigned pen color.
+	 */
+	Array<[string, string]>,
+	/**
+	 * Key-value pairs of timeline CSS class to identity name.
+	 */
+	Array<[string, string]>,
+	/**
+	 * Root identity name, ID of event relating to their birth.
+	 */
+	[string, string],
+];

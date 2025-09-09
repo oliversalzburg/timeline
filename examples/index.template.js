@@ -22,7 +22,7 @@ const Inputs = {
 	AXIS_RIGHT_Y: 3,
 };
 
-/** @type {[Array<[string, Array<string>]>, Array<[string, string]>, Array<[string, string]>, [string, string]]} */
+/** @type {import("source/types.js").RenderResultMetadata} */
 const DATA = [[["REPLACED", ["BY"]]], [], [], ["EXAMPLES", "BUILD-SITE.JS"]];
 
 const main = () => {
@@ -54,25 +54,23 @@ const main = () => {
 		throw new Error("Unable to find #status element.");
 	}
 
-	// Find all SVG elements that are GraphViz nodes.
-	const nodes = [...document.querySelectorAll(".node").values()];
+	// A set of all the unique IDs.
+	const idSet = DATA[0].reduce(
+		(set, [, ids]) => {
+			ids.forEach((id) => {
+				set.add(id);
+			});
+			return set;
+		},
+		/** @type {Set<string>} */ (new Set()),
+	);
 	// Get all their IDs into a single order. The IDs are designed to fall into
 	// chronological order when sorted based on their ASCII values.
-	const ids = nodes.map((_) => _.id).sort();
-	// A set of all the unique IDs. For slightly faster lookups, compared to
-	// an index search through the array.
-	const idSet = new Set(ids);
-	idSet.delete("");
+	const allEventIDs = [...idSet.values()].sort();
 	// A set of all unique timeline IDs. A unique ID has been generated for each
 	// timeline by the renderer. For the navigation, we don't require any
 	// additional metadata.
-	const timelineIds = new Set(
-		nodes
-			.flatMap((node) =>
-				[...node.classList.values()].filter((_) => _.startsWith("t")),
-			)
-			.sort(),
-	);
+	const timelineIds = new Set(new Map(DATA[0]).keys());
 	// A map of all timeline IDs and the IDs of nodes that belong to that timeline.
 	const timelineNodes = new Map(
 		[...timelineIds.values()].map((_) => [
@@ -110,25 +108,43 @@ const main = () => {
 			});
 			return all;
 		}, new Map());
-	const allEventIDs = lookupTimelineToEventIDs
-		.values()
-		.reduce((all, current) => {
-			all.push(...current);
-			return all;
-		}, []);
 
 	// The ID of the currently focused node.
 	let idFocused = idSet.has(window.location.hash.replace(/^#/, ""))
 		? window.location.hash.replace(/^#/, "")
 		: undefined;
-	// The global timeline index of the focused node.
-	let _idFocusedIndex = idFocused !== undefined ? ids.indexOf(idFocused) : -1;
 	/** @type {HTMLElement | null} */
 	let nodeFocused =
 		idFocused !== undefined ? document.querySelector(`#${idFocused}`) : null;
 	// The ID of the timeline the focused node is part of.
 	let timelineFocused =
 		idFocused !== undefined ? nodeTimelines.get(idFocused) : undefined;
+
+	const neighborhoods = new Map();
+	for (const id of allEventIDs) {
+		if (id.match(/-1$/)) {
+			const baseId = id.substring(0, id.length - 2);
+			const neighborhood = allEventIDs.filter((needle) =>
+				needle.startsWith(baseId),
+			);
+
+			neighborhood.sort((a, b) => {
+				const nodeA = /** @type {SVGElement} */ (
+					document.querySelector(`#${a}`)
+				);
+				const nodeB = /** @type {SVGElement} */ (
+					document.querySelector(`#${b}`)
+				);
+				return (
+					nodeA.getBoundingClientRect().left -
+					nodeB.getBoundingClientRect().left
+				);
+			});
+			neighborhoods.set(baseId, neighborhood);
+
+			console.warn(`Calculated neighbor order for '${baseId}'!`, neighborhood);
+		}
+	}
 
 	const rapidKeys = new Map();
 	const starPlanes = Array.from({
@@ -142,8 +158,6 @@ const main = () => {
 	const starColors = ["#FFFFFF", "#FFDDC1", "#FFC0CB", "#ADD8E6", "#B0E0E6"];
 	const startTime = Date.now();
 	let lastKnownScrollPosition = 0;
-	const _ticking = false;
-	const _gamepadControlHandle = 0;
 
 	/**
 	 * @param id {string} -
@@ -156,9 +170,8 @@ const main = () => {
 		}
 
 		const eventDate = eventDateMatch[0];
-		const onDate = allEventIDs
-			.filter((eventId) => eventId.startsWith(eventDate))
-			.sort();
+		const neighborhood = neighborhoods.get(eventDate);
+		const onDate = neighborhood;
 		const ownIndexOnDate = onDate.indexOf(id);
 
 		const timelineIds = lookupTimelinesFromEventId.get(id);
@@ -224,7 +237,6 @@ const main = () => {
 		document.title = `${new Date(id.substring(1).split("-").slice(0, -1).join("-")).toLocaleDateString()} - Open Time-Travel Engine`;
 
 		idFocused = id;
-		_idFocusedIndex = ids.indexOf(idFocused);
 		// If the newly focused node exists on the already focused timeline,
 		// don't attempt to switch focus. This could cause focus to switch
 		// to another timeline when entering a merge node.
