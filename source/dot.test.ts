@@ -22,12 +22,12 @@ describe("DOT", () => {
 	it("should render nodes", () => {
 		const d = dot();
 		d.raw("digraph {");
-		d.node("GraphViz is great", { color: "red" });
+		d.node("GraphViz is great", { color: "#FF0000FF" });
 		d.raw("}");
 
 		expect(d.toString()).to.equal(
 			"digraph {\n" +
-				'    1 [color="red"; label=<GraphViz is great>;];\n' +
+				'    1 [color="#FF0000FF"; label=<GraphViz is great>;];\n' +
 				"}",
 			"The GraphViz helper produced unexpected output.",
 		);
