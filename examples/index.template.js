@@ -141,8 +141,6 @@ const main = () => {
 				);
 			});
 			neighborhoods.set(baseId, neighborhood);
-
-			console.warn(`Calculated neighbor order for '${baseId}'!`, neighborhood);
 		}
 	}
 
@@ -170,7 +168,7 @@ const main = () => {
 		}
 
 		const eventDate = eventDateMatch[0];
-		const neighborhood = neighborhoods.get(eventDate);
+		const neighborhood = neighborhoods.get(eventDate) || [id];
 		const onDate = neighborhood;
 		const ownIndexOnDate = onDate.indexOf(id);
 
@@ -557,6 +555,12 @@ const main = () => {
 	const navigateHome = () => {
 		focusNode(DATA[3][1]);
 	};
+	const navigateToFocusNode = () => {
+		if (idFocused === undefined) {
+			return;
+		}
+		focusNode(idFocused);
+	};
 
 	/**
 	 * @param _event {Event} -
@@ -624,6 +628,8 @@ const main = () => {
 	};
 
 	let inputEventsPending = false;
+	/** @type {Array<number> | undefined} */
+	let previousAxes;
 	/** @type {Array<{pressed:boolean}> | undefined} */
 	let previousButtons;
 	const handleInputs = () => {
@@ -632,8 +638,22 @@ const main = () => {
 		if (Array.isArray(gamepads) && 0 < gamepads.length) {
 			const gp = gamepads[0];
 			if (gp !== null) {
-				//startTime += gp.axes[AXIS_LEFT_Y] * 1000;
-				//startTime += gp.axes[AXIS_RIGHT_Y] * 1000;
+				if (
+					previousAxes !== undefined &&
+					(gp.axes[Inputs.AXIS_LEFT_X] !== previousAxes?.[Inputs.AXIS_LEFT_X] ||
+						0.1 < Math.abs(gp.axes[Inputs.AXIS_LEFT_X]))
+				) {
+					focusTargetBox.x += gp.axes[Inputs.AXIS_LEFT_X] * 100;
+					requiresRefresh = true;
+				}
+				if (
+					previousAxes !== undefined &&
+					(gp.axes[Inputs.AXIS_LEFT_Y] !== previousAxes?.[Inputs.AXIS_LEFT_Y] ||
+						0.1 < Math.abs(gp.axes[Inputs.AXIS_LEFT_Y]))
+				) {
+					focusTargetBox.y += gp.axes[Inputs.AXIS_LEFT_Y] * 100;
+					requiresRefresh = true;
+				}
 
 				if (
 					gp.buttons[Inputs.BUTTON_DOWN].pressed === false &&
@@ -698,7 +718,15 @@ const main = () => {
 					navigateY();
 					requiresRefresh = true;
 				}
+				if (
+					gp.buttons[Inputs.BUTTON_BACK].pressed === false &&
+					previousButtons?.[Inputs.BUTTON_BACK].pressed === true
+				) {
+					navigateToFocusNode();
+					requiresRefresh = true;
+				}
 
+				previousAxes = [...gp.axes];
 				previousButtons = [...gp.buttons];
 			}
 		}
