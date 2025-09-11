@@ -628,6 +628,7 @@ const main = () => {
 	};
 
 	let inputEventsPending = false;
+	let requestInstantFocusUpdate = false;
 	/** @type {Array<number> | undefined} */
 	let previousAxes;
 	/** @type {Array<{pressed:boolean}> | undefined} */
@@ -645,6 +646,7 @@ const main = () => {
 				) {
 					focusTargetBox.x += gp.axes[Inputs.AXIS_LEFT_X] * 100;
 					requiresRefresh = true;
+					requestInstantFocusUpdate = true;
 				}
 				if (
 					previousAxes !== undefined &&
@@ -653,6 +655,7 @@ const main = () => {
 				) {
 					focusTargetBox.y += gp.axes[Inputs.AXIS_LEFT_Y] * 100;
 					requiresRefresh = true;
+					requestInstantFocusUpdate = true;
 				}
 
 				if (
@@ -772,7 +775,7 @@ const main = () => {
 			} else {
 				console.debug(`Setting --focus-color='${timelineColor}'`);
 			}
-			document.body.style.setProperty(
+			svg.style.setProperty(
 				"--focus-color",
 				(timelineColor === "#00000000" ? "rgb(255 255 255)" : timelineColor) ??
 					"rgb(255 255 255)",
@@ -850,12 +853,13 @@ const main = () => {
 
 		console.debug("Scrolling to new target...", focusTargetBox);
 		cameraIsIdle = true;
-		inputEventsPending = false;
 		window.scrollTo({
 			top: focusTargetBox.y,
-			behavior: "smooth",
+			behavior: requestInstantFocusUpdate ? "instant" : "smooth",
 			left: focusTargetBox.x,
 		});
+		inputEventsPending = false;
+		requestInstantFocusUpdate = false;
 
 		const newCamera = { ...focusTargetBox };
 		setTimeout(() => {
