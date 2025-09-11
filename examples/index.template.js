@@ -23,7 +23,7 @@ const Inputs = {
 };
 
 /** @type {import("source/types.js").RenderResultMetadata} */
-const DATA = [[["REPLACED", ["BY"]]], [], [], ["EXAMPLES", "BUILD-SITE.JS"]];
+const DATA = [[["", [""]]], [], [], ["", "", ""]];
 
 const main = () => {
 	const svg = document.querySelector("svg");
@@ -553,7 +553,7 @@ const main = () => {
 		focusNode(idFocused, neighbors.intersection[3]);
 	};
 	const navigateHome = () => {
-		focusNode(DATA[3][1]);
+		focusNode(DATA[3][1], DATA[3][2]);
 	};
 	const navigateToFocusNode = () => {
 		if (idFocused === undefined) {
@@ -644,7 +644,7 @@ const main = () => {
 					(gp.axes[Inputs.AXIS_LEFT_X] !== previousAxes?.[Inputs.AXIS_LEFT_X] ||
 						0.1 < Math.abs(gp.axes[Inputs.AXIS_LEFT_X]))
 				) {
-					focusTargetBox.x += gp.axes[Inputs.AXIS_LEFT_X] * 100;
+					focusTargetBox.x += gp.axes[Inputs.AXIS_LEFT_X] * 10;
 					requiresRefresh = true;
 					requestInstantFocusUpdate = true;
 				}
@@ -653,7 +653,7 @@ const main = () => {
 					(gp.axes[Inputs.AXIS_LEFT_Y] !== previousAxes?.[Inputs.AXIS_LEFT_Y] ||
 						0.1 < Math.abs(gp.axes[Inputs.AXIS_LEFT_Y]))
 				) {
-					focusTargetBox.y += gp.axes[Inputs.AXIS_LEFT_Y] * 100;
+					focusTargetBox.y += gp.axes[Inputs.AXIS_LEFT_Y] * 10;
 					requiresRefresh = true;
 					requestInstantFocusUpdate = true;
 				}
@@ -862,11 +862,14 @@ const main = () => {
 		requestInstantFocusUpdate = false;
 
 		const newCamera = { ...focusTargetBox };
-		setTimeout(() => {
-			cameraIsIdle = false;
-			camera = newCamera;
-			console.debug("Camera updated", camera);
-		}, 1000);
+		setTimeout(
+			() => {
+				cameraIsIdle = false;
+				camera = newCamera;
+				console.debug("Camera updated", camera);
+			},
+			requestInstantFocusUpdate ? 0 : 1000,
+		);
 
 		return false;
 	};

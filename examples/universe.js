@@ -259,6 +259,7 @@ writeFileSync(
 		[
 			graph.resolveIdentity()?.name,
 			`Z${originBirthDate.getFullYear().toFixed().padStart(4, "0")}-${(originBirthDate.getMonth() + 1).toFixed().padStart(2, "0")}-${originBirthDate.getDate().toFixed().padStart(2, "0")}-0`,
+			dotGraph.timelineClasses.get(mustExist(graph.timelineOf())),
 		],
 	])}\n`,
 );

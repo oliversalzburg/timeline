@@ -126,7 +126,7 @@ export type RenderResultMetadata = [
 	 */
 	Array<[string, string]>,
 	/**
-	 * Root identity name, ID of event relating to their birth.
+	 * Root identity name, ID of event relating to their birth, CSS class of their timeline.
 	 */
-	[string, string],
+	[string, string, string],
 ];
