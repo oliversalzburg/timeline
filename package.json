@@ -20,7 +20,7 @@
 		"@biomejs/biome": "2.2.4",
 		"@oliversalzburg/js-utils": "0.5.0",
 		"@types/node": "22.18.1",
-		"@types/web": "0.0.266",
+		"@types/web": "0.0.267",
 		"@types/chai": "5.2.2",
 		"@types/mocha": "10.0.10",
 		"c8": "10.1.3",
