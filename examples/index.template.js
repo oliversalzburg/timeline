@@ -23,12 +23,22 @@ const Inputs = {
 };
 
 /** @type {import("source/types.js").RenderResultMetadata} */
-const DATA = [[["", [""]]], [], [], ["", "", ""]];
+const DATA = [[["", [""]]], [], [], [], ["", "", ""]];
 
 const main = () => {
 	const svg = document.querySelector("svg");
 	if (svg === null) {
 		throw new Error("Unable to find <svg> element.");
+	}
+
+	const dialog = document.querySelector("dialog");
+	if (dialog === null) {
+		throw new Error("Unable to find <dialog> element.");
+	}
+	/** @type {HTMLImageElement | null} */
+	const dialogImage = document.querySelector("dialog img");
+	if (dialogImage === null) {
+		throw new Error("Unable to find <dialog> element.");
 	}
 
 	/** @type {HTMLDivElement | null} */
@@ -95,6 +105,8 @@ const main = () => {
 	const lookupTimelineToPenColor = new Map(DATA[1]);
 	/** @type {Map<string, string>} */
 	const lookupTimelineToIdentity = new Map(DATA[2]);
+	/** @type {Map<string, string>} */
+	const lookupTimelineToIdentityName = new Map(DATA[3]);
 	/** @type {Map<string, Array<string>>} */
 	const lookupTimelinesFromEventId = lookupTimelineToEventIDs
 		.entries()
@@ -151,7 +163,7 @@ const main = () => {
 		document.createElement("canvas"),
 		document.createElement("canvas"),
 	]);
-	const speedTime = 0.001;
+	const speedTime = 0.0001;
 	const speedScroll = 0.001;
 	const starColors = ["#FFFFFF", "#FFDDC1", "#FFC0CB", "#ADD8E6", "#B0E0E6"];
 	const startTime = Date.now();
@@ -406,6 +418,7 @@ const main = () => {
 
 	let focusTargetBox = { x: 0, y: 0 };
 	let camera = { x: 0, y: 0 };
+	let mediaItemRotation = { x: 0, y: 0 };
 	/**
 	 * @param id {string | undefined}
 	 */
@@ -553,7 +566,7 @@ const main = () => {
 		focusNode(idFocused, neighbors.intersection[3]);
 	};
 	const navigateHome = () => {
-		focusNode(DATA[3][1], DATA[3][2]);
+		focusNode(DATA[4][1], DATA[4][2]);
 	};
 	const navigateToFocusNode = () => {
 		if (idFocused === undefined) {
@@ -633,6 +646,7 @@ const main = () => {
 	let previousAxes;
 	/** @type {Array<{pressed:boolean}> | undefined} */
 	let previousButtons;
+	const INPUT_THRESHOLD = 0.5;
 	const handleInputs = () => {
 		let requiresRefresh = inputEventsPending;
 		const gamepads = navigator.getGamepads();
@@ -642,7 +656,7 @@ const main = () => {
 				if (
 					previousAxes !== undefined &&
 					(gp.axes[Inputs.AXIS_LEFT_X] !== previousAxes?.[Inputs.AXIS_LEFT_X] ||
-						0.1 < Math.abs(gp.axes[Inputs.AXIS_LEFT_X]))
+						INPUT_THRESHOLD < Math.abs(gp.axes[Inputs.AXIS_LEFT_X]))
 				) {
 					focusTargetBox.x += gp.axes[Inputs.AXIS_LEFT_X] * 10;
 					requiresRefresh = true;
@@ -651,11 +665,28 @@ const main = () => {
 				if (
 					previousAxes !== undefined &&
 					(gp.axes[Inputs.AXIS_LEFT_Y] !== previousAxes?.[Inputs.AXIS_LEFT_Y] ||
-						0.1 < Math.abs(gp.axes[Inputs.AXIS_LEFT_Y]))
+						INPUT_THRESHOLD < Math.abs(gp.axes[Inputs.AXIS_LEFT_Y]))
 				) {
 					focusTargetBox.y += gp.axes[Inputs.AXIS_LEFT_Y] * 10;
 					requiresRefresh = true;
 					requestInstantFocusUpdate = true;
+				}
+
+				if (
+					previousAxes !== undefined &&
+					(gp.axes[Inputs.AXIS_RIGHT_X] !==
+						previousAxes?.[Inputs.AXIS_RIGHT_X] ||
+						INPUT_THRESHOLD < Math.abs(gp.axes[Inputs.AXIS_RIGHT_X]))
+				) {
+					mediaItemRotation.x -= gp.axes[Inputs.AXIS_RIGHT_X];
+				}
+				if (
+					previousAxes !== undefined &&
+					(gp.axes[Inputs.AXIS_RIGHT_Y] !==
+						previousAxes?.[Inputs.AXIS_RIGHT_Y] ||
+						INPUT_THRESHOLD < Math.abs(gp.axes[Inputs.AXIS_RIGHT_Y]))
+				) {
+					mediaItemRotation.y -= gp.axes[Inputs.AXIS_RIGHT_Y];
 				}
 
 				if (
@@ -728,12 +759,38 @@ const main = () => {
 					navigateToFocusNode();
 					requiresRefresh = true;
 				}
+				if (
+					gp.buttons[Inputs.BUTTON_LB].pressed === false &&
+					previousButtons?.[Inputs.BUTTON_LB].pressed === true
+				) {
+					closeMediaItem();
+				}
+				if (
+					gp.buttons[Inputs.BUTTON_RB].pressed === false &&
+					previousButtons?.[Inputs.BUTTON_RB].pressed === true
+				) {
+					openMediaItem();
+				}
 
 				previousAxes = [...gp.axes];
 				previousButtons = [...gp.buttons];
 			}
 		}
 		return requiresRefresh;
+	};
+
+	/** @type {string|undefined} */
+	let timelineMediaId;
+	const openMediaItem = () => {
+		if (timelineMediaId !== undefined) {
+			dialogImage.src = `file:///home/oliver/timelines/${timelineMediaId}`;
+			dialog.show();
+		}
+	};
+	const closeMediaItem = () => {
+		dialog.close();
+		mediaItemRotation = { x: 0, y: 0 };
+		dialog.style.transform = `rotateX(0) rotateY(0)`;
 	};
 
 	let cameraIsIdle = false;
@@ -781,7 +838,13 @@ const main = () => {
 					"rgb(255 255 255)",
 			);
 
-			const timelineIdentity = lookupTimelineToIdentity.get(timelineFocused);
+			const timelineIdentityId = lookupTimelineToIdentity.get(timelineFocused);
+			timelineMediaId = timelineIdentityId?.startsWith("media/")
+				? timelineIdentityId
+				: undefined;
+
+			const timelineIdentity =
+				lookupTimelineToIdentityName.get(timelineFocused);
 			if (timelineIdentity === undefined) {
 				console.error(
 					`Unable to look up identity for timeline ID '${timelineFocused}'. Using fallback status.`,
@@ -797,25 +860,25 @@ const main = () => {
 					statusOption.textContent =
 						navOptions.A === null || newNeighbors.intersection.length < 2
 							? ""
-							: (lookupTimelineToIdentity.get(navOptions.A) ?? "");
+							: (lookupTimelineToIdentityName.get(navOptions.A) ?? "");
 				}
 				if (statusOption.classList.contains("b")) {
 					statusOption.textContent =
 						navOptions.B === null || newNeighbors.intersection.length < 2
 							? ""
-							: (lookupTimelineToIdentity.get(navOptions.B) ?? "");
+							: (lookupTimelineToIdentityName.get(navOptions.B) ?? "");
 				}
 				if (statusOption.classList.contains("x")) {
 					statusOption.textContent =
 						navOptions.X === null || newNeighbors.intersection.length < 2
 							? ""
-							: (lookupTimelineToIdentity.get(navOptions.X) ?? "");
+							: (lookupTimelineToIdentityName.get(navOptions.X) ?? "");
 				}
 				if (statusOption.classList.contains("y")) {
 					statusOption.textContent =
 						navOptions.Y === null || newNeighbors.intersection.length < 2
 							? ""
-							: (lookupTimelineToIdentity.get(navOptions.Y) ?? "");
+							: (lookupTimelineToIdentityName.get(navOptions.Y) ?? "");
 				}
 			}
 			for (const statusButton of statusButtons) {
@@ -891,6 +954,10 @@ const main = () => {
 			starPlanes[z][1].style.transform =
 				`translateY(${offset + window.innerHeight}px)`;
 		}
+
+		// Browser X-Y is reversed.
+		dialog.style.transform = `perspective(50vmin) rotateY(${mediaItemRotation.x}deg) rotateX(${mediaItemRotation.y}deg)`;
+
 		window.requestAnimationFrame(present);
 	};
 

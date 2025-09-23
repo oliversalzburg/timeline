@@ -12,6 +12,7 @@ import { render } from "../lib/renderer.js";
 import { Styling } from "../lib/style.js";
 
 /** @import {RendererOptions} from "../lib/renderer.js" */
+/** @import {RenderResultMetadata} from "../lib/types.js" */
 
 const NOW = Date.now();
 
@@ -109,7 +110,11 @@ const finalTimelines = [
 
 const identityTimelines =
 	/** @type {Array<import("../source/types.js").TimelineAncestryRenderer>} */ (
-		finalTimelines.filter((timeline) => "identity" in timeline.meta)
+		finalTimelines.filter(
+			(timeline) =>
+				"identity" in timeline.meta &&
+				timeline.meta.identity.born !== undefined,
+		)
 	);
 const originIdentityId = mustExist(
 	// @ts-expect-error
@@ -229,38 +234,50 @@ writeFileSync(
 );
 writeFileSync(
 	targetPath.replace(/\.gv(?:us)?$/, ".meta"),
-	`${JSON.stringify([
-		[
-			...dotGraph.timelineIds
-				.entries()
-				.map(([timeline, ids]) => [
-					dotGraph.timelineClasses.get(timeline),
-					ids,
-				]),
-		],
-		[
-			...dotGraph.timelineIds
-				.entries()
-				.map(([timeline]) => [
-					dotGraph.timelineClasses.get(timeline),
-					styleSheet.get(timeline.meta.id)?.pencolor,
-				]),
-		],
-		[
-			...dotGraph.timelineIds
-				.entries()
-				.map(([timeline]) => [
-					dotGraph.timelineClasses.get(timeline),
-					"identity" in timeline.meta
-						? (timeline.meta.identity.name ?? timeline.meta.identity.id)
-						: timeline.meta.id,
-				]),
-		],
-		[
-			graph.resolveIdentity()?.name,
-			`Z${originBirthDate.getFullYear().toFixed().padStart(4, "0")}-${(originBirthDate.getMonth() + 1).toFixed().padStart(2, "0")}-${originBirthDate.getDate().toFixed().padStart(2, "0")}-0`,
-			dotGraph.timelineClasses.get(mustExist(graph.timelineOf())),
-		],
-	])}\n`,
+	`${JSON.stringify(
+		/** @type {RenderResultMetadata} */ ([
+			[
+				...dotGraph.timelineIds
+					.entries()
+					.map(([timeline, ids]) => [
+						dotGraph.timelineClasses.get(timeline),
+						ids,
+					]),
+			],
+			[
+				...dotGraph.timelineIds
+					.entries()
+					.map(([timeline]) => [
+						dotGraph.timelineClasses.get(timeline),
+						styleSheet.get(timeline.meta.id)?.pencolor,
+					]),
+			],
+			[
+				...dotGraph.timelineIds
+					.entries()
+					.map(([timeline]) => [
+						dotGraph.timelineClasses.get(timeline),
+						"identity" in timeline.meta
+							? timeline.meta.identity.id
+							: timeline.meta.id,
+					]),
+			],
+			[
+				...dotGraph.timelineIds
+					.entries()
+					.map(([timeline]) => [
+						dotGraph.timelineClasses.get(timeline),
+						"identity" in timeline.meta
+							? (timeline.meta.identity.name ?? timeline.meta.identity.id)
+							: timeline.meta.id,
+					]),
+			],
+			[
+				graph.resolveIdentity()?.name,
+				`Z${originBirthDate.getFullYear().toFixed().padStart(4, "0")}-${(originBirthDate.getMonth() + 1).toFixed().padStart(2, "0")}-${originBirthDate.getDate().toFixed().padStart(2, "0")}-0`,
+				dotGraph.timelineClasses.get(mustExist(graph.timelineOf())),
+			],
+		]),
+	)}\n`,
 );
 process.stdout.write("GraphViz graph for universe written successfully.\n");

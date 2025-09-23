@@ -292,9 +292,6 @@ export const render = <
 			? (uncertainEventToDate(origin.meta.identity.born)?.valueOf() ??
 				origin.records[0][0])
 			: now;
-	const _originString = options?.dateRenderer
-		? options.dateRenderer(originTimestamp)
-		: new Date(originTimestamp).toDateString();
 
 	const isTimestampInRange = (timestamp: number): boolean =>
 		(options.skipBefore ?? Number.NEGATIVE_INFINITY) < timestamp &&

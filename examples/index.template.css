@@ -128,3 +128,33 @@ canvas {
 		}
 	}
 }
+
+dialog {
+	flex-direction: column;
+
+	position: fixed;
+	z-index: 100;
+	top: 0;
+	left: 0;
+	margin: 3vmin;
+	padding: 0;
+	max-width: 90vw;
+	max-height: 90vh;
+	border: none;
+	outline: none;
+
+	transform-style: preserve-3d;
+	transform-origin: center;
+
+	display: none;
+	&:open {
+		display: flex;
+	}
+
+	img {
+		flex: 1;
+	}
+}
+::backdrop {
+	display: none;
+}

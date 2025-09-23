@@ -123,71 +123,28 @@ const fill = (timeline) => {
 		return timeline;
 	}
 
-	const name = timeline.meta.identity.name ?? timeline.meta.identity.id;
-
-	// Require genealogy links for private identities.
-	if (timeline.meta.private) {
-		if ("urls" in timeline.meta.identity === false) {
-			process.stderr.write(
-				`Warning: Missing 'urls' section in identity in '${timeline.meta.id}'.\n`,
-			);
-		} else {
-			if (!timeline.meta.identity.urls?.some((_) => _.match(/ancestry.com/))) {
-				process.stderr.write(
-					`Notice: Missing 'ancestry.com' URL in identity in '${timeline.meta.id}'.\n`,
-				);
-			}
-			if (
-				!timeline.meta.identity.urls?.some((_) => _.match(/familysearch.org/))
-			) {
-				process.stderr.write(
-					`Notice: Missing 'familysearch.org' URL in identity in '${timeline.meta.id}'.\n`,
-				);
-			}
-		}
-	}
-
 	let birth;
 	if (timeline.meta.identity.born === null) {
 		if (timeline.records.length === 0) {
-			process.stderr.write(
-				`Warning: No birth record in identity with empty timeline '${timeline.meta.id}'.\n`,
-			);
 			return timeline;
 		}
 
-		process.stderr.write(
-			`Warning: No birth record in timeline '${timeline.meta.id}'. Using date of first entry.\n`,
-		);
 		birth = new Date(timeline.records[0][0]);
 	} else {
 		birth = uncertainEventToDate(timeline.meta.identity.born);
 	}
 
 	if (isNil(birth)) {
-		process.stderr.write(
-			`Notice: Unspecific birth in identity in '${timeline.meta.id}'.\n`,
-		);
 		return timeline;
 	}
 
+	const name = timeline.meta.identity.name ?? timeline.meta.identity.id;
+
 	let death;
 	if (timeline.meta.identity.died === null) {
-		process.stderr.write(
-			`Warning: No death record in dead identity '${timeline.meta.id}'. Assuming aged 85.\n`,
-		);
 		death = new Date(birth.valueOf() + MILLISECONDS.ONE_YEAR * 85);
 	} else {
 		death = uncertainEventToDate(timeline.meta.identity.died);
-	}
-
-	const deathRecord = timeline.records.find(([, entry]) =>
-		entry.title.startsWith("☠️"),
-	);
-	if (deathRecord !== undefined) {
-		process.stderr.write(
-			`Warning: Apparent death timeline entry '${deathRecord[1].title.replaceAll("\n", "\\n")}' in dead identity '${timeline.meta.id}' should probably be a death record.\n`,
-		);
 	}
 
 	const birthYear = birth.getFullYear();
@@ -203,14 +160,6 @@ const fill = (timeline) => {
 		timeline.meta.identity.relations?.filter(
 			(relation) => "marriedTo" in relation,
 		) ?? [];
-	for (const marriage of marriages) {
-		const marriageDate = uncertainEventToDate(marriage);
-		if (marriageDate === undefined) {
-			process.stderr.write(
-				`Warning: Marriage with '${marriage.marriedTo}' in identity '${timeline.meta.id}' is missing a date and will cause issues with name changes of the identity.\n`,
-			);
-		}
-	}
 
 	/**
 	 * @param date {Date} -

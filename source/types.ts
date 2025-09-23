@@ -122,6 +122,10 @@ export type RenderResultMetadata = [
 	 */
 	Array<[string, string]>,
 	/**
+	 * Key-value pairs of timeline CSS class to identity ID.
+	 */
+	Array<[string, string]>,
+	/**
 	 * Key-value pairs of timeline CSS class to identity name.
 	 */
 	Array<[string, string]>,
