@@ -599,11 +599,13 @@ const main = () => {
 		return `#${color}`;
 	};
 
+	let windowHeight = 1;
 	const init = () => {
+		windowHeight = window.innerHeight;
 		for (const [planeTop, planeBottom] of starPlanes) {
 			for (const plane of [planeTop, planeBottom]) {
 				plane.width = document.body.scrollWidth;
-				plane.height = window.innerHeight;
+				plane.height = windowHeight;
 			}
 		}
 
@@ -779,7 +781,7 @@ const main = () => {
 		return requiresRefresh;
 	};
 
-	/** @type {string|undefined} */
+	/** @type {string | undefined} */
 	let timelineMediaId;
 	const openMediaItem = () => {
 		if (timelineMediaId !== undefined) {
@@ -948,11 +950,11 @@ const main = () => {
 			const offset =
 				(((z + 1) *
 					(lastKnownScrollPosition * speedScroll + sinceStart * speedTime)) %
-					window.innerHeight) *
+					windowHeight) *
 				-1;
 			starPlanes[z][0].style.transform = `translateY(${offset}px)`;
 			starPlanes[z][1].style.transform =
-				`translateY(${offset + window.innerHeight}px)`;
+				`translateY(${offset + windowHeight}px)`;
 		}
 
 		// Browser X-Y is reversed.

@@ -26,7 +26,7 @@
 		"types": ["@types/node", "@types/web"],
 		"useDefineForClassFields": true
 	},
-	"include": ["examples"],
+	"include": ["examples/*.js"],
 	"references": [
 		{
 			"path": "tsconfig.source.json"

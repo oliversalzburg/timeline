@@ -59,7 +59,11 @@ const images = usedImages.values().reduce(
 			.replace('xmlns="http://www.w3.org/2000/svg"', "")
 			.replace('xmlns:svg="http://www.w3.org/2000/svg"', "")
 			.replace(/ viewBox="[^"]*"/, "")
-			.replaceAll(/<g id="[^"]*"/g, "<g")
+			.replace(
+				/<svg( id="[^"]*")?/,
+				`<svg id="USE${filename.replace(/\.svg$/, "").replaceAll("-", "")}"`,
+			)
+			//.replaceAll(/<g id="[^"]*"/g, "<g")
 			.replaceAll(/id="path\d+"/g, "");
 		acc.push(svg);
 		return acc;
