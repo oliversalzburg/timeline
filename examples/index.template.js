@@ -304,7 +304,7 @@ const main = () => {
 			rapidKeys.set(event.code, 0);
 		}
 
-		const keyIsRapid = Date.now() - rapidKeys.get(event.code) < 1000;
+		const _keyIsRapid = Date.now() - rapidKeys.get(event.code) < 1000;
 		rapidKeys.set(event.code, Date.now());
 
 		switch (event.code) {
@@ -769,7 +769,7 @@ const main = () => {
 						: null,
 			};
 
-			const timelineColor = lookupTimelineToMetadata.get(timelineFocused)?.[0];
+			const _timelineColor = lookupTimelineToMetadata.get(timelineFocused)?.[0];
 
 			const timelineIdentityId =
 				lookupTimelineToMetadata.get(timelineFocused)?.[2];
