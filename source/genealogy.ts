@@ -136,6 +136,39 @@ export const uncertainEventToLocationString = (
 	return undefined;
 };
 
+export const isIdentityPerson = (identity?: Identity | Timeline): boolean => {
+	if (isNil(identity)) {
+		return false;
+	}
+	if ("meta" in identity && "identity" in identity.meta) {
+		const realIdentity = identity.meta.identity as Identity;
+		return isIdentityPerson(realIdentity);
+	}
+	return "born" in identity && identity.born !== undefined;
+};
+export const isIdentityLocation = (identity?: Identity | Timeline): boolean => {
+	if (isNil(identity)) {
+		return false;
+	}
+	if ("meta" in identity && "identity" in identity.meta) {
+		const realIdentity = identity.meta.identity as Identity;
+		return isIdentityLocation(realIdentity);
+	}
+
+	return "established" in identity && identity.established !== undefined;
+};
+export const isIdentityMedia = (identity?: Identity | Timeline): boolean => {
+	if (isNil(identity)) {
+		return false;
+	}
+	if ("meta" in identity && "identity" in identity.meta) {
+		const realIdentity = identity.meta.identity as Identity;
+		return isIdentityMedia(realIdentity);
+	}
+
+	return "id" in identity && identity.id.startsWith("media/");
+};
+
 export class Graph<
 	TTimeline extends Timeline & { meta: { identity?: Identity } },
 > {
@@ -413,7 +446,7 @@ export class Graph<
 
 			if (
 				timeline.meta.private === false ||
-				"born" in timeline.meta.identity === false
+				!isIdentityPerson(timeline.meta.identity)
 			) {
 				result.push(timeline);
 				continue;

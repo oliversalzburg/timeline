@@ -36,7 +36,7 @@ svg {
 
 	user-select: none;
 	pointer-events: stroke;
-
+	/*
 	.node {
 		scroll-margin: calc(50vh - 50%) calc(50vw - 50%);
 		opacity: 0.9;
@@ -50,6 +50,7 @@ svg {
 	.edge {
 		opacity: 0.8;
 	}
+	*/
 }
 
 canvas {
@@ -151,10 +152,12 @@ dialog {
 		display: flex;
 	}
 
+	&::backdrop {
+		display: none;
+	}
+
 	img {
 		flex: 1;
 	}
 }
-::backdrop {
-	display: none;
-}
+

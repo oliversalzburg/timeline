@@ -274,7 +274,7 @@ export const render = <
 	options: RendererOptions,
 	_identityGraph?: Graph<TTimelines> | undefined,
 	hops?: Map<string, number> | undefined,
-): RendererMetaResult => {
+): RendererMetaResult<TTimelines> => {
 	const now = options?.now ?? Date.now();
 	const origin: TTimelines =
 		options?.origin !== undefined

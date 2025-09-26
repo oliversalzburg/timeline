@@ -23,7 +23,7 @@ const Inputs = {
 };
 
 /** @type {import("source/types.js").RenderResultMetadata} */
-const DATA = [[["", [""]]], [], [], [], ["", "", ""]];
+const DATA = [[], [], ["", "", ""]];
 
 const main = () => {
 	const svg = document.querySelector("svg");
@@ -101,12 +101,8 @@ const main = () => {
 	);
 	/** @type {Map<string, Array<string>>} */
 	const lookupTimelineToEventIDs = new Map(DATA[0]);
-	/** @type {Map<string, string>} */
-	const lookupTimelineToPenColor = new Map(DATA[1]);
-	/** @type {Map<string, string>} */
-	const lookupTimelineToIdentity = new Map(DATA[2]);
-	/** @type {Map<string, string>} */
-	const lookupTimelineToIdentityName = new Map(DATA[3]);
+	/** @type {Map<string, import("source/types.js").TimelineMetadata>} */
+	const lookupTimelineToMetadata = new Map(DATA[1]);
 	/** @type {Map<string, Array<string>>} */
 	const lookupTimelinesFromEventId = lookupTimelineToEventIDs
 		.entries()
@@ -122,15 +118,13 @@ const main = () => {
 		}, new Map());
 
 	// The ID of the currently focused node.
-	let idFocused = idSet.has(window.location.hash.replace(/^#/, ""))
-		? window.location.hash.replace(/^#/, "")
-		: undefined;
+	/** @type {string | undefined} */
+	let idFocused;
 	/** @type {HTMLElement | null} */
-	let nodeFocused =
-		idFocused !== undefined ? document.querySelector(`#${idFocused}`) : null;
+	let nodeFocused = null;
 	// The ID of the timeline the focused node is part of.
-	let timelineFocused =
-		idFocused !== undefined ? nodeTimelines.get(idFocused) : undefined;
+	/** @type {string | undefined} */
+	let timelineFocused;
 
 	const neighborhoods = new Map();
 	for (const id of allEventIDs) {
@@ -214,7 +208,12 @@ const main = () => {
 				eventIndexOnTimeline === eventIds.length - 1
 					? null
 					: eventIds[eventIndexOnTimeline + 1],
-			intersection: timelineIds,
+			intersection: timelineIds.filter(
+				(id) => lookupTimelineToMetadata.get(id)?.[1] === 1,
+			),
+			mediaItems: timelineIds.filter(
+				(id) => lookupTimelineToMetadata.get(id)?.[1] === 3,
+			),
 		};
 	};
 
@@ -239,13 +238,6 @@ const main = () => {
 		}
 
 		nodeFocused = node;
-		window.history.pushState(
-			{ id },
-			"",
-			window.location.toString().replace(/(#.*)|$/, anchor),
-		);
-		document.title = `${new Date(id.substring(1).split("-").slice(0, -1).join("-")).toLocaleDateString()} - Open Time-Travel Engine`;
-
 		idFocused = id;
 		// If the newly focused node exists on the already focused timeline,
 		// don't attempt to switch focus. This could cause focus to switch
@@ -290,6 +282,20 @@ const main = () => {
 	/**
 	 * @param {KeyboardEvent} event -
 	 */
+	const onKeyDown = (event) => {
+		console.debug(`keydown: key:${event.key} code:${event.code}`);
+		switch (event.code) {
+			case "ArrowDown":
+			case "ArrowLeft":
+			case "ArrowRight":
+			case "ArrowUp":
+				event.preventDefault();
+		}
+	};
+
+	/**
+	 * @param {KeyboardEvent} event -
+	 */
 	const onKeyUp = (event) => {
 		console.debug(`keyup: key:${event.key} code:${event.code}`);
 		inputEventsPending = true;
@@ -301,119 +307,57 @@ const main = () => {
 		const keyIsRapid = Date.now() - rapidKeys.get(event.code) < 1000;
 		rapidKeys.set(event.code, Date.now());
 
-		let updateNavigation = true;
-
-		/**
-		 * @param {number} slice -
-		 */
-		const scrollTo = (slice) => {
-			const step = document.body.scrollHeight / 10;
-			const top = step * slice;
-			console.info(
-				`Scrolling ${keyIsRapid ? "rapidly" : "smoothly"} to ${top}.`,
-			);
-			window.scrollTo({ top, behavior: keyIsRapid ? "instant" : "smooth" });
-			updateNavigation = false;
-		};
-
 		switch (event.code) {
-			case "Digit0":
-				scrollTo(0);
-				break;
-			case "Digit1":
-				scrollTo(1);
-				break;
-			case "Digit2":
-				scrollTo(2);
-				break;
-			case "Digit3":
-				scrollTo(3);
-				break;
-			case "Digit4":
-				scrollTo(4);
-				break;
-			case "Digit5":
-				scrollTo(5);
-				break;
-			case "Digit6":
-				scrollTo(6);
-				break;
-			case "Digit7":
-				scrollTo(7);
-				break;
-			case "Digit8":
-				scrollTo(8);
-				break;
-			case "Digit9":
-				scrollTo(9);
-				break;
-
-			// Jump to global end.
-			case "Numpad1": {
+			case "KeyA": {
+				event.preventDefault();
 				navigateA();
 				return;
 			}
+			case "KeyB": {
+				event.preventDefault();
+				navigateB();
+				return;
+			}
+			case "KeyX": {
+				event.preventDefault();
+				navigateX();
+				return;
+			}
+			case "KeyZ": {
+				event.preventDefault();
+				navigateY();
+				return;
+			}
 
-			// Step forwards in active timeline.
-			case "KeyS":
-			case "Numpad2": {
+			case "ArrowDown":
+			case "Numpad2":
+				event.preventDefault();
 				navigateForward();
 				return;
-			}
 
-			// Multiple steps forwards
-			case "Numpad3":
-				navigateB();
-				break;
-
-			// Single step backwards.
-			case "KeyA":
-			case "Numpad4": {
+			case "ArrowLeft":
+			case "Numpad4":
+				event.preventDefault();
 				navigateLeft();
 				return;
-			}
 
-			// Re-focus already focused node. Useful when having scrolled away from focus.
 			case "Numpad5":
+				event.preventDefault();
 				navigateHome();
 				return;
 
-			// Single step forwards.
-			case "KeyD":
-			case "Numpad6": {
+			case "ArrowRight":
+			case "Numpad6":
+				event.preventDefault();
 				navigateRight();
 				return;
-			}
 
-			// Home - Jump to global start.
-			case "Numpad7": {
-				navigateX();
-				break;
-			}
-
-			// Step backwards in active timeline.
-			case "KeyW":
-			case "Numpad8": {
+			case "ArrowUp":
+			case "Numpad8":
+				event.preventDefault();
 				navigateBackward();
 				return;
-			}
-
-			// Multiple steps backwards
-			case "Numpad9":
-				navigateY();
-				break;
-
-			default:
-				updateNavigation = false;
-				break;
 		}
-
-		if (!updateNavigation || !idFocused) {
-			return;
-		}
-
-		event.preventDefault();
-		focusNode(idFocused);
 	};
 
 	let focusTargetBox = { x: 0, y: 0 };
@@ -566,7 +510,7 @@ const main = () => {
 		focusNode(idFocused, neighbors.intersection[3]);
 	};
 	const navigateHome = () => {
-		focusNode(DATA[4][1], DATA[4][2]);
+		focusNode(DATA[2][1], DATA[2][2]);
 	};
 	const navigateToFocusNode = () => {
 		if (idFocused === undefined) {
@@ -802,8 +746,7 @@ const main = () => {
 			return true;
 		}
 
-		// @ts-expect-error focusVisible is legit. trust me, bro
-		nodeFocused?.focus({ focusVisible: true, preventScroll: true });
+		nodeFocused?.focus({ preventScroll: true });
 
 		if (idFocused !== undefined && timelineFocused !== undefined) {
 			const newNeighbors = findNodeNeighbors(idFocused, timelineFocused);
@@ -826,61 +769,51 @@ const main = () => {
 						: null,
 			};
 
-			const timelineColor = lookupTimelineToPenColor.get(timelineFocused);
-			if (timelineColor === undefined) {
-				console.error(
-					`Unable to look up pen color for timeline ID '${timelineFocused}'. Using fallback focus color.`,
-				);
-			} else {
-				console.debug(`Setting --focus-color='${timelineColor}'`);
-			}
-			svg.style.setProperty(
-				"--focus-color",
-				(timelineColor === "#00000000" ? "rgb(255 255 255)" : timelineColor) ??
-					"rgb(255 255 255)",
-			);
+			const timelineColor = lookupTimelineToMetadata.get(timelineFocused)?.[0];
 
-			const timelineIdentityId = lookupTimelineToIdentity.get(timelineFocused);
+			const timelineIdentityId =
+				lookupTimelineToMetadata.get(timelineFocused)?.[2];
 			timelineMediaId = timelineIdentityId?.startsWith("media/")
 				? timelineIdentityId
 				: undefined;
 
 			const timelineIdentity =
-				lookupTimelineToIdentityName.get(timelineFocused);
+				lookupTimelineToMetadata.get(timelineFocused)?.[3];
 			if (timelineIdentity === undefined) {
 				console.error(
 					`Unable to look up identity for timeline ID '${timelineFocused}'. Using fallback status.`,
 				);
-			} else {
-				console.debug(`Setting #status.text='${timelineIdentity}'`);
 			}
-			statusText.textContent = timelineIdentity ?? "???";
+
+			statusText.textContent =
+				(timelineIdentity ?? "???") + newNeighbors.mediaItems.length;
 			statusContainer.style.visibility =
 				newNeighbors.intersection.length < 2 ? "hidden" : "visible";
+
 			for (const statusOption of statusOptions) {
 				if (statusOption.classList.contains("a")) {
 					statusOption.textContent =
 						navOptions.A === null || newNeighbors.intersection.length < 2
 							? ""
-							: (lookupTimelineToIdentityName.get(navOptions.A) ?? "");
+							: (lookupTimelineToMetadata.get(navOptions.A)?.[3] ?? "");
 				}
 				if (statusOption.classList.contains("b")) {
 					statusOption.textContent =
 						navOptions.B === null || newNeighbors.intersection.length < 2
 							? ""
-							: (lookupTimelineToIdentityName.get(navOptions.B) ?? "");
+							: (lookupTimelineToMetadata.get(navOptions.B)?.[3] ?? "");
 				}
 				if (statusOption.classList.contains("x")) {
 					statusOption.textContent =
 						navOptions.X === null || newNeighbors.intersection.length < 2
 							? ""
-							: (lookupTimelineToIdentityName.get(navOptions.X) ?? "");
+							: (lookupTimelineToMetadata.get(navOptions.X)?.[3] ?? "");
 				}
 				if (statusOption.classList.contains("y")) {
 					statusOption.textContent =
 						navOptions.Y === null || newNeighbors.intersection.length < 2
 							? ""
-							: (lookupTimelineToIdentityName.get(navOptions.Y) ?? "");
+							: (lookupTimelineToMetadata.get(navOptions.Y)?.[3] ?? "");
 				}
 			}
 			for (const statusButton of statusButtons) {
@@ -964,6 +897,7 @@ const main = () => {
 	};
 
 	document.addEventListener("click", onClick);
+	document.addEventListener("keydown", onKeyDown);
 	document.addEventListener("keyup", onKeyUp);
 	//document.addEventListener("scroll", onScroll);
 	window.addEventListener("resize", init);
@@ -974,11 +908,7 @@ const main = () => {
 
 		console.info("Requesting initial focus...");
 		inputEventsPending = true;
-		if (idFocused) {
-			focusNode(idFocused);
-		} else {
-			navigateHome();
-		}
+		navigateHome();
 		document.body.classList.remove("loading");
 	});
 };

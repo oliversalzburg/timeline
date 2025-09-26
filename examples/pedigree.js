@@ -3,7 +3,11 @@
 import { createWriteStream, readFileSync } from "node:fs";
 import { mustExist } from "@oliversalzburg/js-utils/data/nil.js";
 import { parse } from "yaml";
-import { Graph } from "../lib/genealogy.js";
+import {
+	Graph,
+	isIdentityLocation,
+	isIdentityPerson,
+} from "../lib/genealogy.js";
 import { load } from "../lib/loader.js";
 import { anonymize, sort, uniquify } from "../lib/operator.js";
 import { renderReport, renderSimple } from "../lib/renderer-identity.js";
@@ -83,9 +87,8 @@ const finalTimelines = [
 			([, timeline]) =>
 				timeline.meta.private &&
 				"identity" in timeline.meta &&
-				"id" in timeline.meta.identity &&
-				("born" in timeline.meta.identity ||
-					"established" in timeline.meta.identity),
+				(isIdentityPerson(timeline.meta.identity) ||
+					isIdentityLocation(timeline.meta.identity)),
 		)
 		.map(([_, timeline]) =>
 			uniquify(

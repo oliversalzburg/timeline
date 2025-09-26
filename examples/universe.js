@@ -5,7 +5,13 @@ import { hostname, userInfo } from "node:os";
 import { mustExist } from "@oliversalzburg/js-utils/data/nil.js";
 import { parse } from "yaml";
 import { analyze } from "../lib/analyzer.js";
-import { Graph, uncertainEventToDate } from "../lib/genealogy.js";
+import {
+	Graph,
+	isIdentityLocation,
+	isIdentityMedia,
+	isIdentityPerson,
+	uncertainEventToDate,
+} from "../lib/genealogy.js";
 import { load } from "../lib/loader.js";
 import { sort, uniquify } from "../lib/operator.js";
 import { render } from "../lib/renderer.js";
@@ -249,27 +255,22 @@ writeFileSync(
 					.entries()
 					.map(([timeline]) => [
 						dotGraph.timelineClasses.get(timeline),
-						styleSheet.get(timeline.meta.id)?.pencolor,
-					]),
-			],
-			[
-				...dotGraph.timelineIds
-					.entries()
-					.map(([timeline]) => [
-						dotGraph.timelineClasses.get(timeline),
-						"identity" in timeline.meta
-							? timeline.meta.identity.id
-							: timeline.meta.id,
-					]),
-			],
-			[
-				...dotGraph.timelineIds
-					.entries()
-					.map(([timeline]) => [
-						dotGraph.timelineClasses.get(timeline),
-						"identity" in timeline.meta
-							? (timeline.meta.identity.name ?? timeline.meta.identity.id)
-							: timeline.meta.id,
+						[
+							styleSheet.get(timeline.meta.id)?.pencolor,
+							isIdentityPerson(timeline)
+								? 1
+								: isIdentityLocation(timeline)
+									? 2
+									: isIdentityMedia(timeline)
+										? 3
+										: 0,
+							"identity" in timeline.meta
+								? timeline.meta.identity.id
+								: timeline.meta.id,
+							"identity" in timeline.meta
+								? (timeline.meta.identity.name ?? timeline.meta.identity.id)
+								: timeline.meta.id,
+						],
 					]),
 			],
 			[
