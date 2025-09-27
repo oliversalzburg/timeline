@@ -608,6 +608,7 @@ const main = () => {
 	/** @type {Array<{pressed:boolean}> | undefined} */
 	let previousButtons;
 	const INPUT_THRESHOLD = 0.5;
+
 	const handleInputs = () => {
 		let requiresRefresh = inputEventsPending;
 		const gamepads = navigator.getGamepads();
@@ -724,13 +725,15 @@ const main = () => {
 					gp.buttons[Inputs.BUTTON_LB].pressed === false &&
 					previousButtons?.[Inputs.BUTTON_LB].pressed === true
 				) {
-					closeMediaItem();
+					showMediaBackwardOrClose();
+					requiresRefresh = true;
 				}
 				if (
 					gp.buttons[Inputs.BUTTON_RB].pressed === false &&
 					previousButtons?.[Inputs.BUTTON_RB].pressed === true
 				) {
-					openMediaItem();
+					showMediaForwardOrClose();
+					requiresRefresh = true;
 				}
 
 				previousAxes = [...gp.axes];
@@ -740,15 +743,50 @@ const main = () => {
 		return requiresRefresh;
 	};
 
-	/** @type {string | undefined} */
-	let timelineMediaId;
-	const openMediaItem = () => {
-		if (timelineMediaId !== undefined) {
-			dialogImage.src = `file:///home/oliver/timelines/${timelineMediaId}`;
-			dialog.show();
+	/** @type {Array<string> | undefined} */
+	let timelineMediaIds;
+	/** @type {number | undefined} */
+	let timelineMediaIdActive;
+	const showMediaForwardOrClose = () => {
+		if (timelineMediaIds === undefined || timelineMediaIds.length === 0) {
+			return;
 		}
+
+		timelineMediaIdActive =
+			timelineMediaIdActive === undefined
+				? 0
+				: timelineMediaIdActive === timelineMediaIds.length - 1
+					? undefined
+					: timelineMediaIdActive + 1;
+		if (timelineMediaIdActive === undefined) {
+			closeMedia();
+			return;
+		}
+
+		dialogImage.src = `file:///home/oliver/timelines/${lookupTimelineToMetadata.get(timelineMediaIds[timelineMediaIdActive])?.[2]}`;
+		dialog.show();
 	};
-	const closeMediaItem = () => {
+	const showMediaBackwardOrClose = () => {
+		if (timelineMediaIds === undefined || timelineMediaIds.length === 0) {
+			return;
+		}
+
+		if (timelineMediaIdActive === undefined) {
+			closeMedia();
+			return;
+		}
+
+		timelineMediaIdActive =
+			timelineMediaIdActive === 0 ? undefined : timelineMediaIdActive - 1;
+		if (timelineMediaIdActive === undefined) {
+			closeMedia();
+			return;
+		}
+
+		dialogImage.src = `file:///home/oliver/timelines/${lookupTimelineToMetadata.get(timelineMediaIds[timelineMediaIdActive])?.[2]}`;
+		dialog.show();
+	};
+	const closeMedia = () => {
 		dialog.close();
 		mediaItemRotation = { x: 0, y: 0 };
 		dialog.style.transform = `rotateX(0) rotateY(0)`;
@@ -786,11 +824,7 @@ const main = () => {
 
 			const _timelineColor = lookupTimelineToMetadata.get(timelineFocused)?.[0];
 
-			const timelineIdentityId =
-				lookupTimelineToMetadata.get(timelineFocused)?.[2];
-			timelineMediaId = timelineIdentityId?.startsWith("media/")
-				? timelineIdentityId
-				: undefined;
+			timelineMediaIds = newNeighbors.mediaItems;
 
 			const timelineIdentityName =
 				lookupTimelineToMetadata.get(timelineFocused)?.[3];
@@ -800,11 +834,6 @@ const main = () => {
 				);
 			}
 
-			if (0 < newNeighbors.mediaItems.length) {
-				shoulderLeft.textContent = "Artefakte anzeigen";
-				shoulderRight.textContent = "Artefakte anzeigen";
-			}
-
 			intro.textContent = "⥲";
 			statusText.textContent = timelineIdentityName ?? "???";
 			statusContainer.style.visibility =
@@ -812,6 +841,23 @@ const main = () => {
 				newNeighbors.mediaItems.length === 0
 					? "hidden"
 					: "visible";
+
+			shoulderLeft.style.visibility =
+				0 < newNeighbors.mediaItems.length &&
+				timelineMediaIdActive !== undefined
+					? "visible"
+					: "hidden";
+			shoulderLeft.textContent =
+				timelineMediaIdActive === 0 ? "Schließen" : "Zurück blättern";
+
+			shoulderRight.style.visibility =
+				0 < newNeighbors.mediaItems.length ? "visible" : "hidden";
+			shoulderRight.textContent =
+				timelineMediaIdActive === undefined
+					? "Artefakte anzeigen"
+					: timelineMediaIdActive === timelineMediaIds.length - 1
+						? "Schließen"
+						: "Vorwärts blättern";
 
 			for (const statusOption of statusOptions) {
 				if (statusOption.classList.contains("a")) {
