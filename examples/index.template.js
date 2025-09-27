@@ -418,7 +418,9 @@ const main = () => {
 	let focusTargetBox = { x: 0, y: 0 };
 	let camera = { x: 0, y: 0 };
 	let mediaItemRotation = { x: 0, y: 0 };
+	let mediaItemPosition = { x: 0, y: 0, z: 0 };
 	let mediaItemVisible = false;
+	let mediaItemClosed = false;
 	let focusShiftPending = false;
 
 	/**
@@ -674,7 +676,10 @@ const main = () => {
 	let previousButtons;
 	const INPUT_THRESHOLD = 0.5;
 
-	const handleInputs = () => {
+	/**
+	 * @param {number} delta -
+	 */
+	const handleInputs = (delta) => {
 		let requiresRefresh = inputEventsPending;
 		const gamepads = navigator.getGamepads();
 		if (Array.isArray(gamepads) && 0 < gamepads.length) {
@@ -685,7 +690,7 @@ const main = () => {
 					(gp.axes[Inputs.AXIS_LEFT_X] !== previousAxes?.[Inputs.AXIS_LEFT_X] ||
 						INPUT_THRESHOLD < Math.abs(gp.axes[Inputs.AXIS_LEFT_X]))
 				) {
-					focusTargetBox.x += gp.axes[Inputs.AXIS_LEFT_X] * 10;
+					focusTargetBox.x += gp.axes[Inputs.AXIS_LEFT_X] * delta * 0.001;
 					requiresRefresh = true;
 					requestInstantFocusUpdate = true;
 				}
@@ -694,7 +699,7 @@ const main = () => {
 					(gp.axes[Inputs.AXIS_LEFT_Y] !== previousAxes?.[Inputs.AXIS_LEFT_Y] ||
 						INPUT_THRESHOLD < Math.abs(gp.axes[Inputs.AXIS_LEFT_Y]))
 				) {
-					focusTargetBox.y += gp.axes[Inputs.AXIS_LEFT_Y] * 10;
+					focusTargetBox.y += gp.axes[Inputs.AXIS_LEFT_Y] * delta * 0.001;
 					requiresRefresh = true;
 					requestInstantFocusUpdate = true;
 				}
@@ -705,7 +710,7 @@ const main = () => {
 						previousAxes?.[Inputs.AXIS_RIGHT_X] ||
 						INPUT_THRESHOLD < Math.abs(gp.axes[Inputs.AXIS_RIGHT_X]))
 				) {
-					mediaItemRotation.x -= gp.axes[Inputs.AXIS_RIGHT_X];
+					mediaItemPosition.x -= gp.axes[Inputs.AXIS_RIGHT_X] * delta * 0.001;
 				}
 				if (
 					previousAxes !== undefined &&
@@ -713,7 +718,13 @@ const main = () => {
 						previousAxes?.[Inputs.AXIS_RIGHT_Y] ||
 						INPUT_THRESHOLD < Math.abs(gp.axes[Inputs.AXIS_RIGHT_Y]))
 				) {
-					mediaItemRotation.y -= gp.axes[Inputs.AXIS_RIGHT_Y];
+					mediaItemPosition.y -= gp.axes[Inputs.AXIS_RIGHT_Y] * delta * 0.001;
+				}
+				if (gp.buttons[Inputs.BUTTON_LT].pressed === true) {
+					mediaItemPosition.z -= delta * 0.001;
+				}
+				if (gp.buttons[Inputs.BUTTON_RT].pressed === true) {
+					mediaItemPosition.z += delta * 0.001;
 				}
 
 				if (
@@ -870,8 +881,10 @@ const main = () => {
 	const closeMedia = () => {
 		dialog.close();
 		mediaItemRotation = { x: 0, y: 0 };
-		dialog.style.transform = `rotateX(0) rotateY(0)`;
+		mediaItemPosition = { x: 0, y: 0, z: 0 };
+		dialog.style.transform = `rotateX(0) rotateY(0) translate(0 0 0)`;
 		mediaItemVisible = false;
+		mediaItemClosed = true;
 	};
 
 	let cameraIsIdle = false;
@@ -1026,9 +1039,23 @@ const main = () => {
 		return false;
 	};
 
-	const present = () => {
-		if (handleInputs()) {
-			inputEventsPending = updateCamera(focusShiftPending);
+	/** @type {number | undefined} */
+	let previousTimestamp;
+	/**
+	 * @param timestamp {number} -
+	 */
+	const present = (timestamp) => {
+		if (previousTimestamp === undefined) {
+			previousTimestamp = timestamp;
+		}
+
+		const delta = timestamp - previousTimestamp;
+
+		if (handleInputs(delta)) {
+			inputEventsPending = updateCamera(
+				focusShiftPending || mediaItemVisible || mediaItemClosed,
+			);
+			mediaItemClosed = false;
 		}
 
 		//svg.style.transform = `translateY(${lastKnownScrollPosition}pt)`;
@@ -1046,7 +1073,7 @@ const main = () => {
 
 		if (mediaItemVisible) {
 			// Browser X-Y is reversed.
-			dialog.style.transform = `perspective(50vmin) rotateY(${mediaItemRotation.x}deg) rotateX(${mediaItemRotation.y}deg)`;
+			dialog.style.transform = `perspective(50vmin) rotateY(${mediaItemRotation.x}deg) rotateX(${mediaItemRotation.y}deg) translate3d(${mediaItemPosition.x}px, ${mediaItemPosition.y}px, ${mediaItemPosition.z}px)`;
 		}
 
 		window.requestAnimationFrame(present);
@@ -1061,7 +1088,7 @@ const main = () => {
 
 	setTimeout(() => {
 		init();
-		present();
+		present(0);
 
 		console.info("Requesting initial focus...");
 		inputEventsPending = true;
