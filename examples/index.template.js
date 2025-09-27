@@ -68,14 +68,44 @@ const main = () => {
 		throw new Error("Unable to find #status element.");
 	}
 
-	/** @type {NodeListOf<HTMLSpanElement> | null} */
-	const statusOptions = document.querySelectorAll("#status .options .option");
-	if (statusOptions === null) {
+	/** @type {HTMLSpanElement | null} */
+	const statusOptionA = document.querySelector("#status .options .option.a");
+	if (statusOptionA === null) {
 		throw new Error("Unable to find #status element.");
 	}
-	/** @type {NodeListOf<HTMLSpanElement> | null} */
-	const statusButtons = document.querySelectorAll("#status .options .button");
-	if (statusButtons === null) {
+	/** @type {HTMLSpanElement | null} */
+	const statusOptionB = document.querySelector("#status .options .option.b");
+	if (statusOptionB === null) {
+		throw new Error("Unable to find #status element.");
+	}
+	/** @type {HTMLSpanElement | null} */
+	const statusOptionX = document.querySelector("#status .options .option.x");
+	if (statusOptionX === null) {
+		throw new Error("Unable to find #status element.");
+	}
+	/** @type {HTMLSpanElement | null} */
+	const statusOptionY = document.querySelector("#status .options .option.y");
+	if (statusOptionY === null) {
+		throw new Error("Unable to find #status element.");
+	}
+	/** @type {HTMLSpanElement | null} */
+	const statusButtonA = document.querySelector("#status .options .button.a");
+	if (statusButtonA === null) {
+		throw new Error("Unable to find #status element.");
+	}
+	/** @type {HTMLSpanElement | null} */
+	const statusButtonB = document.querySelector("#status .options .button.b");
+	if (statusButtonB === null) {
+		throw new Error("Unable to find #status element.");
+	}
+	/** @type {HTMLSpanElement | null} */
+	const statusButtonX = document.querySelector("#status .options .button.x");
+	if (statusButtonX === null) {
+		throw new Error("Unable to find #status element.");
+	}
+	/** @type {HTMLSpanElement | null} */
+	const statusButtonY = document.querySelector("#status .options .button.y");
+	if (statusButtonY === null) {
 		throw new Error("Unable to find #status element.");
 	}
 
@@ -224,10 +254,10 @@ const main = () => {
 					? null
 					: eventIds[eventIndexOnTimeline + 1],
 			intersection: timelineIds.filter(
-				(id) => lookupTimelineToMetadata.get(id)?.[1] === 1,
+				(_) => _ !== onTimelineId && lookupTimelineToMetadata.get(_)?.[1] === 1,
 			),
 			mediaItems: timelineIds.filter(
-				(id) => lookupTimelineToMetadata.get(id)?.[1] === 3,
+				(_) => lookupTimelineToMetadata.get(_)?.[1] === 3,
 			),
 		};
 	};
@@ -235,8 +265,9 @@ const main = () => {
 	/**
 	 * @param {string} id -
 	 * @param {string | undefined} onTimelineId -
+	 * @param {boolean | undefined} setState -
 	 */
-	const focusNode = (id, onTimelineId = undefined) => {
+	const focusNode = (id, onTimelineId = undefined, setState = true) => {
 		if (!id) {
 			return;
 		}
@@ -263,6 +294,15 @@ const main = () => {
 			timelineNodes.get(timelineFocused)?.includes(id)
 				? timelineFocused
 				: nodeTimelines.get(id));
+
+		if (setState) {
+			window.history.pushState(
+				{ id },
+				"",
+				window.location.toString().replace(/(#.*)|$/, anchor),
+			);
+		}
+		document.title = `${new Date(id.substring(1).split("-").slice(0, -1).join("-")).toLocaleDateString()}`;
 
 		console.info(
 			`Focused node ${idFocused} of timeline ${timelineFocused}. View update is pending.`,
@@ -378,6 +418,9 @@ const main = () => {
 	let focusTargetBox = { x: 0, y: 0 };
 	let camera = { x: 0, y: 0 };
 	let mediaItemRotation = { x: 0, y: 0 };
+	let mediaItemVisible = false;
+	let focusShiftPending = false;
+
 	/**
 	 * @param id {string | undefined}
 	 */
@@ -402,6 +445,7 @@ const main = () => {
 
 		focusTargetBox = { x: left, y: top };
 		console.debug("New focus box requested", focusTargetBox);
+		focusShiftPending = true;
 	};
 
 	const navigateForward = () => {
@@ -458,7 +502,7 @@ const main = () => {
 			return;
 		}
 		const neighbors = findNodeNeighbors(idFocused, timelineFocused);
-		if (neighbors.intersection.length <= 1) {
+		if (neighbors.intersection.length < 1) {
 			console.warn(
 				"Unable to navigate, due to lack of intersections.",
 				neighbors,
@@ -477,7 +521,7 @@ const main = () => {
 			return;
 		}
 		const neighbors = findNodeNeighbors(idFocused, timelineFocused);
-		if (neighbors.intersection.length <= 1) {
+		if (neighbors.intersection.length < 2) {
 			console.warn(
 				"Unable to navigate, due to lack of intersections.",
 				neighbors,
@@ -496,7 +540,7 @@ const main = () => {
 			return;
 		}
 		const neighbors = findNodeNeighbors(idFocused, timelineFocused);
-		if (neighbors.intersection.length <= 2) {
+		if (neighbors.intersection.length < 3) {
 			console.warn(
 				"Unable to navigate, due to lack of intersections.",
 				neighbors,
@@ -515,7 +559,7 @@ const main = () => {
 			return;
 		}
 		const neighbors = findNodeNeighbors(idFocused, timelineFocused);
-		if (neighbors.intersection.length <= 3) {
+		if (neighbors.intersection.length < 4) {
 			console.warn(
 				"Unable to navigate, due to lack of intersections.",
 				neighbors,
@@ -533,6 +577,21 @@ const main = () => {
 		}
 		focusNode(idFocused);
 	};
+	const navigateStart = () => {
+		if (timelineFocused === undefined) {
+			return;
+		}
+
+		const events = lookupTimelineToEventIDs.get(timelineFocused);
+		if (events === undefined) {
+			throw Error("unexpected lookup miss");
+		}
+
+		focusNode(events[0], timelineFocused);
+	};
+	const navigateBack = () => {
+		history.back();
+	};
 
 	/**
 	 * @param _event {Event} -
@@ -540,6 +599,12 @@ const main = () => {
 	const _onScroll = (_event) => {
 		inputEventsPending = true;
 		lastKnownScrollPosition = window.scrollY;
+	};
+	/**
+	 * @param event {PopStateEvent} -
+	 */
+	const onPopState = (event) => {
+		focusNode(event.state.id, undefined, false);
 	};
 
 	const getRandomColor = () => {
@@ -651,6 +716,20 @@ const main = () => {
 					mediaItemRotation.y -= gp.axes[Inputs.AXIS_RIGHT_Y];
 				}
 
+				if (
+					gp.buttons[Inputs.BUTTON_START].pressed === false &&
+					previousButtons?.[Inputs.BUTTON_START].pressed === true
+				) {
+					navigateStart();
+					requiresRefresh = true;
+				}
+				if (
+					gp.buttons[Inputs.BUTTON_BACK].pressed === false &&
+					previousButtons?.[Inputs.BUTTON_BACK].pressed === true
+				) {
+					navigateBack();
+					requiresRefresh = true;
+				}
 				if (
 					gp.buttons[Inputs.BUTTON_DOWN].pressed === false &&
 					previousButtons?.[Inputs.BUTTON_DOWN].pressed === true
@@ -765,6 +844,7 @@ const main = () => {
 
 		dialogImage.src = `file:///home/oliver/timelines/${lookupTimelineToMetadata.get(timelineMediaIds[timelineMediaIdActive])?.[2]}`;
 		dialog.show();
+		mediaItemVisible = true;
 	};
 	const showMediaBackwardOrClose = () => {
 		if (timelineMediaIds === undefined || timelineMediaIds.length === 0) {
@@ -785,131 +865,136 @@ const main = () => {
 
 		dialogImage.src = `file:///home/oliver/timelines/${lookupTimelineToMetadata.get(timelineMediaIds[timelineMediaIdActive])?.[2]}`;
 		dialog.show();
+		mediaItemVisible = true;
 	};
 	const closeMedia = () => {
 		dialog.close();
 		mediaItemRotation = { x: 0, y: 0 };
 		dialog.style.transform = `rotateX(0) rotateY(0)`;
+		mediaItemVisible = false;
 	};
 
 	let cameraIsIdle = false;
-	const updateCamera = () => {
+	const updateCamera = (updateStatus = false) => {
 		if (cameraIsIdle) {
 			console.debug("Camera update requested while camera was idle.");
 			return true;
 		}
 
-		nodeFocused?.focus({ preventScroll: true });
+		if (updateStatus) {
+			nodeFocused?.focus({ preventScroll: true });
+			focusShiftPending = false;
 
-		if (idFocused !== undefined && timelineFocused !== undefined) {
-			const newNeighbors = findNodeNeighbors(idFocused, timelineFocused);
-			const navOptions = {
-				A:
-					0 < newNeighbors.intersection.length
-						? newNeighbors.intersection[0]
-						: null,
-				B:
-					1 < newNeighbors.intersection.length
-						? newNeighbors.intersection[1]
-						: null,
-				X:
-					2 < newNeighbors.intersection.length
-						? newNeighbors.intersection[2]
-						: null,
-				Y:
-					3 < newNeighbors.intersection.length
-						? newNeighbors.intersection[3]
-						: null,
-			};
+			if (idFocused !== undefined && timelineFocused !== undefined) {
+				const newNeighbors = findNodeNeighbors(idFocused, timelineFocused);
+				const navOptions = {
+					A:
+						0 < newNeighbors.intersection.length
+							? newNeighbors.intersection[0]
+							: null,
+					B:
+						1 < newNeighbors.intersection.length
+							? newNeighbors.intersection[1]
+							: null,
+					X:
+						2 < newNeighbors.intersection.length
+							? newNeighbors.intersection[2]
+							: null,
+					Y:
+						3 < newNeighbors.intersection.length
+							? newNeighbors.intersection[3]
+							: null,
+				};
 
-			const _timelineColor = lookupTimelineToMetadata.get(timelineFocused)?.[0];
+				const timelineColor =
+					lookupTimelineToMetadata.get(timelineFocused)?.[0];
 
-			timelineMediaIds = newNeighbors.mediaItems;
+				timelineMediaIds = newNeighbors.mediaItems;
 
-			const timelineIdentityName =
-				lookupTimelineToMetadata.get(timelineFocused)?.[3];
-			if (timelineIdentityName === undefined) {
-				console.error(
-					`Unable to look up identity for timeline ID '${timelineFocused}'. Using fallback status.`,
-				);
-			}
+				const timelineIdentityName =
+					lookupTimelineToMetadata.get(timelineFocused)?.[3];
+				if (timelineIdentityName === undefined) {
+					console.error(
+						`Unable to look up identity for timeline ID '${timelineFocused}'. Using fallback status.`,
+					);
+				}
 
-			intro.textContent = "⥲";
-			statusText.textContent = timelineIdentityName ?? "???";
-			statusContainer.style.visibility =
-				newNeighbors.intersection.length < 2 &&
-				newNeighbors.mediaItems.length === 0
-					? "hidden"
-					: "visible";
+				intro.textContent = "⥲";
+				statusText.textContent = timelineIdentityName ?? "???";
+				statusText.style.color = timelineColor ?? "";
 
-			shoulderLeft.style.visibility =
-				0 < newNeighbors.mediaItems.length &&
-				timelineMediaIdActive !== undefined
-					? "visible"
-					: "hidden";
-			shoulderLeft.textContent =
-				timelineMediaIdActive === 0 ? "Schließen" : "Zurück blättern";
+				statusContainer.style.visibility =
+					0 < newNeighbors.intersection.length ||
+					0 < newNeighbors.mediaItems.length
+						? "visible"
+						: "hidden";
 
-			shoulderRight.style.visibility =
-				0 < newNeighbors.mediaItems.length ? "visible" : "hidden";
-			shoulderRight.textContent =
-				timelineMediaIdActive === undefined
-					? "Artefakte anzeigen"
-					: timelineMediaIdActive === timelineMediaIds.length - 1
-						? "Schließen"
-						: "Vorwärts blättern";
+				shoulderLeft.style.visibility =
+					0 < newNeighbors.mediaItems.length &&
+					timelineMediaIdActive !== undefined
+						? "visible"
+						: "hidden";
+				shoulderLeft.textContent =
+					timelineMediaIdActive === 0 ? "Schließen" : "Zurück blättern";
 
-			for (const statusOption of statusOptions) {
-				if (statusOption.classList.contains("a")) {
-					statusOption.textContent =
-						navOptions.A === null || newNeighbors.intersection.length < 2
-							? ""
-							: (lookupTimelineToMetadata.get(navOptions.A)?.[3] ?? "");
-				}
-				if (statusOption.classList.contains("b")) {
-					statusOption.textContent =
-						navOptions.B === null || newNeighbors.intersection.length < 2
-							? ""
-							: (lookupTimelineToMetadata.get(navOptions.B)?.[3] ?? "");
-				}
-				if (statusOption.classList.contains("x")) {
-					statusOption.textContent =
-						navOptions.X === null || newNeighbors.intersection.length < 2
-							? ""
-							: (lookupTimelineToMetadata.get(navOptions.X)?.[3] ?? "");
-				}
-				if (statusOption.classList.contains("y")) {
-					statusOption.textContent =
-						navOptions.Y === null || newNeighbors.intersection.length < 2
-							? ""
-							: (lookupTimelineToMetadata.get(navOptions.Y)?.[3] ?? "");
-				}
-			}
-			for (const statusButton of statusButtons) {
-				if (statusButton.classList.contains("a")) {
-					statusButton.style.display =
-						navOptions.A === null || newNeighbors.intersection.length < 2
-							? "none"
-							: "inline-block";
-				}
-				if (statusButton.classList.contains("b")) {
-					statusButton.style.display =
-						navOptions.B === null || newNeighbors.intersection.length < 2
-							? "none"
-							: "inline-block";
-				}
-				if (statusButton.classList.contains("x")) {
-					statusButton.style.display =
-						navOptions.X === null || newNeighbors.intersection.length < 2
-							? "none"
-							: "inline-block";
-				}
-				if (statusButton.classList.contains("y")) {
-					statusButton.style.display =
-						navOptions.Y === null || newNeighbors.intersection.length < 2
-							? "none"
-							: "inline-block";
-				}
+				shoulderRight.style.visibility =
+					0 < newNeighbors.mediaItems.length ? "visible" : "hidden";
+				shoulderRight.textContent =
+					timelineMediaIdActive === undefined
+						? "Artefakte anzeigen"
+						: timelineMediaIdActive === timelineMediaIds.length - 1
+							? "Schließen"
+							: "Vorwärts blättern";
+
+				statusOptionA.textContent =
+					navOptions.A === null || newNeighbors.intersection.length < 1
+						? ""
+						: (lookupTimelineToMetadata.get(navOptions.A)?.[3] ?? "???");
+				statusOptionA.style.color =
+					navOptions.A === null || newNeighbors.intersection.length < 1
+						? ""
+						: (lookupTimelineToMetadata.get(navOptions.A)?.[0] ?? "#f00");
+				statusOptionB.textContent =
+					navOptions.B === null || newNeighbors.intersection.length < 2
+						? ""
+						: (lookupTimelineToMetadata.get(navOptions.B)?.[3] ?? "???");
+				statusOptionB.style.color =
+					navOptions.B === null || newNeighbors.intersection.length < 2
+						? ""
+						: (lookupTimelineToMetadata.get(navOptions.B)?.[0] ?? "#f00");
+				statusOptionX.textContent =
+					navOptions.X === null || newNeighbors.intersection.length < 3
+						? ""
+						: (lookupTimelineToMetadata.get(navOptions.X)?.[3] ?? "???");
+				statusOptionX.style.color =
+					navOptions.X === null || newNeighbors.intersection.length < 3
+						? ""
+						: (lookupTimelineToMetadata.get(navOptions.X)?.[0] ?? "#f00");
+				statusOptionY.textContent =
+					navOptions.Y === null || newNeighbors.intersection.length < 4
+						? ""
+						: (lookupTimelineToMetadata.get(navOptions.Y)?.[3] ?? "???");
+				statusOptionY.style.color =
+					navOptions.Y === null || newNeighbors.intersection.length < 4
+						? ""
+						: (lookupTimelineToMetadata.get(navOptions.Y)?.[0] ?? "#f00");
+
+				statusButtonA.style.display =
+					navOptions.A === null || newNeighbors.intersection.length < 1
+						? "none"
+						: "inline-block";
+				statusButtonB.style.display =
+					navOptions.B === null || newNeighbors.intersection.length < 2
+						? "none"
+						: "inline-block";
+				statusButtonX.style.display =
+					navOptions.X === null || newNeighbors.intersection.length < 3
+						? "none"
+						: "inline-block";
+				statusButtonY.style.display =
+					navOptions.Y === null || newNeighbors.intersection.length < 4
+						? "none"
+						: "inline-block";
 			}
 		}
 
@@ -943,7 +1028,7 @@ const main = () => {
 
 	const present = () => {
 		if (handleInputs()) {
-			inputEventsPending = updateCamera();
+			inputEventsPending = updateCamera(focusShiftPending);
 		}
 
 		//svg.style.transform = `translateY(${lastKnownScrollPosition}pt)`;
@@ -959,8 +1044,10 @@ const main = () => {
 				`translateY(${offset + windowHeight}px)`;
 		}
 
-		// Browser X-Y is reversed.
-		dialog.style.transform = `perspective(50vmin) rotateY(${mediaItemRotation.x}deg) rotateX(${mediaItemRotation.y}deg)`;
+		if (mediaItemVisible) {
+			// Browser X-Y is reversed.
+			dialog.style.transform = `perspective(50vmin) rotateY(${mediaItemRotation.x}deg) rotateX(${mediaItemRotation.y}deg)`;
+		}
 
 		window.requestAnimationFrame(present);
 	};
@@ -970,6 +1057,7 @@ const main = () => {
 	document.addEventListener("keyup", onKeyUp);
 	//document.addEventListener("scroll", onScroll);
 	window.addEventListener("resize", init);
+	window.addEventListener("popstate", onPopState);
 
 	setTimeout(() => {
 		init();
