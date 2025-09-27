@@ -2,34 +2,3 @@ This document is intended to be viewed with a web browser. The document contains
 HTML (HyperText Markup Language), with an embedded SVG (Scalable Vector
 Graphics) image. The JavaScript (JS) in the document is designed for a more
 convenient viewing experience, and is considered optional.
-
-Moving Around
-
-Mouse: Select any event by clicking on it with the mouse cursor.
-
-Explorer Movement
-
-Keyboard: Place your fingers on the keys W, A, S, D and try moving around by
-pressing these keys. When navigating to your target, switch between using the
-keys, and the mouse cursor, depending on what feels right to you.
-
-Precision Movement
-
-When you need more controlled movement, you can rely entirely on the keyboard:
-Numpad 1: Jump to last global event.
-Numpad 2: Single step into the future on the currently selected timeline.
-Numpad 3: Big jump into the global future.
-Numpad 4: Single step into the global past.
-Numpad 5: Focus currently selected event.
-Numpad 6: Single step into the global future.
-Numpad 7: Jump to first global event.
-Numpad 8: Single step into the past on the currently selected timeline.
-Numpad 9: Big jump into the global past.
-W: same as Numpad 8
-A: same as Numpad 4
-S: same as Numpad 2
-D: same as Numpad 6
-0: Jump to global start.
-1: Jump to 10% of universe.
-2-8 jump to their respective slice.
-9: Jump to 90% of universe.

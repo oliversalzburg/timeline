@@ -31,6 +31,7 @@ const main = () => {
 		throw new Error("Unable to find <svg> element.");
 	}
 
+	/** @type {HTMLDialogElement | null} */
 	const dialog = document.querySelector("dialog");
 	if (dialog === null) {
 		throw new Error("Unable to find <dialog> element.");
@@ -46,10 +47,24 @@ const main = () => {
 	if (statusContainer === null) {
 		throw new Error("Unable to find #status element.");
 	}
-
 	/** @type {HTMLParagraphElement | null} */
 	const statusText = document.querySelector("#status .text");
 	if (statusText === null) {
+		throw new Error("Unable to find #status element.");
+	}
+	/** @type {HTMLSpanElement | null} */
+	const shoulderLeft = document.querySelector("#status .shoulder.left");
+	if (shoulderLeft === null) {
+		throw new Error("Unable to find #status element.");
+	}
+	/** @type {HTMLSpanElement | null} */
+	const shoulderRight = document.querySelector("#status .shoulder.right");
+	if (shoulderRight === null) {
+		throw new Error("Unable to find #status element.");
+	}
+	/** @type {HTMLSpanElement | null} */
+	const intro = document.querySelector("#status .intro");
+	if (intro === null) {
 		throw new Error("Unable to find #status element.");
 	}
 
@@ -777,18 +792,26 @@ const main = () => {
 				? timelineIdentityId
 				: undefined;
 
-			const timelineIdentity =
+			const timelineIdentityName =
 				lookupTimelineToMetadata.get(timelineFocused)?.[3];
-			if (timelineIdentity === undefined) {
+			if (timelineIdentityName === undefined) {
 				console.error(
 					`Unable to look up identity for timeline ID '${timelineFocused}'. Using fallback status.`,
 				);
 			}
 
-			statusText.textContent =
-				(timelineIdentity ?? "???") + newNeighbors.mediaItems.length;
+			if (0 < newNeighbors.mediaItems.length) {
+				shoulderLeft.textContent = "Artefakte anzeigen";
+				shoulderRight.textContent = "Artefakte anzeigen";
+			}
+
+			intro.textContent = "⥲";
+			statusText.textContent = timelineIdentityName ?? "???";
 			statusContainer.style.visibility =
-				newNeighbors.intersection.length < 2 ? "hidden" : "visible";
+				newNeighbors.intersection.length < 2 &&
+				newNeighbors.mediaItems.length === 0
+					? "hidden"
+					: "visible";
 
 			for (const statusOption of statusOptions) {
 				if (statusOption.classList.contains("a")) {
