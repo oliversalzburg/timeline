@@ -859,7 +859,7 @@ const main = () => {
 			return;
 		}
 
-		dialogImage.src = `file://${lookupTimelineToMetadata.get(timelineMediaIds[timelineMediaIdActive])?.[2]}`;
+		dialogImage.src = `${lookupTimelineToMetadata.get(timelineMediaIds[timelineMediaIdActive])?.[2]}`;
 		dialog.show();
 		mediaItemVisible = true;
 	};
@@ -880,7 +880,7 @@ const main = () => {
 			return;
 		}
 
-		dialogImage.src = `file://${lookupTimelineToMetadata.get(timelineMediaIds[timelineMediaIdActive])?.[2]}`;
+		dialogImage.src = `${lookupTimelineToMetadata.get(timelineMediaIds[timelineMediaIdActive])?.[2]}`;
 		dialog.show();
 		mediaItemVisible = true;
 	};
