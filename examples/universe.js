@@ -156,8 +156,6 @@ const theme = args.theme === "light" ? "light" : "dark";
 const styleSheet = new Styling(finalTimelines, theme).styles(graph);
 
 // Write GraphViz graph.
-process.stdout.write("Rendering universe...\n");
-
 /** @type {RendererOptions} */
 const renderOptions = {
 	debug: Boolean(args.debug),
@@ -213,7 +211,7 @@ const info = [
 	`${dFrom} - ${dTo}`,
 ];
 
-process.stdout.write(`Writing graph...\n`);
+process.stdout.write("Writing graph...");
 if (dotGraph.graph.length === 1) {
 	writeFileSync(targetPath, dotGraph.graph[0]);
 } else {
@@ -227,10 +225,11 @@ if (dotGraph.graph.length === 1) {
 			`digraph segment_${index} { id="segment_${index}";`,
 		);
 		const segmentFilename = targetPath.replace(/\.gvus$/, `${index}.gvus`);
-		process.stdout.write(`  - Written segment ${segmentFilename}.\n`);
+		process.stdout.write(".");
 		writeFileSync(segmentFilename, uniqueGraph);
 	}
 }
+process.stdout.write("\n");
 const originBirthDate =
 	uncertainEventToDate(graph.resolveIdentity()?.born) ?? new Date();
 
@@ -281,4 +280,3 @@ writeFileSync(
 		]),
 	)}\n`,
 );
-process.stdout.write("GraphViz graph for universe written successfully.\n");

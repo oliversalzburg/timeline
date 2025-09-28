@@ -108,8 +108,5 @@ for (const [variant, meta] of Object.entries(VARIANTS)) {
 		.replace("/*JS*/", settings.withJs ? js : "")
 		.replace("<!--SVG-->", svg);
 
-	process.stdout.write(`${variant}: Writing '${settings.output}'...\n`);
 	writeFileSync(settings.output, html);
 }
-
-process.stdout.write("Done\n");

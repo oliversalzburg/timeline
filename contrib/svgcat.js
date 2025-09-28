@@ -46,6 +46,8 @@ let offsetX = 0;
 let offsetY = 0;
 /** @type {Map<string,{width:number;height:number;marker:Array<Record<string,string>>;x:number}>} */
 const meta = new Map();
+
+process.stderr.write("svgcat: Parsing...");
 for (const segment of segments) {
 	try {
 		const rawSVG = readFileSync(segment, "utf8");
@@ -82,7 +84,7 @@ for (const segment of segments) {
 
 		const leftMostEntry = 0 < entryMarker.length ? entryMarker[0] : 0;
 		offsetX -= leftMostEntry;
-		process.stderr.write(`${segment}: ${leftMostEntry} -> ${offsetX}\n`);
+		process.stderr.write(`.x${leftMostEntry}:t${offsetX}`);
 
 		_m.x = offsetX;
 
@@ -98,6 +100,7 @@ for (const segment of segments) {
 		throw error;
 	}
 }
+process.stderr.write("\n");
 
 const leftMostSegment = segments.reduce(
 	(lowest, _) =>
@@ -115,6 +118,7 @@ for (const segment of segments) {
 const buffer = [];
 offsetY = 0;
 
+process.stderr.write("svgcat: Writing...");
 for (const segment of segments) {
 	const rawSVG = readFileSync(segment, "utf8");
 	const svgStart = rawSVG.indexOf("<svg");
@@ -129,7 +133,7 @@ for (const segment of segments) {
 	offsetY += svgMeta.height;
 	offsetY -= 3;
 	const translation = `${Math.round(svgMeta.x * 100) / 100} ${Math.round(offsetY * 100) / 100}`;
-	process.stderr.write(`${segment}: ${svgMeta.width} -> ${translation}\n`);
+	process.stderr.write(`.w${svgMeta.width}:t[${translation}]`);
 
 	let svg = rawSVG.substring(svgStartContent, svgEnd);
 	svg = svg.replace(/translate\(0 [^)]+\)/, `translate(${translation})`);
@@ -145,6 +149,8 @@ for (const segment of segments) {
 
 	buffer.push(svg.trim());
 }
+process.stderr.write("\n");
+
 const width =
 	Math.round(Math.abs(boundingBox.left - boundingBox.right) * 10) / 10;
 const height = Math.round(boundingBox.bottom * 10) / 10;

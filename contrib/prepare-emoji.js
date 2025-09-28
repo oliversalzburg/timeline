@@ -3,7 +3,7 @@
 import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-const targetPath = "output/images";
+const targetPath = "output";
 mkdirSync(targetPath, { recursive: true });
 
 const sourcePath = join(import.meta.dirname, "openmoji-svg-color");

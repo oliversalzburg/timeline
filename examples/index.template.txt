@@ -1,4 +1,1 @@
-This document is intended to be viewed with a web browser. The document contains
-HTML (HyperText Markup Language), with an embedded SVG (Scalable Vector
-Graphics) image. The JavaScript (JS) in the document is designed for a more
-convenient viewing experience, and is considered optional.
+This section is intentionally left blank.

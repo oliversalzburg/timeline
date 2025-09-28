@@ -25,17 +25,21 @@ const args = process.argv
 		/** @type {Record<string, boolean | string>} */ ({}),
 	);
 
-const assets = typeof args.assets === "string" ? args.assets : "output/images";
+const assets = typeof args.assets === "string" ? args.assets : "output";
 const copyOnly = args["copy-only"] === true;
 
 let content = "";
-let contentLocation = "output";
+let contentLocation = "";
 let contentName = "";
+
+if (typeof args.target !== "string") {
+	process.stderr.write("Missing --target.\n");
+	process.exit(1);
+} else {
+	contentLocation = args.target;
+}
+
 if (!copyOnly) {
-	if (typeof args.target !== "string") {
-		process.stderr.write("Missing --target.\n");
-		process.exit(1);
-	}
 	if (!args.target.endsWith(".dot") && !args.target.endsWith(".dotus")) {
 		process.stdout.write(
 			`Invalid target document. File name is expected to end in '.dot'.\nProvided: ${args.target}\n`,
@@ -262,13 +266,8 @@ for (const [prefix, config] of Object.entries(PREFIXES)) {
 }
 
 if (copyOnly) {
-	process.stdout.write(
-		`Successfully prepared images for ${contentLocation}.\n`,
-	);
 	process.exit(0);
 }
 
 const filename = contentName.replace(/\.dotus$/, ".idotus");
 writeFileSync(join(contentLocation, filename), svgPrefixes);
-
-//process.stdout.write(`Successfully emojified ${args.target} into ${filename}.\n`,);

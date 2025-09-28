@@ -180,12 +180,18 @@ const main = () => {
 			);
 
 			neighborhood.sort((a, b) => {
-				const nodeA = /** @type {SVGElement} */ (
-					document.querySelector(`#${a}`)
-				);
-				const nodeB = /** @type {SVGElement} */ (
-					document.querySelector(`#${b}`)
-				);
+				/** @type {SVGElement | null} */
+				const nodeA = document.querySelector(`#${a}`);
+				if (nodeA === null) {
+					throw new Error(`unable to find node '#${a}'`);
+				}
+
+				/** @type {SVGElement | null} */
+				const nodeB = document.querySelector(`#${b}`);
+				if (nodeB === null) {
+					throw new Error(`unable to find node '#${b}'`);
+				}
+
 				return (
 					nodeA.getBoundingClientRect().left -
 					nodeB.getBoundingClientRect().left
@@ -853,7 +859,7 @@ const main = () => {
 			return;
 		}
 
-		dialogImage.src = `file:///home/oliver/timelines/${lookupTimelineToMetadata.get(timelineMediaIds[timelineMediaIdActive])?.[2]}`;
+		dialogImage.src = `file://${lookupTimelineToMetadata.get(timelineMediaIds[timelineMediaIdActive])?.[2]}`;
 		dialog.show();
 		mediaItemVisible = true;
 	};
@@ -874,7 +880,7 @@ const main = () => {
 			return;
 		}
 
-		dialogImage.src = `file:///home/oliver/timelines/${lookupTimelineToMetadata.get(timelineMediaIds[timelineMediaIdActive])?.[2]}`;
+		dialogImage.src = `file://${lookupTimelineToMetadata.get(timelineMediaIds[timelineMediaIdActive])?.[2]}`;
 		dialog.show();
 		mediaItemVisible = true;
 	};

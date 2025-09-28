@@ -4,15 +4,15 @@ set -o errexit
 
 BASE=$1
 
-make "${BASE}-universe.info"
+make --no-print-directory "${BASE}-universe.info"
 SEGMENTS=$(ls "${BASE}"*.gvus)
 ISVGUS=${SEGMENTS[*]//.gvus/.isvgus}
-make $ISVGUS
+make --no-print-directory $ISVGUS
 rm $SEGMENTS
 node --enable-source-maps contrib/svgcat.js \
 	"--target=$BASE-universe.svg.loose" $ISVGUS
 rm $ISVGUS
 node --enable-source-maps contrib/svgnest.js \
-	--assets=output/images \
+	--assets=output \
 	"--target=$BASE-universe.svg.loose" > "$BASE-universe.svg"
 rm $BASE-universe.svg.loose
