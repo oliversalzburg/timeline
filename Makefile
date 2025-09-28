@@ -1,4 +1,4 @@
-_OUTPUT := output
+OUTPUT := output
 
 #_SOURCES := $(wildcard contrib/* examples/* source/*.ts source/*/*.ts)
 _SOURCES_TS := $(wildcard source/*.ts source/*/*.ts)
@@ -8,7 +8,7 @@ _LIBS_D_TS := $(patsubst %.ts,%.d.ts,$(_SOURCES_TS))
 _LIBS_D_TS_MAP := $(patsubst %.ts,%.d.ts.map,$(_SOURCES_TS))
 
 _IMAGES := $(wildcard contrib/openmoji-svg-color/*.svg) $(wildcard contrib/wikimedia/*.svg)
-IMAGES := $(addprefix $(_OUTPUT)/,$(notdir $(_IMAGES)))
+IMAGES := $(addprefix $(OUTPUT)/,$(notdir $(_IMAGES)))
 
 DATA_ROOT := $(shell echo ~/timelines)
 TIMELINES := $(wildcard $(DATA_ROOT)/*.yml $(DATA_ROOT)/*/*.yml)
@@ -19,7 +19,7 @@ ifneq ($(DEBUG),)
 	_SCOUR_FLAGS += --verbose
 endif
 
-DOT_FLAGS := -Gcenter=false -Gimagepath=$(_OUTPUT) -Gmargin=0 -Gpad=0
+DOT_FLAGS := -Gcenter=false -Gimagepath=$(OUTPUT) -Gmargin=0 -Gpad=0
 ifneq ($(DEBUG),)
 	DOT_FLAGS += -v5
 endif
@@ -39,15 +39,13 @@ lib/tsconfig.source.tsbuildinfo $(_LIBS_D_TS) $(_LIBS_D_TS_MAP) $(_LIBS_JS) $(_L
 	@npm exec -- tsc --build tsconfig.json
 	@date +"%FT%T%z Library code rebuilt."
 
-_site lib $(_OUTPUT) :
-	@mkdir -p $@
-
-$(IMAGES) &: contrib/prepare-emoji.js examples/emojify.js | $(_OUTPUT)
+$(IMAGES) &: contrib/prepare-emoji.js examples/emojify.js
+	@mkdir -p $(OUTPUT)
 	@node --enable-source-maps contrib/prepare-emoji.js
-	@cp contrib/wikimedia/* $(_OUTPUT)/
+	@cp contrib/wikimedia/* $(OUTPUT)/
 	@node --enable-source-maps examples/emojify.js \
 		--copy-only \
-		--target=$(_OUTPUT)
+		--target=$(OUTPUT)
 	@date +"%FT%T%z Vector image data prepared."
 
 %-demo.universe : %.yml lib/tsconfig.source.tsbuildinfo $(_SOURCES_TS) examples/space-time-generator.js
@@ -132,10 +130,11 @@ $(IMAGES) &: contrib/prepare-emoji.js examples/emojify.js | $(_OUTPUT)
 	@node --enable-source-maps examples/build-site.js \
 		--format=zen \
 		--target=$@
+	@date +"%FT%T%z Universe HTML generated '$@'."
 	@cp $@ output/universe.html
 	@date +"%FT%T%z Synchronizing media..."
 	@rsync --archive $(DATA_ROOT)/media output/
-	@date +"%FT%T%z Universe HTML generated '$@'."
+	@date +"%FT%T%z Golden image ready at 'output/universe.html'."
 %-demo-universe.html : %-demo-universe.info %-demo-universe.meta %-demo-universe.svg $(wildcard examples/index.template.*) examples/build-site.js
 	@node --enable-source-maps examples/build-site.js \
 		--format=zen \
@@ -144,31 +143,26 @@ $(IMAGES) &: contrib/prepare-emoji.js examples/emojify.js | $(_OUTPUT)
 
 %.dot : %.gv
 	@dot -Tcanon -o $@ $<
-	@date +"%FT%T%z Normalized GraphViz document '$@'."
+	@date +"%FT%T%z Normalized GraphViz DOT document '$@'."
 %.dotus : %.gvus
 	@dot -Tcanon -o $@ $<
-	@date +"%FT%T%z Normalized GraphViz document '$@'."
+	@date +"%FT%T%z Normalized GraphViz DOTus document '$@'."
 
 # Embed (emoji) prefixes as <IMG> elements in the label.
 # At time of implementation, this output did not render well
 # with cairo.
-%-img.dot : %.dot $(IMAGES) | $(_OUTPUT)
+%.idotus : %.dotus $(IMAGES)
 	@node --enable-source-maps examples/emojify.js \
-		--assets=$(_OUTPUT) \
+		--assets=$(OUTPUT) \
 		--target=$<
-	@date +"%FT%T%z Embedded prefixes into '$@'."
-%.idotus : %.dotus $(IMAGES) | $(_OUTPUT)
-	@node --enable-source-maps examples/emojify.js \
-		--assets=$(_OUTPUT) \
-		--target=$<
-	@date +"%FT%T%z Embedded prefixes into '$@'."
+	@date +"%FT%T%z Generated embedded iDOTus fragment '$@'."
 
 %.svg : %.dot
 	@dot $(DOT_FLAGS) -Gpad=0 -Tsvg:cairo -o $@ $<
 	@date +"%FT%T%z Rendered DOT graph SVG (Cairo) image '$@'."
 %.isvgus : %.idotus
 	@dot $(DOT_FLAGS) -Gpad=0 -Tsvg -o $@ $<
-	@date +"%FT%T%z Rendered DOT graph iSVG-US image '$@'."
+	@date +"%FT%T%z Rendered DOT graph iSVGus image '$@'."
 
 %-analytics.pdf : %-analytics.md %-pedigree-light.svg
 	@cd $(dir $@); pandoc \
@@ -205,7 +199,7 @@ lib/timeline.js: node_modules/.package-lock.json build.js | lib
 
 # Clean up all build artifacts.
 clean:
-	@rm --force --recursive _site coverage lib $(_OUTPUT)
+	@rm --force --recursive _site coverage lib $(OUTPUT)
 	@find -iname "callgrind.out.*" -delete
 	@find -iwholename "schemas/*.schema.json" -delete
 	@date +"%FT%T%z Cleaned."

@@ -26,7 +26,9 @@ const Inputs = {
 const DATA = [[], [], ["", "", ""]];
 
 const main = () => {
-	const svg = document.querySelector("svg");
+	console.info("Program init started.");
+
+	const svg = document.querySelector("body > svg");
 	if (svg === null) {
 		throw new Error("Unable to find <svg> element.");
 	}
@@ -212,7 +214,7 @@ const main = () => {
 	const speedScroll = 0.001;
 	const starColors = ["#FFFFFF", "#FFDDC1", "#FFC0CB", "#ADD8E6", "#B0E0E6"];
 	const startTime = Date.now();
-	let lastKnownScrollPosition = 0;
+	const lastKnownScrollPosition = 0;
 
 	/**
 	 * @param id {string} -
@@ -602,13 +604,6 @@ const main = () => {
 	};
 
 	/**
-	 * @param _event {Event} -
-	 */
-	const _onScroll = (_event) => {
-		inputEventsPending = true;
-		lastKnownScrollPosition = window.scrollY;
-	};
-	/**
 	 * @param event {PopStateEvent} -
 	 */
 	const onPopState = (event) => {
@@ -632,7 +627,9 @@ const main = () => {
 	};
 
 	let windowHeight = 1;
-	const init = () => {
+	const initGraphics = () => {
+		console.info("Initializing graphics...");
+
 		windowHeight = window.innerHeight;
 		for (const [planeTop, planeBottom] of starPlanes) {
 			for (const plane of [planeTop, planeBottom]) {
@@ -1088,21 +1085,26 @@ const main = () => {
 	document.addEventListener("click", onClick);
 	document.addEventListener("keydown", onKeyDown);
 	document.addEventListener("keyup", onKeyUp);
-	//document.addEventListener("scroll", onScroll);
-	window.addEventListener("resize", init);
+	window.addEventListener("resize", initGraphics);
 	window.addEventListener("popstate", onPopState);
 
-	setTimeout(() => {
-		init();
-		present(0);
+	window.setTimeout(() => {
+		initGraphics();
 
 		console.info("Requesting initial focus...");
 		inputEventsPending = true;
 		navigateHome();
-		document.body.classList.remove("loading");
+
+		window.requestAnimationFrame(present);
+		window.setTimeout(() => {
+			console.info("Program init finalized.");
+			document.body.classList.remove("loading");
+		}, 5000);
 	});
+	console.info("Next-frame ignition requested.");
 };
 
 document.addEventListener("DOMContentLoaded", () => {
-	main();
+	console.info("DOM content loaded. Program init is pending...");
+	setTimeout(() => main(), 5000);
 });
