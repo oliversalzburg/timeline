@@ -7,7 +7,6 @@ import { hashCyrb53 } from "@oliversalzburg/js-utils/data/string.js";
 import { formatMilliseconds } from "@oliversalzburg/js-utils/format/milliseconds.js";
 import { FONT_NAME, FONT_SIZE, TRANSPARENT } from "./constants.js";
 import { dot, makeHtmlString, type NodeProperties } from "./dot.js";
-import type { Graph } from "./genealogy.js";
 import { uncertainEventToDate } from "./genealogy.js";
 import { matchLuminance } from "./palette.js";
 import { type Style, StyleStatic } from "./style.js";
@@ -272,7 +271,6 @@ export const render = <
 >(
 	timelines: Array<TTimelines>,
 	options: RendererOptions,
-	_identityGraph?: Graph<TTimelines> | undefined,
 	hops?: Map<string, number> | undefined,
 ): RendererMetaResult<TTimelines> => {
 	const now = options?.now ?? Date.now();

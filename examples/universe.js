@@ -181,7 +181,7 @@ const renderOptions = {
 	styleSheet,
 	theme,
 };
-const dotGraph = render(trimmedTimelines, renderOptions, graph, hops);
+const dotGraph = render(trimmedTimelines, renderOptions, hops);
 
 const finalEntryCount = trimmedTimelines.reduce(
 	(previous, timeline) => previous + timeline.records.length,
