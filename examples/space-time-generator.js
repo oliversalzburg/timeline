@@ -138,6 +138,8 @@ const fill = (timeline) => {
 		return timeline;
 	}
 
+	timeline.meta.generated = timeline.records.length === 0;
+
 	const name = timeline.meta.identity.name ?? timeline.meta.identity.id;
 
 	let death;

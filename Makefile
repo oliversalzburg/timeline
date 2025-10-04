@@ -24,7 +24,7 @@ ifneq ($(DEBUG_DOT),)
 	DOT_FLAGS += -v5
 endif
 
-UNIVERSE_FLAGS += --min-identity-born=1900
+UNIVERSE_FLAGS += --max-identity-distance=5 --min-identity-born=1900-01-01
 ifneq ($(DEBUG),)
 	PEDIGREE_FLAGS += --debug
 	UNIVERSE_FLAGS += --debug --max-identity-distance=4

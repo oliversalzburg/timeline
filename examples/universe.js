@@ -10,6 +10,7 @@ import {
 	isIdentityLocation,
 	isIdentityMedia,
 	isIdentityPerson,
+	isNotIdentityTimeline,
 	uncertainEventToDate,
 } from "../lib/genealogy.js";
 import { load } from "../lib/loader.js";
@@ -129,12 +130,13 @@ const trimmedTimelines = finalTimelines.filter((_) => {
 		: Number.POSITIVE_INFINITY;
 
 	return (
-		(!isIdentityPerson(_) && !isIdentityLocation(_)) ||
+		isNotIdentityTimeline(_) ||
+		isIdentityMedia(_) ||
 		(isIdentityPerson(_) &&
 			Number.isFinite(distance) &&
 			distance <= maxHops &&
-			(minIdentityBorn !== undefined
-				? minIdentityBorn <= mustExist(born)
+			(minIdentityBorn !== undefined && born !== undefined
+				? minIdentityBorn <= born
 				: true))
 	);
 });

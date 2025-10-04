@@ -136,23 +136,28 @@ export const uncertainEventToLocationString = (
 	return undefined;
 };
 
-export const isNotIdentity = (identity?: Identity | Timeline): boolean => {
+export const isNotIdentity = (identity?: Identity): boolean => {
 	if (isNil(identity)) {
 		return true;
 	}
-	if ("meta" in identity && "identity" in identity.meta) {
-		const realIdentity = identity.meta.identity as Identity | undefined;
-		return isNotIdentity(realIdentity);
+	return !("id" in identity);
+};
+export const isNotIdentityTimeline = (timeline?: Timeline): boolean => {
+	if (isNil(timeline)) {
+		return true;
 	}
-	return false;
+	return !("identity" in timeline.meta);
 };
 export const isIdentityPerson = (identity?: Identity | Timeline): boolean => {
 	if (isNil(identity)) {
 		return false;
 	}
-	if ("meta" in identity && "identity" in identity.meta) {
-		const realIdentity = identity.meta.identity as Identity;
-		return isIdentityPerson(realIdentity);
+	if ("meta" in identity) {
+		if ("identity" in identity.meta) {
+			const realIdentity = identity.meta.identity as Identity;
+			return isIdentityPerson(realIdentity);
+		}
+		return false;
 	}
 	return "born" in identity && identity.born !== undefined;
 };
@@ -160,9 +165,12 @@ export const isIdentityLocation = (identity?: Identity | Timeline): boolean => {
 	if (isNil(identity)) {
 		return false;
 	}
-	if ("meta" in identity && "identity" in identity.meta) {
-		const realIdentity = identity.meta.identity as Identity;
-		return isIdentityLocation(realIdentity);
+	if ("meta" in identity) {
+		if ("identity" in identity.meta) {
+			const realIdentity = identity.meta.identity as Identity;
+			return isIdentityLocation(realIdentity);
+		}
+		return false;
 	}
 
 	return "established" in identity && identity.established !== undefined;
@@ -171,9 +179,12 @@ export const isIdentityMedia = (identity?: Identity | Timeline): boolean => {
 	if (isNil(identity)) {
 		return false;
 	}
-	if ("meta" in identity && "identity" in identity.meta) {
-		const realIdentity = identity.meta.identity as Identity;
-		return isIdentityMedia(realIdentity);
+	if ("meta" in identity) {
+		if ("identity" in identity.meta) {
+			const realIdentity = identity.meta.identity as Identity;
+			return isIdentityMedia(realIdentity);
+		}
+		return false;
 	}
 
 	return "id" in identity && identity.id.startsWith("media/");

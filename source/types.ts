@@ -43,6 +43,7 @@ export interface MetaSectionReferenceRenderer extends MetaSection {
 	color?: string;
 	prefix?: string;
 	rank?: number;
+	generated?: boolean;
 }
 export interface TimelineDocumentReferenceRenderer
 	extends TimelineDocument,

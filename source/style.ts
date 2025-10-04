@@ -2,7 +2,7 @@ import { mustExist } from "@oliversalzburg/js-utils/data/nil.js";
 import { hslPalette } from "@oliversalzburg/js-utils/graphics/palette.js";
 import { TRANSPARENT } from "./constants.js";
 import type { EdgeStyle, NodeStyle, Shape } from "./dot.js";
-import { type Graph, isNotIdentity } from "./genealogy.js";
+import { type Graph, isNotIdentityTimeline } from "./genealogy.js";
 import {
 	fillColorForPen,
 	matchFontColorTo,
@@ -33,7 +33,12 @@ export const StyleStatic: Style = {
 
 export class Styling<
 	TTimeline extends Timeline & {
-		meta: { color?: string; identity?: Identity; rank?: number };
+		meta: {
+			color?: string;
+			generated?: boolean;
+			identity?: Identity;
+			rank?: number;
+		};
 	},
 > {
 	constructor(
@@ -240,7 +245,7 @@ export class Styling<
 			if (styleSheet.has(timeline.meta.id)) {
 				continue;
 			}
-			if (isNotIdentity(timeline)) {
+			if (isNotIdentityTimeline(timeline)) {
 				continue;
 			}
 
@@ -251,7 +256,7 @@ export class Styling<
 				fontcolor: rgbaToString(
 					matchFontColorTo(mustExist(palette.get(timeline))),
 				),
-				link: "dotted",
+				link: timeline.meta.generated === true ? false : "dotted",
 				pencolor: rgbaToString(mustExist(palette.get(timeline))),
 				penwidth: 1,
 				shape: "box",
