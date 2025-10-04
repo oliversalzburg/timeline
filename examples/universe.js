@@ -104,13 +104,23 @@ const maxHops =
 	typeof args["max-identity-distance"] === "string"
 		? Number(args["max-identity-distance"])
 		: Number.POSITIVE_INFINITY;
-const graph = new Graph(timelinesPersons, originIdentityId);
-const hops = graph.calculateHopsFrom(originIdentityId, {
+const minIdentityBorn =
+	typeof args["min-identity-born"] === "string"
+		? new Date(args["min-identity-born"]).valueOf()
+		: undefined;
+const graphUniverse = new Graph(timelinesPersons, originIdentityId);
+const hops = graphUniverse.calculateHopsFrom(originIdentityId, {
 	allowChildHop: true,
 	allowMarriageHop: false,
 	allowParentHop: true,
 });
 const trimmedTimelines = finalTimelines.filter((_) => {
+	const born = isIdentityPerson(_)
+		? uncertainEventToDate(
+				/** @type {import("../source/types.js").TimelineAncestryRenderer} */ (_)
+					.meta.identity.born,
+			)?.valueOf()
+		: undefined;
 	const distance = isIdentityPerson(_)
 		? (hops.get(
 				/** @type {import("../source/types.js").TimelineAncestryRenderer} */ (_)
@@ -120,9 +130,15 @@ const trimmedTimelines = finalTimelines.filter((_) => {
 
 	return (
 		(!isIdentityPerson(_) && !isIdentityLocation(_)) ||
-		(isIdentityPerson(_) && Number.isFinite(distance) && distance <= maxHops)
+		(isIdentityPerson(_) &&
+			Number.isFinite(distance) &&
+			distance <= maxHops &&
+			(minIdentityBorn !== undefined
+				? minIdentityBorn <= mustExist(born)
+				: true))
 	);
 });
+const graphTrimmed = new Graph(trimmedTimelines, originIdentityId);
 
 process.stdout.write(
 	`Universe contains ${timelinesPersons.length} human identities, trimmed to ${trimmedTimelines.length} timelines.\n`,
@@ -131,9 +147,13 @@ process.stdout.write(
 // Generate stylesheet for entire universe.
 /** @type {import("source/types.js").RenderMode} */
 const theme = args.theme === "light" ? "light" : "dark";
-const styleSheet = new Styling(finalTimelines, theme).styles(graph);
+const styleSheet = new Styling(trimmedTimelines, theme).styles(
+	graphTrimmed,
+	hops,
+	maxHops,
+);
 
-// Write GraphViz graph.
+// Generate GraphViz graph.
 /** @type {RendererOptions} */
 const renderOptions = {
 	debug: Boolean(args.debug),
@@ -192,11 +212,11 @@ const dEnd = new Date(globalLatest).toUTCString();
 const dFrom =
 	renderOptions.skipBefore !== undefined
 		? new Date(renderOptions.skipBefore).toUTCString()
-		: "infinity";
+		: dStart;
 const dTo =
 	renderOptions.skipAfter !== undefined
 		? new Date(renderOptions.skipAfter).toUTCString()
-		: "infinity";
+		: dEnd;
 const info = [
 	`Universe was generated on a device indicating a local point in time of:`,
 	`${dBuild} offset ${offset} minutes from UTC`,
@@ -229,7 +249,7 @@ if (dotGraph.graph.length === 1) {
 }
 process.stdout.write("\n");
 const originBirthDate =
-	uncertainEventToDate(graph.resolveIdentity()?.born) ?? new Date();
+	uncertainEventToDate(graphTrimmed.resolveIdentity()?.born) ?? new Date();
 
 writeFileSync(
 	targetPath.replace(/\.gv(?:us)?$/, ".info"),
@@ -271,9 +291,9 @@ writeFileSync(
 					]),
 			],
 			[
-				graph.resolveIdentity()?.name,
+				graphTrimmed.resolveIdentity()?.name,
 				`Z${originBirthDate.getFullYear().toFixed().padStart(4, "0")}-${(originBirthDate.getMonth() + 1).toFixed().padStart(2, "0")}-${originBirthDate.getDate().toFixed().padStart(2, "0")}-0`,
-				dotGraph.timelineClasses.get(mustExist(graph.timelineOf())),
+				dotGraph.timelineClasses.get(mustExist(graphTrimmed.timelineOf())),
 			],
 		]),
 	)}\n`,

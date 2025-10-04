@@ -2,7 +2,7 @@ import { mustExist } from "@oliversalzburg/js-utils/data/nil.js";
 import { hslPalette } from "@oliversalzburg/js-utils/graphics/palette.js";
 import { TRANSPARENT } from "./constants.js";
 import type { EdgeStyle, NodeStyle, Shape } from "./dot.js";
-import type { Graph } from "./genealogy.js";
+import { type Graph, isNotIdentity } from "./genealogy.js";
 import {
 	fillColorForPen,
 	matchFontColorTo,
@@ -85,7 +85,11 @@ export class Styling<
 		);
 	}
 
-	styles(identityGraph: Graph<TTimeline>): Map<string, Style> {
+	styles(
+		identityGraph: Graph<TTimeline>,
+		hops: Map<string, number>,
+		hopsMax?: number,
+	): Map<string, Style> {
 		const palette = this.palette();
 		const styleSheet = new Map<string, Style>();
 
@@ -93,45 +97,55 @@ export class Styling<
 			this.timelines.find((_) => _.meta.identity?.id === identityGraph.origin),
 			`unable to find timeline for origin identity '${identityGraph.origin}'`,
 		);
-		const antecedentsTimelines =
-			identityGraph
-				.antecedents()
-				?.map((_) =>
-					mustExist(
-						this.timelines.find(
-							(timeline) => timeline.meta.identity?.id === _.id,
-						),
+		const timelinesAntecedents =
+			identityGraph.antecedents()?.map((_) =>
+				mustExist(
+					this.timelines.find(
+						(timeline) => timeline.meta.identity?.id === _.id,
 					),
-				) ?? [];
-		const descendantsTimelines =
-			identityGraph
-				.descendants()
-				?.map((_) =>
-					mustExist(
-						this.timelines.find(
-							(timeline) => timeline.meta.identity?.id === _.id,
-						),
+					`identity graph references identity without registered timeline '${_.id}'`,
+				),
+			) ?? [];
+		const timelinesDescendants =
+			identityGraph.descendants()?.map((_) =>
+				mustExist(
+					this.timelines.find(
+						(timeline) => timeline.meta.identity?.id === _.id,
 					),
-				) ?? [];
-		const bloodlineTimelines =
-			identityGraph
-				.bloodline()
-				?.map((_) =>
-					mustExist(
-						this.timelines.find(
-							(timeline) => timeline.meta.identity?.id === _.id,
-						),
+					`identity graph references identity without registered timeline '${_.id}'`,
+				),
+			) ?? [];
+		const timelinesBloodline =
+			identityGraph.bloodline()?.map((_) =>
+				mustExist(
+					this.timelines.find(
+						(timeline) => timeline.meta.identity?.id === _.id,
 					),
-				) ?? [];
-		const hops = identityGraph.calculateHopsFrom(identityGraph.origin, {
-			allowChildHop: true,
-			allowParentHop: true,
-			allowMarriageHop: false,
-		});
-		const hopsMax = hops
-			.values()
-			.reduce((best, _) => (Number.isFinite(_) && best < _ ? _ : best), 0);
+					`identity graph references identity without registered timeline '${_.id}'`,
+				),
+			) ?? [];
+		const timelinesSiblings =
+			identityGraph.siblings()?.map((_) =>
+				mustExist(
+					this.timelines.find(
+						(timeline) => timeline.meta.identity?.id === _.id,
+					),
+					`identity graph references identity without registered timeline '${_.id}'`,
+				),
+			) ?? [];
+		const maxHopsForStyling = Math.min(
+			5,
+			hopsMax !== undefined && Number.isFinite(hopsMax)
+				? hopsMax
+				: hops
+						.values()
+						.reduce(
+							(best, _) => (Number.isFinite(_) && best < _ ? _ : best),
+							0,
+						),
+		);
 
+		// Set origin style.
 		styleSheet.set(originTimeline.meta.id, {
 			fillcolor: rgbaToString(
 				fillColorForPen(mustExist(palette.get(originTimeline)), this.theme),
@@ -146,7 +160,8 @@ export class Styling<
 			style: ["bold", "filled", "rounded"],
 		});
 
-		for (const timeline of antecedentsTimelines) {
+		// Derive styles from genealogy information.
+		for (const timeline of timelinesSiblings) {
 			styleSheet.set(timeline.meta.id, {
 				fillcolor: rgbaToString(
 					fillColorForPen(mustExist(palette.get(timeline)), this.theme),
@@ -156,18 +171,34 @@ export class Styling<
 				),
 				link: "solid",
 				pencolor: rgbaToString(mustExist(palette.get(timeline))),
-				penwidth: Math.max(
-					1,
-					5 -
-						(mustExist(hops.get(mustExist(timeline.meta.identity).id)) /
-							hopsMax) *
-							5,
-				),
+				penwidth: 4,
 				shape: "box",
 				style: ["filled", "rounded"],
 			});
 		}
-		for (const timeline of descendantsTimelines) {
+		for (const timeline of timelinesAntecedents) {
+			const penwidth = Math.max(
+				1,
+				5 -
+					(mustExist(hops.get(mustExist(timeline.meta.identity).id)) /
+						maxHopsForStyling) *
+						5,
+			);
+			styleSheet.set(timeline.meta.id, {
+				fillcolor: rgbaToString(
+					fillColorForPen(mustExist(palette.get(timeline)), this.theme),
+				),
+				fontcolor: rgbaToString(
+					matchFontColorTo(mustExist(palette.get(timeline))),
+				),
+				link: "solid",
+				pencolor: rgbaToString(mustExist(palette.get(timeline))),
+				penwidth,
+				shape: "box",
+				style: ["filled", "rounded"],
+			});
+		}
+		for (const timeline of timelinesDescendants) {
 			styleSheet.set(timeline.meta.id, {
 				fillcolor: rgbaToString(
 					fillColorForPen(mustExist(palette.get(timeline)), this.theme),
@@ -185,7 +216,7 @@ export class Styling<
 				style: ["filled", "rounded"],
 			});
 		}
-		for (const timeline of bloodlineTimelines) {
+		for (const timeline of timelinesBloodline) {
 			if (styleSheet.has(timeline.meta.id)) {
 				continue;
 			}
@@ -203,11 +234,13 @@ export class Styling<
 				style: ["dashed", "rounded"],
 			});
 		}
+
+		// Generate styles for unrelated identities.
 		for (const timeline of this.timelines) {
 			if (styleSheet.has(timeline.meta.id)) {
 				continue;
 			}
-			if ("identity" in timeline.meta === false) {
+			if (isNotIdentity(timeline)) {
 				continue;
 			}
 
@@ -226,6 +259,7 @@ export class Styling<
 			});
 		}
 
+		// Generate styles for all remaining timelines.
 		for (const timeline of this.timelines) {
 			if (styleSheet.has(timeline.meta.id)) {
 				continue;

@@ -334,6 +334,21 @@ export class Graph<
 		];
 	}
 
+	siblings(id = this.origin): Array<Identity> | undefined {
+		const mother = this.motherOf(id);
+		const father = this.fatherOf(id);
+		const childrenMother = new Set(
+			this.childrenOf(mother?.id).map((_) => _.id),
+		);
+		const childrenFather = new Set(
+			this.childrenOf(father?.id).map((_) => _.id),
+		);
+		const childrenShared = childrenMother.intersection(childrenFather);
+		return [...childrenShared]
+			.map((_) => this.resolveIdentity(_))
+			.filter((_) => _ !== undefined);
+	}
+
 	calculateHopsFrom(
 		id = this.origin,
 		options: Partial<{

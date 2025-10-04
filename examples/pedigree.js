@@ -110,7 +110,14 @@ const graph = new Graph(finalTimelines, originIdentityId);
 // Generate stylesheet for entire universe.
 /** @type {import("source/types.js").RenderMode} */
 const theme = args.theme === "light" ? "light" : "dark";
-const styleSheet = new Styling(finalTimelines, theme).styles(graph);
+const styleSheet = new Styling(finalTimelines, theme).styles(
+	graph,
+	graph.calculateHopsFrom(originIdentityId, {
+		allowChildHop: true,
+		allowMarriageHop: false,
+		allowParentHop: true,
+	}),
+);
 
 // Write GraphViz graph.
 /** @type {RendererOptions} */
