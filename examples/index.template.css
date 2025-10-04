@@ -42,6 +42,8 @@ svg {
 	border: 1vmin dashed rgb(255 204 0);
 	background-color: rgb(20 20 20);
 	color: rgb(250 250 250);
+	user-select: none;
+	pointer-events: none;
 
 	pre {
 		padding: 3vmin;
@@ -78,6 +80,7 @@ body {
 	}
 	&:not(.loading) > .loader {
 		opacity: 0;
+		display: none;
 	}
 }
 
@@ -104,6 +107,7 @@ canvas {
 
 	color: rgb(255 255 255);
 	font-family: sans-serif;
+	user-select: none;
 
 	.shoulder {
 		padding: 0.5vmin 1vmin;

@@ -5,11 +5,7 @@ import { resolve } from "node:path";
 import { isNil, mustExist } from "@oliversalzburg/js-utils/data/nil.js";
 import { parse } from "yaml";
 import { MILLISECONDS } from "../lib/constants.js";
-import {
-	Graph,
-	isIdentityLocation,
-	uncertainEventToDate,
-} from "../lib/genealogy.js";
+import { Graph, uncertainEventToDate } from "../lib/genealogy.js";
 import { recurringYearly } from "../lib/generator.js";
 import { load } from "../lib/loader.js";
 import {
@@ -83,10 +79,6 @@ for (const timelinePath of timelinePaths) {
 
 	const timelineObject = parse(timelineData);
 	const timeline = load(timelineObject, timelinePath);
-	if (isIdentityLocation(timeline)) {
-		// Locations are not merged into universe yet.
-		continue;
-	}
 	if (timelinePath === originPath) {
 		originTimeline = timeline;
 		continue;

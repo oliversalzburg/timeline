@@ -136,6 +136,16 @@ export const uncertainEventToLocationString = (
 	return undefined;
 };
 
+export const isNotIdentity = (identity?: Identity | Timeline): boolean => {
+	if (isNil(identity)) {
+		return true;
+	}
+	if ("meta" in identity && "identity" in identity.meta) {
+		const realIdentity = identity.meta.identity as Identity | undefined;
+		return isNotIdentity(realIdentity);
+	}
+	return false;
+};
 export const isIdentityPerson = (identity?: Identity | Timeline): boolean => {
 	if (isNil(identity)) {
 		return false;

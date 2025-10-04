@@ -1105,6 +1105,8 @@ const main = () => {
 };
 
 document.addEventListener("DOMContentLoaded", () => {
-	console.info("DOM content loaded. Program init is pending...");
+	console.info(
+		"DOM content loaded. Program init is pending. Allow at least 30 seconds to pass.",
+	);
 	setTimeout(() => main(), 5000);
 });

@@ -20,20 +20,18 @@ ifneq ($(DEBUG),)
 endif
 
 DOT_FLAGS := -Gcenter=false -Gimagepath=$(OUTPUT) -Gmargin=0 -Gpad=0
-ifneq ($(DEBUG),)
+ifneq ($(DEBUG_DOT),)
 	DOT_FLAGS += -v5
 endif
 
 ifneq ($(DEBUG),)
 	PEDIGREE_FLAGS += --debug
-	UNIVERSE_FLAGS += --debug
-endif
-ifneq ($(PRIVATE),)
-	UNIVERSE_FLAGS += --private
+	UNIVERSE_FLAGS += --debug --max-identity-distance=4
 endif
 
 .PHONY: default build clean docs git-hook pretty lint test coverage universe
 .INTERMEDIATE: $(IMAGES)
+.PRECIOUS: %.dotus %.idotus %.isvgus
 
 lib/tsconfig.source.tsbuildinfo $(_LIBS_D_TS) $(_LIBS_D_TS_MAP) $(_LIBS_JS) $(_LIBS_JS_MAP) : node_modules/.package-lock.json $(_SOURCES_TS)
 	@npm exec -- tsc --build tsconfig.json
@@ -124,9 +122,9 @@ $(IMAGES) &: contrib/prepare-emoji.js examples/emojify.js
 		--target=$(patsubst %-demo-universe.info,%-demo-universe.gvus,$@)
 	@date +"%FT%T%z DEMO Universe (Meta-)Information generated '$@'."
 %-universe.svg : %-universe.info $(IMAGES) contrib/make.sh
-	@contrib/make.sh $(patsubst %-universe.svg,%,$@)
+	+@contrib/make.sh $(patsubst %-universe.svg,%,$@)
 	@date +"%FT%T%z Universe SVG generated '$@'."
-%-universe.html : %-universe.info %-universe.meta %-universe.svg $(wildcard examples/index.template.*) examples/build-site.js
+%-universe.html : %-universe.info %-universe.svg $(wildcard examples/index.template.*) examples/build-site.js
 	@node --enable-source-maps examples/build-site.js \
 		--format=zen \
 		--target=$@
@@ -135,7 +133,7 @@ $(IMAGES) &: contrib/prepare-emoji.js examples/emojify.js
 	@date +"%FT%T%z Synchronizing media..."
 	@rsync --archive $(DATA_ROOT)/media output/
 	@date +"%FT%T%z Golden image ready at 'output/universe.html'."
-%-demo-universe.html : %-demo-universe.info %-demo-universe.meta %-demo-universe.svg $(wildcard examples/index.template.*) examples/build-site.js
+%-demo-universe.html : %-demo-universe.info %-demo-universe.svg $(wildcard examples/index.template.*) examples/build-site.js
 	@node --enable-source-maps examples/build-site.js \
 		--format=zen \
 		--target=$@

@@ -18,7 +18,7 @@ import { render } from "../lib/renderer.js";
 import { Styling } from "../lib/style.js";
 
 /** @import {RendererOptions} from "../lib/renderer.js" */
-/** @import {RenderResultMetadata} from "../lib/types.js" */
+/** @import {RenderResultMetadata, TimelineAncestryRenderer, TimelineReferenceRenderer } from "../lib/types.js" */
 
 const NOW = Date.now();
 
@@ -50,7 +50,13 @@ if (typeof args.origin !== "string") {
 }
 
 const rawData = readFileSync(args.origin, "utf-8").split("\n---\n");
-const originId = parse(rawData[0]).id;
+const originTimelineId = parse(rawData[0]).id;
+if (typeof originTimelineId !== "string") {
+	process.stdout.write(
+		`Unable to parse id of origin document '${args.origin}'.\n`,
+	);
+	process.exit(1);
+}
 
 const targetPath = typeof args.target === "string" ? args.target : undefined;
 if (targetPath === undefined) {
@@ -70,84 +76,56 @@ if (args.segment === true && !targetPath.endsWith(".gvus")) {
 	process.exit(1);
 }
 
-// Parse raw data with appropriate parser.
-/** @type {Map<string,import("source/types.js").TimelineDocument>} */
-const plainData = new Map(
+// Load timeline data.
+/** @type {Map<string, TimelineAncestryRenderer | TimelineReferenceRenderer>} */
+const data = new Map(
 	rawData.map((data) => {
 		const timeline = parse(data);
-		return [timeline.id, timeline];
+		return [timeline.id, load(timeline, timeline.id)];
 	}),
 );
 
-// Load raw data to normalized model.
-const data = new Map(
-	/** @type {Array<[string, import("../source/types.js").TimelineReferenceRenderer | import("../source/types.js").TimelineAncestryRenderer]>} */ ([
-		...plainData
-			.entries()
-			.map(([filename, data]) => [filename, load(data, filename)]),
-	]),
-);
-
-// Calculate universe metrics.
-const metrics = new Map(
-	data
-		.entries()
-		.map(([filename, timeline]) => [filename, analyze(timeline.records)]),
-);
-const globalEarliest = metrics
-	.values()
-	.reduce(
-		(previous, current) =>
-			current.timeEarliest < previous ? current.timeEarliest : previous,
-		Number.POSITIVE_INFINITY,
-	);
-const globalLatest = metrics
-	.values()
-	.reduce(
-		(previous, current) =>
-			previous < current.timeLatest ? current.timeLatest : previous,
-		0,
-	);
-
-/** @type {Array<import("source/types.js").TimelineReferenceRenderer | import("source/types.js").TimelineAncestryRenderer>} */
+/** @type {Array<TimelineAncestryRenderer | TimelineReferenceRenderer>} */
 const finalTimelines = [
+	// uniquify ensures unique entries PER DOCUMENT!
+	// In the merged universe, there might still be duplicate labels.
 	...data.entries().map(([_, timeline]) => uniquify(sort(timeline))),
 ];
 
-const identityTimelines =
-	/** @type {Array<import("../source/types.js").TimelineAncestryRenderer>} */ (
-		finalTimelines.filter(
-			(timeline) =>
-				"identity" in timeline.meta &&
-				timeline.meta.identity.born !== undefined,
-		)
-	);
-const originIdentityId = mustExist(
-	// @ts-expect-error
-	data.get(originId)?.meta.identity?.id,
-	`Empty or invalid identity for origin ID '${originId}'`,
+const timelinesPersons = /** @type {Array<TimelineAncestryRenderer>} */ (
+	finalTimelines.filter((timeline) => isIdentityPerson(timeline))
 );
-const graph = new Graph(identityTimelines, originIdentityId);
+const originIdentityId = mustExist(
+	timelinesPersons.find((_) => _.meta.id === originTimelineId),
+	`Unable to determine identity from origin timeline '${originTimelineId}'.`,
+).meta.identity.id;
+
+const maxHops =
+	typeof args["max-identity-distance"] === "string"
+		? Number(args["max-identity-distance"])
+		: Number.POSITIVE_INFINITY;
+const graph = new Graph(timelinesPersons, originIdentityId);
 const hops = graph.calculateHopsFrom(originIdentityId, {
 	allowChildHop: true,
 	allowMarriageHop: false,
 	allowParentHop: true,
 });
-const trimmedTimelines = finalTimelines.filter(
-	(_) =>
-		!identityTimelines.includes(
-			/** @type {import("../source/types.js").TimelineAncestryRenderer} */ (_),
-		) ||
-		mustExist(
-			hops.get(
+const trimmedTimelines = finalTimelines.filter((_) => {
+	const distance = isIdentityPerson(_)
+		? (hops.get(
 				/** @type {import("../source/types.js").TimelineAncestryRenderer} */ (_)
 					.meta.identity.id,
-			),
-		) < 4,
-);
+			) ?? Number.POSITIVE_INFINITY)
+		: Number.POSITIVE_INFINITY;
+
+	return (
+		(!isIdentityPerson(_) && !isIdentityLocation(_)) ||
+		(isIdentityPerson(_) && Number.isFinite(distance) && distance <= maxHops)
+	);
+});
 
 process.stdout.write(
-	`Universe contains ${identityTimelines.length} identities, trimmed to ${trimmedTimelines.length} timelines.\n`,
+	`Universe contains ${timelinesPersons.length} human identities, trimmed to ${trimmedTimelines.length} timelines.\n`,
 );
 
 // Generate stylesheet for entire universe.
@@ -181,6 +159,26 @@ const renderOptions = {
 };
 const dotGraph = render(trimmedTimelines, renderOptions, hops);
 
+// Calculate universe metrics.
+const metrics = new Map(
+	data
+		.entries()
+		.map(([filename, timeline]) => [filename, analyze(timeline.records)]),
+);
+const globalEarliest = metrics
+	.values()
+	.reduce(
+		(previous, current) =>
+			current.timeEarliest < previous ? current.timeEarliest : previous,
+		Number.POSITIVE_INFINITY,
+	);
+const globalLatest = metrics
+	.values()
+	.reduce(
+		(previous, current) =>
+			previous < current.timeLatest ? current.timeLatest : previous,
+		0,
+	);
 const finalEntryCount = trimmedTimelines.reduce(
 	(previous, timeline) => previous + timeline.records.length,
 	0,
