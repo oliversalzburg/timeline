@@ -210,11 +210,11 @@ const main = () => {
 		document.createElement("canvas"),
 		document.createElement("canvas"),
 	]);
-	const speedTime = 0.0001;
-	const speedScroll = 0.001;
+	const _speedTime = 0.0001;
+	const _speedScroll = 0.001;
 	const starColors = ["#FFFFFF", "#FFDDC1", "#FFC0CB", "#ADD8E6", "#B0E0E6"];
-	const startTime = Date.now();
-	const lastKnownScrollPosition = 0;
+	const _startTime = Date.now();
+	const _lastKnownScrollPosition = 0;
 
 	/**
 	 * @param id {string} -
@@ -1062,6 +1062,7 @@ const main = () => {
 		}
 
 		//svg.style.transform = `translateY(${lastKnownScrollPosition}pt)`;
+		/*
 		const sinceStart = Date.now() - startTime;
 		for (let z = 0; z < starPlanes.length; ++z) {
 			const offset =
@@ -1073,6 +1074,7 @@ const main = () => {
 			starPlanes[z][1].style.transform =
 				`translateY(${offset + windowHeight}px)`;
 		}
+		*/
 
 		if (mediaItemVisible) {
 			// Browser X-Y is reversed.
