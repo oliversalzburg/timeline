@@ -673,8 +673,6 @@ const main = () => {
 
 	let inputEventsPending = false;
 	let requestInstantFocusUpdate = false;
-	/** @type {Array<number> | undefined} */
-	let previousAxes;
 	/** @type {Array<{pressed:boolean}> | undefined} */
 	let previousButtons;
 	const INPUT_THRESHOLD = 0.5;
@@ -688,39 +686,21 @@ const main = () => {
 		if (Array.isArray(gamepads) && 0 < gamepads.length) {
 			const gp = gamepads[0];
 			if (gp !== null) {
-				if (
-					previousAxes !== undefined &&
-					(gp.axes[Inputs.AXIS_LEFT_X] !== previousAxes?.[Inputs.AXIS_LEFT_X] ||
-						INPUT_THRESHOLD < Math.abs(gp.axes[Inputs.AXIS_LEFT_X]))
-				) {
+				if (INPUT_THRESHOLD < Math.abs(gp.axes[Inputs.AXIS_LEFT_X])) {
 					focusTargetBox.x += gp.axes[Inputs.AXIS_LEFT_X] * delta * 0.001;
 					requiresRefresh = true;
 					requestInstantFocusUpdate = true;
 				}
-				if (
-					previousAxes !== undefined &&
-					(gp.axes[Inputs.AXIS_LEFT_Y] !== previousAxes?.[Inputs.AXIS_LEFT_Y] ||
-						INPUT_THRESHOLD < Math.abs(gp.axes[Inputs.AXIS_LEFT_Y]))
-				) {
+				if (INPUT_THRESHOLD < Math.abs(gp.axes[Inputs.AXIS_LEFT_Y])) {
 					focusTargetBox.y += gp.axes[Inputs.AXIS_LEFT_Y] * delta * 0.001;
 					requiresRefresh = true;
 					requestInstantFocusUpdate = true;
 				}
 
-				if (
-					previousAxes !== undefined &&
-					(gp.axes[Inputs.AXIS_RIGHT_X] !==
-						previousAxes?.[Inputs.AXIS_RIGHT_X] ||
-						INPUT_THRESHOLD < Math.abs(gp.axes[Inputs.AXIS_RIGHT_X]))
-				) {
+				if (INPUT_THRESHOLD < Math.abs(gp.axes[Inputs.AXIS_RIGHT_X])) {
 					mediaItemPosition.x -= gp.axes[Inputs.AXIS_RIGHT_X] * delta * 0.001;
 				}
-				if (
-					previousAxes !== undefined &&
-					(gp.axes[Inputs.AXIS_RIGHT_Y] !==
-						previousAxes?.[Inputs.AXIS_RIGHT_Y] ||
-						INPUT_THRESHOLD < Math.abs(gp.axes[Inputs.AXIS_RIGHT_Y]))
-				) {
+				if (INPUT_THRESHOLD < Math.abs(gp.axes[Inputs.AXIS_RIGHT_Y])) {
 					mediaItemPosition.y -= gp.axes[Inputs.AXIS_RIGHT_Y] * delta * 0.001;
 				}
 				if (gp.buttons[Inputs.BUTTON_LT].pressed === true) {
@@ -829,7 +809,6 @@ const main = () => {
 					requiresRefresh = true;
 				}
 
-				previousAxes = [...gp.axes];
 				previousButtons = [...gp.buttons];
 			}
 		}
@@ -1026,8 +1005,6 @@ const main = () => {
 			behavior: requestInstantFocusUpdate ? "instant" : "smooth",
 			left: focusTargetBox.x,
 		});
-		inputEventsPending = false;
-		requestInstantFocusUpdate = false;
 
 		const newCamera = { ...focusTargetBox };
 		setTimeout(
@@ -1038,6 +1015,9 @@ const main = () => {
 			},
 			requestInstantFocusUpdate ? 0 : 1000,
 		);
+
+		inputEventsPending = false;
+		requestInstantFocusUpdate = false;
 
 		return false;
 	};
