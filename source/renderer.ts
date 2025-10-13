@@ -7,7 +7,10 @@ import { hashCyrb53 } from "@oliversalzburg/js-utils/data/string.js";
 import { formatMilliseconds } from "@oliversalzburg/js-utils/format/milliseconds.js";
 import { FONT_NAME, FONT_SIZE, TRANSPARENT } from "./constants.js";
 import { dot, makeHtmlString, type NodeProperties } from "./dot.js";
-import { uncertainEventToDate } from "./genealogy.js";
+import {
+	uncertainEventToDate,
+	uncertainEventToDateString,
+} from "./genealogy.js";
 import { matchLuminance } from "./palette.js";
 import { type Style, StyleStatic } from "./style.js";
 import { STYLE_TRANSFER_MARKER } from "./styles.js";
@@ -290,6 +293,10 @@ export const render = <
 			? (uncertainEventToDate(origin.meta.identity.born)?.valueOf() ??
 				origin.records[0][0])
 			: now;
+	const originTimestampString =
+		"identity" in origin.meta
+			? uncertainEventToDateString(origin.meta.identity.born)
+			: "now";
 
 	const isTimestampInRange = (timestamp: number): boolean =>
 		(options.skipBefore ?? Number.NEGATIVE_INFINITY) < timestamp &&
@@ -376,15 +383,13 @@ export const render = <
 					`${title}\\n${dateString}`,
 				)}`;
 
-		const _timePassedSinceOrigin = timestamp - originTimestamp;
-		const _timePassedSinceThen = now - timestamp;
-		/*
+		const timePassedSinceOrigin = timestamp - originTimestamp;
+		const timePassedSinceThen = now - timestamp;
 		const tooltip = isTransferMarker
 			? undefined
-			: `${formatMilliseconds(timePassedSinceOrigin)} seit ${originString}\\n${formatMilliseconds(
+			: `${formatMilliseconds(timePassedSinceOrigin)} seit ${originTimestampString}\\n${formatMilliseconds(
 					timePassedSinceThen,
 				)} her`;
-				 */
 
 		const style = isTransferMarker ? STYLE_TRANSFER_MARKER : getStyle(leader);
 
@@ -406,7 +411,7 @@ export const render = <
 			shape: style.shape,
 			skipDraw: !isTimestampInRange(timestamp),
 			style: style.style.join(","),
-			tooltip: "",
+			tooltip,
 			width: isTransferMarker ? 1 : undefined,
 		};
 
@@ -552,7 +557,6 @@ export const render = <
 		}
 
 		// Link items in their individual timelines together.
-		let timePassed = 0;
 		for (const timeline of timelinesSegment) {
 			const style = getStyle(timeline);
 
@@ -565,7 +569,7 @@ export const render = <
 			// The entries at the previous timestamp.
 			let previousEntries = new Array<string>();
 			// How many milliseconds passed since the previous timestamp.
-			let _timePassed = 0;
+			let timePassed = 0;
 
 			const eventsInSegment = segment.events.filter(
 				(_) => _.timeline.meta.id === timeline.meta.id,
@@ -583,7 +587,7 @@ export const render = <
 					continue;
 				}
 
-				_timePassed = previousTimestamp
+				timePassed = previousTimestamp
 					? Math.max(1, timestamp - previousTimestamp)
 					: 0;
 
@@ -616,17 +620,12 @@ export const render = <
 							headport: event.isTransferMarker ? "n" : undefined,
 							label: "",
 							penwidth: style.penwidth,
-							//samehead: timeline.meta.id,
-							//sametail: timeline.meta.id,
 							skipDraw: !isTimestampInRange(timestamp),
 							style: style.link,
 							tailport: previousWasTransferMarker ? "s" : undefined,
-							/*
 							tooltip: !event.isTransferMarker
 								? `${formatMilliseconds(timePassed)} passed`
 								: undefined,
-								*/
-							tooltip: "",
 						});
 					}
 				}
@@ -642,7 +641,7 @@ export const render = <
 		// Link up all entries in a single time chain.
 		let previousTimestamp: number | undefined;
 		let previousTimestampEntries = new Array<PlanEvent<TTimelines>>();
-		timePassed = 0;
+		let timePassed = 0;
 		for (const timestamp of timestampsSegment) {
 			timePassed = previousTimestamp
 				? Math.max(1, timestamp - previousTimestamp)
