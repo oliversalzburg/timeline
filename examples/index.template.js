@@ -212,7 +212,13 @@ const main = () => {
 	]);
 	const _speedTime = 0.0001;
 	const _speedScroll = 0.001;
-	const starColors = ["#FFFFFF", "#FFDDC1", "#FFC0CB", "#ADD8E6", "#B0E0E6"];
+	const starColorsRGB = [
+		[255, 255, 255],
+		[255, 221, 193],
+		[255, 192, 203],
+		[173, 216, 230],
+		[176, 224, 230],
+	];
 	const _startTime = Date.now();
 	const _lastKnownScrollPosition = 0;
 
@@ -283,6 +289,12 @@ const main = () => {
 		const anchor = `#${id}`;
 		/** @type {HTMLElement | null} */
 		const node = document.querySelector(anchor);
+		/** @type {HTMLElement | null} */
+		const nodeTitleAnchor = document.querySelector(`${anchor} a`);
+		const _nodeTitle = nodeTitleAnchor?.attributes.getNamedItemNS(
+			"http://www.w3.org/1999/xlink",
+			"title",
+		)?.value;
 
 		if (node === null) {
 			console.error(
@@ -611,19 +623,11 @@ const main = () => {
 	};
 
 	const getRandomColor = () => {
-		const colorBase = starColors[Math.floor(Math.random() * starColors.length)];
-		const matches = colorBase.substring(1).match(/../g);
-		if (matches === null) {
-			return colorBase;
-		}
-		const components = matches.map((x) => Number.parseInt(x, 16));
+		const components =
+			starColorsRGB[Math.floor(Math.random() * starColorsRGB.length)];
 		const scale = 1 / (Math.random() * 3);
-		const color = components
-			.map((_) => Math.floor(_ * scale))
-			.map((_) => _.toString(16).padStart(2, "0"))
-			.join("")
-			.toUpperCase();
-		return `#${color}`;
+		const color = components.map((_) => Math.floor(_ * scale)).join(" ");
+		return `rgb(${color})`;
 	};
 
 	let windowHeight = 1;
@@ -1088,7 +1092,7 @@ const main = () => {
 
 document.addEventListener("DOMContentLoaded", () => {
 	console.info(
-		"DOM content loaded. Program init is pending. Allow at least 30 seconds to pass.",
+		"DOM content loaded. Program init is pending. Allow at least 30 seconds to pass before any content appears.",
 	);
 	setTimeout(() => main(), 5000);
 });
