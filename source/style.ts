@@ -12,10 +12,10 @@ import {
 import type { Identity, RenderMode, RGBATuple, Timeline } from "./types.js";
 
 export interface Style {
-	fillcolor: string;
-	fontcolor: string;
+	fillcolor: RGBATuple | typeof TRANSPARENT;
+	fontcolor: RGBATuple | typeof TRANSPARENT;
 	link: false | EdgeStyle;
-	pencolor: string;
+	pencolor: RGBATuple | typeof TRANSPARENT;
 	penwidth: number;
 	shape: Shape;
 	style: Array<NodeStyle>;
@@ -23,9 +23,9 @@ export interface Style {
 
 export const StyleStatic: Style = {
 	fillcolor: TRANSPARENT,
-	fontcolor: "#808080FF",
+	fontcolor: [160, 160, 160, 255],
 	link: "dashed",
-	pencolor: "#808080FF",
+	pencolor: [160, 160, 160, 255],
 	penwidth: 1,
 	shape: "box",
 	style: ["dotted"],
@@ -152,14 +152,13 @@ export class Styling<
 
 		// Set origin style.
 		styleSheet.set(originTimeline.meta.id, {
-			fillcolor: rgbaToString(
-				fillColorForPen(mustExist(palette.get(originTimeline)), this.theme),
+			fillcolor: fillColorForPen(
+				mustExist(palette.get(originTimeline)),
+				this.theme,
 			),
-			fontcolor: rgbaToString(
-				matchFontColorTo(mustExist(palette.get(originTimeline))),
-			),
+			fontcolor: matchFontColorTo(mustExist(palette.get(originTimeline))),
 			link: "bold",
-			pencolor: rgbaToString(mustExist(palette.get(originTimeline))),
+			pencolor: mustExist(palette.get(originTimeline)),
 			penwidth: 5,
 			shape: "box",
 			style: ["bold", "filled", "rounded"],
@@ -168,14 +167,13 @@ export class Styling<
 		// Derive styles from genealogy information.
 		for (const timeline of timelinesSiblings) {
 			styleSheet.set(timeline.meta.id, {
-				fillcolor: rgbaToString(
-					fillColorForPen(mustExist(palette.get(timeline)), this.theme),
+				fillcolor: fillColorForPen(
+					mustExist(palette.get(timeline)),
+					this.theme,
 				),
-				fontcolor: rgbaToString(
-					matchFontColorTo(mustExist(palette.get(timeline))),
-				),
+				fontcolor: matchFontColorTo(mustExist(palette.get(timeline))),
 				link: "solid",
-				pencolor: rgbaToString(mustExist(palette.get(timeline))),
+				pencolor: mustExist(palette.get(timeline)),
 				penwidth: 4,
 				shape: "box",
 				style: ["filled", "rounded"],
@@ -190,14 +188,13 @@ export class Styling<
 						5,
 			);
 			styleSheet.set(timeline.meta.id, {
-				fillcolor: rgbaToString(
-					fillColorForPen(mustExist(palette.get(timeline)), this.theme),
+				fillcolor: fillColorForPen(
+					mustExist(palette.get(timeline)),
+					this.theme,
 				),
-				fontcolor: rgbaToString(
-					matchFontColorTo(mustExist(palette.get(timeline))),
-				),
+				fontcolor: matchFontColorTo(mustExist(palette.get(timeline))),
 				link: "solid",
-				pencolor: rgbaToString(mustExist(palette.get(timeline))),
+				pencolor: mustExist(palette.get(timeline)),
 				penwidth,
 				shape: "box",
 				style: ["filled", "rounded"],
@@ -205,14 +202,13 @@ export class Styling<
 		}
 		for (const timeline of timelinesDescendants) {
 			styleSheet.set(timeline.meta.id, {
-				fillcolor: rgbaToString(
-					fillColorForPen(mustExist(palette.get(timeline)), this.theme),
+				fillcolor: fillColorForPen(
+					mustExist(palette.get(timeline)),
+					this.theme,
 				),
-				fontcolor: rgbaToString(
-					matchFontColorTo(mustExist(palette.get(timeline))),
-				),
+				fontcolor: matchFontColorTo(mustExist(palette.get(timeline))),
 				link: "solid",
-				pencolor: rgbaToString(mustExist(palette.get(timeline))),
+				pencolor: mustExist(palette.get(timeline)),
 				penwidth: Math.max(
 					1,
 					5 - mustExist(hops.get(mustExist(timeline.meta.identity).id)),
@@ -226,14 +222,13 @@ export class Styling<
 				continue;
 			}
 			styleSheet.set(timeline.meta.id, {
-				fillcolor: rgbaToString(
-					fillColorForPen(mustExist(palette.get(timeline)), this.theme),
+				fillcolor: fillColorForPen(
+					mustExist(palette.get(timeline)),
+					this.theme,
 				),
-				fontcolor: rgbaToString(
-					matchFontColorTo(mustExist(palette.get(timeline))),
-				),
+				fontcolor: matchFontColorTo(mustExist(palette.get(timeline))),
 				link: "dashed",
-				pencolor: rgbaToString(mustExist(palette.get(timeline))),
+				pencolor: mustExist(palette.get(timeline)),
 				penwidth: 1,
 				shape: "box",
 				style: ["dashed", "rounded"],
@@ -250,14 +245,13 @@ export class Styling<
 			}
 
 			styleSheet.set(timeline.meta.id, {
-				fillcolor: rgbaToString(
-					fillColorForPen(mustExist(palette.get(timeline)), this.theme),
+				fillcolor: fillColorForPen(
+					mustExist(palette.get(timeline)),
+					this.theme,
 				),
-				fontcolor: rgbaToString(
-					matchFontColorTo(mustExist(palette.get(timeline))),
-				),
+				fontcolor: matchFontColorTo(mustExist(palette.get(timeline))),
 				link: timeline.meta.generated === true ? false : "dotted",
-				pencolor: rgbaToString(mustExist(palette.get(timeline))),
+				pencolor: mustExist(palette.get(timeline)),
 				penwidth: 1,
 				shape: "box",
 				style: ["dotted", "rounded"],
@@ -270,16 +264,12 @@ export class Styling<
 				continue;
 			}
 			styleSheet.set(timeline.meta.id, {
-				fillcolor: rgbaToString(
-					this.theme === "light" ? [255, 255, 255, 0] : [0, 0, 0, 0],
-				),
-				fontcolor: rgbaToString(
-					matchFontColorTo(
-						this.theme === "light" ? [255, 255, 255] : [0, 0, 0],
-					),
+				fillcolor: this.theme === "light" ? [255, 255, 255, 0] : [0, 0, 0, 0],
+				fontcolor: matchFontColorTo(
+					this.theme === "light" ? [255, 255, 255] : [0, 0, 0],
 				),
 				link: false,
-				pencolor: rgbaToString(mustExist(palette.get(timeline))),
+				pencolor: mustExist(palette.get(timeline)),
 				penwidth: 1,
 				shape: "box",
 				style: ["dotted", "rounded"],

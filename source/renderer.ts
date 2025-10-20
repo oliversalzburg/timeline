@@ -11,11 +11,12 @@ import {
 	uncertainEventToDate,
 	uncertainEventToDateString,
 } from "./genealogy.js";
-import { matchLuminance } from "./palette.js";
+import { matchLuminance, rgbaToHexString } from "./palette.js";
 import { type Style, StyleStatic } from "./style.js";
 import { STYLE_TRANSFER_MARKER } from "./styles.js";
 import type {
 	RenderMode,
+	RGBATuple,
 	TimelineAncestryRenderer,
 	TimelineReferenceRenderer,
 } from "./types.js";
@@ -350,7 +351,7 @@ export const render = <
 			: ["event", ...contributors.values().map((_) => classes.get(_.meta.id))];
 		const color = isTransferMarker ? "transparent" : getStyle(leader).pencolor;
 		const fillcolors = isTransferMarker
-			? ["#FF0000FF"]
+			? [[255, 0, 0, 255] as RGBATuple]
 			: contributors.values().reduce((fillColors, timeline) => {
 					const fill = getStyle(timeline).fillcolor;
 
@@ -365,9 +366,9 @@ export const render = <
 							: matchLuminance(fill, getStyle(leader).fillcolor),
 					);
 					return fillColors;
-				}, new Array<string>());
+				}, new Array<RGBATuple | "transparent">());
 		const fontcolor = isTransferMarker
-			? "#000000FF"
+			? ([0, 0, 0, 255] as RGBATuple)
 			: getStyle(leader).fontcolor;
 		const id = isTransferMarker ? undefined : registerId(timestamp);
 
@@ -395,14 +396,14 @@ export const render = <
 
 		const nodeProperties: Partial<NodeProperties> = {
 			class: classList.join(" "),
-			color: color === "transparent" ? "#00000000" : color,
+			color: rgbaToHexString(color),
 			fillcolor: style.style.includes("filled")
 				? fillcolors.length === 1
-					? fillcolors[0]
-					: `${fillcolors[0]}:${fillcolors[1]}`
+					? rgbaToHexString(fillcolors[0])
+					: `${rgbaToHexString(fillcolors[0])}:${rgbaToHexString(fillcolors[1])}`
 				: undefined,
 			fixedsize: isTransferMarker ? true : undefined,
-			fontcolor,
+			fontcolor: rgbaToHexString(fontcolor),
 			fontsize: isTransferMarker ? 0 : undefined,
 			height: isTransferMarker ? 0 : undefined,
 			id,
@@ -616,7 +617,7 @@ export const render = <
 					for (const previousEntry of previousEntries) {
 						d.link(previousEntry, timelineEvent, {
 							arrowhead: event.isTransferMarker ? "none" : undefined,
-							color: style.pencolor,
+							color: rgbaToHexString(style.pencolor),
 							headport: event.isTransferMarker ? "n" : undefined,
 							label: "",
 							penwidth: style.penwidth,

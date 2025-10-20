@@ -11,25 +11,47 @@ export interface PaletteEntry {
 	source: string | undefined;
 }
 
-export const rgbToString = (rgb: RGBTuple): string =>
-	`#${rgb
-		.map((_) => _.toString(16).padStart(2, "0"))
-		.join("")
-		.toUpperCase()}FF`;
-export const rgbaToString = (rgba: RGBATuple): string =>
-	`#${rgba
-		.map((_) => _.toString(16).padStart(2, "0"))
-		.join("")
-		.toUpperCase()}`;
+export const rgbToHexString = (rgb: RGBTuple | "transparent"): string =>
+	rgb === TRANSPARENT
+		? TRANSPARENT
+		: `#${rgb
+				.map((_) => _.toString(16).padStart(2, "0"))
+				.join("")
+				.toUpperCase()}FF`;
+export const rgbaToHexString = (rgba: RGBATuple | "transparent"): string =>
+	rgba === TRANSPARENT
+		? TRANSPARENT
+		: `#${rgba
+				.map((_) => _.toString(16).padStart(2, "0"))
+				.join("")
+				.toUpperCase()}`;
+export const rgbToString = (rgb: RGBTuple | "transparent"): string =>
+	rgb === TRANSPARENT ? TRANSPARENT : `rgba(${rgb.join(" ")} / 1)`;
+export const rgbaToString = (rgba: RGBATuple | "transparent"): string =>
+	rgba === TRANSPARENT
+		? TRANSPARENT
+		: `rgba(${rgba.slice(0, 3).join(" ")} / ${rgba[3] / 255})`;
 
-export const rgbFromString = (rgb: string): RGBTuple =>
+export const rgbFromHexString = (rgb: string): RGBTuple =>
 	mustExist(rgb.substring(1).match(/../g))
 		.slice(0, 3)
 		.map((x) => Number.parseInt(x, 16)) as RGBTuple;
-export const rgbaFromString = (rgba: string): RGBATuple =>
+export const rgbaFromHexString = (rgba: string): RGBATuple =>
 	mustExist(rgba.substring(1).match(/../g))
 		.slice(0, 4)
 		.map((x) => Number.parseInt(x, 16)) as RGBATuple;
+export const rgbaFromString = (rgba: string): RGBATuple => {
+	const elements = mustExist(
+		rgba.match(/^rgba\((\d+) (\d+) (\d+) \/ (\d+(\.\d+)?)\)$/),
+		"unexpected notation",
+	);
+	const rgb = elements
+		.slice(1, 4)
+		.map((x) => Number.parseInt(x, 10)) as RGBTuple;
+	const alpha = elements.slice(4, 5).map((x) => Number.parseFloat(x) * 255)[0];
+
+	return [...rgb, alpha] as RGBATuple;
+};
 
 export const fillColorForPen = (
 	color: RGBTuple | RGBATuple,
@@ -190,17 +212,16 @@ export const palette = <T>(theme: RenderMode) => {
 	return { add, predictDemand, toPalette };
 };
 
-export const matchLuminance = (toAdjust: string, target: string): string => {
-	if (toAdjust === target) {
+export const matchLuminance = (
+	toAdjust: RGBATuple,
+	target: RGBATuple | "transparent",
+): RGBATuple => {
+	if (toAdjust === target || target === TRANSPARENT) {
 		return toAdjust;
 	}
 
-	const componentsBase = mustExist(toAdjust.substring(1).match(/../g)).map(
-		(x) => Number.parseInt(x, 16),
-	);
-	const componentsTarget = mustExist(target.substring(1).match(/../g)).map(
-		(x) => Number.parseInt(x, 16),
-	);
+	const componentsBase = toAdjust;
+	const componentsTarget = target;
 	const hslBase = rgb2hsl(
 		componentsBase[0] / 255,
 		componentsBase[1] / 255,
@@ -212,26 +233,21 @@ export const matchLuminance = (toAdjust: string, target: string): string => {
 		componentsTarget[2] / 255,
 	);
 
-	return rgbaToString([
+	return [
 		...(hsl2rgb(hslBase[0], hslBase[1], hslTarget[2]).map((x) =>
 			Math.floor(x * 255),
 		) as RGBTuple),
 		255,
-	]);
+	];
 };
 
-export const setOpacity = (color: string, opacity: number): string => {
+export const setOpacity = (
+	color: RGBATuple | "transparent",
+	opacity: number,
+): string => {
 	if (color === TRANSPARENT) {
 		return TRANSPARENT;
 	}
 
-	const componentsBase = mustExist(color.substring(1).match(/../g)).map((x) =>
-		Number.parseInt(x, 16),
-	);
-	return rgbaToString([
-		componentsBase[0],
-		componentsBase[1],
-		componentsBase[2],
-		opacity,
-	]);
+	return rgbaToString([color[0], color[1], color[2], opacity]);
 };

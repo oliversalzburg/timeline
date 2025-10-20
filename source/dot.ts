@@ -1,5 +1,6 @@
 import { indent } from "@oliversalzburg/js-utils/data/string.js";
 import { InvalidOperationError } from "@oliversalzburg/js-utils/errors/InvalidOperationError.js";
+import { TRANSPARENT } from "./constants.js";
 
 export type Arrow =
 	| "box"
@@ -228,7 +229,7 @@ export const dot = () => {
 		}
 	};
 
-	const validateColor = (
+	const validateColorHex = (
 		color: "color" | "fontcolor" | "fillcolor",
 		options?: Partial<NodeProperties>,
 	) => {
@@ -236,10 +237,27 @@ export const dot = () => {
 			options !== undefined &&
 			color in options &&
 			options[color] !== undefined &&
-			options[color].length !== 9
+			options[color].length !== 9 &&
+			options[color] !== TRANSPARENT
 		) {
 			throw new InvalidOperationError(
 				`${color} is expected to have #RRGGBBAA format. received '${options.color}'`,
+			);
+		}
+	};
+	const _validateColor = (
+		color: "color" | "fontcolor" | "fillcolor",
+		options?: Partial<NodeProperties>,
+	) => {
+		if (
+			options !== undefined &&
+			color in options &&
+			options[color] !== undefined &&
+			options[color].match(/^rgba\((\d+) (\d+) (\d+) \/ (\d+(\.\d+)?)\)$/) ===
+				null
+		) {
+			throw new InvalidOperationError(
+				`${color} is expected to have rgba(r g b / a) format. received '${options.color}'`,
 			);
 		}
 	};
@@ -252,7 +270,7 @@ export const dot = () => {
 		const id = ++nextNodeIndex;
 		nodeIds.set(_, id);
 
-		validateColor("color", options);
+		validateColorHex("color", options);
 
 		if (options?.skipDraw !== true) {
 			renderRaw(`${id} ${makePropertyString({ label: _, ...options })}`);
@@ -281,7 +299,7 @@ export const dot = () => {
 				`Can't link node with itself: '${a}' <-> '${b}'`,
 			);
 		}
-		validateColor("color", options);
+		validateColorHex("color", options);
 
 		if (options?.skipDraw !== true) {
 			renderRaw(

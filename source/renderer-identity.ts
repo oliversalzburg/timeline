@@ -27,11 +27,16 @@ import {
 	uncertainEventToDateString,
 	uncertainEventToLocationString,
 } from "./genealogy.js";
-import { matchLuminance, setOpacity } from "./palette.js";
+import { matchLuminance, rgbaToString, setOpacity } from "./palette.js";
 import type { RendererOptions } from "./renderer.js";
 import { StyleStatic } from "./style.js";
 import type { Style } from "./styles.js";
-import type { Identity, Sexus, TimelineAncestryRenderer } from "./types.js";
+import type {
+	Identity,
+	RGBATuple,
+	Sexus,
+	TimelineAncestryRenderer,
+} from "./types.js";
 
 export const renderSimple = (
 	timelines: Array<TimelineAncestryRenderer>,
@@ -62,8 +67,14 @@ export const renderSimple = (
 			? graph.bloodline(originIdentity.id)
 			: undefined;
 
-	const defaultBackground = options.theme === "light" ? "#FFFFFF" : "#000000";
-	const defaultForeground = options.theme === "light" ? "#000000" : "#FFFFFF";
+	const defaultBackground: RGBATuple =
+		options.debug || options.theme === "light"
+			? [255, 255, 255, 255]
+			: [0, 0, 0, 255];
+	const defaultForeground: RGBATuple =
+		options.debug || options.theme === "light"
+			? [0, 0, 0, 255]
+			: [255, 255, 255, 255];
 	const fontNode =
 		options.rendererAnonymization === "enabled" ? "DummyText2" : "DejaVu Serif";
 
@@ -145,7 +156,7 @@ export const renderSimple = (
 		d.node(identity.id, {
 			fontcolor:
 				identity === originIdentity || originAntecedents?.includes(identity)
-					? defaultForeground
+					? rgbaToString(defaultForeground)
 					: color,
 			fontname: identity === originIdentity ? `${fontNode} bold` : undefined,
 			fontsize: identity === originIdentity ? FONT_SIZE + 4 : undefined,
@@ -230,10 +241,14 @@ export const renderUniverse = (
 			? graph.bloodline(originIdentity.id)
 			: undefined;
 
-	const defaultBackground =
-		options.debug || options.theme === "light" ? "#FFFFFF" : "#000000";
-	const defaultForeground =
-		options.debug || options.theme === "light" ? "#000000" : "#FFFFFF";
+	const defaultBackground: RGBATuple =
+		options.debug || options.theme === "light"
+			? [255, 255, 255, 255]
+			: [0, 0, 0, 255];
+	const defaultForeground: RGBATuple =
+		options.debug || options.theme === "light"
+			? [0, 0, 0, 255]
+			: [255, 255, 255, 255];
 	const _fonts = [
 		// Serif
 		"DejaVu Serif",
@@ -318,7 +333,7 @@ export const renderUniverse = (
 				: contributorsTimelines[0] !== undefined
 					? getStyle(contributorsTimelines[0])
 					: undefined
-			)?.pencolor ?? "#808080FF",
+			)?.pencolor ?? [160, 160, 160, 255],
 			opacity,
 		);
 
@@ -460,7 +475,7 @@ export const renderUniverse = (
 			{
 				fontcolor:
 					identity === originIdentity || originAntecedents?.includes(identity)
-						? defaultForeground
+						? rgbaToString(defaultForeground)
 						: color,
 				fontname: identity === originIdentity ? `${fontNode} bold` : undefined,
 				fontsize: identity === originIdentity ? FONT_SIZE + 4 : undefined,
