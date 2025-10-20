@@ -119,33 +119,11 @@ const main = () => {
 			});
 			return set;
 		},
-		/** @type {Set<string>} */ (new Set()),
+		/** @type {Set<string>} */(new Set()),
 	);
 	// Get all their IDs into a single order. The IDs are designed to fall into
 	// chronological order when sorted based on their ASCII values.
 	const allEventIDs = [...idSet.values()].sort();
-	// A set of all unique timeline IDs. A unique ID has been generated for each
-	// timeline by the renderer. For the navigation, we don't require any
-	// additional metadata.
-	const timelineIds = new Set(new Map(DATA[0]).keys());
-	// A map of all timeline IDs and the IDs of nodes that belong to that timeline.
-	const timelineNodes = new Map(
-		[...timelineIds.values()].map((_) => [
-			_,
-			[...document.querySelectorAll(`.node.event.${_}`).values()]
-				.map((node) => node.id)
-				.sort(),
-		]),
-	);
-	// A map of node IDs to their respective parent timeline.
-	const nodeTimelines = new Map(
-		[...timelineIds.values()].flatMap((_) =>
-			[...document.querySelectorAll(`.node.event.${_}`).values()]
-				.map((node) => node.id)
-				.sort()
-				.map((id) => [id, _]),
-		),
-	);
 	/** @type {Map<string, Array<string>>} */
 	const lookupTimelineToEventIDs = new Map(DATA[0]);
 	/** @type {Map<string, import("source/types.js").TimelineMetadata>} */
@@ -291,7 +269,7 @@ const main = () => {
 		const node = document.querySelector(anchor);
 		/** @type {HTMLElement | null} */
 		const nodeTitleAnchor = document.querySelector(`${anchor} a`);
-		const _nodeTitle = nodeTitleAnchor?.attributes.getNamedItemNS(
+		const nodeTitle = nodeTitleAnchor?.attributes.getNamedItemNS(
 			"http://www.w3.org/1999/xlink",
 			"title",
 		)?.value;
@@ -311,9 +289,9 @@ const main = () => {
 		timelineFocused =
 			onTimelineId ??
 			(timelineFocused !== undefined &&
-			timelineNodes.get(timelineFocused)?.includes(id)
+				lookupTimelinesFromEventId.get(id)?.includes(timelineFocused)
 				? timelineFocused
-				: nodeTimelines.get(id));
+				: lookupTimelinesFromEventId.get(id)?.[0]);
 
 		if (setState) {
 			window.history.pushState(
@@ -924,13 +902,13 @@ const main = () => {
 
 				statusContainer.style.visibility =
 					0 < newNeighbors.intersection.length ||
-					0 < newNeighbors.mediaItems.length
+						0 < newNeighbors.mediaItems.length
 						? "visible"
 						: "hidden";
 
 				shoulderLeft.style.visibility =
 					0 < newNeighbors.mediaItems.length &&
-					timelineMediaIdActive !== undefined
+						timelineMediaIdActive !== undefined
 						? "visible"
 						: "hidden";
 				shoulderLeft.textContent =
