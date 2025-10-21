@@ -73,7 +73,7 @@ export const fillColorForPen = (
 
 export const matchFontColorTo = (color: RGBTuple | RGBATuple): RGBATuple => {
 	const hsl = rgb2hsl(color[0] / 255, color[1] / 255, color[2] / 255);
-	return hsl[2] < 0.5 ? [255, 255, 255, 255] : [0, 0, 0, 255];
+	return hsl[2] < 0.5 ? [250, 250, 250, 255] : [5, 5, 5, 255];
 };
 
 export interface PaletteMeta<T> {

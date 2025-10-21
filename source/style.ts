@@ -31,6 +31,16 @@ export const StyleStatic: Style = {
 	style: ["dotted"],
 };
 
+export const STYLE_TRANSFER_MARKER: Style = {
+	fillcolor: TRANSPARENT,
+	link: "invis",
+	penwidth: 1,
+	fontcolor: TRANSPARENT,
+	pencolor: TRANSPARENT,
+	shape: "rect",
+	style: ["solid"],
+};
+
 export class Styling<
 	TTimeline extends Timeline & {
 		meta: {

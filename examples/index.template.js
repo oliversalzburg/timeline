@@ -45,6 +45,17 @@ const main = () => {
 	}
 
 	/** @type {HTMLDivElement | null} */
+	const calendarContainer = document.querySelector("#calendar");
+	if (calendarContainer === null) {
+		throw new Error("Unable to find #calendar element.");
+	}
+	/** @type {HTMLParagraphElement | null} */
+	const calendarText = document.querySelector("#calendar .text");
+	if (calendarText === null) {
+		throw new Error("Unable to find #calendar element.");
+	}
+
+	/** @type {HTMLDivElement | null} */
 	const statusContainer = document.querySelector("#status");
 	if (statusContainer === null) {
 		throw new Error("Unable to find #status element.");
@@ -119,7 +130,7 @@ const main = () => {
 			});
 			return set;
 		},
-		/** @type {Set<string>} */(new Set()),
+		/** @type {Set<string>} */ (new Set()),
 	);
 	// Get all their IDs into a single order. The IDs are designed to fall into
 	// chronological order when sorted based on their ASCII values.
@@ -281,6 +292,15 @@ const main = () => {
 			return;
 		}
 
+		if (nodeTitle === undefined) {
+			console.error(
+				`Node with ID '${id}' does not provide a title. Unable to focus node.`,
+			);
+			return;
+		}
+
+		calendarText.textContent = nodeTitle;
+
 		nodeFocused = node;
 		idFocused = id;
 		// If the newly focused node exists on the already focused timeline,
@@ -289,7 +309,7 @@ const main = () => {
 		timelineFocused =
 			onTimelineId ??
 			(timelineFocused !== undefined &&
-				lookupTimelinesFromEventId.get(id)?.includes(timelineFocused)
+			lookupTimelinesFromEventId.get(id)?.includes(timelineFocused)
 				? timelineFocused
 				: lookupTimelinesFromEventId.get(id)?.[0]);
 
@@ -902,13 +922,13 @@ const main = () => {
 
 				statusContainer.style.visibility =
 					0 < newNeighbors.intersection.length ||
-						0 < newNeighbors.mediaItems.length
+					0 < newNeighbors.mediaItems.length
 						? "visible"
 						: "hidden";
 
 				shoulderLeft.style.visibility =
 					0 < newNeighbors.mediaItems.length &&
-						timelineMediaIdActive !== undefined
+					timelineMediaIdActive !== undefined
 						? "visible"
 						: "hidden";
 				shoulderLeft.textContent =

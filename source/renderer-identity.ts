@@ -30,7 +30,6 @@ import {
 import { matchLuminance, rgbaToString, setOpacity } from "./palette.js";
 import type { RendererOptions } from "./renderer.js";
 import { StyleStatic } from "./style.js";
-import type { Style } from "./styles.js";
 import type {
 	Identity,
 	RGBATuple,
@@ -297,14 +296,6 @@ export const renderUniverse = (
 					30,
 					distance !== undefined ? Math.max(0, 255 - distance * 30) : 0,
 				);
-
-	const _computePenWidth = (style: Style, isOrigin = false) => {
-		if (options.debug === true) {
-			return isOrigin ? 5 : 1;
-		}
-		const p = style.penwidth / 3;
-		return style.outline ? p * p : 0.5;
-	};
 
 	const getStyle = (_?: TimelineAncestryRenderer) => {
 		if (options.styleSheet === undefined || _ === undefined) {

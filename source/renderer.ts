@@ -5,15 +5,19 @@ import {
 } from "@oliversalzburg/js-utils/data/nil.js";
 import { hashCyrb53 } from "@oliversalzburg/js-utils/data/string.js";
 import { formatMilliseconds } from "@oliversalzburg/js-utils/format/milliseconds.js";
-import { FONT_NAME, FONT_SIZE, TRANSPARENT } from "./constants.js";
+import {
+	FONT_NAME,
+	FONT_SIZE,
+	MILLISECONDS,
+	TRANSPARENT,
+} from "./constants.js";
 import { dot, makeHtmlString, type NodeProperties } from "./dot.js";
 import {
 	uncertainEventToDate,
 	uncertainEventToDateString,
 } from "./genealogy.js";
 import { matchLuminance, rgbaToHexString } from "./palette.js";
-import { type Style, StyleStatic } from "./style.js";
-import { STYLE_TRANSFER_MARKER } from "./styles.js";
+import { STYLE_TRANSFER_MARKER, type Style, StyleStatic } from "./style.js";
 import type {
 	RenderMode,
 	RGBATuple,
@@ -34,6 +38,27 @@ export interface RendererOptions {
 	rendererAnalytics: "enabled" | "disabled";
 	rendererAnonymization: "enabled" | "disabled";
 }
+
+export const renderMilliseconds = (ms: number): string => {
+	const levels = [
+		MILLISECONDS.ONE_YEAR,
+		MILLISECONDS.ONE_DAY,
+		MILLISECONDS.ONE_HOUR,
+		MILLISECONDS.ONE_MINUTE,
+	];
+	const counts = [];
+	for (const level of levels) {
+		let count = 0;
+		while (level <= ms) {
+			ms -= level;
+			++count;
+		}
+		counts[levels.indexOf(level)] = count;
+	}
+	return 0 < counts[0]
+		? `${counts[0]} Jahr${counts[0] !== 1 ? "e" : ""} ${counts[1]} Tag${counts[1] !== 1 ? "e" : ""}`
+		: `${counts[1]} Tag${counts[1] !== 1 ? "e" : ""}`;
+};
 
 /**
  * Determine the rank of a timeline.
@@ -278,6 +303,7 @@ export const render = <
 	hops?: Map<string, number> | undefined,
 ): RendererMetaResult<TTimelines> => {
 	const now = options?.now ?? Date.now();
+	const nowString = options.dateRenderer?.(now) ?? now.toString();
 	const origin: TTimelines =
 		options?.origin !== undefined
 			? mustExist(
@@ -296,7 +322,10 @@ export const render = <
 			: now;
 	const originTimestampString =
 		"identity" in origin.meta
-			? uncertainEventToDateString(origin.meta.identity.born)
+			? uncertainEventToDateString(
+					origin.meta.identity.born,
+					options.dateRenderer,
+				)
 			: "now";
 
 	const isTimestampInRange = (timestamp: number): boolean =>
@@ -381,16 +410,22 @@ export const render = <
 		const label = isTransferMarker
 			? " "
 			: `${0 < prefixes.length ? `${prefixes}\u00A0` : ""}${makeHtmlString(
-					`${title}\\n${dateString}`,
+					`${title}`,
 				)}`;
 
 		const timePassedSinceOrigin = timestamp - originTimestamp;
 		const timePassedSinceThen = now - timestamp;
 		const tooltip = isTransferMarker
 			? undefined
-			: `${formatMilliseconds(timePassedSinceOrigin)} seit ${originTimestampString}\\n${formatMilliseconds(
-					timePassedSinceThen,
-				)} her`;
+			: [
+					`${dateString}\\n`,
+					0 < timePassedSinceOrigin
+						? `${renderMilliseconds(timePassedSinceOrigin)} seit ${originTimestampString}\\n`
+						: `${renderMilliseconds(timePassedSinceOrigin * -1)} bis ${originTimestampString}\\n`,
+					0 < timePassedSinceThen
+						? `${renderMilliseconds(timePassedSinceThen)} bis ${nowString}`
+						: `${renderMilliseconds(timePassedSinceThen)} seit ${nowString}`,
+				].join("");
 
 		const style = isTransferMarker ? STYLE_TRANSFER_MARKER : getStyle(leader);
 
@@ -625,7 +660,7 @@ export const render = <
 							style: style.link,
 							tailport: previousWasTransferMarker ? "s" : undefined,
 							tooltip: !event.isTransferMarker
-								? `${formatMilliseconds(timePassed)} passed`
+								? `${renderMilliseconds(timePassed)} vergangen`
 								: undefined,
 						});
 					}
