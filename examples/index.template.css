@@ -92,6 +92,7 @@ canvas {
 
 #calendar {
 	display: grid;
+	z-index: 5;
 
 	position: fixed;
 	top: 0;
@@ -111,6 +112,7 @@ canvas {
 #status {
 	display: grid;
 	grid-template-columns: 20vw auto 20vw;
+	z-index: 5;
 
 	position: fixed;
 	bottom: 0;
@@ -231,7 +233,7 @@ dialog {
 	flex-direction: column;
 
 	position: fixed;
-	z-index: 100;
+	z-index: 3;
 	top: 0;
 	left: 0;
 	margin: 3vmin;

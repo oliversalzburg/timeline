@@ -677,7 +677,7 @@ const main = () => {
 	let requestInstantFocusUpdate = false;
 	/** @type {Array<{pressed:boolean}> | undefined} */
 	let previousButtons;
-	const INPUT_THRESHOLD = 0.5;
+	const INPUT_THRESHOLD = 0.1;
 
 	/**
 	 * @param {number} delta -
@@ -688,29 +688,34 @@ const main = () => {
 		if (Array.isArray(gamepads) && 0 < gamepads.length) {
 			const gp = gamepads[0];
 			if (gp !== null) {
+				const scale = delta / 16;
 				if (INPUT_THRESHOLD < Math.abs(gp.axes[Inputs.AXIS_LEFT_X])) {
-					focusTargetBox.x += gp.axes[Inputs.AXIS_LEFT_X] * delta * 0.001;
+					focusTargetBox.x += gp.axes[Inputs.AXIS_LEFT_X] * scale * 0.0001;
 					requiresRefresh = true;
 					requestInstantFocusUpdate = true;
 				}
 				if (INPUT_THRESHOLD < Math.abs(gp.axes[Inputs.AXIS_LEFT_Y])) {
-					focusTargetBox.y += gp.axes[Inputs.AXIS_LEFT_Y] * delta * 0.001;
+					focusTargetBox.y += gp.axes[Inputs.AXIS_LEFT_Y] * scale * 0.0001;
 					requiresRefresh = true;
 					requestInstantFocusUpdate = true;
 				}
 
 				if (INPUT_THRESHOLD < Math.abs(gp.axes[Inputs.AXIS_RIGHT_X])) {
-					mediaItemPosition.x -= gp.axes[Inputs.AXIS_RIGHT_X] * delta * 0.001;
+					mediaItemPosition.x -= gp.axes[Inputs.AXIS_RIGHT_X] * scale * 0.001;
 				}
 				if (INPUT_THRESHOLD < Math.abs(gp.axes[Inputs.AXIS_RIGHT_Y])) {
-					mediaItemPosition.y -= gp.axes[Inputs.AXIS_RIGHT_Y] * delta * 0.001;
+					mediaItemPosition.y -= gp.axes[Inputs.AXIS_RIGHT_Y] * scale * 0.001;
 				}
 				if (gp.buttons[Inputs.BUTTON_LT].pressed === true) {
-					mediaItemPosition.z -= delta * 0.001;
+					mediaItemPosition.z -= INPUT_THRESHOLD * scale * 0.01;
 				}
 				if (gp.buttons[Inputs.BUTTON_RT].pressed === true) {
-					mediaItemPosition.z += delta * 0.001;
+					mediaItemPosition.z += INPUT_THRESHOLD * scale * 0.01;
 				}
+				mediaItemPosition.x = Math.max(Math.min(mediaItemPosition.x, 95), -95);
+				mediaItemPosition.y = Math.max(Math.min(mediaItemPosition.y, 95), -95);
+				// Otherwise the item ends up behind the camera, or too far away.
+				mediaItemPosition.z = Math.max(Math.min(mediaItemPosition.z, 39), -130);
 
 				if (
 					gp.buttons[Inputs.BUTTON_START].pressed === false &&
@@ -1060,7 +1065,7 @@ const main = () => {
 
 		if (mediaItemVisible) {
 			// Browser X-Y is reversed.
-			dialog.style.transform = `perspective(50vmin) rotateY(${mediaItemRotation.x}deg) rotateX(${mediaItemRotation.y}deg) translate3d(${mediaItemPosition.x}px, ${mediaItemPosition.y}px, ${mediaItemPosition.z}px)`;
+			dialog.style.transform = `perspective(50vmin) rotateY(${mediaItemRotation.x}deg) rotateX(${mediaItemRotation.y}deg) translate3d(${mediaItemPosition.x}vmin, ${mediaItemPosition.y}vmin, ${mediaItemPosition.z}vmin)`;
 		}
 
 		window.requestAnimationFrame(present);
