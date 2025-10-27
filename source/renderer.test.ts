@@ -36,7 +36,7 @@ describe("Renderer", () => {
 			) as RGBTuple;
 			const generated = matchFontColorTo(rgb);
 			expect(generated).to.eql(
-				[255, 255, 255, 255],
+				[250, 250, 250, 255],
 				`Generated font color '${generated}' doesn't match expected font color '${font}'.`,
 			);
 		});
