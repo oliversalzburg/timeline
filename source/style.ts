@@ -2,7 +2,7 @@ import { mustExist } from "@oliversalzburg/js-utils/data/nil.js";
 import { hslPalette } from "@oliversalzburg/js-utils/graphics/palette.js";
 import { TRANSPARENT } from "./constants.js";
 import type { EdgeStyle, NodeStyle, Shape } from "./dot.js";
-import { type Graph, isNotIdentityTimeline } from "./genealogy.js";
+import { type Graph, isIdentityPerson } from "./genealogy.js";
 import {
 	fillColorForPen,
 	matchFontColorTo,
@@ -245,12 +245,12 @@ export class Styling<
 			});
 		}
 
-		// Generate styles for unrelated identities.
+		// Generate styles for unrelated person identities.
 		for (const timeline of this.timelines) {
 			if (styleSheet.has(timeline.meta.id)) {
 				continue;
 			}
-			if (isNotIdentityTimeline(timeline)) {
+			if (!isIdentityPerson(timeline)) {
 				continue;
 			}
 

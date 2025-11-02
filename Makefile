@@ -47,14 +47,14 @@ $(IMAGES) &: contrib/prepare-emoji.js examples/emojify.js
 		--target=$(OUTPUT)
 	@date +"%FT%T%z Vector image data prepared."
 
-%-demo.universe : %.yml lib/tsconfig.source.tsbuildinfo $(_SOURCES_TS) examples/space-time-generator.js
+%-demo.universe : %.yml $(TIMELINES) lib/tsconfig.source.tsbuildinfo $(_SOURCES_TS) examples/space-time-generator.js
 	@node --enable-source-maps examples/space-time-generator.js \
 		--anonymize \
 		--origin=$< \
 		--root=$(DATA_ROOT) \
 		--target=$@
 	@date +"%FT%T%z DEMO Universe generated '$@'."
-%.universe : %.yml lib/tsconfig.source.tsbuildinfo $(_SOURCES_TS) examples/space-time-generator.js
+%.universe : %.yml $(TIMELINES) lib/tsconfig.source.tsbuildinfo $(_SOURCES_TS) examples/space-time-generator.js
 	@node --enable-source-maps examples/space-time-generator.js \
 		--origin=$< \
 		--root=$(DATA_ROOT) \
