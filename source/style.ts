@@ -2,7 +2,12 @@ import { mustExist } from "@oliversalzburg/js-utils/data/nil.js";
 import { hslPalette } from "@oliversalzburg/js-utils/graphics/palette.js";
 import { TRANSPARENT } from "./constants.js";
 import type { EdgeStyle, NodeStyle, Shape } from "./dot.js";
-import { type Graph, isIdentityPerson } from "./genealogy.js";
+import {
+	type Graph,
+	isIdentityLocation,
+	isIdentityMedia,
+	isIdentityPerson,
+} from "./genealogy.js";
 import {
 	fillColorForPen,
 	matchFontColorTo,
@@ -70,6 +75,11 @@ export class Styling<
 		for (const timeline of this.timelines) {
 			if (typeof timeline.meta.color === "string") {
 				add(timeline.meta.color, timeline);
+				continue;
+			}
+
+			if (isIdentityMedia(timeline) || isIdentityLocation(timeline)) {
+				add(TRANSPARENT, timeline);
 				continue;
 			}
 

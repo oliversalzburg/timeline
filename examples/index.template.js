@@ -209,7 +209,7 @@ const main = () => {
 		[176, 224, 230],
 	];
 	const _startTime = Date.now();
-	const _lastKnownScrollPosition = 0;
+	let lastKnownScrollPosition = 0;
 
 	/**
 	 * @param id {string} -
@@ -300,6 +300,7 @@ const main = () => {
 		}
 
 		calendarText.textContent = nodeTitle;
+		document.title = nodeTitle.split("\n")[0];
 
 		nodeFocused = node;
 		idFocused = id;
@@ -320,7 +321,6 @@ const main = () => {
 				window.location.toString().replace(/(#.*)|$/, anchor),
 			);
 		}
-		document.title = `${new Date(id.substring(1).split("-").slice(0, -1).join("-")).toLocaleDateString()}`;
 
 		console.info(
 			`Focused node ${idFocused} of timeline ${timelineFocused}. View update is pending.`,
@@ -690,27 +690,27 @@ const main = () => {
 			if (gp !== null) {
 				const scale = delta / 16;
 				if (INPUT_THRESHOLD < Math.abs(gp.axes[Inputs.AXIS_LEFT_X])) {
-					focusTargetBox.x += gp.axes[Inputs.AXIS_LEFT_X] * scale * 0.0001;
+					focusTargetBox.x += gp.axes[Inputs.AXIS_LEFT_X] * scale * 2;
 					requiresRefresh = true;
 					requestInstantFocusUpdate = true;
 				}
 				if (INPUT_THRESHOLD < Math.abs(gp.axes[Inputs.AXIS_LEFT_Y])) {
-					focusTargetBox.y += gp.axes[Inputs.AXIS_LEFT_Y] * scale * 0.0001;
+					focusTargetBox.y += gp.axes[Inputs.AXIS_LEFT_Y] * scale * 2;
 					requiresRefresh = true;
 					requestInstantFocusUpdate = true;
 				}
 
 				if (INPUT_THRESHOLD < Math.abs(gp.axes[Inputs.AXIS_RIGHT_X])) {
-					mediaItemPosition.x -= gp.axes[Inputs.AXIS_RIGHT_X] * scale * 0.001;
+					mediaItemPosition.x -= gp.axes[Inputs.AXIS_RIGHT_X] * scale * 2;
 				}
 				if (INPUT_THRESHOLD < Math.abs(gp.axes[Inputs.AXIS_RIGHT_Y])) {
-					mediaItemPosition.y -= gp.axes[Inputs.AXIS_RIGHT_Y] * scale * 0.001;
+					mediaItemPosition.y -= gp.axes[Inputs.AXIS_RIGHT_Y] * scale * 2;
 				}
 				if (gp.buttons[Inputs.BUTTON_LT].pressed === true) {
-					mediaItemPosition.z -= INPUT_THRESHOLD * scale * 0.01;
+					mediaItemPosition.z -= INPUT_THRESHOLD * scale * 1;
 				}
 				if (gp.buttons[Inputs.BUTTON_RT].pressed === true) {
-					mediaItemPosition.z += INPUT_THRESHOLD * scale * 0.01;
+					mediaItemPosition.z += INPUT_THRESHOLD * scale * 1;
 				}
 				mediaItemPosition.x = Math.max(Math.min(mediaItemPosition.x, 95), -95);
 				mediaItemPosition.y = Math.max(Math.min(mediaItemPosition.y, 95), -95);
@@ -1018,6 +1018,7 @@ const main = () => {
 			() => {
 				cameraIsIdle = false;
 				camera = newCamera;
+				lastKnownScrollPosition = focusTargetBox.y;
 				console.debug("Camera updated", camera);
 			},
 			requestInstantFocusUpdate ? 0 : 1000,
@@ -1031,6 +1032,8 @@ const main = () => {
 
 	/** @type {number | undefined} */
 	let previousTimestamp;
+	/** @type {number | undefined} */
+	let previousTimestampStarfield;
 	/**
 	 * @param timestamp {number} -
 	 */
@@ -1038,8 +1041,12 @@ const main = () => {
 		if (previousTimestamp === undefined) {
 			previousTimestamp = timestamp;
 		}
+		if (previousTimestampStarfield === undefined) {
+			previousTimestampStarfield = timestamp;
+		}
 
 		const delta = timestamp - previousTimestamp;
+		const deltaStarfield = timestamp - previousTimestampStarfield;
 
 		if (handleInputs(delta)) {
 			inputEventsPending = updateCamera(
@@ -1049,19 +1056,24 @@ const main = () => {
 		}
 
 		//svg.style.transform = `translateY(${lastKnownScrollPosition}pt)`;
-		/*
-		const sinceStart = Date.now() - startTime;
-		for (let z = 0; z < starPlanes.length; ++z) {
-			const offset =
-				(((z + 1) *
-					(lastKnownScrollPosition * speedScroll + sinceStart * speedTime)) %
-					windowHeight) *
-				-1;
-			starPlanes[z][0].style.transform = `translateY(${offset}px)`;
-			starPlanes[z][1].style.transform =
-				`translateY(${offset + windowHeight}px)`;
+
+		// We don't want to update the starfield every frame, because it doesn't
+		// move much, but consumes a lot of fill rate.
+		if (!cameraIsIdle && 1000 < deltaStarfield) {
+			const sinceStart = Date.now() - _startTime;
+			for (let z = 0; z < starPlanes.length; ++z) {
+				const offset =
+					(((z + 1) *
+						(lastKnownScrollPosition * _speedScroll +
+							sinceStart * _speedTime)) %
+						windowHeight) *
+					-1;
+				starPlanes[z][0].style.transform = `translateY(${offset}px)`;
+				starPlanes[z][1].style.transform =
+					`translateY(${offset + windowHeight}px)`;
+			}
+			previousTimestampStarfield = timestamp;
 		}
-		*/
 
 		if (mediaItemVisible) {
 			// Browser X-Y is reversed.
@@ -1069,6 +1081,7 @@ const main = () => {
 		}
 
 		window.requestAnimationFrame(present);
+		previousTimestamp = timestamp;
 	};
 
 	document.addEventListener("click", onClick);
