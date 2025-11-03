@@ -175,6 +175,20 @@ export const isIdentityLocation = (identity?: Identity | Timeline): boolean => {
 
 	return "established" in identity && identity.established !== undefined;
 };
+export const isIdentityPeriod = (identity?: Identity | Timeline): boolean => {
+	if (isNil(identity)) {
+		return false;
+	}
+	if ("meta" in identity) {
+		if ("identity" in identity.meta) {
+			const realIdentity = identity.meta.identity as Identity;
+			return isIdentityPeriod(realIdentity);
+		}
+		return false;
+	}
+
+	return "started" in identity && identity.started !== undefined;
+};
 export const isIdentityMedia = (identity?: Identity | Timeline): boolean => {
 	if (isNil(identity)) {
 		return false;

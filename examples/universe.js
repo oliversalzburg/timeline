@@ -9,6 +9,7 @@ import {
 	Graph,
 	isIdentityLocation,
 	isIdentityMedia,
+	isIdentityPeriod,
 	isIdentityPerson,
 	isNotIdentityTimeline,
 	uncertainEventToDate,
@@ -131,6 +132,7 @@ const trimmedTimelines = finalTimelines.filter((_) => {
 
 	return (
 		isNotIdentityTimeline(_) ||
+		isIdentityPeriod(_) ||
 		isIdentityMedia(_) ||
 		(isIdentityPerson(_) &&
 			Number.isFinite(distance) &&
@@ -143,7 +145,7 @@ const trimmedTimelines = finalTimelines.filter((_) => {
 const graphTrimmed = new Graph(trimmedTimelines, originIdentityId);
 
 process.stdout.write(
-	`Universe contains ${timelinesPersons.length} human identities, trimmed to ${trimmedTimelines.length} timelines.\n`,
+	`Universe consists of ${finalTimelines.length} timelines, with ${timelinesPersons.length} identifying a person. The universe is trimmed to ${trimmedTimelines.length} total timelines.\n`,
 );
 
 // Generate stylesheet for entire universe.

@@ -199,8 +199,8 @@ const main = () => {
 		document.createElement("canvas"),
 		document.createElement("canvas"),
 	]);
-	const _speedTime = 0.0001;
-	const _speedScroll = 0.001;
+	const speedTime = 0.0001;
+	const speedScroll = 0.001;
 	const starColorsRGB = [
 		[255, 255, 255],
 		[255, 221, 193],
@@ -208,7 +208,7 @@ const main = () => {
 		[173, 216, 230],
 		[176, 224, 230],
 	];
-	const _startTime = Date.now();
+	const startTime = Date.now();
 	let lastKnownScrollPosition = 0;
 
 	/**
@@ -690,12 +690,12 @@ const main = () => {
 			if (gp !== null) {
 				const scale = delta / 16;
 				if (INPUT_THRESHOLD < Math.abs(gp.axes[Inputs.AXIS_LEFT_X])) {
-					focusTargetBox.x += gp.axes[Inputs.AXIS_LEFT_X] * scale * 2;
+					focusTargetBox.x += gp.axes[Inputs.AXIS_LEFT_X] * scale * 1.5;
 					requiresRefresh = true;
 					requestInstantFocusUpdate = true;
 				}
 				if (INPUT_THRESHOLD < Math.abs(gp.axes[Inputs.AXIS_LEFT_Y])) {
-					focusTargetBox.y += gp.axes[Inputs.AXIS_LEFT_Y] * scale * 2;
+					focusTargetBox.y += gp.axes[Inputs.AXIS_LEFT_Y] * scale * 1.5;
 					requiresRefresh = true;
 					requestInstantFocusUpdate = true;
 				}
@@ -842,6 +842,7 @@ const main = () => {
 			return;
 		}
 
+		resetMedia();
 		dialogImage.src = `${lookupTimelineToMetadata.get(timelineMediaIds[timelineMediaIdActive])?.[2]}`;
 		dialog.show();
 		mediaItemVisible = true;
@@ -863,15 +864,19 @@ const main = () => {
 			return;
 		}
 
+		resetMedia();
 		dialogImage.src = `${lookupTimelineToMetadata.get(timelineMediaIds[timelineMediaIdActive])?.[2]}`;
 		dialog.show();
 		mediaItemVisible = true;
 	};
-	const closeMedia = () => {
-		dialog.close();
+	const resetMedia = () => {
 		mediaItemRotation = { x: 0, y: 0 };
 		mediaItemPosition = { x: 0, y: 0, z: 0 };
 		dialog.style.transform = `rotateX(0) rotateY(0) translate(0 0 0)`;
+	};
+	const closeMedia = () => {
+		dialog.close();
+		resetMedia();
 		mediaItemVisible = false;
 		mediaItemClosed = true;
 	};
@@ -1060,12 +1065,11 @@ const main = () => {
 		// We don't want to update the starfield every frame, because it doesn't
 		// move much, but consumes a lot of fill rate.
 		if (!cameraIsIdle && 1000 < deltaStarfield) {
-			const sinceStart = Date.now() - _startTime;
+			const sinceStart = Date.now() - startTime;
 			for (let z = 0; z < starPlanes.length; ++z) {
 				const offset =
 					(((z + 1) *
-						(lastKnownScrollPosition * _speedScroll +
-							sinceStart * _speedTime)) %
+						(lastKnownScrollPosition * speedScroll + sinceStart * speedTime)) %
 						windowHeight) *
 					-1;
 				starPlanes[z][0].style.transform = `translateY(${offset}px)`;
