@@ -690,21 +690,21 @@ const main = () => {
 			if (gp !== null) {
 				const scale = delta / 16;
 				if (INPUT_THRESHOLD < Math.abs(gp.axes[Inputs.AXIS_LEFT_X])) {
-					focusTargetBox.x += gp.axes[Inputs.AXIS_LEFT_X] * scale * 1.5;
+					focusTargetBox.x += gp.axes[Inputs.AXIS_LEFT_X] * scale * 2;
 					requiresRefresh = true;
 					requestInstantFocusUpdate = true;
 				}
 				if (INPUT_THRESHOLD < Math.abs(gp.axes[Inputs.AXIS_LEFT_Y])) {
-					focusTargetBox.y += gp.axes[Inputs.AXIS_LEFT_Y] * scale * 1.5;
+					focusTargetBox.y += gp.axes[Inputs.AXIS_LEFT_Y] * scale * 2;
 					requiresRefresh = true;
 					requestInstantFocusUpdate = true;
 				}
 
 				if (INPUT_THRESHOLD < Math.abs(gp.axes[Inputs.AXIS_RIGHT_X])) {
-					mediaItemPosition.x -= gp.axes[Inputs.AXIS_RIGHT_X] * scale * 2;
+					mediaItemPosition.x -= gp.axes[Inputs.AXIS_RIGHT_X] * scale * 0.5;
 				}
 				if (INPUT_THRESHOLD < Math.abs(gp.axes[Inputs.AXIS_RIGHT_Y])) {
-					mediaItemPosition.y -= gp.axes[Inputs.AXIS_RIGHT_Y] * scale * 2;
+					mediaItemPosition.y -= gp.axes[Inputs.AXIS_RIGHT_Y] * scale * 0.5;
 				}
 				if (gp.buttons[Inputs.BUTTON_LT].pressed === true) {
 					mediaItemPosition.z -= INPUT_THRESHOLD * scale * 1;
