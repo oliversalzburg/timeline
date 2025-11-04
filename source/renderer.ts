@@ -574,13 +574,13 @@ export const render = <
 				d.raw('rank="same"');
 				const linkedEvents = events.filter((_) => getStyle(_.timeline).link);
 				for (
-					let eventIndex = 1;
-					eventIndex < linkedEvents.length;
-					++eventIndex
+					let linkedEventIndex = 1;
+					linkedEventIndex < linkedEvents.length;
+					++linkedEventIndex
 				) {
 					d.link(
-						linkedEvents[eventIndex - 1].title,
-						linkedEvents[eventIndex].title,
+						linkedEvents[linkedEventIndex - 1].title,
+						linkedEvents[linkedEventIndex].title,
 						{
 							style: options.debug ? "dashed" : "invis",
 							weight: 1_000_000,

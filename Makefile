@@ -11,7 +11,7 @@ _IMAGES := $(wildcard contrib/openmoji-svg-color/*.svg) $(wildcard contrib/wikim
 IMAGES := $(addprefix $(OUTPUT)/,$(notdir $(_IMAGES)))
 
 DATA_ROOT := $(shell echo ~/timelines)
-TIMELINES := $(wildcard $(DATA_ROOT)/*.yml $(DATA_ROOT)/*/*.yml)
+TIMELINES := $(shell find $(DATA_ROOT) -iname "*.yml")
 SEGMENTS := $(wildcard $(DATA_ROOT)/*.gvus $(DATA_ROOT)/*/*.gvus)
 
 _SCOUR_FLAGS = --enable-viewboxing --enable-id-stripping --enable-comment-stripping --shorten-ids --indent=none
@@ -239,6 +239,9 @@ validate-data: .venv validate-schema
 	. .venv/bin/activate; cd schemas; \
 	check-jsonschema \
 		--schemafile spec.schema.yml \
+		$(TIMELINES)
+	node --enable-source-maps examples/timelinelint.js \
+		"--root=$(DATA_ROOT)" \
 		$(TIMELINES)
 
 # Run available software tests.

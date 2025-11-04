@@ -99,6 +99,8 @@ export interface Identity {
 	urls?: Array<string>;
 	established?: Event | null;
 	dissolved?: Event | null;
+	started?: Event | null;
+	ended?: Event | null;
 	position?: Location;
 	born?: Birth | null;
 	died?: Death | null;

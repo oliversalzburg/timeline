@@ -3,7 +3,7 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { Report } from "@oliversalzburg/js-utils/log/report.js";
 import { parse } from "yaml";
-import { uncertainEventToDate } from "../lib/genealogy.js";
+import { isIdentityPerson, uncertainEventToDate } from "../lib/genealogy.js";
 import { load } from "../lib/loader.js";
 
 // Parse command line arguments.
@@ -47,7 +47,7 @@ const timelinePaths = readdirSync(args.root, {
 
 const reportRoot = new Report("timelinelint");
 
-/** @type {Map<string, { report: Report, timeline: TimelineAncestryRenderer | TimelineReferenceRenderer }>} */
+/** @type {Map<string, { path: string, report: Report, timeline: TimelineAncestryRenderer | TimelineReferenceRenderer }>} */
 const allTimelines = new Map();
 for (const timelinePath of timelinePaths) {
 	const timelineData = readFileSync(timelinePath, "utf8");
@@ -58,21 +58,38 @@ for (const timelinePath of timelinePaths) {
 
 	const timelineObject = parse(timelineData);
 	const timeline = load(timelineObject, timelinePath);
-	allTimelines.set(timelinePath, { report, timeline });
+	allTimelines.set(timelinePath, { path: timelinePath, report, timeline });
 }
 
+const identitiesSeen = new Map();
+
 /**
- * @param job {{ report: Report, timeline: TimelineAncestryRenderer | TimelineReferenceRenderer }} -
+ * @param job {{ path: string, report: Report, timeline: TimelineAncestryRenderer | TimelineReferenceRenderer }} -
  */
 const lint = (job) => {
 	if ("identity" in job.timeline.meta === false) {
-		job.report.log("missing 'identity' meta field");
+		//job.report.log("missing 'identity' meta field");
 		return;
 	}
 
+	if ("id" in job.timeline.meta.identity === false) {
+		job.report.log("missing 'id' in identity meta field");
+		return;
+	}
+
+	const existingIdentity = identitiesSeen.get(job.timeline.meta.identity.id);
+	if (existingIdentity !== undefined) {
+		job.report.log(
+			`identity id '${job.timeline.meta.identity.id}' was already defined by '${existingIdentity.path}'`,
+		);
+	}
+
+	identitiesSeen.set(job.timeline.meta.identity.id, job);
+
 	// Require genealogy links for private identities.
+	const isPerson = isIdentityPerson(job.timeline);
 	const isPrivate = job.timeline.meta.private;
-	if (isPrivate) {
+	if (isPerson && isPrivate) {
 		if ("urls" in job.timeline.meta.identity === false) {
 			job.report.log(`Missing 'urls' section in identity.`);
 		} else {
@@ -100,6 +117,25 @@ const lint = (job) => {
 			job.report.log(`Missing birth record in identity.`);
 		} else if (job.timeline.meta.identity.born?.date === undefined) {
 			job.report.log(`Unspecific birth date in identity.`);
+		}
+	}
+	const wasEstablished = job.timeline.meta.identity.established !== undefined;
+	if (wasEstablished) {
+		if (job.timeline.meta.identity.position === undefined) {
+			job.report.log(`Missing position in identity.`);
+		}
+		if (job.timeline.meta.identity.established === null) {
+			job.report.log(`Missing establishment record in identity.`);
+		} else if (job.timeline.meta.identity.established?.date === undefined) {
+			job.report.log(`Unspecific establishment date in identity.`);
+		}
+	}
+	const wasStarted = job.timeline.meta.identity.started !== undefined;
+	if (wasStarted) {
+		if (job.timeline.meta.identity.started === null) {
+			job.report.log(`Missing start record in identity.`);
+		} else if (job.timeline.meta.identity.started?.date === undefined) {
+			job.report.log(`Unspecific start date in identity.`);
 		}
 	}
 

@@ -245,22 +245,6 @@ export const dot = () => {
 			);
 		}
 	};
-	const _validateColor = (
-		color: "color" | "fontcolor" | "fillcolor",
-		options?: Partial<NodeProperties>,
-	) => {
-		if (
-			options !== undefined &&
-			color in options &&
-			options[color] !== undefined &&
-			options[color].match(/^rgba\((\d+) (\d+) (\d+) \/ (\d+(\.\d+)?)\)$/) ===
-				null
-		) {
-			throw new InvalidOperationError(
-				`${color} is expected to have rgba(r g b / a) format. received '${options.color}'`,
-			);
-		}
-	};
 
 	const renderNode = (_: string, options?: Partial<NodeProperties>) => {
 		if (nodeIds.get(_)) {
