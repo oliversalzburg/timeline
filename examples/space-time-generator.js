@@ -11,11 +11,11 @@ import { load } from "../lib/loader.js";
 import {
 	anonymize,
 	deduplicateRecords,
+	map,
 	mergeDuringPeriod,
 	sort,
 	sortRecords,
-	uniquify,
-	uniquifyCache,
+	uniquifyRecords,
 } from "../lib/operator.js";
 import { serialize } from "../lib/serializer.js";
 
@@ -276,13 +276,20 @@ const fillOthers = (timeline, graph) => {
 
 const filledTimelines = [originTimeline, ...allTimelines].map((_) => fill(_));
 
-// Build event label cache.
+// This is stupid, but it still works fairly well.
 const allGlobalEvents = deduplicateRecords(
 	sortRecords([...filledTimelines].flatMap((_) => _.records)),
 );
-const labelCache = uniquifyCache(allGlobalEvents);
+const labelCache = uniquifyRecords(allGlobalEvents);
 const finalTimelines = filledTimelines.map((_) =>
-	uniquify(_, new Map(labelCache.entries())),
+	map(
+		_,
+		([timestamp, entry]) =>
+			labelCache.find(
+				(needle) =>
+					needle[0] === timestamp && needle[1].title.startsWith(entry.title),
+			) ?? [timestamp, entry],
+	),
 );
 
 const graph = new Graph(finalTimelines, "invalid");

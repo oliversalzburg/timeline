@@ -72,15 +72,9 @@ export const uniquify = <T extends Timeline>(
 
 export const uniquifyRecords = (
 	records: Array<TimelineRecord>,
-	counts = new Map<string, number>(),
+	counts = uniquifyCache(records),
 ): Array<TimelineRecord> => {
 	const result = [...records];
-	if (counts.size === 0) {
-		for (const record of result) {
-			const [, entry] = record;
-			counts.set(entry.title, (counts.get(entry.title) ?? 0) + 1);
-		}
-	}
 	const duplicateTitles = new Set(
 		counts
 			.entries()
