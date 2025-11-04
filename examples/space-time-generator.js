@@ -10,9 +10,12 @@ import { recurringYearly } from "../lib/generator.js";
 import { load } from "../lib/loader.js";
 import {
 	anonymize,
+	deduplicateRecords,
 	mergeDuringPeriod,
 	sort,
 	sortRecords,
+	uniquify,
+	uniquifyCache,
 } from "../lib/operator.js";
 import { serialize } from "../lib/serializer.js";
 
@@ -66,7 +69,7 @@ const timelinePaths = readdirSync(args.root, {
 	.sort();
 
 /** @type {Array<TimelineAncestryRenderer | TimelineReferenceRenderer>} */
-let allTimelines = [];
+const allTimelines = [];
 let originTimeline;
 for (const timelinePath of timelinePaths) {
 	const timelineData = readFileSync(timelinePath, "utf8");
@@ -271,8 +274,18 @@ const fillOthers = (timeline, graph) => {
 	}
 };
 
-allTimelines = [originTimeline, ...allTimelines].map((_) => fill(_));
-const graph = new Graph(allTimelines, "invalid");
+const filledTimelines = [originTimeline, ...allTimelines].map((_) => fill(_));
+
+// Build event label cache.
+const allGlobalEvents = deduplicateRecords(
+	sortRecords([...filledTimelines].flatMap((_) => _.records)),
+);
+const labelCache = uniquifyCache(allGlobalEvents);
+const finalTimelines = filledTimelines.map((_) =>
+	uniquify(_, new Map(labelCache.entries())),
+);
+
+const graph = new Graph(finalTimelines, "invalid");
 graph.timelines.forEach((_) => {
 	fillOthers(_, graph);
 });
@@ -290,7 +303,7 @@ targetStream.on("error", () => {
 });
 
 targetStream.write(
-	`---\n${serialize(originTimeline, originTimeline.meta, true)}\n---\n${allTimelines.map((_) => serialize(_, _.meta, true)).join("\n---\n")}`,
+	`---\n${serialize(originTimeline, originTimeline.meta, true)}\n---\n${finalTimelines.map((_) => serialize(_, _.meta, true)).join("\n---\n")}`,
 );
 
 if (targetStream !== process.stdout) {

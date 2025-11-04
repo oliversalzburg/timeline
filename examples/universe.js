@@ -15,7 +15,6 @@ import {
 	uncertainEventToDate,
 } from "../lib/genealogy.js";
 import { load } from "../lib/loader.js";
-import { sort, uniquify } from "../lib/operator.js";
 import { render } from "../lib/renderer.js";
 import { Styling } from "../lib/style.js";
 
@@ -88,11 +87,7 @@ const data = new Map(
 );
 
 /** @type {Array<TimelineAncestryRenderer | TimelineReferenceRenderer>} */
-const finalTimelines = [
-	// uniquify ensures unique entries PER DOCUMENT!
-	// In the merged universe, there might still be duplicate labels.
-	...data.entries().map(([_, timeline]) => uniquify(sort(timeline))),
-];
+const finalTimelines = [...data.entries().map(([_, timeline]) => timeline)];
 
 const timelinesPersons = /** @type {Array<TimelineAncestryRenderer>} */ (
 	finalTimelines.filter((timeline) => isIdentityPerson(timeline))

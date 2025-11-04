@@ -46,21 +46,40 @@ export const deduplicateRecords = (
 	return unique;
 };
 
-export const uniquify = <T extends Timeline>(timeline: T): T => {
+export const uniquifyCache = (
+	records: Array<TimelineRecord>,
+): Map<string, number> => {
+	const result = [...records];
+	const counts = new Map<string, number>();
+	if (counts.size === 0) {
+		for (const record of result) {
+			const [, entry] = record;
+			counts.set(entry.title, (counts.get(entry.title) ?? 0) + 1);
+		}
+	}
+	return counts;
+};
+
+export const uniquify = <T extends Timeline>(
+	timeline: T,
+	counts?: Map<string, number>,
+): T => {
 	return {
 		...timeline,
-		records: uniquifyRecords(timeline.records),
+		records: uniquifyRecords(timeline.records, counts),
 	};
 };
 
 export const uniquifyRecords = (
 	records: Array<TimelineRecord>,
+	counts = new Map<string, number>(),
 ): Array<TimelineRecord> => {
 	const result = [...records];
-	const counts = new Map<string, number>();
-	for (const record of result) {
-		const [, entry] = record;
-		counts.set(entry.title, (counts.get(entry.title) ?? 0) + 1);
+	if (counts.size === 0) {
+		for (const record of result) {
+			const [, entry] = record;
+			counts.set(entry.title, (counts.get(entry.title) ?? 0) + 1);
+		}
 	}
 	const duplicateTitles = new Set(
 		counts
@@ -139,7 +158,9 @@ export const sort = <T extends Timeline>(timeline: T): T => {
 export const sortRecords = (
 	records: Array<TimelineRecord>,
 ): Array<TimelineRecord> => {
-	return records.toSorted(([a], [b]) => a - b);
+	return records.toSorted(([a, aMeta], [b, bMeta]) =>
+		a === b ? aMeta.title.localeCompare(bMeta.title) : a - b,
+	);
 };
 
 export const joinDuringPeriod = (
