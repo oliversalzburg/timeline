@@ -244,10 +244,10 @@ export const matchLuminance = (
 export const setOpacity = (
 	color: RGBATuple | "transparent",
 	opacity: number,
-): string => {
+): RGBATuple | "transparent" => {
 	if (color === TRANSPARENT) {
 		return TRANSPARENT;
 	}
 
-	return rgbaToString([color[0], color[1], color[2], opacity]);
+	return [color[0], color[1], color[2], opacity];
 };

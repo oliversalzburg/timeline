@@ -44,7 +44,7 @@ definitions:
     additionalProperties: false
     properties: &position_properties
       in:
-        title: Exact Location
+        title: Exact Location (Identity Reference)
         type: string
       where:
         title: Uncertain Location

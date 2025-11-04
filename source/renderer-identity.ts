@@ -27,7 +27,7 @@ import {
 	uncertainEventToDateString,
 	uncertainEventToLocationString,
 } from "./genealogy.js";
-import { matchLuminance, rgbaToString, setOpacity } from "./palette.js";
+import { matchLuminance, rgbaToHexString, setOpacity } from "./palette.js";
 import type { RendererOptions } from "./renderer.js";
 import { StyleStatic } from "./style.js";
 import type {
@@ -153,10 +153,11 @@ export const renderSimple = (
 		const opacity = opacityFromDistance(distance);
 		const color = setOpacity(defaultForeground, opacity);
 		d.node(identity.id, {
-			fontcolor:
+			fontcolor: rgbaToHexString(
 				identity === originIdentity || originAntecedents?.includes(identity)
-					? rgbaToString(defaultForeground)
+					? defaultForeground
 					: color,
+			),
 			fontname: identity === originIdentity ? `${fontNode} bold` : undefined,
 			fontsize: identity === originIdentity ? FONT_SIZE + 4 : undefined,
 			label: `${name(identity)}`,
@@ -199,7 +200,7 @@ export const renderSimple = (
 
 			d.link(identity.id, child.id, {
 				...pointTowards(),
-				color,
+				color: rgbaToHexString(color),
 				style: linkStyle,
 			});
 		}
@@ -339,13 +340,15 @@ export const renderUniverse = (
 			}
 
 			fillColors.push(
-				setOpacity(
-					timeline === leaderTimeline ||
-						fill === TRANSPARENT ||
-						leaderTimeline === undefined
-						? fill
-						: matchLuminance(fill, getStyle(leaderTimeline).fillcolor),
-					opacity,
+				rgbaToHexString(
+					setOpacity(
+						timeline === leaderTimeline ||
+							fill === TRANSPARENT ||
+							leaderTimeline === undefined
+							? fill
+							: matchLuminance(fill, getStyle(leaderTimeline).fillcolor),
+						opacity,
+					),
 				),
 			);
 			return fillColors;
@@ -370,13 +373,13 @@ export const renderUniverse = (
 		const style = getStyle(leaderTimeline);
 
 		const nodeProperties: Partial<NodeProperties> = {
-			color,
+			color: rgbaToHexString(color),
 			fillcolor:
 				fillcolors.length === 1
 					? fillcolors[0]
 					: `${fillcolors[0]}:${fillcolors[1]}`,
 			fixedsize: true,
-			fontcolor,
+			fontcolor: rgbaToHexString(fontcolor),
 			height: 0.75,
 			label,
 			penwidth: style.penwidth,
@@ -464,10 +467,11 @@ export const renderUniverse = (
 		d.node(
 			identity.id,
 			{
-				fontcolor:
+				fontcolor: rgbaToHexString(
 					identity === originIdentity || originAntecedents?.includes(identity)
-						? rgbaToString(defaultForeground)
+						? defaultForeground
 						: color,
+				),
 				fontname: identity === originIdentity ? `${fontNode} bold` : undefined,
 				fontsize: identity === originIdentity ? FONT_SIZE + 4 : undefined,
 				//label: `${name(identity)} (${distance})`,
@@ -512,7 +516,7 @@ export const renderUniverse = (
 
 			d.link(identity.id, child.id, {
 				...pointTowards(),
-				color,
+				color: rgbaToHexString(color),
 				style: linkStyle,
 			});
 		}
