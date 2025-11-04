@@ -17,16 +17,13 @@ definitions:
         type: string
     required:
       - title
-type: object
-additionalProperties: true
-properties:
-  identity:
+  identity: &identity
     title: Identity
     type: object
-    additionalProperties: true
+    additionalProperties: false
     required:
       - id
-    properties:
+    properties: &identity_properties
       id:
         title: ID
         type: string
@@ -38,79 +35,49 @@ properties:
         type: array
         items:
           type: string
-      # Period
-      started:
+      notes:
+        title: Notes
         type: string
-      ended:
+  position: &position
+    title: Location Information
+    type: object
+    additionalProperties: false
+    properties: &position_properties
+      in:
+        title: Exact Location
         type: string
-      # Location
-      established:
-        title: Establishment Information
-        type:
-          - object
-          - "null"
-        properties:
-          date:
-            title: Exact Day of Establishment
-            type: string
-          when:
-            title: Uncertain Date of Establishment
-            type: object
-            properties:
-              after:
-                type: string
-              before:
-                type: string
-              showAs:
-                type: string
-      dissolved:
-        title: Dissolvement Information
-        type:
-          - object
-          - "null"
-        properties:
-          date:
-            title: Exact Day of Dissolvement
-            type: string
-          when:
-            title: Uncertain Date of Dissolvement
-            type: object
-            properties:
-              after:
-                type: string
-              before:
-                type: string
-              showAs:
-                type: string
-      position:
-        title: Location Information
+      where:
+        title: Uncertain Location
         type: object
         properties:
-          latlong:
-            title: Exact Location
+          around:
             type: string
-          where:
-            title: Uncertain Location
-            type: object
-            properties:
-              around:
-                type: string
-              within:
-                type: string
-              showAs:
-                type: string
-      # Person
+          within:
+            type: string
+          showAs:
+            type: string
+      notes:
+        title: Notes
+        type: string
+  person:
+    title: Person
+    type: object
+    additionalProperties: true
+    required:
+      - id
+      - born
+    properties:
+      !!merge <<: *identity_properties
       born:
         title: Birth Information
         type:
           - object
           - "null"
+        additionalProperties: false
         properties:
+          !!merge <<: *position_properties
           date:
             title: Exact Day of Birth
-            type: string
-          in:
-            title: Exact Location of Birth
             type: string
           sexus:
             title: Sexus of Person
@@ -127,15 +94,14 @@ properties:
                 type: string
               showAs:
                 type: string
-          where:
-            title: Uncertain Location of Birth
-            type: string
       died:
         title: Death Information
         type:
           - object
           - "null"
+        additionalProperties: false
         properties:
+          !!merge <<: *position_properties
           date:
             title: Exact Day of Death
             type: string
@@ -149,9 +115,6 @@ properties:
                 type: string
               showAs:
                 type: string
-          where:
-            title: Location of Death
-            type: string
           inMilitaryService:
             type:
               - boolean
@@ -207,6 +170,138 @@ properties:
               properties:
                 motherOf:
                   type: string
+  location:
+    title: Location
+    type: object
+    additionalProperties: true
+    required:
+      - id
+      - established
+    properties:
+      !!merge <<: *identity_properties
+      position:
+        title: Position
+        type: object
+        additionalProperties: false
+        properties:
+          at:
+            title: Precise Location
+            type: string
+            pattern: ^\d{1,3}/\d{0,3}/\d{0,3}/[NS] \d{1,3}/\d{0,3}/\d{0,3}/[EW]$
+          where:
+            title: Uncertain Location
+            type: object
+            properties:
+              around:
+                type: string
+              within:
+                type: string
+              showAs:
+                type: string
+      established:
+        title: Establishment Information
+        type:
+          - object
+          - "null"
+        additionalProperties: false
+        properties:
+          !!merge <<: *position_properties
+          date:
+            title: Exact Day of Establishment
+            type: string
+          when:
+            title: Uncertain Date of Establishment
+            type: object
+            properties:
+              after:
+                type: string
+              before:
+                type: string
+              showAs:
+                type: string
+      dissolved:
+        title: Dissolvement Information
+        type:
+          - object
+          - "null"
+        additionalProperties: false
+        properties:
+          !!merge <<: *position_properties
+          date:
+            title: Exact Day of Dissolvement
+            type: string
+          when:
+            title: Uncertain Date of Dissolvement
+            type: object
+            properties:
+              after:
+                type: string
+              before:
+                type: string
+              showAs:
+                type: string
+  period:
+    title: Period
+    type: object
+    additionalProperties: true
+    required:
+      - id
+      - started
+    properties:
+      !!merge <<: *identity_properties
+      started:
+        title: Start of Period
+        type:
+          - object
+          - "null"
+        additionalProperties: false
+        properties:
+          !!merge <<: *position_properties
+          date:
+            title: Exact Day of Start
+            type: string
+          when:
+            title: Uncertain Date of Start
+            type: object
+            additionalProperties: false
+            properties:
+              after:
+                type: string
+              before:
+                type: string
+              showAs:
+                type: string
+      ended:
+        title: End of Period
+        type:
+          - object
+          - "null"
+        additionalProperties: false
+        properties:
+          !!merge <<: *position_properties
+          date:
+            title: Exact Day of End
+            type: string
+          when:
+            title: Uncertain Date of End
+            type: object
+            additionalProperties: false
+            properties:
+              after:
+                type: string
+              before:
+                type: string
+              showAs:
+                type: string
+type: object
+additionalProperties: true
+properties:
+  identity:
+    oneOf:
+      - $ref: '#/definitions/identity'
+      - $ref: '#/definitions/person'
+      - $ref: '#/definitions/location'
+      - $ref: '#/definitions/period'
   color:
     title: Color
     type: string

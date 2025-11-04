@@ -236,6 +236,10 @@ validate-data: .venv validate-schema
 	check-jsonschema \
 		--schemafile spec.schema.yml \
 		../timelines/*.yml
+	. .venv/bin/activate; cd schemas; \
+	check-jsonschema \
+		--schemafile spec.schema.yml \
+		$(TIMELINES)
 
 # Run available software tests.
 test: node_modules/.package-lock.json lib
