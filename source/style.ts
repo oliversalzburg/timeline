@@ -6,6 +6,7 @@ import {
 	type Graph,
 	isIdentityLocation,
 	isIdentityMedia,
+	isIdentityPeriod,
 	isIdentityPerson,
 } from "./genealogy.js";
 import {
@@ -288,7 +289,7 @@ export class Styling<
 				fontcolor: matchFontColorTo(
 					this.theme === "light" ? [255, 255, 255] : [0, 0, 0],
 				),
-				link: false,
+				link: isIdentityPeriod(timeline) ? "dotted" : false,
 				pencolor: mustExist(palette.get(timeline)),
 				penwidth: 1,
 				shape: "box",
