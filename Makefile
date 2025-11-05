@@ -11,6 +11,7 @@ _IMAGES := $(wildcard contrib/openmoji-svg-color/*.svg) $(wildcard contrib/wikim
 IMAGES := $(addprefix $(OUTPUT)/,$(notdir $(_IMAGES)))
 
 DATA_ROOT := $(shell echo ~/timelines)
+DATA_ROOT ?= timelines
 TIMELINES := $(shell find $(DATA_ROOT) -iname "*.yml")
 SEGMENTS := $(wildcard $(DATA_ROOT)/*.gvus $(DATA_ROOT)/*/*.gvus)
 
@@ -232,10 +233,6 @@ validate-schema: .venv
 
 # Validate all data to be valid timeline documents.
 validate-data: .venv validate-schema
-	. .venv/bin/activate; cd schemas; \
-	check-jsonschema \
-		--schemafile spec.schema.yml \
-		../timelines/*.yml
 	. .venv/bin/activate; cd schemas; \
 	check-jsonschema \
 		--schemafile spec.schema.yml \
