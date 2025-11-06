@@ -11,7 +11,9 @@ _IMAGES := $(wildcard contrib/openmoji-svg-color/*.svg) $(wildcard contrib/wikim
 IMAGES := $(addprefix $(OUTPUT)/,$(notdir $(_IMAGES)))
 
 DATA_ROOT := $(shell echo ~/timelines)
-DATA_ROOT ?= timelines
+ifneq ($(DATA_ROOT),)
+	DATA_ROOT = timelines
+endif
 TIMELINES := $(shell find $(DATA_ROOT) -iname "*.yml")
 SEGMENTS := $(wildcard $(DATA_ROOT)/*.gvus $(DATA_ROOT)/*/*.gvus)
 
@@ -275,3 +277,6 @@ schema:
 		eval '(.. | select(key == "$$ref" and type == "!!str")) |= sub(".schema.yml", ".schema.json")' \
 		"$$i" > "$${i%.yml}.json"; \
 		done
+
+serve: node_modules/.package-lock.json
+	npx http-server ./output --cors

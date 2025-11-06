@@ -201,7 +201,10 @@ export const isIdentityMedia = (identity?: Identity | Timeline): boolean => {
 		return false;
 	}
 
-	return "id" in identity && identity.id.startsWith("media/");
+	return (
+		"id" in identity &&
+		(identity.id.startsWith("media/") || identity.id.startsWith("/kiwix/"))
+	);
 };
 
 export class Graph<

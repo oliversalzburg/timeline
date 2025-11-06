@@ -43,6 +43,11 @@ const main = () => {
 	if (dialogImage === null) {
 		throw new Error("Unable to find <dialog> element.");
 	}
+	/** @type {HTMLIFrameElement | null} */
+	const dialogIFrame = document.querySelector("dialog iframe");
+	if (dialogIFrame === null) {
+		throw new Error("Unable to find <dialog> element.");
+	}
 
 	/** @type {HTMLDivElement | null} */
 	const calendarContainer = document.querySelector("#calendar");
@@ -659,9 +664,6 @@ const main = () => {
 						0,
 						Math.PI * 2,
 					);
-					const _grey = Math.floor(Math.random() * 255)
-						.toString(16)
-						.padStart(2, "0");
 					context.fillStyle = getRandomColor();
 					context.fill();
 				}
@@ -707,13 +709,16 @@ const main = () => {
 					mediaItemPosition.y -= gp.axes[Inputs.AXIS_RIGHT_Y] * scale * 0.5;
 				}
 				if (gp.buttons[Inputs.BUTTON_LT].pressed === true) {
-					mediaItemPosition.z -= INPUT_THRESHOLD * scale * 1;
+					mediaItemPosition.z -= INPUT_THRESHOLD * scale * 5;
 				}
 				if (gp.buttons[Inputs.BUTTON_RT].pressed === true) {
-					mediaItemPosition.z += INPUT_THRESHOLD * scale * 1;
+					mediaItemPosition.z += INPUT_THRESHOLD * scale * 5;
 				}
 				mediaItemPosition.x = Math.max(Math.min(mediaItemPosition.x, 95), -95);
-				mediaItemPosition.y = Math.max(Math.min(mediaItemPosition.y, 95), -95);
+				mediaItemPosition.y = Math.max(
+					Math.min(mediaItemPosition.y, 10),
+					-1_000_000,
+				);
 				// Otherwise the item ends up behind the camera, or too far away.
 				mediaItemPosition.z = Math.max(Math.min(mediaItemPosition.z, 39), -130);
 
@@ -826,6 +831,20 @@ const main = () => {
 	let timelineMediaIds;
 	/** @type {number | undefined} */
 	let timelineMediaIdActive;
+
+	dialogIFrame.addEventListener("load", () => {
+		window.setTimeout(() => {
+			/** @type {HTMLIFrameElement | null} */
+			const contentIFrame =
+				dialogIFrame.contentWindow?.document.querySelector("#content_iframe") ??
+				null;
+			if (contentIFrame === null) {
+				throw new Error("unable to find kiwix content iframe");
+			}
+			dialogIFrame.style.height = `${(contentIFrame.contentWindow?.document.documentElement.scrollHeight ?? 0) + 200}px`;
+		}, 1000);
+	});
+
 	const showMediaForwardOrClose = () => {
 		if (timelineMediaIds === undefined || timelineMediaIds.length === 0) {
 			return;
@@ -842,8 +861,26 @@ const main = () => {
 			return;
 		}
 
-		resetMedia();
-		dialogImage.src = `${lookupTimelineToMetadata.get(timelineMediaIds[timelineMediaIdActive])?.[2]}`;
+		const mediaPath =
+			lookupTimelineToMetadata.get(
+				timelineMediaIds[timelineMediaIdActive],
+			)?.[2] ?? "";
+		if (mediaPath.startsWith("/kiwix/")) {
+			resetMedia();
+			dialogImage.src = "";
+			dialogImage.style.display = "none";
+			dialogIFrame.src = mediaPath;
+			dialogIFrame.style.display = "block";
+			dialogIFrame.style.height = "0";
+		} else {
+			resetMedia();
+			dialogImage.src = mediaPath;
+			dialogImage.style.display = "block";
+			dialogIFrame.src = "about:blank";
+			dialogIFrame.style.display = "none";
+			dialogIFrame.style.height = "0";
+		}
+
 		dialog.show();
 		mediaItemVisible = true;
 	};
@@ -864,15 +901,33 @@ const main = () => {
 			return;
 		}
 
-		resetMedia();
-		dialogImage.src = `${lookupTimelineToMetadata.get(timelineMediaIds[timelineMediaIdActive])?.[2]}`;
+		const mediaPath =
+			lookupTimelineToMetadata.get(
+				timelineMediaIds[timelineMediaIdActive],
+			)?.[2] ?? "";
+		if (mediaPath.startsWith("/kiwix/")) {
+			resetMedia();
+			dialogImage.src = "";
+			dialogImage.style.display = "none";
+			dialogIFrame.src = mediaPath;
+			dialogIFrame.style.display = "block";
+			dialogIFrame.style.height = "0";
+		} else {
+			resetMedia();
+			dialogImage.src = mediaPath;
+			dialogImage.style.display = "block";
+			dialogIFrame.src = "about:blank";
+			dialogIFrame.style.display = "none";
+			dialogIFrame.style.height = "0";
+		}
+
 		dialog.show();
 		mediaItemVisible = true;
 	};
 	const resetMedia = () => {
 		mediaItemRotation = { x: 0, y: 0 };
-		mediaItemPosition = { x: 0, y: 0, z: 0 };
-		dialog.style.transform = `rotateX(0) rotateY(0) translate(0 0 0)`;
+		mediaItemPosition = { x: 0, y: 3, z: 0 };
+		dialog.style.transform = `perspective(50vmin) rotateY(${mediaItemRotation.x}deg) rotateX(${mediaItemRotation.y}deg) translate3d(${mediaItemPosition.x}vmin, ${mediaItemPosition.y}vmin, ${mediaItemPosition.z}vmin)`;
 	};
 	const closeMedia = () => {
 		dialog.close();
