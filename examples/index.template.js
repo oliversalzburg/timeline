@@ -1162,6 +1162,7 @@ const main = () => {
 			document.body.classList.remove("loading");
 		}, 5000);
 	});
+
 	console.info("Next-frame ignition requested.");
 };
 

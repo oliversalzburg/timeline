@@ -11,7 +11,7 @@ _IMAGES := $(wildcard contrib/openmoji-svg-color/*.svg) $(wildcard contrib/wikim
 IMAGES := $(addprefix $(OUTPUT)/,$(notdir $(_IMAGES)))
 
 DATA_ROOT := $(shell echo ~/timelines)
-ifneq ($(DATA_ROOT),)
+ifeq ($(DATA_ROOT),)
 	DATA_ROOT = timelines
 endif
 TIMELINES := $(shell find $(DATA_ROOT) -iname "*.yml")
