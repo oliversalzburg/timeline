@@ -5,6 +5,7 @@ import { hostname, userInfo } from "node:os";
 import { mustExist } from "@oliversalzburg/js-utils/data/nil.js";
 import { parse } from "yaml";
 import { analyze } from "../lib/analyzer.js";
+import { TRANSPARENT } from "../lib/constants.js";
 import {
 	Graph,
 	isIdentityLocation,
@@ -15,6 +16,7 @@ import {
 	uncertainEventToDate,
 } from "../lib/genealogy.js";
 import { load } from "../lib/loader.js";
+import { rgbaToString } from "../lib/palette.js";
 import { render } from "../lib/renderer.js";
 import { Styling } from "../lib/style.js";
 
@@ -272,7 +274,9 @@ writeFileSync(
 					.map(([timeline]) => [
 						dotGraph.timelineClasses.get(timeline),
 						[
-							styleSheet.get(timeline.meta.id)?.pencolor,
+							rgbaToString(
+								styleSheet.get(timeline.meta.id)?.pencolor ?? TRANSPARENT,
+							),
 							isIdentityPerson(timeline)
 								? 1
 								: isIdentityLocation(timeline)

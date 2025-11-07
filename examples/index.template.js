@@ -28,6 +28,12 @@ const DATA = [[], [], ["", "", ""]];
 const main = () => {
 	console.info("Program init started.");
 
+	/** @type {HTMLDivElement | null} */
+	const loader = document.querySelector("body > .loader");
+	if (loader === null) {
+		throw new Error("Unable to find loader element.");
+	}
+
 	const svg = document.querySelector("body > svg");
 	if (svg === null) {
 		throw new Error("Unable to find <svg> element.");
@@ -199,7 +205,7 @@ const main = () => {
 
 	const rapidKeys = new Map();
 	const starPlanes = Array.from({
-		length: 16,
+		length: 12,
 	}).map(
 		(_) =>
 			/** @type {[number, number, HTMLCanvasElement, HTMLCanvasElement]} */ ([
@@ -984,6 +990,12 @@ const main = () => {
 
 				const timelineIdentityName =
 					lookupTimelineToMetadata.get(timelineFocused)?.[3];
+				const mediaIdentityName =
+					timelineMediaIdActive !== undefined
+						? lookupTimelineToMetadata.get(
+								timelineMediaIds[timelineMediaIdActive],
+							)?.[3]
+						: undefined;
 				if (timelineIdentityName === undefined) {
 					console.error(
 						`Unable to look up identity for timeline ID '${timelineFocused}'. Using fallback status.`,
@@ -991,8 +1003,10 @@ const main = () => {
 				}
 
 				intro.textContent = "⥲";
-				statusText.textContent = timelineIdentityName ?? "???";
-				statusText.style.color = timelineColor ?? "";
+				statusText.textContent =
+					mediaIdentityName ?? timelineIdentityName ?? "???";
+				intro.style.color = timelineColor ?? "";
+				statusText.style.textShadow = `2px 2px 3px ${timelineColor}`;
 
 				statusContainer.style.visibility =
 					0 < newNeighbors.intersection.length ||
@@ -1051,19 +1065,51 @@ const main = () => {
 						: (lookupTimelineToMetadata.get(navOptions.Y)?.[0] ?? "#f00");
 
 				statusButtonA.style.display =
-					navOptions.A === null || newNeighbors.intersection.length < 1
+					navOptions.A === null ||
+					newNeighbors.intersection.length < 1 ||
+					mediaItemVisible
 						? "none"
 						: "inline-block";
 				statusButtonB.style.display =
-					navOptions.B === null || newNeighbors.intersection.length < 2
+					navOptions.B === null ||
+					newNeighbors.intersection.length < 2 ||
+					mediaItemVisible
 						? "none"
 						: "inline-block";
 				statusButtonX.style.display =
-					navOptions.X === null || newNeighbors.intersection.length < 3
+					navOptions.X === null ||
+					newNeighbors.intersection.length < 3 ||
+					mediaItemVisible
 						? "none"
 						: "inline-block";
 				statusButtonY.style.display =
-					navOptions.Y === null || newNeighbors.intersection.length < 4
+					navOptions.Y === null ||
+					newNeighbors.intersection.length < 4 ||
+					mediaItemVisible
+						? "none"
+						: "inline-block";
+				statusOptionA.style.display =
+					navOptions.A === null ||
+					newNeighbors.intersection.length < 1 ||
+					mediaItemVisible
+						? "none"
+						: "inline-block";
+				statusOptionB.style.display =
+					navOptions.B === null ||
+					newNeighbors.intersection.length < 2 ||
+					mediaItemVisible
+						? "none"
+						: "inline-block";
+				statusOptionX.style.display =
+					navOptions.X === null ||
+					newNeighbors.intersection.length < 3 ||
+					mediaItemVisible
+						? "none"
+						: "inline-block";
+				statusOptionY.style.display =
+					navOptions.Y === null ||
+					newNeighbors.intersection.length < 4 ||
+					mediaItemVisible
 						? "none"
 						: "inline-block";
 			}
@@ -1074,7 +1120,6 @@ const main = () => {
 			return false;
 		}
 
-		console.debug("Scrolling to new target...", focusTargetBox);
 		cameraIsIdle = true;
 		window.scrollTo({
 			top: focusTargetBox.y,
@@ -1083,15 +1128,18 @@ const main = () => {
 		});
 
 		const newCamera = { ...focusTargetBox };
-		setTimeout(
-			() => {
+		if (requestInstantFocusUpdate) {
+			cameraIsIdle = false;
+			camera = newCamera;
+			lastKnownScrollPosition = focusTargetBox.y;
+		} else {
+			setTimeout(() => {
 				cameraIsIdle = false;
 				camera = newCamera;
 				lastKnownScrollPosition = focusTargetBox.y;
 				console.debug("Camera updated", camera);
-			},
-			requestInstantFocusUpdate ? 0 : 1000,
-		);
+			}, 1000);
+		}
 
 		inputEventsPending = false;
 		requestInstantFocusUpdate = false;
@@ -1197,6 +1245,11 @@ const main = () => {
 		window.setTimeout(() => {
 			console.info("Program init finalized.");
 			document.body.classList.remove("loading");
+
+			window.setTimeout(() => {
+				loader.style.display = "none";
+				console.info("Loader hidden.");
+			}, 15000);
 		}, 5000);
 	});
 
