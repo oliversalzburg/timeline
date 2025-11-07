@@ -147,15 +147,13 @@ body {
 	}
 	&:not(.loading) > .loader {
 		opacity: 0;
-		display: none;
+		background-blend-mode: overlay;
+		mix-blend-mode: overlay;
 	}
 }
 
 canvas {
-	transition:
-		ease-in opacity 6s,
-		ease-out transform 0.9s;
-
+	transition: ease-out transform 0.9s;
 	display: block;
 	position: fixed;
 	top: 0;

@@ -200,10 +200,15 @@ const main = () => {
 	const rapidKeys = new Map();
 	const starPlanes = Array.from({
 		length: 16,
-	}).map((_) => [
-		document.createElement("canvas"),
-		document.createElement("canvas"),
-	]);
+	}).map(
+		(_) =>
+			/** @type {[number, number, HTMLCanvasElement, HTMLCanvasElement]} */ ([
+				0,
+				0,
+				document.createElement("canvas"),
+				document.createElement("canvas"),
+			]),
+	);
 	const speedTime = 0.0001;
 	const speedScroll = 0.001;
 	const starColorsRGB = [
@@ -468,6 +473,7 @@ const main = () => {
 		left = left - document.documentElement.clientWidth / 2;
 		top = top - document.documentElement.clientHeight / 2;
 
+		cameraIsDetached = false;
 		focusTargetBox = { x: left, y: top };
 		console.debug("New focus box requested", focusTargetBox);
 		focusShiftPending = true;
@@ -638,7 +644,7 @@ const main = () => {
 		console.info("Initializing graphics...");
 
 		windowHeight = window.innerHeight;
-		for (const [planeTop, planeBottom] of starPlanes) {
+		for (const [, , planeTop, planeBottom] of starPlanes) {
 			for (const plane of [planeTop, planeBottom]) {
 				plane.width = document.body.scrollWidth;
 				plane.height = windowHeight;
@@ -646,7 +652,7 @@ const main = () => {
 		}
 
 		let stars = 2 ** 11;
-		for (const [planeTop, planeBottom] of starPlanes) {
+		for (const [, , planeTop, planeBottom] of starPlanes) {
 			for (const plane of [planeTop, planeBottom]) {
 				const context = plane.getContext("2d");
 				if (context === null) {
@@ -695,11 +701,13 @@ const main = () => {
 					focusTargetBox.x += gp.axes[Inputs.AXIS_LEFT_X] * scale * 2;
 					requiresRefresh = true;
 					requestInstantFocusUpdate = true;
+					cameraIsDetached = true;
 				}
 				if (INPUT_THRESHOLD < Math.abs(gp.axes[Inputs.AXIS_LEFT_Y])) {
 					focusTargetBox.y += gp.axes[Inputs.AXIS_LEFT_Y] * scale * 2;
 					requiresRefresh = true;
 					requestInstantFocusUpdate = true;
+					cameraIsDetached = true;
 				}
 
 				if (INPUT_THRESHOLD < Math.abs(gp.axes[Inputs.AXIS_RIGHT_X])) {
@@ -937,6 +945,7 @@ const main = () => {
 	};
 
 	let cameraIsIdle = false;
+	let cameraIsDetached = false;
 	const updateCamera = (updateStatus = false) => {
 		if (cameraIsIdle) {
 			console.debug("Camera update requested while camera was idle.");
@@ -1119,18 +1128,46 @@ const main = () => {
 
 		// We don't want to update the starfield every frame, because it doesn't
 		// move much, but consumes a lot of fill rate.
-		if (!cameraIsIdle && 1000 < deltaStarfield) {
+		if (!cameraIsIdle && !cameraIsDetached && 2000 < deltaStarfield) {
 			const sinceStart = Date.now() - startTime;
+
 			for (let z = 0; z < starPlanes.length; ++z) {
+				const planeSet = starPlanes[z];
+
 				const offset =
-					(((z + 1) *
-						(lastKnownScrollPosition * speedScroll + sinceStart * speedTime)) %
-						windowHeight) *
-					-1;
-				starPlanes[z][0].style.transform = `translateY(${offset}px)`;
-				starPlanes[z][1].style.transform =
-					`translateY(${offset + windowHeight}px)`;
+					(z + 1) *
+					(lastKnownScrollPosition * speedScroll + sinceStart * speedTime);
+
+				const planeOffsets = [planeSet[0], planeSet[1]];
+				const planes = [planeSet[2], planeSet[3]];
+
+				planeOffsets[0] = offset % windowHeight;
+				planeOffsets[1] = (offset % windowHeight) - windowHeight;
+
+				planes[0].style.transition =
+					windowHeight / 2 < Math.abs(planeSet[0] - planeOffsets[0])
+						? "none"
+						: "ease-out all 0.9s";
+				planes[1].style.transition =
+					windowHeight / 2 < Math.abs(planeSet[1] - planeOffsets[1])
+						? "none"
+						: "ease-out all 0.9s";
+				planes[0].style.opacity =
+					windowHeight / 2 < Math.abs(planeSet[0] - planeOffsets[0])
+						? "0"
+						: "1";
+				planes[1].style.opacity =
+					windowHeight / 2 < Math.abs(planeSet[1] - planeOffsets[1])
+						? "0"
+						: "1";
+
+				planes[0].style.transform = `translateY(${-planeOffsets[0]}px)`;
+				planes[1].style.transform = `translateY(${-planeOffsets[1]}px)`;
+
+				planeSet[0] = planeOffsets[0];
+				planeSet[1] = planeOffsets[1];
 			}
+
 			previousTimestampStarfield = timestamp;
 		}
 
