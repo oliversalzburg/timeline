@@ -846,18 +846,36 @@ const main = () => {
 	/** @type {number | undefined} */
 	let timelineMediaIdActive;
 
-	dialogIFrame.addEventListener("load", () => {
-		window.setTimeout(() => {
+	/** @type {number | null} */
+	let iFrameResizeHandle = null;
+	const onIFrameLoad = () => {
+		if (iFrameResizeHandle !== null) {
+			window.clearTimeout(iFrameResizeHandle);
+		}
+
+		const resizeIFrame = () => {
+			iFrameResizeHandle = null;
 			/** @type {HTMLIFrameElement | null} */
 			const contentIFrame =
 				dialogIFrame.contentWindow?.document.querySelector("#content_iframe") ??
 				null;
-			if (contentIFrame === null) {
-				throw new Error("unable to find kiwix content iframe");
+
+			const kiwixThemeHeight = 45;
+			const newHeight =
+				contentIFrame?.contentWindow?.document.documentElement?.scrollHeight ??
+				0;
+			if (newHeight === 0 || kiwixThemeHeight + newHeight < 1000) {
+				iFrameResizeHandle = window.setTimeout(resizeIFrame, 100);
+				return;
 			}
-			dialogIFrame.style.height = `${(contentIFrame.contentWindow?.document.documentElement.scrollHeight ?? 0) + 200}px`;
-		}, 1000);
-	});
+
+			dialogIFrame.style.height = `${kiwixThemeHeight + newHeight}px`;
+
+			iFrameResizeHandle = window.setTimeout(resizeIFrame, 1000);
+		};
+		iFrameResizeHandle = window.setTimeout(resizeIFrame, 100);
+	};
+	dialogIFrame.addEventListener("load", onIFrameLoad);
 
 	const showMediaForwardOrClose = () => {
 		if (timelineMediaIds === undefined || timelineMediaIds.length === 0) {
@@ -875,24 +893,18 @@ const main = () => {
 			return;
 		}
 
+		resetMedia();
+
 		const mediaPath =
 			lookupTimelineToMetadata.get(
 				timelineMediaIds[timelineMediaIdActive],
 			)?.[2] ?? "";
 		if (mediaPath.startsWith("/kiwix/")) {
-			resetMedia();
-			dialogImage.src = "";
-			dialogImage.style.display = "none";
 			dialogIFrame.src = mediaPath;
 			dialogIFrame.style.display = "block";
-			dialogIFrame.style.height = "0";
 		} else {
-			resetMedia();
 			dialogImage.src = mediaPath;
 			dialogImage.style.display = "block";
-			dialogIFrame.src = "about:blank";
-			dialogIFrame.style.display = "none";
-			dialogIFrame.style.height = "0";
 		}
 
 		dialog.show();
@@ -915,24 +927,18 @@ const main = () => {
 			return;
 		}
 
+		resetMedia();
+
 		const mediaPath =
 			lookupTimelineToMetadata.get(
 				timelineMediaIds[timelineMediaIdActive],
 			)?.[2] ?? "";
 		if (mediaPath.startsWith("/kiwix/")) {
-			resetMedia();
-			dialogImage.src = "";
-			dialogImage.style.display = "none";
 			dialogIFrame.src = mediaPath;
 			dialogIFrame.style.display = "block";
-			dialogIFrame.style.height = "0";
 		} else {
-			resetMedia();
 			dialogImage.src = mediaPath;
 			dialogImage.style.display = "block";
-			dialogIFrame.src = "about:blank";
-			dialogIFrame.style.display = "none";
-			dialogIFrame.style.height = "0";
 		}
 
 		dialog.show();
@@ -942,8 +948,16 @@ const main = () => {
 		mediaItemRotation = { x: 0, y: 0 };
 		mediaItemPosition = { x: 0, y: 3, z: 0 };
 		dialog.style.transform = `perspective(50vmin) rotateY(${mediaItemRotation.x}deg) rotateX(${mediaItemRotation.y}deg) translate3d(${mediaItemPosition.x}vmin, ${mediaItemPosition.y}vmin, ${mediaItemPosition.z}vmin)`;
+		dialogImage.src = "";
+		dialogImage.style.display = "none";
+		dialogIFrame.style.display = "none";
+		dialogIFrame.style.height = "150px";
 	};
 	const closeMedia = () => {
+		if (iFrameResizeHandle !== null) {
+			window.clearTimeout(iFrameResizeHandle);
+		}
+		dialogIFrame.src = "about:blank";
 		dialog.close();
 		resetMedia();
 		mediaItemVisible = false;

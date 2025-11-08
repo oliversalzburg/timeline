@@ -376,7 +376,7 @@ dialog {
 	}
 	iframe {
 		width: 1024px;
-		height: 200vh;
+		height: 150px;
 		border: none;
 		overflow: hidden;
 	}
