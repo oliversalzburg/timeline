@@ -1247,6 +1247,16 @@ const main = () => {
 			document.body.classList.remove("loading");
 
 			window.setTimeout(() => {
+				calendarContainer.classList.add("open");
+				console.info("Calendar shown.");
+			}, 8000);
+
+			window.setTimeout(() => {
+				statusContainer.classList.add("open");
+				console.info("Status shown.");
+			}, 9000);
+
+			window.setTimeout(() => {
 				loader.style.display = "none";
 				console.info("Loader hidden.");
 			}, 15000);
