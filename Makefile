@@ -237,7 +237,7 @@ validate-schema: .venv
 		*.yml
 
 # Validate all data to be valid timeline documents.
-validate-data: .venv validate-schema
+validate-data: .venv validate-schema lib/tsconfig.source.tsbuildinfo
 	. .venv/bin/activate; cd schemas; \
 	check-jsonschema \
 		--schemafile spec.schema.yml \
