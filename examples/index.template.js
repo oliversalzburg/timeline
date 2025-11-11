@@ -1190,7 +1190,7 @@ const main = () => {
 
 		// We don't want to update the starfield every frame, because it doesn't
 		// move much, but consumes a lot of fill rate.
-		if (!cameraIsIdle && !cameraIsDetached && 2000 < deltaStarfield) {
+		if (!cameraIsIdle && !cameraIsDetached && 1000 < deltaStarfield) {
 			const sinceStart = Date.now() - startTime;
 
 			for (let z = 0; z < starPlanes.length; ++z) {

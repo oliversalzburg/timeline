@@ -10,10 +10,11 @@ _LIBS_D_TS_MAP := $(patsubst %.ts,%.d.ts.map,$(_SOURCES_TS))
 _IMAGES := $(wildcard contrib/openmoji-svg-color/*.svg) $(wildcard contrib/wikimedia/*.svg)
 IMAGES := $(addprefix $(OUTPUT)/,$(notdir $(_IMAGES)))
 
-DATA_ROOT ?= $(shell echo ~/timelines)
-TIMELINES ?= $(shell find $(DATA_ROOT) -iname "*.yml")
-ifeq ($(TIMELINES),)
-	DATA_ROOT = timelines
+DATA_ROOT ?= $(shell realpath ~/timelines)
+ifneq ("$(wildcard $(DATA_ROOT))","")
+	TIMELINES ?= $(shell find $(DATA_ROOT) -iname "*.yml")
+else
+	DATA_ROOT = $(abspath timelines)
 	TIMELINES = $(shell find $(DATA_ROOT) -iname "*.yml")
 endif
 
