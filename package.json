@@ -27,7 +27,7 @@
 		"chai": "6.2.1",
 		"esbuild": "0.25.12",
 		"http-server": "14.1.1",
-		"mocha": "11.7.4",
+		"mocha": "11.7.5",
 		"typescript": "5.9.3"
 	},
 	"dependencies": {
