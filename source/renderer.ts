@@ -7,7 +7,8 @@ import { hashCyrb53 } from "@oliversalzburg/js-utils/data/string.js";
 import { formatMilliseconds } from "@oliversalzburg/js-utils/format/milliseconds.js";
 import {
 	FONT_NAME,
-	FONT_SIZE,
+	FONT_SCALE,
+	FONT_SIZE_700MM_V07_READ_PT,
 	MILLISECONDS,
 	TRANSPARENT,
 } from "./constants.js";
@@ -455,19 +456,20 @@ export const render = <
 	};
 
 	const dotGraph = (d = dot()) => {
+		const fontsize = FONT_SIZE_700MM_V07_READ_PT * FONT_SCALE;
 		d.raw("digraph {");
 		d.raw(
-			`node [fontname="${options.rendererAnonymization === "enabled" ? "Dummy Text2" : FONT_NAME}"; fontsize="${FONT_SIZE}";]`,
+			`node [fontname="${options.rendererAnonymization === "enabled" ? "Dummy Text2" : FONT_NAME}"; fontsize="${fontsize}";]`,
 		);
 		d.raw(
-			`edge [fontname="${options.rendererAnonymization === "enabled" ? "Dummy Text2" : FONT_NAME}"; fontsize="${FONT_SIZE}";]`,
+			`edge [fontname="${options.rendererAnonymization === "enabled" ? "Dummy Text2" : FONT_NAME}"; fontsize="${fontsize}";]`,
 		);
 		d.raw(`bgcolor="${TRANSPARENT}"`);
 		d.raw('comment=" "');
 		d.raw(
 			`fontname="${options.rendererAnonymization === "enabled" ? "Dummy Text2" : FONT_NAME}"`,
 		);
-		d.raw(`fontsize="${FONT_SIZE}"`);
+		d.raw(`fontsize="${fontsize}"`);
 		//d.raw('label=" "');
 		d.raw(`rankdir="TD"`);
 		d.raw(`ranksep="0.5"`);

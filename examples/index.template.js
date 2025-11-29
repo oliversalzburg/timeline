@@ -680,7 +680,7 @@ const main = () => {
 					context.fill();
 				}
 
-				document.body.insertBefore(plane, svg);
+				document.body.append(plane);
 			}
 
 			stars *= 0.9;

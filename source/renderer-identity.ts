@@ -5,7 +5,9 @@ import {
 } from "@oliversalzburg/js-utils/data/nil.js";
 import {
 	FONT_NAME,
-	FONT_SIZE,
+	FONT_SIZE_700MM_V07_BROWSE_PT,
+	FONT_SIZE_700MM_V07_READ_PT,
+	FONT_SIZE_700MM_V07_STUDY_PT,
 	TRANSPARENT,
 	UNICODE_DIED,
 	UNICODE_MARRIED,
@@ -82,7 +84,7 @@ export const renderSimple = (
 	const d = dot();
 	d.raw("digraph ancestry {");
 	d.raw(
-		`node [fontcolor="${defaultForeground}"; fontname="${fontNode}"; fontsize="${FONT_SIZE}";]`,
+		`node [fontcolor="${defaultForeground}"; fontname="${fontNode}"; fontsize="${FONT_SIZE_700MM_V07_STUDY_PT}";]`,
 	);
 	d.raw(`edge [color="${defaultForeground}";]`);
 	d.raw(`bgcolor="${defaultBackground}"`);
@@ -159,7 +161,10 @@ export const renderSimple = (
 					: color,
 			),
 			fontname: identity === originIdentity ? `${fontNode} bold` : undefined,
-			fontsize: identity === originIdentity ? FONT_SIZE + 4 : undefined,
+			fontsize:
+				identity === originIdentity
+					? FONT_SIZE_700MM_V07_STUDY_PT + 4
+					: undefined,
 			label: `${name(identity)}`,
 			penwidth: identity.id === originIdentity.id ? 1 : 0,
 			shape: identity.id === originIdentity.id ? "oval" : "box",
@@ -266,10 +271,10 @@ export const renderUniverse = (
 	const d = dot();
 	d.raw("digraph ancestry {");
 	d.raw(
-		`node [fontcolor="${defaultForeground}"; fontname="${fontNode}"; fontsize="${FONT_SIZE}";]`,
+		`node [fontcolor="${defaultForeground}"; fontname="${fontNode}"; fontsize="${FONT_SIZE_700MM_V07_STUDY_PT}";]`,
 	);
 	d.raw(
-		`edge [color="${defaultForeground}"; fontcolor="${defaultForeground}"; fontname="${FONT_NAME}"; fontsize="${FONT_SIZE}";]`,
+		`edge [color="${defaultForeground}"; fontcolor="${defaultForeground}"; fontname="${FONT_NAME}"; fontsize="${FONT_SIZE_700MM_V07_STUDY_PT}";]`,
 	);
 	d.raw(`bgcolor="${defaultBackground}"`);
 	d.raw('center="true"');
@@ -277,7 +282,7 @@ export const renderUniverse = (
 	//d.raw('concentrate="true"');
 	d.raw(`fontcolor="${defaultForeground}"`);
 	d.raw(`fontname="Blackside Personal Use Only"`);
-	d.raw(`fontsize="${FONT_SIZE * 10}"`);
+	d.raw(`fontsize="${FONT_SIZE_700MM_V07_BROWSE_PT}"`);
 	if (originIdentity !== undefined && options.dateRenderer !== undefined) {
 		d.raw(`label="${originIdentity.name ?? originIdentity.id}"`);
 	}
@@ -473,7 +478,8 @@ export const renderUniverse = (
 						: color,
 				),
 				fontname: identity === originIdentity ? `${fontNode} bold` : undefined,
-				fontsize: identity === originIdentity ? FONT_SIZE + 4 : undefined,
+				fontsize:
+					identity === originIdentity ? FONT_SIZE_700MM_V07_READ_PT : undefined,
 				//label: `${name(identity)} (${distance})`,
 				label: `${name(identity)}`,
 				penwidth: 0,

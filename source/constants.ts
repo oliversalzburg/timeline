@@ -8,10 +8,22 @@ export const MILLISECONDS = {
 	ONE_MONTH: (1000 * 60 * 60 * 24 * 7 * 52.25) / 12,
 };
 
-export const FONT_NAME = "Arial";
-export const FONTS_SYSTEM =
-	"Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif";
-export const FONT_SIZE = 12;
+export const FONT_NAME = "Carlito";
+// Carlito's cap to middle length scale.
+export const FONT_SCALE = 1.36;
+
+export const FONT_SIZE_1000MM_V07_BROWSE_PT = 35.1;
+export const FONT_SIZE_1000MM_V07_BROWSE_MM = 5.8;
+export const FONT_SIZE_700MM_V07_BROWSE_PT = 24.6;
+export const FONT_SIZE_700MM_V07_BROWSE_MM = 4.1;
+export const FONT_SIZE_1000MM_V07_READ_PT = 22.8;
+export const FONT_SIZE_1000MM_V07_READ_MM = 3.8;
+export const FONT_SIZE_700MM_V07_READ_PT = 16;
+export const FONT_SIZE_700MM_V07_READ_MM = 2.6;
+export const FONT_SIZE_1000MM_V07_STUDY_PT = 17.5;
+export const FONT_SIZE_1000MM_V07_STUDY_MM = 2.9;
+export const FONT_SIZE_700MM_V07_STUDY_PT = 12.3;
+export const FONT_SIZE_700MM_V07_STUDY_MM = 2;
 
 export const TRANSPARENT = "transparent";
 
