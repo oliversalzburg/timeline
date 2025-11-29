@@ -92,7 +92,9 @@ const data = new Map(
 const finalTimelines = [...data.entries().map(([_, timeline]) => timeline)];
 
 const timelinesPersons = /** @type {Array<TimelineAncestryRenderer>} */ (
-	finalTimelines.filter((timeline) => isIdentityPerson(timeline))
+	finalTimelines.filter(
+		(timeline) => isIdentityPerson(timeline) || isIdentityLocation(timeline),
+	)
 );
 const originIdentityId = mustExist(
 	timelinesPersons.find((_) => _.meta.id === originTimelineId),
@@ -129,6 +131,7 @@ const trimmedTimelines = finalTimelines.filter((_) => {
 
 	return (
 		isNotIdentityTimeline(_) ||
+		isIdentityLocation(_) ||
 		isIdentityPeriod(_) ||
 		isIdentityMedia(_) ||
 		(isIdentityPerson(_) &&
@@ -249,8 +252,11 @@ if (dotGraph.graph.length === 1) {
 	}
 }
 process.stdout.write("\n");
+const resolvedIdentitiy = graphTrimmed.resolveIdentity();
 const originBirthDate =
-	uncertainEventToDate(graphTrimmed.resolveIdentity()?.born) ?? new Date();
+	uncertainEventToDate(
+		resolvedIdentitiy?.born ?? resolvedIdentitiy?.established,
+	) ?? new Date();
 
 writeFileSync(
 	targetPath.replace(/\.gv(?:us)?$/, ".info"),

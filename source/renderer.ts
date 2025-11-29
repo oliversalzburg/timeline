@@ -318,13 +318,14 @@ export const render = <
 			: timelines[0];
 	const originTimestamp =
 		"identity" in origin.meta
-			? (uncertainEventToDate(origin.meta.identity.born)?.valueOf() ??
-				origin.records[0][0])
+			? (uncertainEventToDate(
+					origin.meta.identity.born ?? origin.meta.identity.established,
+				)?.valueOf() ?? origin.records[0][0])
 			: now;
 	const originTimestampString =
 		"identity" in origin.meta
 			? uncertainEventToDateString(
-					origin.meta.identity.born,
+					origin.meta.identity.born ?? origin.meta.identity.established,
 					options.dateRenderer,
 				)
 			: "now";

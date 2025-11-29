@@ -35,6 +35,12 @@ ifneq ($(DEBUG),)
 	PEDIGREE_FLAGS += --debug
 	UNIVERSE_FLAGS += --debug --max-identity-distance=4
 endif
+ifneq ($(SKIP_BEFORE),)
+	UNIVERSE_FLAGS += --skip-before=$(SKIP_BEFORE)
+endif
+ifneq ($(SKIP_AFTER),)
+	UNIVERSE_FLAGS += --skip-after=$(SKIP_AFTER)
+endif
 
 .PHONY: default build clean docs git-hook pretty lint test coverage universe
 .INTERMEDIATE: $(IMAGES)
