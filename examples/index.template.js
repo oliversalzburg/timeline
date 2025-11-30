@@ -25,9 +25,10 @@ const Inputs = {
 /** @type {import("source/types.js").RenderResultMetadata} */
 const DATA = [[], [], ["", "", ""]];
 
-const main = () => {
+const main = async () => {
 	console.info("Program init started.");
 
+	//#region DOM Element Selection
 	/** @type {HTMLDivElement | null} */
 	const loader = document.querySelector("body > .loader");
 	if (loader === null) {
@@ -58,6 +59,11 @@ const main = () => {
 	/** @type {HTMLDivElement | null} */
 	const calendarContainer = document.querySelector("#calendar");
 	if (calendarContainer === null) {
+		throw new Error("Unable to find #calendar element.");
+	}
+	/** @type {HTMLParagraphElement | null} */
+	const calendarDate = document.querySelector("#calendar .date");
+	if (calendarDate === null) {
 		throw new Error("Unable to find #calendar element.");
 	}
 	/** @type {HTMLParagraphElement | null} */
@@ -132,6 +138,7 @@ const main = () => {
 	if (statusButtonY === null) {
 		throw new Error("Unable to find #status element.");
 	}
+	//#endregion
 
 	// A set of all the unique IDs.
 	const idSet = DATA[0].reduce(
@@ -315,8 +322,11 @@ const main = () => {
 			return;
 		}
 
-		calendarText.textContent = nodeTitle;
-		document.title = nodeTitle.split("\n")[0];
+		const titleParts = nodeTitle.split("\n");
+		calendarDate.textContent = titleParts[0];
+		calendarText.textContent = `${titleParts[1]}\n${titleParts[2]}`;
+		document.title = titleParts[0];
+		intro.textContent = "Reise auf Zeit-Gleis:";
 
 		nodeFocused = node;
 		idFocused = id;
@@ -349,6 +359,8 @@ const main = () => {
 	 * @param {MouseEvent} event -
 	 */
 	const onClick = (event) => {
+		document.documentElement.style.cursor = "default";
+
 		inputEventsPending = true;
 		if (event.target === null) {
 			return;
@@ -485,6 +497,7 @@ const main = () => {
 		focusShiftPending = true;
 	};
 
+	//#region Navigation Helper
 	const navigateForward = () => {
 		if (idFocused === undefined || timelineFocused === undefined) {
 			return;
@@ -629,6 +642,7 @@ const main = () => {
 	const navigateBack = () => {
 		history.back();
 	};
+	//#endregion
 
 	/**
 	 * @param event {PopStateEvent} -
@@ -692,6 +706,9 @@ const main = () => {
 	/** @type {Array<{pressed:boolean}> | undefined} */
 	let previousButtons;
 	const INPUT_THRESHOLD = 0.1;
+	const SPEED_FREE_FLIGHT = 2.0;
+	const SPEED_MEDIA_SCALE = 0.5;
+	const SPEED_MEDIA_TRANSLATE = 0.5;
 
 	/**
 	 * @param {number} delta -
@@ -704,29 +721,33 @@ const main = () => {
 			if (gp !== null) {
 				const scale = delta / 16;
 				if (INPUT_THRESHOLD < Math.abs(gp.axes[Inputs.AXIS_LEFT_X])) {
-					focusTargetBox.x += gp.axes[Inputs.AXIS_LEFT_X] * scale * 2;
+					focusTargetBox.x +=
+						gp.axes[Inputs.AXIS_LEFT_X] * scale * SPEED_FREE_FLIGHT;
 					requiresRefresh = true;
 					requestInstantFocusUpdate = true;
 					cameraIsDetached = true;
 				}
 				if (INPUT_THRESHOLD < Math.abs(gp.axes[Inputs.AXIS_LEFT_Y])) {
-					focusTargetBox.y += gp.axes[Inputs.AXIS_LEFT_Y] * scale * 2;
+					focusTargetBox.y +=
+						gp.axes[Inputs.AXIS_LEFT_Y] * scale * SPEED_FREE_FLIGHT;
 					requiresRefresh = true;
 					requestInstantFocusUpdate = true;
 					cameraIsDetached = true;
 				}
 
 				if (INPUT_THRESHOLD < Math.abs(gp.axes[Inputs.AXIS_RIGHT_X])) {
-					mediaItemPosition.x -= gp.axes[Inputs.AXIS_RIGHT_X] * scale * 0.5;
+					mediaItemPosition.x -=
+						gp.axes[Inputs.AXIS_RIGHT_X] * scale * SPEED_MEDIA_TRANSLATE;
 				}
 				if (INPUT_THRESHOLD < Math.abs(gp.axes[Inputs.AXIS_RIGHT_Y])) {
-					mediaItemPosition.y -= gp.axes[Inputs.AXIS_RIGHT_Y] * scale * 0.5;
+					mediaItemPosition.y -=
+						gp.axes[Inputs.AXIS_RIGHT_Y] * scale * SPEED_MEDIA_TRANSLATE;
 				}
 				if (gp.buttons[Inputs.BUTTON_LT].pressed === true) {
-					mediaItemPosition.z -= INPUT_THRESHOLD * scale * 5;
+					mediaItemPosition.z -= scale * SPEED_MEDIA_SCALE;
 				}
 				if (gp.buttons[Inputs.BUTTON_RT].pressed === true) {
-					mediaItemPosition.z += INPUT_THRESHOLD * scale * 5;
+					mediaItemPosition.z += scale * SPEED_MEDIA_SCALE;
 				}
 				mediaItemPosition.x = Math.max(Math.min(mediaItemPosition.x, 95), -95);
 				mediaItemPosition.y = Math.max(
@@ -907,6 +928,8 @@ const main = () => {
 			dialogImage.style.display = "block";
 		}
 
+		intro.textContent = "Artefaktname:";
+
 		dialog.show();
 		mediaItemVisible = true;
 	};
@@ -941,6 +964,8 @@ const main = () => {
 			dialogImage.style.display = "block";
 		}
 
+		intro.textContent = "Artefaktname:";
+
 		dialog.show();
 		mediaItemVisible = true;
 	};
@@ -960,6 +985,7 @@ const main = () => {
 		dialogIFrame.src = "about:blank";
 		dialog.close();
 		resetMedia();
+		intro.textContent = "Reise auf Zeit-Gleis:";
 		mediaItemVisible = false;
 		mediaItemClosed = true;
 	};
@@ -1016,7 +1042,6 @@ const main = () => {
 					);
 				}
 
-				intro.textContent = "⥲";
 				statusText.textContent =
 					mediaIdentityName ?? timelineIdentityName ?? "???";
 				intro.style.color = timelineColor ?? "";
@@ -1282,7 +1307,7 @@ const main = () => {
 
 document.addEventListener("DOMContentLoaded", () => {
 	console.info(
-		"DOM content loaded. Program init is pending. Allow at least 30 seconds to pass before any content appears.",
+		"DOM content loaded. Program init is pending. Allow at least 30 seconds to pass before looking for bugs.",
 	);
-	setTimeout(() => main(), 5000);
+	setTimeout(() => main().catch(console.error), 1000);
 });

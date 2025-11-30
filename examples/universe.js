@@ -110,10 +110,14 @@ const minIdentityBorn =
 		? new Date(args["min-identity-born"]).valueOf()
 		: undefined;
 const graphUniverse = new Graph(timelinesPersons, originIdentityId);
+const originIsLocation = isIdentityLocation(
+	graphUniverse.timelineOf(originIdentityId),
+);
 const hops = graphUniverse.calculateHopsFrom(originIdentityId, {
-	allowChildHop: true,
+	allowChildHop: !originIsLocation,
+	allowLocationHop: originIsLocation,
 	allowMarriageHop: false,
-	allowParentHop: true,
+	allowParentHop: !originIsLocation,
 });
 const trimmedTimelines = finalTimelines.filter((_) => {
 	const born = isIdentityPerson(_)

@@ -7,8 +7,7 @@ import { hashCyrb53 } from "@oliversalzburg/js-utils/data/string.js";
 import { formatMilliseconds } from "@oliversalzburg/js-utils/format/milliseconds.js";
 import {
 	FONT_NAME,
-	FONT_SCALE,
-	FONT_SIZE_700MM_V07_READ_PT,
+	FONT_SIZE_1000MM_V07_READ_PT,
 	MILLISECONDS,
 	TRANSPARENT,
 } from "./constants.js";
@@ -457,7 +456,7 @@ export const render = <
 	};
 
 	const dotGraph = (d = dot()) => {
-		const fontsize = FONT_SIZE_700MM_V07_READ_PT * FONT_SCALE;
+		const fontsize = FONT_SIZE_1000MM_V07_READ_PT;
 		d.raw("digraph {");
 		d.raw(
 			`node [fontname="${options.rendererAnonymization === "enabled" ? "Dummy Text2" : FONT_NAME}"; fontsize="${fontsize}";]`,

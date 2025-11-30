@@ -377,10 +377,28 @@ export class Graph<
 			.filter((_) => _ !== undefined);
 	}
 
+	locations(id = this.origin): Array<Identity> | undefined {
+		const locationTimelines = this.timelines.filter((_) =>
+			isIdentityLocation(_),
+		) as Array<TimelineAncestryRenderer>;
+		const locationIdentities = locationTimelines.map((_) => _.meta.identity);
+		const found = [];
+		for (const location of locationIdentities) {
+			for (const [_timestamp, record] of this.timelineOf(id)?.records ?? []) {
+				if (record.title.includes(location.id)) {
+					found.push(location);
+					break;
+				}
+			}
+		}
+		return found;
+	}
+
 	calculateHopsFrom(
 		id = this.origin,
 		options: Partial<{
 			allowChildHop: boolean;
+			allowLocationHop: boolean;
 			allowMarriageHop: boolean;
 			allowParentHop: boolean;
 		}> = {},
@@ -398,6 +416,24 @@ export class Graph<
 			`unable to resolve identity '${id}'`,
 		);
 		distances.set(root.id, 0);
+
+		if (options?.allowLocationHop === true) {
+			const rootLocations = this.locations(id);
+			const identityLocations = new Map(
+				this.identities.map((_) => [_.id, this.locations(_.id)]),
+			);
+
+			if (rootLocations !== undefined && 0 < rootLocations.length) {
+				for (const [identity, locations] of identityLocations) {
+					for (const location of locations ?? []) {
+						if (rootLocations.includes(location)) {
+							distances.set(identity, 0);
+							break;
+						}
+					}
+				}
+			}
+		}
 
 		let changes = 1;
 		while (0 < changes) {

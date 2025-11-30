@@ -2,6 +2,14 @@
 
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import {
+	FONT_NAME,
+	FONT_SCALE,
+	FONT_SIZE_1000MM_V07_BROWSE_PT,
+	FONT_SIZE_1000MM_V07_READ_PT,
+	FONT_SIZE_1000MM_V07_STUDY_MM,
+	FONT_SIZE_1000MM_V07_STUDY_PT,
+} from "../lib/constants.js";
 
 // Parse command line arguments.
 const args = process.argv
@@ -71,6 +79,28 @@ for (const [variant, meta] of Object.entries(VARIANTS)) {
 		svg: readFileSync(args.target.replace(/\.html$/, meta.svgSource), "utf-8"),
 	};
 
+	const css = templateCss
+		.replaceAll(
+			"/* FONT_SIZE_ROOT */",
+			`font-size: ${FONT_SIZE_1000MM_V07_STUDY_MM * FONT_SCALE}mm;`,
+		)
+		.replaceAll(
+			"/* FONT_FAMILY_ROOT */",
+			`font-family: ${FONT_NAME}, sans-serif;`,
+		)
+		.replaceAll(
+			"/* FONT_SIZE_BROWSE */",
+			`font-size: ${FONT_SIZE_1000MM_V07_BROWSE_PT * FONT_SCALE}pt;`,
+		)
+		.replaceAll(
+			"/* FONT_SIZE_READ */",
+			`font-size: ${FONT_SIZE_1000MM_V07_READ_PT * FONT_SCALE}pt;`,
+		)
+		.replaceAll(
+			"/* FONT_SIZE_STUDY */",
+			`font-size: ${FONT_SIZE_1000MM_V07_STUDY_PT * FONT_SCALE}pt;`,
+		);
+
 	const js = templateJs.replace(
 		'const DATA = [[], [], ["", "", ""]];',
 		`const DATA = ${settings.meta};`,
@@ -104,7 +134,7 @@ for (const [variant, meta] of Object.entries(VARIANTS)) {
 		)
 		.replace("<!--GUIDANCE-->", ["<!--", templateTxt, "-->"].join("\n"))
 		.replace("INITIAL_BODY_CLASS", settings.withJs ? "loading" : "")
-		.replace("/*CSS*/", templateCss)
+		.replace("/*CSS*/", css)
 		.replace("/*JS*/", settings.withJs ? js : "")
 		.replace("<!--SVG-->", svg);
 

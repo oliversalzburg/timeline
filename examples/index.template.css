@@ -4,7 +4,8 @@ body {
 	padding: 0;
 	height: 100%;
 	width: 100%;
-	font-size: 16px;
+	/* FONT_FAMILY_ROOT */
+	/* FONT_SIZE_ROOT */
 }
 
 html {
@@ -16,6 +17,7 @@ html {
 		width: 0px;
 		background: transparent;
 	}
+	cursor: none;
 }
 
 svg {
@@ -197,10 +199,9 @@ canvas {
 	left: 0;
 	margin: 0;
 	background-color: rgb(0 0 0 / 0.7);
-	transform: translateY(-10vmin);
+	transform: translateY(-100%);
 
 	color: rgb(255 255 255);
-	font-family: sans-serif;
 	user-select: none;
 
 	&.open {
@@ -208,16 +209,23 @@ canvas {
 		transform: none;
 	}
 
+	.date {
+		/* FONT_SIZE_BROWSE */
+		padding: 0 1vmin;
+		margin: 0;
+	}
 	.text {
+		/* FONT_SIZE_STUDY */
 		white-space-collapse: preserve-breaks;
 		padding: 0 1vmin;
+		margin: 0;
 	}
 }
 #status {
 	transition: ease-in opacity 6s;
 
-	display: grid;
-	/*grid-template-columns: 20vw auto 20vw;*/
+	display: flex;
+	flex-direction: column;
 	z-index: 5;
 
 	position: fixed;
@@ -228,7 +236,7 @@ canvas {
 	transform: translateY(10vmin);
 
 	color: rgb(255 255 255);
-	font-family: sans-serif;
+	/* FONT_SIZE_BROWSE */
 	user-select: none;
 
 	&.open {
@@ -236,78 +244,72 @@ canvas {
 		transform: none;
 	}
 
-	.shoulder {
-		padding: 0.5vmin 1vmin;
-		grid-row: 1 / 2;
-		font-size: 1.25rem;
-		background-color: rgb(42, 42, 42);
-		width: 12vw;
+	.shoulders {
+		display: flex;
+		flex-direction: row;
+		justify-content: space-between;
+		width: 100%;
 
-		&.left {
-			grid-column: 1 / 2;
-			text-align: right;
-			justify-self: end;
-			border-radius: 20px 0 0 20px;
+		.shoulder {
+			padding: 0.5vmin 1vmin;
+			/* FONT_SIZE_READ */
+			background-color: rgb(42, 42, 42);
+			width: 10em;
 
-			&::after {
-				content: "LB";
-				color: rgb(166, 166, 166);
-				margin-left: 1vmin;
+			&.left {
+				text-align: right;
+				margin-left: 2em;
+				border-radius: 20px 0 0 20px;
+
+				&::after {
+					content: "LB";
+					color: rgb(166, 166, 166);
+					margin-left: 1em;
+				}
 			}
-		}
 
-		&.right {
-			grid-column: 9 / 10;
-			text-align: left;
-			border-radius: 0 20px 20px 0;
+			&.right {
+				text-align: left;
+				margin-right: 2em;
+				border-radius: 0 20px 20px 0;
 
-			&::before {
-				content: "RB";
-				color: rgb(166, 166, 166);
-				margin-right: 1vmin;
+				&::before {
+					content: "RB";
+					color: rgb(166, 166, 166);
+					margin-right: 1em;
+				}
 			}
 		}
 	}
+
 	.intro {
-		grid-row: 2 / 3;
-		grid-column: 1 / 2;
-		padding: 1vmin 0 1vmin 1vmin;
-		font-size: 1.5rem;
-		line-height: 1.5rem;
+		/* FONT_SIZE_STUDY */
+		margin: 0.5em 0 -0.5em 1em;
 		color: rgb(189, 189, 189);
+		z-index: 1;
 	}
 	.text {
-		grid-row: 2 / 3;
-		grid-column: 1 / 10;
-
-		padding: 1vmin 1vmin 1vmin 4vmin;
-		margin: 0;
-		font-size: 1.5rem;
-		line-height: 1.5rem;
+		/* FONT_SIZE_BROWSE */
+		padding: 0;
+		margin: 0 0 0 1em;
 		text-align: left;
 		background-color: rgb(0 0 0 / 0.7);
 	}
 	.options {
-		grid-row: 3 / 4;
-		grid-column: 1 / 10;
-
 		display: flex;
 		flex-direction: row;
 		align-items: center;
 		justify-content: end;
-		padding-bottom: 1vmin;
 		background-color: rgb(0 0 0 / 0.7);
 
 		.button {
 			display: inline-block;
 			color: rgb(255 255 255 / 0.95);
 			opacity: 0.95;
-			font-family: sans-serif;
 			font-weight: bold;
-			font-size: 2vmin;
-			line-height: 2vmin;
-			width: 2.2vmin;
-			height: 2vmin;
+			/* FONT_SIZE_READ */
+			width: 2em;
+			height: 2em;
 			text-align: center;
 			border-radius: 50% 50%;
 			text-shadow:
@@ -336,7 +338,7 @@ canvas {
 		}
 
 		.option {
-			font-size: 2vmin;
+			/* FONT_SIZE_READ */
 			margin-right: 2vmin;
 		}
 	}
