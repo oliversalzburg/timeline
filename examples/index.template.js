@@ -876,6 +876,11 @@ const main = async () => {
 
 		const resizeIFrame = () => {
 			iFrameResizeHandle = null;
+
+			if (mediaItemVisible === false) {
+				return;
+			}
+
 			/** @type {HTMLIFrameElement | null} */
 			const contentIFrame =
 				dialogIFrame.contentWindow?.document.querySelector("#content_iframe") ??
@@ -885,7 +890,7 @@ const main = async () => {
 			const newHeight =
 				contentIFrame?.contentWindow?.document.documentElement?.scrollHeight ??
 				0;
-			if (newHeight === 0 || kiwixThemeHeight + newHeight < 1000) {
+			if (newHeight === 0 || kiwixThemeHeight + newHeight < 500) {
 				iFrameResizeHandle = window.setTimeout(resizeIFrame, 100);
 				return;
 			}
