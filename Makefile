@@ -30,10 +30,15 @@ ifneq ($(DEBUG_DOT),)
 	DOT_FLAGS += -v5
 endif
 
-UNIVERSE_FLAGS += --max-identity-distance=5 --min-identity-born=1900-01-01
 ifneq ($(DEBUG),)
 	PEDIGREE_FLAGS += --debug
-	UNIVERSE_FLAGS += --debug --max-identity-distance=4
+	UNIVERSE_FLAGS += --debug
+endif
+ifneq ($(MAX_IDENTITY_DISTANCE),)
+	UNIVERSE_FLAGS += --max-identity-distance=$(MAX_IDENTITY_DISTANCE)
+endif
+ifneq ($(MIN_IDENTITY_BORN),)
+	UNIVERSE_FLAGS += --min-identity-born=$(MIN_IDENTITY_BORN)
 endif
 ifneq ($(SKIP_BEFORE),)
 	UNIVERSE_FLAGS += --skip-before=$(SKIP_BEFORE)

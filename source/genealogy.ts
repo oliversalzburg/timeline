@@ -278,18 +278,53 @@ export class Graph<
 	}
 
 	fatherOf(id = this.origin) {
-		return this.identities.find((identity) =>
-			identity.relations?.some(
+		return this.identities.find((_) =>
+			_.relations?.some(
 				(relation) => "fatherOf" in relation && relation.fatherOf === id,
 			),
 		);
 	}
 
 	motherOf(id = this.origin) {
-		return this.identities.find((identity) =>
-			identity.relations?.some(
+		return this.identities.find((_) =>
+			_.relations?.some(
 				(relation) => "motherOf" in relation && relation.motherOf === id,
 			),
+		);
+	}
+
+	containersOf(id = this.origin) {
+		return (
+			this.identities.filter((_) =>
+				_.relations?.some(
+					(relation) => "contains" in relation && relation.contains === id,
+				),
+			) ?? []
+		);
+	}
+
+	linksTo(id = this.origin) {
+		return (
+			this.identities.filter((_) =>
+				_.relations?.some(
+					(relation) => "linkedTo" in relation && relation.linkedTo === id,
+				),
+			) ?? []
+		);
+	}
+
+	recursiveContainersOf(id = this.origin, maxDepth = 100) {
+		if (maxDepth === 0) {
+			return [];
+		}
+
+		const containers = this.containersOf(id);
+		if (containers.length === 0) {
+			return [];
+		}
+
+		return containers.concat(
+			containers.flatMap((container) => this.containersOf(container.id)),
 		);
 	}
 
@@ -377,17 +412,49 @@ export class Graph<
 			.filter((_) => _ !== undefined);
 	}
 
-	locations(id = this.origin): Array<Identity> | undefined {
+	locations(id = this.origin, quant = true): Array<Identity> | undefined {
+		const rootIdentity = this.resolveIdentity(id);
+		if (rootIdentity === undefined) {
+			return undefined;
+		}
+
+		if (isIdentityLocation(rootIdentity)) {
+			return coalesceArray([rootIdentity, ...this.recursiveContainersOf(id)]);
+		}
+
+		const rootMarriages = this.marriagesOf(id);
 		const locationTimelines = this.timelines.filter((_) =>
 			isIdentityLocation(_),
 		) as Array<TimelineAncestryRenderer>;
 		const locationIdentities = locationTimelines.map((_) => _.meta.identity);
 		const found = [];
 		for (const location of locationIdentities) {
+			if (rootIdentity.born?.in === location.id) {
+				found.push(location);
+				if (!quant) {
+					continue;
+				}
+			}
+			if (rootIdentity.died?.in === location.id) {
+				found.push(location);
+				if (!quant) {
+					continue;
+				}
+			}
+
+			if (rootMarriages.some((_) => _.in === location.id)) {
+				found.push(location);
+				if (!quant) {
+					continue;
+				}
+			}
+
 			for (const [_timestamp, record] of this.timelineOf(id)?.records ?? []) {
 				if (record.title.includes(location.id)) {
 					found.push(location);
-					break;
+					if (!quant) {
+						break;
+					}
 				}
 			}
 		}
@@ -418,17 +485,28 @@ export class Graph<
 		distances.set(root.id, 0);
 
 		if (options?.allowLocationHop === true) {
-			const rootLocations = this.locations(id);
+			const rootLocations = this.locations(id, false);
 			const identityLocations = new Map(
-				this.identities.map((_) => [_.id, this.locations(_.id)]),
+				this.identities.map((_) => [_.id, this.locations(_.id) ?? []]),
 			);
 
 			if (rootLocations !== undefined && 0 < rootLocations.length) {
 				for (const [identity, locations] of identityLocations) {
-					for (const location of locations ?? []) {
-						if (rootLocations.includes(location)) {
-							distances.set(identity, 0);
-							break;
+					if (identity === id) {
+						continue;
+					}
+					for (const location of locations) {
+						const locationHops = rootLocations.indexOf(location);
+						if (-1 < locationHops) {
+							const currentDistance =
+								distances.get(identity) ?? Number.POSITIVE_INFINITY;
+							distances.set(
+								identity,
+								Math.min(
+									Math.max(0, currentDistance - 1),
+									(locationHops + 1) * 100,
+								),
+							);
 						}
 					}
 				}

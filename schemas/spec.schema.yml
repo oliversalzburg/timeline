@@ -240,6 +240,25 @@ definitions:
                 type: string
               showAs:
                 type: string
+      relations:
+        title: Relations
+        type: array
+        items:
+          anyOf:
+            - title: Link
+              type: object
+              required:
+                - linkedTo
+              properties:
+                linkedTo:
+                  type: string
+            - title: Containment
+              type: object
+              required:
+                - contains
+              properties:
+                contains:
+                  type: string
   period:
     title: Period
     type: object
@@ -293,6 +312,25 @@ definitions:
                 type: string
               showAs:
                 type: string
+      relations:
+        title: Relations
+        type: array
+        items:
+          anyOf:
+            - title: Link
+              type: object
+              required:
+                - linkedTo
+              properties:
+                linkedTo:
+                  type: string
+            - title: Containment
+              type: object
+              required:
+                - contains
+              properties:
+                contains:
+                  type: string
 type: object
 additionalProperties: true
 properties:
@@ -317,10 +355,6 @@ properties:
     title: Private Document
     type: boolean
     default: true
-  rank:
-    title: Rank
-    type: number
-    default: 0
   timeline:
     title: Timeline
     patternProperties:
