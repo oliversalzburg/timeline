@@ -30,6 +30,12 @@ definitions:
       name:
         title: Name
         type: string
+      aliases:
+        title: Aliases
+        type: array
+        items:
+          title: Alias
+          type: string
       urls:
         title: URLs
         type: array

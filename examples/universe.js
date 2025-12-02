@@ -239,14 +239,14 @@ const info = [
 
 process.stdout.write("Writing graph...");
 if (dotGraph.graph.length === 1) {
-	writeFileSync(targetPath, dotGraph.graph[0]);
+	writeFileSync(targetPath, dotGraph.graph[0].graph);
 } else {
 	for (let graphIndex = 0; graphIndex < dotGraph.graph.length; ++graphIndex) {
-		const graph = dotGraph.graph[graphIndex];
+		const segment = dotGraph.graph[graphIndex];
 		const index = graphIndex
 			.toFixed()
 			.padStart(dotGraph.graph.length.toFixed().length, "0");
-		const uniqueGraph = graph.replace(
+		const uniqueGraph = segment.graph.replace(
 			/digraph timeline \{/,
 			`digraph segment_${index} { id="segment_${index}";`,
 		);
@@ -308,6 +308,7 @@ writeFileSync(
 				`Z${originBirthDate.getFullYear().toFixed().padStart(4, "0")}-${(originBirthDate.getMonth() + 1).toFixed().padStart(2, "0")}-${originBirthDate.getDate().toFixed().padStart(2, "0")}-0`,
 				dotGraph.timelineClasses.get(mustExist(graphTrimmed.timelineOf())),
 			],
+			dotGraph.graph.map((_) => [_.start, _.end]),
 		]),
 	)}\n`,
 );

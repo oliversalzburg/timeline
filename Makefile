@@ -46,6 +46,11 @@ endif
 ifneq ($(SKIP_AFTER),)
 	UNIVERSE_FLAGS += --skip-after=$(SKIP_AFTER)
 endif
+ifneq ($(SEGMENT),)
+	UNIVERSE_FLAGS += --segment=$(SEGMENT)
+else
+	UNIVERSE_FLAGS += --segment=300
+endif
 
 .PHONY: default build clean docs git-hook pretty lint test coverage universe
 .INTERMEDIATE: $(IMAGES)

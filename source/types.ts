@@ -138,4 +138,8 @@ export type RenderResultMetadata = [
 	 * Root identity name, ID of event relating to their birth, CSS class of their timeline.
 	 */
 	[string, string, string],
+	/***
+	 * Start and end timestamps of all segments in order.
+	 */
+	Array<[number, number]>,
 ];

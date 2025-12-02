@@ -55,7 +55,10 @@ describe("Renderer", () => {
 		});
 		expect(artifact.graph).to.have.lengthOf(1);
 		expect(
-			snapshotHasRegression(snapshotIdentity(this, ".gv"), artifact.graph[0]),
+			snapshotHasRegression(
+				snapshotIdentity(this, ".gv"),
+				artifact.graph[0].graph,
+			),
 			"Snapshot regression detected.",
 		).to.be.false;
 	});
@@ -73,7 +76,10 @@ describe("Renderer", () => {
 		});
 		expect(artifact.graph).to.have.lengthOf(1);
 		expect(
-			snapshotHasRegression(snapshotIdentity(this, ".gv"), artifact.graph[0]),
+			snapshotHasRegression(
+				snapshotIdentity(this, ".gv"),
+				artifact.graph[0].graph,
+			),
 			"Snapshot regression detected.",
 		).to.be.false;
 	});
@@ -91,7 +97,10 @@ describe("Renderer", () => {
 		});
 		expect(artifact.graph).to.have.lengthOf(1);
 		expect(
-			snapshotHasRegression(snapshotIdentity(this, ".gv"), artifact.graph[0]),
+			snapshotHasRegression(
+				snapshotIdentity(this, ".gv"),
+				artifact.graph[0].graph,
+			),
 			"Snapshot regression detected.",
 		).to.be.false;
 	});
@@ -118,7 +127,10 @@ describe("Renderer", () => {
 		);
 		expect(artifact.graph).to.have.lengthOf(1);
 		expect(
-			snapshotHasRegression(snapshotIdentity(this, ".gv"), artifact.graph[0]),
+			snapshotHasRegression(
+				snapshotIdentity(this, ".gv"),
+				artifact.graph[0].graph,
+			),
 			"Snapshot regression detected.",
 		).to.be.false;
 	});
@@ -144,7 +156,10 @@ describe("Renderer", () => {
 		);
 		expect(artifact.graph).to.have.lengthOf(1);
 		expect(
-			snapshotHasRegression(snapshotIdentity(this, ".gv"), artifact.graph[0]),
+			snapshotHasRegression(
+				snapshotIdentity(this, ".gv"),
+				artifact.graph[0].graph,
+			),
 			"Snapshot regression detected.",
 		).to.be.false;
 	});
@@ -170,7 +185,10 @@ describe("Renderer", () => {
 		);
 		expect(artifact.graph).to.have.lengthOf(1);
 		expect(
-			snapshotHasRegression(snapshotIdentity(this, ".gv"), artifact.graph[0]),
+			snapshotHasRegression(
+				snapshotIdentity(this, ".gv"),
+				artifact.graph[0].graph,
+			),
 			"Snapshot regression detected.",
 		).to.be.false;
 	});
@@ -194,7 +212,10 @@ describe("Renderer", () => {
 		);
 		expect(artifact.graph).to.have.lengthOf(1);
 		expect(
-			snapshotHasRegression(snapshotIdentity(this, ".gv"), artifact.graph[0]),
+			snapshotHasRegression(
+				snapshotIdentity(this, ".gv"),
+				artifact.graph[0].graph,
+			),
 			"Snapshot regression detected.",
 		).to.be.false;
 	});

@@ -79,7 +79,14 @@ export class Styling<
 				continue;
 			}
 
-			if (isIdentityMedia(timeline) || isIdentityLocation(timeline)) {
+			// Unless explicitly colored, locations share the same palette slot.
+			if (isIdentityLocation(timeline)) {
+				add("$location", timeline);
+				continue;
+			}
+
+			// Unless explicitly colored, media items should not be colored at all.
+			if (isIdentityMedia(timeline)) {
 				add(TRANSPARENT, timeline);
 				continue;
 			}

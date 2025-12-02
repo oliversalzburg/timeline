@@ -284,7 +284,7 @@ export interface RendererMetaResult<
 > {
 	timelineClasses: Map<TTimelines, string>;
 	timelineIds: Map<TTimelines, Array<string>>;
-	graph: Array<string>;
+	graph: Array<{ graph: string; start: number; end: number }>;
 }
 
 /**
@@ -479,7 +479,11 @@ export const render = <
 
 	const renderPlan = plan(timelines, options);
 	let d = dotGraph();
-	const graphSegments = new Array<string>();
+	const graphSegments = new Array<{
+		graph: string;
+		start: number;
+		end: number;
+	}>();
 	const idMesh = new Map<TTimelines, Array<string>>();
 	for (const timeline of timelines) {
 		idMesh.set(timeline, new Array<string>());
@@ -777,7 +781,11 @@ export const render = <
 		}
 
 		d.raw("}");
-		graphSegments.push(d.toString());
+		graphSegments.push({
+			graph: d.toString(),
+			start: segment.timestamps[0],
+			end: segment.timestamps[segment.timestamps.length - 1],
+		});
 	}
 
 	return {

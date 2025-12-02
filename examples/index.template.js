@@ -23,7 +23,7 @@ const Inputs = {
 };
 
 /** @type {import("source/types.js").RenderResultMetadata} */
-const DATA = [[], [], ["", "", ""]];
+const DATA = [[], [], ["", "", ""], []];
 
 const main = async () => {
 	console.info("Program init started.");
@@ -35,6 +35,7 @@ const main = async () => {
 		throw new Error("Unable to find loader element.");
 	}
 
+	/** @type {SVGElement | null} */
 	const svg = document.querySelector("body > svg");
 	if (svg === null) {
 		throw new Error("Unable to find <svg> element.");
@@ -99,6 +100,11 @@ const main = async () => {
 	}
 
 	/** @type {HTMLSpanElement | null} */
+	const statusOptions = document.querySelector("#status .options");
+	if (statusOptions === null) {
+		throw new Error("Unable to find #status element.");
+	}
+	/** @type {HTMLSpanElement | null} */
 	const statusOptionA = document.querySelector("#status .options .option.a");
 	if (statusOptionA === null) {
 		throw new Error("Unable to find #status element.");
@@ -157,6 +163,11 @@ const main = async () => {
 	const lookupTimelineToEventIDs = new Map(DATA[0]);
 	/** @type {Map<string, import("source/types.js").TimelineMetadata>} */
 	const lookupTimelineToMetadata = new Map(DATA[1]);
+	const lookupSegmentBounds = DATA[3];
+	/** @type {NodeListOf<SVGElement>} */
+	const graphGroups = svg.querySelectorAll("g.graph");
+	/** @type {Array<SVGElement>} */
+	const lookupSegments = [...graphGroups.values()];
 	/** @type {Map<string, Array<string>>} */
 	const lookupTimelinesFromEventId = lookupTimelineToEventIDs
 		.entries()
@@ -706,7 +717,7 @@ const main = async () => {
 	/** @type {Array<{pressed:boolean}> | undefined} */
 	let previousButtons;
 	const INPUT_THRESHOLD = 0.1;
-	const SPEED_FREE_FLIGHT = 2.0;
+	const SPEED_FREE_FLIGHT = 5.0;
 	const SPEED_MEDIA_SCALE = 0.5;
 	const SPEED_MEDIA_TRANSLATE = 0.5;
 
@@ -1075,6 +1086,11 @@ const main = async () => {
 							? "Schließen"
 							: "Vorwärts blättern";
 
+				if (1 < newNeighbors.intersection.length) {
+					statusOptions.classList.add("visible");
+				} else {
+					statusOptions.classList.remove("visible");
+				}
 				statusOptionA.textContent =
 					navOptions.A === null || newNeighbors.intersection.length < 1
 						? ""
@@ -1162,6 +1178,26 @@ const main = async () => {
 		if (camera.x === focusTargetBox.x && camera.y === focusTargetBox.y) {
 			console.debug("Camera update was redundant.");
 			return false;
+		}
+
+		// Determine timestamp from ID.
+		const timestampFocused = idFocused?.replace(/^Z/, "").replace(/-\d+$/, "");
+		if (timestampFocused !== undefined) {
+			const timestamp = new Date(timestampFocused).valueOf();
+			const focusedSegment = lookupSegmentBounds.findIndex(
+				([start, end]) => start < timestamp && timestamp < end,
+			);
+			for (
+				let segmentIndex = 0;
+				segmentIndex < lookupSegments.length;
+				++segmentIndex
+			) {
+				lookupSegments[segmentIndex].style.visibility =
+					focusedSegment - 1 <= segmentIndex &&
+					segmentIndex <= focusedSegment + 1
+						? ""
+						: "hidden";
+			}
 		}
 
 		cameraIsIdle = true;
