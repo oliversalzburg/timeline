@@ -1,10 +1,10 @@
 digraph {
-    node [fontname="Arial"; fontsize="12";];
-    edge [fontname="Arial"; fontsize="12";];
+    node [fontname="Carlito"; fontsize="22.8";];
+    edge [fontname="Carlito"; fontsize="22.8";];
     bgcolor="transparent";
     comment=" ";
-    fontname="Arial";
-    fontsize="12";
+    fontname="Carlito";
+    fontsize="22.8";
     rankdir="TD";
     ranksep="0.5";
     1 [class="event td408927559ee23e3"; color="#A0A0A0FF"; fontcolor="#A0A0A0FF"; id="Z1987-04-09-0"; label=<545008398000>; penwidth="1"; shape="box"; style="dotted"; tooltip="Thu Apr 09 1987\n38 Jahre 47 Tage bis now\n38 Jahre 47 Tage bis 1749945600000";];
