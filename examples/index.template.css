@@ -25,6 +25,10 @@ svg {
 
 	user-select: none;
 	z-index: 1;
+
+	& *:focus {
+		outline: none;
+	}
 }
 
 @keyframes scanlines {

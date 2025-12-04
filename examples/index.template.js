@@ -154,7 +154,7 @@ const main = async () => {
 			});
 			return set;
 		},
-		/** @type {Set<string>} */ (new Set()),
+		/** @type {Set<string>} */(new Set()),
 	);
 	// Get all their IDs into a single order. The IDs are designed to fall into
 	// chronological order when sorted based on their ASCII values.
@@ -226,12 +226,12 @@ const main = async () => {
 		length: 12,
 	}).map(
 		(_) =>
-			/** @type {[number, number, HTMLCanvasElement, HTMLCanvasElement]} */ ([
-				0,
-				0,
-				document.createElement("canvas"),
-				document.createElement("canvas"),
-			]),
+			/** @type {[number, number, HTMLCanvasElement, HTMLCanvasElement]} */([
+			0,
+			0,
+			document.createElement("canvas"),
+			document.createElement("canvas"),
+		]),
 	);
 	const speedTime = 0.0001;
 	const speedScroll = 0.001;
@@ -244,6 +244,66 @@ const main = async () => {
 	];
 	const startTime = Date.now();
 	let lastKnownScrollPosition = 0;
+
+	//#region Audio
+	const context = new window.AudioContext();
+
+	function playSuccess() {
+		const successNoise = context.createOscillator();
+		successNoise.frequency.setValueAtTime(600, 0);
+		successNoise.type = "sine";
+		successNoise.frequency.exponentialRampToValueAtTime(
+			800,
+			context.currentTime + 0.05,
+		);
+		successNoise.frequency.exponentialRampToValueAtTime(
+			1000,
+			context.currentTime + 0.15,
+		);
+
+		const successGain = context.createGain();
+		successGain.gain.exponentialRampToValueAtTime(
+			0.01,
+			context.currentTime + 0.3,
+		);
+
+		const successFilter = context.createBiquadFilter();
+		successFilter.type = "bandpass";
+		successFilter.Q.setValueAtTime(0.01, 0);
+
+		successNoise
+			.connect(successFilter)
+			.connect(successGain)
+			.connect(context.destination);
+		successNoise.start();
+		successNoise.stop(context.currentTime + 0.2);
+	}
+
+	function _playError() {
+		const errorNoise = context.createOscillator();
+		errorNoise.frequency.setValueAtTime(400, 0);
+		errorNoise.type = "sine";
+		errorNoise.frequency.exponentialRampToValueAtTime(
+			200,
+			context.currentTime + 0.05,
+		);
+		errorNoise.frequency.exponentialRampToValueAtTime(
+			100,
+			context.currentTime + 0.2,
+		);
+
+		const errorGain = context.createGain();
+		errorGain.gain.exponentialRampToValueAtTime(
+			0.01,
+			context.currentTime + 0.3,
+		);
+
+		errorNoise.connect(errorGain).connect(context.destination);
+		errorNoise.start();
+		errorNoise.stop(context.currentTime + 0.3);
+	}
+
+	//#endregion
 
 	/**
 	 * @param id {string} -
@@ -347,7 +407,7 @@ const main = async () => {
 		timelineFocused =
 			onTimelineId ??
 			(timelineFocused !== undefined &&
-			lookupTimelinesFromEventId.get(id)?.includes(timelineFocused)
+				lookupTimelinesFromEventId.get(id)?.includes(timelineFocused)
 				? timelineFocused
 				: lookupTimelinesFromEventId.get(id)?.[0]);
 
@@ -372,7 +432,6 @@ const main = async () => {
 	const onClick = (event) => {
 		document.documentElement.style.cursor = "default";
 
-		inputEventsPending = true;
 		if (event.target === null) {
 			return;
 		}
@@ -410,7 +469,6 @@ const main = async () => {
 	 */
 	const onKeyUp = (event) => {
 		console.debug(`keyup: key:${event.key} code:${event.code}`);
-		inputEventsPending = true;
 
 		if (!rapidKeys.has(event.code)) {
 			rapidKeys.set(event.code, 0);
@@ -511,47 +569,51 @@ const main = async () => {
 	//#region Navigation Helper
 	const navigateForward = () => {
 		if (idFocused === undefined || timelineFocused === undefined) {
-			return;
+			return false;
 		}
 		const neighbors = findNodeNeighbors(idFocused, timelineFocused);
 		if (neighbors.down === null) {
-			return;
+			return false;
 		}
 
 		focusNode(neighbors.down);
+		return true;
 	};
 	const navigateBackward = () => {
 		if (idFocused === undefined || timelineFocused === undefined) {
-			return;
+			return false;
 		}
 		const neighbors = findNodeNeighbors(idFocused, timelineFocused);
 		if (neighbors.up === null) {
-			return;
+			return false;
 		}
 
 		focusNode(neighbors.up);
+		return true;
 	};
 	const navigateLeft = () => {
 		if (idFocused === undefined || timelineFocused === undefined) {
-			return;
+			return false;
 		}
 		const neighbors = findNodeNeighbors(idFocused, timelineFocused);
 		if (neighbors.left === null) {
-			return;
+			return false;
 		}
 
 		focusNode(neighbors.left);
+		return true;
 	};
 	const navigateRight = () => {
 		if (idFocused === undefined || timelineFocused === undefined) {
-			return;
+			return false;
 		}
 		const neighbors = findNodeNeighbors(idFocused, timelineFocused);
 		if (neighbors.right === null) {
-			return;
+			return false;
 		}
 
 		focusNode(neighbors.right);
+		return true;
 	};
 	const navigateA = () => {
 		if (idFocused === undefined || timelineFocused === undefined) {
@@ -674,6 +736,9 @@ const main = async () => {
 	const initGraphics = () => {
 		console.info("Initializing graphics...");
 
+		camera.x = window.scrollX;
+		camera.y = window.screenY;
+
 		windowHeight = window.innerHeight;
 		for (const [, , planeTop, planeBottom] of starPlanes) {
 			for (const plane of [planeTop, planeBottom]) {
@@ -712,165 +777,356 @@ const main = async () => {
 		}
 	};
 
-	let inputEventsPending = false;
 	let requestInstantFocusUpdate = false;
-	/** @type {Array<{pressed:boolean}> | undefined} */
-	let previousButtons;
 	const INPUT_THRESHOLD = 0.1;
 	const SPEED_FREE_FLIGHT = 5.0;
 	const SPEED_MEDIA_SCALE = 0.5;
 	const SPEED_MEDIA_TRANSLATE = 0.5;
 
 	/**
+	 * @typedef {{
+	 * name: string,
+	 * pressed?: Record<number, () => InputPlane>,
+	 * released?: Record<number, () => InputPlane>,
+	 * }} InputPlane
+	 * @type {InputPlane}
+	 */
+	const InputPlaneNeutral = {
+		name: "neutral",
+		pressed: {
+			[Inputs.BUTTON_UP]: () => {
+				if (navigateBackward()) {
+					playSuccess();
+				}
+				return {
+					name: "return",
+					released: { [Inputs.BUTTON_UP]: returnToNeutral },
+				};
+			},
+			[Inputs.BUTTON_DOWN]: () => {
+				if (navigateForward()) {
+					playSuccess();
+				}
+				return {
+					name: "return",
+					released: { [Inputs.BUTTON_DOWN]: returnToNeutral },
+				};
+			},
+			[Inputs.BUTTON_RB]: () => {
+				mediaShow();
+				return {
+					name: "return",
+					released: { [Inputs.BUTTON_RB]: returnToMedia },
+				};
+			},
+		},
+	};
+
+	/**
+	 * @type {InputPlane}
+	*/
+	const InputPlaneMedia = {
+		name: "media",
+		pressed: {
+			[Inputs.BUTTON_BACK]: () => {
+				mediaClose();
+				return {
+					name: "return",
+					released: { [Inputs.BUTTON_BACK]: returnToNeutral },
+				};
+			},
+			[Inputs.BUTTON_LB]: () => {
+				if (!mediaBackward()) {
+					mediaClose();
+					return {
+						name: "return",
+						released: { [Inputs.BUTTON_LB]: returnToNeutral },
+					};
+				}
+				return {
+					name: "return",
+					released: { [Inputs.BUTTON_LB]: returnToMedia },
+				};
+			},
+			[Inputs.BUTTON_RB]: () => {
+				if (!mediaForward()) {
+					mediaClose();
+					return {
+						name: "return",
+						released: { [Inputs.BUTTON_RB]: returnToNeutral },
+					};
+				}
+				return {
+					name: "return",
+					released: { [Inputs.BUTTON_RB]: returnToMedia },
+				};
+			},
+		}
+	}
+
+	const returnToNeutral = () => {
+		console.debug("Clearing input cache, returning neutral plane.");
+		InputFrameCache = [];
+		return InputPlaneNeutral;
+	};
+	const returnToMedia = () => {
+		console.debug("Clearing input cache, returning media plane.");
+		InputFrameCache = [];
+		return InputPlaneMedia;
+	};
+
+	let activeInputPlane = InputPlaneNeutral;
+
+	/**
+	 * @typedef {Record<number,number>} InputFrame
+	 * @type {Array<InputFrame>}
+	 */
+	let InputFrameCache = [];
+	/**
+	 * @param {InputFrame} a -
+	 * @param {InputFrame} b -
+	 */
+	const inputFramesAreEqual = (a, b) => {
+		for (let fieldIndex = 0; fieldIndex < 17; ++fieldIndex) {
+			if (a[fieldIndex] !== b[fieldIndex]) {
+				return false;
+			}
+		}
+		return true;
+	};
+	/**
+	 * @param {InputFrame} frame -
+	 */
+	const pushInputFrame = (frame) => {
+		const head =
+			0 < InputFrameCache.length
+				? InputFrameCache[InputFrameCache.length - 1]
+				: null;
+		if (head === null) {
+			console.debug("Recorded input frame.", InputFrameCache.length);
+			InputFrameCache.push(frame);
+			return;
+		}
+
+		if (inputFramesAreEqual(head, frame)) {
+			return;
+		}
+
+		console.debug("Recorded input frame.", InputFrameCache.length);
+		InputFrameCache.push(frame);
+	};
+	const digestInputFrames = () => {
+		const head =
+			0 < InputFrameCache.length
+				? InputFrameCache[InputFrameCache.length - 1]
+				: null;
+		if (head === null) {
+			return;
+		}
+
+		const canPeekCount = InputFrameCache.length - 1;
+		if (canPeekCount < 1) {
+			return;
+		}
+
+		/** @param {number} slot - */
+		const peek = (slot) => InputFrameCache[InputFrameCache.length - 1 - slot];
+		const previousInputPlane = activeInputPlane;
+
+		for (
+			let buttonIndex = 0;
+			buttonIndex <= Inputs.BUTTON_XBOX;
+			++buttonIndex
+		) {
+			if (head[buttonIndex] === 1) {
+				// Trigger on button press
+				if (activeInputPlane.pressed?.[buttonIndex] !== undefined) {
+					console.debug(`Triggering button press on ${activeInputPlane.name} input plane.`);
+					activeInputPlane =
+						activeInputPlane.pressed[buttonIndex]() ?? activeInputPlane;
+					if (activeInputPlane !== previousInputPlane) {
+						return true;
+					}
+				}
+			}
+
+			if (
+				head[buttonIndex] === 0 &&
+				1 <= canPeekCount &&
+				peek(1)[buttonIndex] === 1
+			) {
+				// Trigger on button release
+				if (activeInputPlane.released?.[buttonIndex] !== undefined) {
+					console.debug(`Triggering button release on ${activeInputPlane.name} input plane.`);
+					activeInputPlane =
+						activeInputPlane.released[buttonIndex]() ?? activeInputPlane;
+					if (activeInputPlane !== previousInputPlane) {
+						return true;
+					}
+				}
+			}
+		}
+
+		return activeInputPlane !== previousInputPlane;
+	};
+
+	/**
 	 * @param {number} delta -
 	 */
 	const handleInputs = (delta) => {
-		let requiresRefresh = inputEventsPending;
 		const gamepads = navigator.getGamepads();
-		if (Array.isArray(gamepads) && 0 < gamepads.length) {
+		if (
+			Array.isArray(gamepads) &&
+			0 < gamepads.length &&
+			gamepads[0] !== null
+		) {
 			const gp = gamepads[0];
-			if (gp !== null) {
-				const scale = delta / 16;
-				if (INPUT_THRESHOLD < Math.abs(gp.axes[Inputs.AXIS_LEFT_X])) {
-					focusTargetBox.x +=
-						gp.axes[Inputs.AXIS_LEFT_X] * scale * SPEED_FREE_FLIGHT;
-					requiresRefresh = true;
-					requestInstantFocusUpdate = true;
-					cameraIsDetached = true;
-				}
-				if (INPUT_THRESHOLD < Math.abs(gp.axes[Inputs.AXIS_LEFT_Y])) {
-					focusTargetBox.y +=
-						gp.axes[Inputs.AXIS_LEFT_Y] * scale * SPEED_FREE_FLIGHT;
-					requiresRefresh = true;
-					requestInstantFocusUpdate = true;
-					cameraIsDetached = true;
-				}
+			const scale = delta / (1000 / 60);
+			const InputFrame = {
+				[Inputs.BUTTON_A]: gp.buttons[Inputs.BUTTON_A].pressed ? 1 : 0,
+				[Inputs.BUTTON_B]: gp.buttons[Inputs.BUTTON_B].pressed ? 1 : 0,
+				[Inputs.BUTTON_X]: gp.buttons[Inputs.BUTTON_X].pressed ? 1 : 0,
+				[Inputs.BUTTON_Y]: gp.buttons[Inputs.BUTTON_Y].pressed ? 1 : 0,
+				[Inputs.BUTTON_LB]: gp.buttons[Inputs.BUTTON_LB].pressed ? 1 : 0,
+				[Inputs.BUTTON_RB]: gp.buttons[Inputs.BUTTON_RB].pressed ? 1 : 0,
+				[Inputs.BUTTON_LT]: gp.buttons[Inputs.BUTTON_LT].pressed ? 1 : 0,
+				[Inputs.BUTTON_RT]: gp.buttons[Inputs.BUTTON_RT].pressed ? 1 : 0,
+				[Inputs.BUTTON_BACK]: gp.buttons[Inputs.BUTTON_BACK].pressed ? 1 : 0,
+				[Inputs.BUTTON_START]: gp.buttons[Inputs.BUTTON_START].pressed ? 1 : 0,
+				[Inputs.BUTTON_KNOB_LEFT]: gp.buttons[Inputs.BUTTON_KNOB_LEFT].pressed ? 1 : 0,
+				[Inputs.BUTTON_KNOB_RIGHT]: gp.buttons[Inputs.BUTTON_KNOB_RIGHT].pressed ? 1 : 0,
+				[Inputs.BUTTON_UP]: gp.buttons[Inputs.BUTTON_UP].pressed ? 1 : 0,
+				[Inputs.BUTTON_DOWN]: gp.buttons[Inputs.BUTTON_DOWN].pressed ? 1 : 0,
+				[Inputs.BUTTON_LEFT]: gp.buttons[Inputs.BUTTON_LEFT].pressed ? 1 : 0,
+				[Inputs.BUTTON_RIGHT]: gp.buttons[Inputs.BUTTON_RIGHT].pressed ? 1 : 0,
+				[Inputs.BUTTON_XBOX]: gp.buttons[Inputs.BUTTON_XBOX].pressed ? 1 : 0,
+			};
+			pushInputFrame(InputFrame);
+			return digestInputFrames();
 
-				if (INPUT_THRESHOLD < Math.abs(gp.axes[Inputs.AXIS_RIGHT_X])) {
-					mediaItemPosition.x -=
-						gp.axes[Inputs.AXIS_RIGHT_X] * scale * SPEED_MEDIA_TRANSLATE;
-				}
-				if (INPUT_THRESHOLD < Math.abs(gp.axes[Inputs.AXIS_RIGHT_Y])) {
-					mediaItemPosition.y -=
-						gp.axes[Inputs.AXIS_RIGHT_Y] * scale * SPEED_MEDIA_TRANSLATE;
-				}
-				if (gp.buttons[Inputs.BUTTON_LT].pressed === true) {
-					mediaItemPosition.z -= scale * SPEED_MEDIA_SCALE;
-				}
-				if (gp.buttons[Inputs.BUTTON_RT].pressed === true) {
-					mediaItemPosition.z += scale * SPEED_MEDIA_SCALE;
-				}
-				mediaItemPosition.x = Math.max(Math.min(mediaItemPosition.x, 95), -95);
-				mediaItemPosition.y = Math.max(
-					Math.min(mediaItemPosition.y, 10),
-					-1_000_000,
-				);
-				// Otherwise the item ends up behind the camera, or too far away.
-				mediaItemPosition.z = Math.max(Math.min(mediaItemPosition.z, 39), -130);
-
-				if (
-					gp.buttons[Inputs.BUTTON_START].pressed === false &&
-					previousButtons?.[Inputs.BUTTON_START].pressed === true
-				) {
-					navigateStart();
-					requiresRefresh = true;
-				}
-				if (
-					gp.buttons[Inputs.BUTTON_BACK].pressed === false &&
-					previousButtons?.[Inputs.BUTTON_BACK].pressed === true
-				) {
-					navigateBack();
-					requiresRefresh = true;
-				}
-				if (
-					gp.buttons[Inputs.BUTTON_DOWN].pressed === false &&
-					previousButtons?.[Inputs.BUTTON_DOWN].pressed === true
-				) {
-					navigateForward();
-					requiresRefresh = true;
-				}
-				if (
-					gp.buttons[Inputs.BUTTON_UP].pressed === false &&
-					previousButtons?.[Inputs.BUTTON_UP].pressed === true
-				) {
-					navigateBackward();
-					requiresRefresh = true;
-				}
-				if (
-					gp.buttons[Inputs.BUTTON_LEFT].pressed === false &&
-					previousButtons?.[Inputs.BUTTON_LEFT].pressed === true
-				) {
-					navigateLeft();
-					requiresRefresh = true;
-				}
-				if (
-					gp.buttons[Inputs.BUTTON_RIGHT].pressed === false &&
-					previousButtons?.[Inputs.BUTTON_RIGHT].pressed === true
-				) {
-					navigateRight();
-					requiresRefresh = true;
-				}
-				if (
-					gp.buttons[Inputs.BUTTON_XBOX].pressed === false &&
-					previousButtons?.[Inputs.BUTTON_XBOX].pressed === true
-				) {
-					navigateHome();
-					requiresRefresh = true;
-				}
-				if (
-					gp.buttons[Inputs.BUTTON_A].pressed === false &&
-					previousButtons?.[Inputs.BUTTON_A].pressed === true
-				) {
-					navigateA();
-					requiresRefresh = true;
-				}
-				if (
-					gp.buttons[Inputs.BUTTON_B].pressed === false &&
-					previousButtons?.[Inputs.BUTTON_B].pressed === true
-				) {
-					navigateB();
-					requiresRefresh = true;
-				}
-				if (
-					gp.buttons[Inputs.BUTTON_X].pressed === false &&
-					previousButtons?.[Inputs.BUTTON_X].pressed === true
-				) {
-					navigateX();
-					requiresRefresh = true;
-				}
-				if (
-					gp.buttons[Inputs.BUTTON_Y].pressed === false &&
-					previousButtons?.[Inputs.BUTTON_Y].pressed === true
-				) {
-					navigateY();
-					requiresRefresh = true;
-				}
-				if (
-					gp.buttons[Inputs.BUTTON_BACK].pressed === false &&
-					previousButtons?.[Inputs.BUTTON_BACK].pressed === true
-				) {
-					navigateToFocusNode();
-					requiresRefresh = true;
-				}
-				if (
-					gp.buttons[Inputs.BUTTON_LB].pressed === false &&
-					previousButtons?.[Inputs.BUTTON_LB].pressed === true
-				) {
-					showMediaBackwardOrClose();
-					requiresRefresh = true;
-				}
-				if (
-					gp.buttons[Inputs.BUTTON_RB].pressed === false &&
-					previousButtons?.[Inputs.BUTTON_RB].pressed === true
-				) {
-					showMediaForwardOrClose();
-					requiresRefresh = true;
-				}
-
-				previousButtons = [...gp.buttons];
+			/*
+			if (INPUT_THRESHOLD < Math.abs(gp.axes[Inputs.AXIS_LEFT_X])) {
+				focusTargetBox.x +=
+					gp.axes[Inputs.AXIS_LEFT_X] * scale * SPEED_FREE_FLIGHT;
+				requestInstantFocusUpdate = true;
+				cameraIsDetached = true;
 			}
+			if (INPUT_THRESHOLD < Math.abs(gp.axes[Inputs.AXIS_LEFT_Y])) {
+				focusTargetBox.y +=
+					gp.axes[Inputs.AXIS_LEFT_Y] * scale * SPEED_FREE_FLIGHT;
+				requestInstantFocusUpdate = true;
+				cameraIsDetached = true;
+			}
+
+			if (INPUT_THRESHOLD < Math.abs(gp.axes[Inputs.AXIS_RIGHT_X])) {
+				mediaItemPosition.x -=
+					gp.axes[Inputs.AXIS_RIGHT_X] * scale * SPEED_MEDIA_TRANSLATE;
+			}
+			if (INPUT_THRESHOLD < Math.abs(gp.axes[Inputs.AXIS_RIGHT_Y])) {
+				mediaItemPosition.y -=
+					gp.axes[Inputs.AXIS_RIGHT_Y] * scale * SPEED_MEDIA_TRANSLATE;
+			}
+			if (gp.buttons[Inputs.BUTTON_LT].pressed === true) {
+				mediaItemPosition.z -= scale * SPEED_MEDIA_SCALE;
+			}
+			if (gp.buttons[Inputs.BUTTON_RT].pressed === true) {
+				mediaItemPosition.z += scale * SPEED_MEDIA_SCALE;
+			}
+			mediaItemPosition.x = Math.max(Math.min(mediaItemPosition.x, 95), -95);
+			mediaItemPosition.y = Math.max(
+				Math.min(mediaItemPosition.y, 10),
+				-1_000_000,
+			);
+			// Otherwise the item ends up behind the camera, or too far away.
+			mediaItemPosition.z = Math.max(Math.min(mediaItemPosition.z, 39), -130);
+
+			if (
+				gp.buttons[Inputs.BUTTON_START].pressed === false &&
+				previousButtons?.[Inputs.BUTTON_START].pressed === true
+			) {
+				navigateStart();
+			}
+			if (
+				gp.buttons[Inputs.BUTTON_BACK].pressed === false &&
+				previousButtons?.[Inputs.BUTTON_BACK].pressed === true
+			) {
+				navigateBack();
+			}
+			if (
+				gp.buttons[Inputs.BUTTON_DOWN].pressed === false &&
+				previousButtons?.[Inputs.BUTTON_DOWN].pressed === true
+			) {
+				navigateForward();
+			}
+			if (
+				gp.buttons[Inputs.BUTTON_UP].pressed === false &&
+				previousButtons?.[Inputs.BUTTON_UP].pressed === true
+			) {
+				navigateBackward();
+			}
+			if (
+				gp.buttons[Inputs.BUTTON_LEFT].pressed === false &&
+				previousButtons?.[Inputs.BUTTON_LEFT].pressed === true
+			) {
+				navigateLeft();
+			}
+			if (
+				gp.buttons[Inputs.BUTTON_RIGHT].pressed === false &&
+				previousButtons?.[Inputs.BUTTON_RIGHT].pressed === true
+			) {
+				navigateRight();
+			}
+			if (
+				gp.buttons[Inputs.BUTTON_XBOX].pressed === false &&
+				previousButtons?.[Inputs.BUTTON_XBOX].pressed === true
+			) {
+				navigateHome();
+			}
+			if (
+				gp.buttons[Inputs.BUTTON_A].pressed === false &&
+				previousButtons?.[Inputs.BUTTON_A].pressed === true
+			) {
+				navigateA();
+			}
+			if (
+				gp.buttons[Inputs.BUTTON_B].pressed === false &&
+				previousButtons?.[Inputs.BUTTON_B].pressed === true
+			) {
+				navigateB();
+			}
+			if (
+				gp.buttons[Inputs.BUTTON_X].pressed === false &&
+				previousButtons?.[Inputs.BUTTON_X].pressed === true
+			) {
+				navigateX();
+			}
+			if (
+				gp.buttons[Inputs.BUTTON_Y].pressed === false &&
+				previousButtons?.[Inputs.BUTTON_Y].pressed === true
+			) {
+				navigateY();
+			}
+			if (
+				gp.buttons[Inputs.BUTTON_BACK].pressed === false &&
+				previousButtons?.[Inputs.BUTTON_BACK].pressed === true
+			) {
+				navigateToFocusNode();
+			}
+			if (
+				gp.buttons[Inputs.BUTTON_LB].pressed === false &&
+				previousButtons?.[Inputs.BUTTON_LB].pressed === true
+			) {
+				showMediaBackwardOrClose();
+			}
+			if (
+				gp.buttons[Inputs.BUTTON_RB].pressed === false &&
+				previousButtons?.[Inputs.BUTTON_RB].pressed === true
+			) {
+				showMediaForwardOrClose();
+			}
+			*/
 		}
-		return requiresRefresh;
+		return false;
 	};
 
 	/** @type {Array<string> | undefined} */
@@ -914,9 +1170,45 @@ const main = async () => {
 	};
 	dialogIFrame.addEventListener("load", onIFrameLoad);
 
-	const showMediaForwardOrClose = () => {
+	const mediaReset = () => {
+		mediaItemRotation = { x: 0, y: 0 };
+		mediaItemPosition = { x: 0, y: 3, z: 0 };
+		dialog.style.transform = `perspective(50vmin) rotateY(${mediaItemRotation.x}deg) rotateX(${mediaItemRotation.y}deg) translate3d(${mediaItemPosition.x}vmin, ${mediaItemPosition.y}vmin, ${mediaItemPosition.z}vmin)`;
+		dialogImage.src = "";
+		dialogImage.style.display = "none";
+		dialogIFrame.style.display = "none";
+		dialogIFrame.style.height = "150px";
+	};
+	const mediaShow = () => {
 		if (timelineMediaIds === undefined || timelineMediaIds.length === 0) {
-			return;
+			return false;
+		}
+
+		timelineMediaIdActive = 0;
+
+		mediaReset();
+
+		const mediaPath =
+			lookupTimelineToMetadata.get(
+				timelineMediaIds[timelineMediaIdActive],
+			)?.[2] ?? "";
+		if (mediaPath.startsWith("/kiwix/")) {
+			dialogIFrame.src = mediaPath;
+			dialogIFrame.style.display = "block";
+		} else {
+			dialogImage.src = mediaPath;
+			dialogImage.style.display = "block";
+		}
+
+		intro.textContent = "Artefaktname:";
+
+		dialog.show();
+		mediaItemVisible = true;
+		return true;
+	};
+	const mediaForward = () => {
+		if (timelineMediaIds === undefined || timelineMediaIds.length === 0) {
+			return false;
 		}
 
 		timelineMediaIdActive =
@@ -926,11 +1218,10 @@ const main = async () => {
 					? undefined
 					: timelineMediaIdActive + 1;
 		if (timelineMediaIdActive === undefined) {
-			closeMedia();
-			return;
+			return false;
 		}
 
-		resetMedia();
+		mediaReset();
 
 		const mediaPath =
 			lookupTimelineToMetadata.get(
@@ -948,25 +1239,24 @@ const main = async () => {
 
 		dialog.show();
 		mediaItemVisible = true;
+		return true;
 	};
-	const showMediaBackwardOrClose = () => {
+	const mediaBackward = () => {
 		if (timelineMediaIds === undefined || timelineMediaIds.length === 0) {
-			return;
+			return false;
 		}
 
 		if (timelineMediaIdActive === undefined) {
-			closeMedia();
-			return;
+			return false;
 		}
 
 		timelineMediaIdActive =
 			timelineMediaIdActive === 0 ? undefined : timelineMediaIdActive - 1;
 		if (timelineMediaIdActive === undefined) {
-			closeMedia();
-			return;
+			return false;
 		}
 
-		resetMedia();
+		mediaReset();
 
 		const mediaPath =
 			lookupTimelineToMetadata.get(
@@ -984,23 +1274,16 @@ const main = async () => {
 
 		dialog.show();
 		mediaItemVisible = true;
+		return true;
 	};
-	const resetMedia = () => {
-		mediaItemRotation = { x: 0, y: 0 };
-		mediaItemPosition = { x: 0, y: 3, z: 0 };
-		dialog.style.transform = `perspective(50vmin) rotateY(${mediaItemRotation.x}deg) rotateX(${mediaItemRotation.y}deg) translate3d(${mediaItemPosition.x}vmin, ${mediaItemPosition.y}vmin, ${mediaItemPosition.z}vmin)`;
-		dialogImage.src = "";
-		dialogImage.style.display = "none";
-		dialogIFrame.style.display = "none";
-		dialogIFrame.style.height = "150px";
-	};
-	const closeMedia = () => {
+
+	const mediaClose = () => {
 		if (iFrameResizeHandle !== null) {
 			window.clearTimeout(iFrameResizeHandle);
 		}
 		dialogIFrame.src = "about:blank";
 		dialog.close();
-		resetMedia();
+		mediaReset();
 		intro.textContent = "Reise auf Zeit-Gleis:";
 		mediaItemVisible = false;
 		mediaItemClosed = true;
@@ -1008,6 +1291,8 @@ const main = async () => {
 
 	let cameraIsIdle = false;
 	let cameraIsDetached = false;
+	/** @type {number | undefined} */
+	let timeoutCameraUnlock;
 	const updateCamera = (updateStatus = false) => {
 		if (cameraIsIdle) {
 			console.debug("Camera update requested while camera was idle.");
@@ -1015,7 +1300,6 @@ const main = async () => {
 		}
 
 		if (updateStatus) {
-			nodeFocused?.focus({ preventScroll: true });
 			focusShiftPending = false;
 
 			if (idFocused !== undefined && timelineFocused !== undefined) {
@@ -1049,8 +1333,8 @@ const main = async () => {
 				const mediaIdentityName =
 					timelineMediaIdActive !== undefined
 						? lookupTimelineToMetadata.get(
-								timelineMediaIds[timelineMediaIdActive],
-							)?.[3]
+							timelineMediaIds[timelineMediaIdActive],
+						)?.[3]
 						: undefined;
 				if (timelineIdentityName === undefined) {
 					console.error(
@@ -1065,13 +1349,13 @@ const main = async () => {
 
 				statusContainer.style.visibility =
 					0 < newNeighbors.intersection.length ||
-					0 < newNeighbors.mediaItems.length
+						0 < newNeighbors.mediaItems.length
 						? "visible"
 						: "hidden";
 
 				shoulderLeft.style.visibility =
 					0 < newNeighbors.mediaItems.length &&
-					timelineMediaIdActive !== undefined
+						timelineMediaIdActive !== undefined
 						? "visible"
 						: "hidden";
 				shoulderLeft.textContent =
@@ -1126,50 +1410,50 @@ const main = async () => {
 
 				statusButtonA.style.display =
 					navOptions.A === null ||
-					newNeighbors.intersection.length < 1 ||
-					mediaItemVisible
+						newNeighbors.intersection.length < 1 ||
+						mediaItemVisible
 						? "none"
 						: "inline-block";
 				statusButtonB.style.display =
 					navOptions.B === null ||
-					newNeighbors.intersection.length < 2 ||
-					mediaItemVisible
+						newNeighbors.intersection.length < 2 ||
+						mediaItemVisible
 						? "none"
 						: "inline-block";
 				statusButtonX.style.display =
 					navOptions.X === null ||
-					newNeighbors.intersection.length < 3 ||
-					mediaItemVisible
+						newNeighbors.intersection.length < 3 ||
+						mediaItemVisible
 						? "none"
 						: "inline-block";
 				statusButtonY.style.display =
 					navOptions.Y === null ||
-					newNeighbors.intersection.length < 4 ||
-					mediaItemVisible
+						newNeighbors.intersection.length < 4 ||
+						mediaItemVisible
 						? "none"
 						: "inline-block";
 				statusOptionA.style.display =
 					navOptions.A === null ||
-					newNeighbors.intersection.length < 1 ||
-					mediaItemVisible
+						newNeighbors.intersection.length < 1 ||
+						mediaItemVisible
 						? "none"
 						: "inline-block";
 				statusOptionB.style.display =
 					navOptions.B === null ||
-					newNeighbors.intersection.length < 2 ||
-					mediaItemVisible
+						newNeighbors.intersection.length < 2 ||
+						mediaItemVisible
 						? "none"
 						: "inline-block";
 				statusOptionX.style.display =
 					navOptions.X === null ||
-					newNeighbors.intersection.length < 3 ||
-					mediaItemVisible
+						newNeighbors.intersection.length < 3 ||
+						mediaItemVisible
 						? "none"
 						: "inline-block";
 				statusOptionY.style.display =
 					navOptions.Y === null ||
-					newNeighbors.intersection.length < 4 ||
-					mediaItemVisible
+						newNeighbors.intersection.length < 4 ||
+						mediaItemVisible
 						? "none"
 						: "inline-block";
 			}
@@ -1194,7 +1478,7 @@ const main = async () => {
 			) {
 				lookupSegments[segmentIndex].style.visibility =
 					focusedSegment - 1 <= segmentIndex &&
-					segmentIndex <= focusedSegment + 1
+						segmentIndex <= focusedSegment + 1
 						? ""
 						: "hidden";
 			}
@@ -1206,25 +1490,23 @@ const main = async () => {
 			behavior: requestInstantFocusUpdate ? "instant" : "smooth",
 			left: focusTargetBox.x,
 		});
+		timeoutCameraUnlock = window.setTimeout(() => { timeoutCameraUnlock = undefined; cameraMovementFinalize(); console.warn("Forced camera movement finalization!") }, 3000);
 
-		const newCamera = { ...focusTargetBox };
-		if (requestInstantFocusUpdate) {
-			cameraIsIdle = false;
-			camera = newCamera;
-			lastKnownScrollPosition = focusTargetBox.y;
-		} else {
-			setTimeout(() => {
-				cameraIsIdle = false;
-				camera = newCamera;
-				lastKnownScrollPosition = focusTargetBox.y;
-				console.debug("Camera updated", camera);
-			}, 1000);
-		}
-
-		inputEventsPending = false;
 		requestInstantFocusUpdate = false;
 
 		return false;
+	};
+
+	const cameraMovementFinalize = () => {
+		cameraIsIdle = false;
+		camera = { ...focusTargetBox };
+		lastKnownScrollPosition = focusTargetBox.y;
+	}
+	const onScrollEnd = () => {
+		window.clearTimeout(timeoutCameraUnlock);
+		timeoutCameraUnlock = undefined;
+		cameraMovementFinalize();
+		console.debug("Camera updated", camera);
 	};
 
 	/** @type {number | undefined} */
@@ -1244,15 +1526,13 @@ const main = async () => {
 
 		const delta = timestamp - previousTimestamp;
 		const deltaStarfield = timestamp - previousTimestampStarfield;
+		handleInputs(delta);
 
-		if (handleInputs(delta)) {
-			inputEventsPending = updateCamera(
-				focusShiftPending || mediaItemVisible || mediaItemClosed,
+		if (focusShiftPending) {
+			updateCamera(
+				true
 			);
-			mediaItemClosed = false;
 		}
-
-		//svg.style.transform = `translateY(${lastKnownScrollPosition}pt)`;
 
 		// We don't want to update the starfield every frame, because it doesn't
 		// move much, but consumes a lot of fill rate.
@@ -1311,14 +1591,14 @@ const main = async () => {
 	document.addEventListener("click", onClick);
 	document.addEventListener("keydown", onKeyDown);
 	document.addEventListener("keyup", onKeyUp);
-	window.addEventListener("resize", initGraphics);
 	window.addEventListener("popstate", onPopState);
+	window.addEventListener("resize", initGraphics);
+	window.addEventListener("scrollend", onScrollEnd);
 
 	window.setTimeout(() => {
 		initGraphics();
 
 		console.info("Requesting initial focus...");
-		inputEventsPending = true;
 		navigateHome();
 
 		window.requestAnimationFrame(present);
