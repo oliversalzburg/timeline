@@ -658,6 +658,7 @@ export const render = <
 					for (const previousEntry of previousEntries) {
 						d.link(previousEntry, timelineEvent, {
 							arrowhead: event.isTransferMarker ? "none" : undefined,
+							class: classes.get(event.timeline.meta.id),
 							color: rgbaToHexString(style.pencolor),
 							headport: event.isTransferMarker ? "n" : undefined,
 							label: "",

@@ -118,6 +118,7 @@ export type Shape =
 export interface EdgeProperties {
 	arrowhead: Arrow;
 	arrowtail: Arrow;
+	class: string;
 	color: Color;
 	comment: string;
 	constraint: boolean;

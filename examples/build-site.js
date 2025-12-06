@@ -30,7 +30,7 @@ const args = process.argv
 
 			return args;
 		},
-		/** @type {Record<string, boolean | string>} */({}),
+		/** @type {Record<string, boolean | string>} */ ({}),
 	);
 
 if (typeof args.format !== "string") {
@@ -144,5 +144,7 @@ const html = templateHtml
 	.replace("<!--SVG-->", svg);
 
 writeFileSync(settings.output, html);
-copyFileSync(join(import.meta.dirname, "favicon.ico"),join( dirname( settings.output),"favicon.ico"));
-
+copyFileSync(
+	join(import.meta.dirname, "favicon.ico"),
+	join(dirname(settings.output), "favicon.ico"),
+);

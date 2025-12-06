@@ -153,6 +153,7 @@ $(IMAGES) &: contrib/prepare-emoji.js examples/emojify.js
 		--target=$@
 	@date +"%FT%T%z Universe HTML generated '$@'."
 	@cp $@ output/universe.html
+	@cp examples/favicon.ico output/favicon.ico
 	@date +"%FT%T%z Synchronizing media..."
 	@rsync --archive $(DATA_ROOT)/media output/
 	@date +"%FT%T%z Golden image ready at 'output/universe.html'."

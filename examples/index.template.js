@@ -29,6 +29,16 @@ const main = async () => {
 	console.info("Program init started.");
 
 	//#region DOM Element Selection
+	/** @type {HTMLStyleElement | null} */
+	const css = document.querySelector("#css");
+	if (css === null) {
+		throw new Error("Unable to find #css element.");
+	}
+	const stylesheet = css.sheet;
+	if (stylesheet === null) {
+		throw new Error("Unable to find stylesheet.");
+	}
+
 	/** @type {HTMLDivElement | null} */
 	const loader = document.querySelector("body > .loader");
 	if (loader === null) {
@@ -87,6 +97,11 @@ const main = async () => {
 	/** @type {HTMLParagraphElement | null} */
 	const statusText = document.querySelector("#status .text");
 	if (statusText === null) {
+		throw new Error("Unable to find #status element.");
+	}
+	/** @type {HTMLDivElement | null} */
+	const shouldersContainer = document.querySelector("#status .shoulders");
+	if (shouldersContainer === null) {
 		throw new Error("Unable to find #status element.");
 	}
 	/** @type {HTMLSpanElement | null} */
@@ -160,7 +175,7 @@ const main = async () => {
 			});
 			return set;
 		},
-		/** @type {Set<string>} */(new Set()),
+		/** @type {Set<string>} */ (new Set()),
 	);
 	// Get all their IDs into a single order. The IDs are designed to fall into
 	// chronological order when sorted based on their ASCII values.
@@ -191,11 +206,9 @@ const main = async () => {
 	// The ID of the currently focused node.
 	/** @type {string | undefined} */
 	let idFocused;
-	/** @type {HTMLElement | null} */
-	let nodeFocused = null;
 	// The ID of the timeline the focused node is part of.
 	/** @type {string | undefined} */
-	let timelineFocused;
+	let idFocusedTimeline;
 
 	const neighborhoods = new Map();
 	for (const id of allEventIDs) {
@@ -231,12 +244,12 @@ const main = async () => {
 		length: 12,
 	}).map(
 		(_) =>
-			/** @type {[number, number, HTMLCanvasElement, HTMLCanvasElement]} */([
-			0,
-			0,
-			document.createElement("canvas"),
-			document.createElement("canvas"),
-		]),
+			/** @type {[number, number, HTMLCanvasElement, HTMLCanvasElement]} */ ([
+				0,
+				0,
+				document.createElement("canvas"),
+				document.createElement("canvas"),
+			]),
 	);
 	const speedTime = 0.0001;
 	const speedScroll = 0.001;
@@ -314,7 +327,10 @@ const main = async () => {
 	 * @param id {string | undefined} -
 	 * @param onTimelineId {string | undefined} -
 	 */
-	const findNodeNeighbors = (id = idFocused, onTimelineId = timelineFocused) => {
+	const findNodeNeighbors = (
+		id = idFocused,
+		onTimelineId = idFocusedTimeline,
+	) => {
 		if (id === undefined || onTimelineId === undefined) {
 			throw new Error("missing id");
 		}
@@ -359,8 +375,8 @@ const main = async () => {
 				eventIndexOnTimeline === eventIds.length - 1
 					? null
 					: eventIds[eventIndexOnTimeline + 1],
-			intersection: timelineIds.filter(
-				(_) => [1, 2].includes(lookupTimelineToMetadata.get(_)?.[1] ?? 0),
+			intersection: timelineIds.filter((_) =>
+				[1, 2].includes(lookupTimelineToMetadata.get(_)?.[1] ?? 0),
 			),
 			mediaItems: timelineIds.filter(
 				(_) => lookupTimelineToMetadata.get(_)?.[1] === 3,
@@ -369,7 +385,7 @@ const main = async () => {
 	};
 
 	/**
-	 * @param {string} id -
+	 * @param {string | undefined} id -
 	 * @param {string | undefined} onTimelineId -
 	 * @param {boolean | undefined} setState -
 	 */
@@ -408,16 +424,15 @@ const main = async () => {
 		document.title = titleParts[0];
 		intro.textContent = "Reise auf Zeit-Gleis:";
 
-		nodeFocused = node;
 		idFocused = id;
 		// If the newly focused node exists on the already focused timeline,
 		// don't attempt to switch focus. This could cause focus to switch
 		// to another timeline when entering a merge node.
-		timelineFocused =
+		idFocusedTimeline =
 			onTimelineId ??
-			(timelineFocused !== undefined &&
-				lookupTimelinesFromEventId.get(id)?.includes(timelineFocused)
-				? timelineFocused
+			(idFocusedTimeline !== undefined &&
+			lookupTimelinesFromEventId.get(id)?.includes(idFocusedTimeline)
+				? idFocusedTimeline
 				: lookupTimelinesFromEventId.get(id)?.[0]);
 
 		if (setState) {
@@ -429,7 +444,7 @@ const main = async () => {
 		}
 
 		console.info(
-			`Focused node ${idFocused} of timeline ${timelineFocused}. View update is pending.`,
+			`Focused node ${idFocused} of timeline ${idFocusedTimeline}. View update is pending.`,
 		);
 
 		requestFocusShift(id);
@@ -537,8 +552,6 @@ const main = async () => {
 	let mediaItemRotation = { x: 0, y: 0 };
 	let mediaItemPosition = { x: 0, y: 0, z: 0 };
 	let mediaItemVisible = false;
-	let mediaItemClosed = false;
-	let focusShiftPending = false;
 
 	/**
 	 * @param id {string | undefined}
@@ -565,15 +578,14 @@ const main = async () => {
 		cameraIsDetached = false;
 		focusTargetBox = { x: left, y: top };
 		console.debug("New focus box requested", focusTargetBox);
-		focusShiftPending = true;
 	};
 
 	//#region Navigation Helper
 	const navigateForward = () => {
-		if (idFocused === undefined || timelineFocused === undefined) {
+		if (idFocused === undefined || idFocusedTimeline === undefined) {
 			return false;
 		}
-		const neighbors = findNodeNeighbors(idFocused, timelineFocused);
+		const neighbors = findNodeNeighbors(idFocused, idFocusedTimeline);
 		if (neighbors.down === null) {
 			return false;
 		}
@@ -582,10 +594,10 @@ const main = async () => {
 		return true;
 	};
 	const navigateBackward = () => {
-		if (idFocused === undefined || timelineFocused === undefined) {
+		if (idFocused === undefined || idFocusedTimeline === undefined) {
 			return false;
 		}
-		const neighbors = findNodeNeighbors(idFocused, timelineFocused);
+		const neighbors = findNodeNeighbors(idFocused, idFocusedTimeline);
 		if (neighbors.up === null) {
 			return false;
 		}
@@ -594,10 +606,10 @@ const main = async () => {
 		return true;
 	};
 	const navigateLeft = () => {
-		if (idFocused === undefined || timelineFocused === undefined) {
+		if (idFocused === undefined || idFocusedTimeline === undefined) {
 			return false;
 		}
-		const neighbors = findNodeNeighbors(idFocused, timelineFocused);
+		const neighbors = findNodeNeighbors(idFocused, idFocusedTimeline);
 		if (neighbors.left === null) {
 			return false;
 		}
@@ -606,10 +618,10 @@ const main = async () => {
 		return true;
 	};
 	const navigateRight = () => {
-		if (idFocused === undefined || timelineFocused === undefined) {
+		if (idFocused === undefined || idFocusedTimeline === undefined) {
 			return false;
 		}
-		const neighbors = findNodeNeighbors(idFocused, timelineFocused);
+		const neighbors = findNodeNeighbors(idFocused, idFocusedTimeline);
 		if (neighbors.right === null) {
 			return false;
 		}
@@ -618,15 +630,15 @@ const main = async () => {
 		return true;
 	};
 	const navigateA = () => {
-		if (idFocused === undefined || timelineFocused === undefined) {
+		if (idFocused === undefined || idFocusedTimeline === undefined) {
 			console.warn(
 				"Unable to navigate, due to missing focus information.",
 				idFocused,
-				timelineFocused,
+				idFocusedTimeline,
 			);
 			return;
 		}
-		const neighbors = findNodeNeighbors(idFocused, timelineFocused);
+		const neighbors = findNodeNeighbors(idFocused, idFocusedTimeline);
 		if (neighbors.intersection.length < 1) {
 			console.warn(
 				"Unable to navigate, due to lack of intersections.",
@@ -637,15 +649,15 @@ const main = async () => {
 		focusNode(idFocused, neighbors.intersection[0]);
 	};
 	const navigateB = () => {
-		if (idFocused === undefined || timelineFocused === undefined) {
+		if (idFocused === undefined || idFocusedTimeline === undefined) {
 			console.warn(
 				"Unable to navigate, due to missing focus information.",
 				idFocused,
-				timelineFocused,
+				idFocusedTimeline,
 			);
 			return;
 		}
-		const neighbors = findNodeNeighbors(idFocused, timelineFocused);
+		const neighbors = findNodeNeighbors(idFocused, idFocusedTimeline);
 		if (neighbors.intersection.length < 2) {
 			console.warn(
 				"Unable to navigate, due to lack of intersections.",
@@ -656,15 +668,15 @@ const main = async () => {
 		focusNode(idFocused, neighbors.intersection[1]);
 	};
 	const navigateX = () => {
-		if (idFocused === undefined || timelineFocused === undefined) {
+		if (idFocused === undefined || idFocusedTimeline === undefined) {
 			console.warn(
 				"Unable to navigate, due to missing focus information.",
 				idFocused,
-				timelineFocused,
+				idFocusedTimeline,
 			);
 			return;
 		}
-		const neighbors = findNodeNeighbors(idFocused, timelineFocused);
+		const neighbors = findNodeNeighbors(idFocused, idFocusedTimeline);
 		if (neighbors.intersection.length < 3) {
 			console.warn(
 				"Unable to navigate, due to lack of intersections.",
@@ -675,15 +687,15 @@ const main = async () => {
 		focusNode(idFocused, neighbors.intersection[2]);
 	};
 	const navigateY = () => {
-		if (idFocused === undefined || timelineFocused === undefined) {
+		if (idFocused === undefined || idFocusedTimeline === undefined) {
 			console.warn(
 				"Unable to navigate, due to missing focus information.",
 				idFocused,
-				timelineFocused,
+				idFocusedTimeline,
 			);
 			return;
 		}
-		const neighbors = findNodeNeighbors(idFocused, timelineFocused);
+		const neighbors = findNodeNeighbors(idFocused, idFocusedTimeline);
 		if (neighbors.intersection.length < 4) {
 			console.warn(
 				"Unable to navigate, due to lack of intersections.",
@@ -696,25 +708,25 @@ const main = async () => {
 	const navigateHome = () => {
 		focusNode(DATA[2][1], DATA[2][2]);
 	};
-	const navigateToFocusNode = () => {
+	const _navigateToFocusNode = () => {
 		if (idFocused === undefined) {
 			return;
 		}
 		focusNode(idFocused);
 	};
-	const navigateStart = () => {
-		if (timelineFocused === undefined) {
+	const _navigateStart = () => {
+		if (idFocusedTimeline === undefined) {
 			return;
 		}
 
-		const events = lookupTimelineToEventIDs.get(timelineFocused);
+		const events = lookupTimelineToEventIDs.get(idFocusedTimeline);
 		if (events === undefined) {
 			throw Error("unexpected lookup miss");
 		}
 
-		focusNode(events[0], timelineFocused);
+		focusNode(events[0], idFocusedTimeline);
 	};
-	const navigateBack = () => {
+	const _navigateBack = () => {
 		history.back();
 	};
 	//#endregion
@@ -735,6 +747,7 @@ const main = async () => {
 	};
 
 	let windowHeight = 1;
+	let windowWidth = 1;
 	const initGraphics = () => {
 		console.info("Initializing graphics...");
 
@@ -742,9 +755,10 @@ const main = async () => {
 		camera.y = window.screenY;
 
 		windowHeight = window.innerHeight;
+		windowWidth = window.innerWidth;
 		for (const [, , planeTop, planeBottom] of starPlanes) {
 			for (const plane of [planeTop, planeBottom]) {
-				plane.width = document.body.scrollWidth;
+				plane.width = windowWidth;
 				plane.height = windowHeight;
 			}
 		}
@@ -780,16 +794,17 @@ const main = async () => {
 	};
 
 	let requestInstantFocusUpdate = false;
-	const INPUT_THRESHOLD = 0.1;
-	const SPEED_FREE_FLIGHT = 5.0;
-	const SPEED_MEDIA_SCALE = 0.5;
-	const SPEED_MEDIA_TRANSLATE = 0.5;
+	const _INPUT_THRESHOLD = 0.1;
+	const _SPEED_FREE_FLIGHT = 5.0;
+	const _SPEED_MEDIA_SCALE = 0.5;
+	const _SPEED_MEDIA_TRANSLATE = 0.5;
 
+	let previousTimelineActive = idFocusedTimeline;
 	/**
 	 * @typedef {{
 	 * name: string,
-	 * pressed?: Record<number, () => InputPlane>,
-	 * released?: Record<number, () => InputPlane>,
+	 * pressed?: Record<number, () => (InputPlane|undefined)>,
+	 * released?: Record<number, () => (InputPlane|undefined)>,
 	 * }} InputPlane
 	 * @type {InputPlane}
 	 */
@@ -822,8 +837,8 @@ const main = async () => {
 				};
 			},
 			[Inputs.BUTTON_X]: () => {
+				previousTimelineActive = idFocusedTimeline;
 				menuSwitchTimeline();
-				menuContainer.classList.add("open");
 				return {
 					name: "return",
 					released: { [Inputs.BUTTON_X]: returnToMenuSwitchTimeline },
@@ -869,14 +884,47 @@ const main = async () => {
 					released: { [Inputs.BUTTON_RB]: returnToMedia },
 				};
 			},
-		}
-	}
+		},
+	};
 
 	/** @type {InputPlane} */
 	const InputPlaneMenuSwitchTimeline = {
 		name: "menuSwitchTimeline",
 		pressed: {
+			[Inputs.BUTTON_UP]: () => {
+				if (idFocusedTimeline === undefined || idFocused === undefined) {
+					return undefined;
+				}
+				const neighbors = findNodeNeighbors();
+				const activeIndex = neighbors.intersection.indexOf(idFocusedTimeline);
+				focusNode(idFocused, neighbors.intersection[activeIndex - 1]);
+				menuSwitchTimeline();
+				return {
+					name: "return",
+					released: { [Inputs.BUTTON_UP]: returnToMenuSwitchTimeline },
+				};
+			},
+			[Inputs.BUTTON_DOWN]: () => {
+				if (idFocusedTimeline === undefined || idFocused === undefined) {
+					return undefined;
+				}
+				const neighbors = findNodeNeighbors();
+				const activeIndex = neighbors.intersection.indexOf(idFocusedTimeline);
+				focusNode(idFocused, neighbors.intersection[activeIndex + 1]);
+				menuSwitchTimeline();
+				return {
+					name: "return",
+					released: { [Inputs.BUTTON_DOWN]: returnToMenuSwitchTimeline },
+				};
+			},
+			[Inputs.BUTTON_A]: () => {
+				return {
+					name: "return",
+					released: { [Inputs.BUTTON_A]: returnToNeutral },
+				};
+			},
 			[Inputs.BUTTON_X]: () => {
+				focusNode(idFocused, previousTimelineActive);
 				return {
 					name: "return",
 					released: { [Inputs.BUTTON_X]: returnToNeutral },
@@ -888,9 +936,15 @@ const main = async () => {
 	const returnToNeutral = () => {
 		console.debug("Clearing input cache, returning neutral plane.");
 		InputFrameCache = [];
+		if (cssRuleHighlightActive !== undefined) {
+			stylesheet.deleteRule(cssRuleHighlightActive);
+			cssRuleHighlightActive = undefined;
+		}
 		calendarContainer.classList.add("open");
 		menuContainer.classList.remove("open");
 		statusContainer.classList.add("open");
+		shouldersContainer.classList.add("visible");
+		updateStatus();
 		return InputPlaneNeutral;
 	};
 	const returnToMedia = () => {
@@ -899,6 +953,8 @@ const main = async () => {
 		calendarContainer.classList.add("open");
 		menuContainer.classList.remove("open");
 		statusContainer.classList.add("open");
+		shouldersContainer.classList.add("visible");
+		updateStatus();
 		return InputPlaneMedia;
 	};
 	const returnToMenuSwitchTimeline = () => {
@@ -906,9 +962,10 @@ const main = async () => {
 		InputFrameCache = [];
 		calendarContainer.classList.remove("open");
 		menuContainer.classList.add("open");
-		statusContainer.classList.remove("open");
+		statusContainer.classList.add("open");
+		shouldersContainer.classList.remove("visible");
 		return InputPlaneMenuSwitchTimeline;
-	}
+	};
 
 	let activeInputPlane = InputPlaneNeutral;
 
@@ -976,7 +1033,9 @@ const main = async () => {
 			if (head[buttonIndex] === 1) {
 				// Trigger on button press
 				if (activeInputPlane.pressed?.[buttonIndex] !== undefined) {
-					console.debug(`Triggering button press on ${activeInputPlane.name} input plane.`);
+					console.debug(
+						`Triggering button press on ${activeInputPlane.name} input plane.`,
+					);
 					activeInputPlane =
 						activeInputPlane.pressed[buttonIndex]() ?? activeInputPlane;
 					if (activeInputPlane !== previousInputPlane) {
@@ -992,7 +1051,9 @@ const main = async () => {
 			) {
 				// Trigger on button release
 				if (activeInputPlane.released?.[buttonIndex] !== undefined) {
-					console.debug(`Triggering button release on ${activeInputPlane.name} input plane.`);
+					console.debug(
+						`Triggering button release on ${activeInputPlane.name} input plane.`,
+					);
 					activeInputPlane =
 						activeInputPlane.released[buttonIndex]() ?? activeInputPlane;
 					if (activeInputPlane !== previousInputPlane) {
@@ -1016,7 +1077,7 @@ const main = async () => {
 			gamepads[0] !== null
 		) {
 			const gp = gamepads[0];
-			const scale = delta / (1000 / 60);
+			const _scale = delta / (1000 / 60);
 			const InputFrame = {
 				[Inputs.BUTTON_A]: gp.buttons[Inputs.BUTTON_A].pressed ? 1 : 0,
 				[Inputs.BUTTON_B]: gp.buttons[Inputs.BUTTON_B].pressed ? 1 : 0,
@@ -1028,8 +1089,12 @@ const main = async () => {
 				[Inputs.BUTTON_RT]: gp.buttons[Inputs.BUTTON_RT].pressed ? 1 : 0,
 				[Inputs.BUTTON_BACK]: gp.buttons[Inputs.BUTTON_BACK].pressed ? 1 : 0,
 				[Inputs.BUTTON_START]: gp.buttons[Inputs.BUTTON_START].pressed ? 1 : 0,
-				[Inputs.BUTTON_KNOB_LEFT]: gp.buttons[Inputs.BUTTON_KNOB_LEFT].pressed ? 1 : 0,
-				[Inputs.BUTTON_KNOB_RIGHT]: gp.buttons[Inputs.BUTTON_KNOB_RIGHT].pressed ? 1 : 0,
+				[Inputs.BUTTON_KNOB_LEFT]: gp.buttons[Inputs.BUTTON_KNOB_LEFT].pressed
+					? 1
+					: 0,
+				[Inputs.BUTTON_KNOB_RIGHT]: gp.buttons[Inputs.BUTTON_KNOB_RIGHT].pressed
+					? 1
+					: 0,
 				[Inputs.BUTTON_UP]: gp.buttons[Inputs.BUTTON_UP].pressed ? 1 : 0,
 				[Inputs.BUTTON_DOWN]: gp.buttons[Inputs.BUTTON_DOWN].pressed ? 1 : 0,
 				[Inputs.BUTTON_LEFT]: gp.buttons[Inputs.BUTTON_LEFT].pressed ? 1 : 0,
@@ -1321,87 +1386,98 @@ const main = async () => {
 		mediaReset();
 		intro.textContent = "Reise auf Zeit-Gleis:";
 		mediaItemVisible = false;
-		mediaItemClosed = true;
+	};
+
+	const updateStatus = () => {
+		statusOptions.classList.remove("visible");
+		shoulderLeft.style.visibility = "hidden";
+		shoulderRight.style.visibility = "hidden";
+		statusButtonA.style.display = "none";
+		statusButtonB.style.display = "none";
+		statusButtonX.style.display = "none";
+		statusButtonY.style.display = "none";
+		statusOptionA.textContent = "";
+		statusOptionB.textContent = "";
+		statusOptionX.textContent = "";
+		statusOptionY.textContent = "";
+
+		if (idFocused === undefined || idFocusedTimeline === undefined) {
+			return;
+		}
+
+		const newNeighbors = findNodeNeighbors(idFocused, idFocusedTimeline);
+		if (1 < newNeighbors.intersection.length) {
+			statusOptions.classList.add("visible");
+			statusOptionX.textContent = "Umsteigen";
+			statusButtonX.style.display = "inline-block";
+		}
+
+		const timelineColor = lookupTimelineToMetadata.get(idFocusedTimeline)?.[0];
+
+		timelineMediaIds = newNeighbors.mediaItems;
+
+		const timelineIdentityName =
+			lookupTimelineToMetadata.get(idFocusedTimeline)?.[3];
+		const mediaIdentityName =
+			timelineMediaIdActive !== undefined
+				? lookupTimelineToMetadata.get(
+						timelineMediaIds[timelineMediaIdActive],
+					)?.[3]
+				: undefined;
+		if (timelineIdentityName === undefined) {
+			console.error(
+				`Unable to look up identity for timeline ID '${idFocusedTimeline}'. Using fallback status.`,
+			);
+		}
+
+		statusText.textContent = mediaIdentityName ?? timelineIdentityName ?? "???";
+		intro.style.color = timelineColor ?? "";
+		statusText.style.textShadow = `2px 2px 3px ${timelineColor}`;
+
+		shoulderLeft.style.visibility =
+			0 < newNeighbors.mediaItems.length && timelineMediaIdActive !== undefined
+				? "visible"
+				: "hidden";
+		shoulderLeft.textContent =
+			timelineMediaIdActive === 0 ? "Schließen" : "Zurück blättern";
+
+		shoulderRight.style.visibility =
+			0 < newNeighbors.mediaItems.length ? "visible" : "hidden";
+		shoulderRight.textContent =
+			timelineMediaIdActive === undefined
+				? "Artefakte anzeigen"
+				: timelineMediaIdActive === timelineMediaIds.length - 1
+					? "Schließen"
+					: "Vorwärts blättern";
+	};
+	const updateStatusMenuSwitchTimeline = () => {
+		statusOptions.classList.remove("visible");
+		shoulderLeft.style.visibility = "hidden";
+		shoulderRight.style.visibility = "hidden";
+		statusButtonA.style.display = "none";
+		statusButtonB.style.display = "none";
+		statusButtonX.style.display = "none";
+		statusButtonY.style.display = "none";
+		statusOptionA.textContent = "";
+		statusOptionB.textContent = "";
+		statusOptionX.textContent = "";
+		statusOptionY.textContent = "";
+		statusText.textContent = "";
+		intro.style.color = "transparent";
 	};
 
 	let cameraIsIdle = false;
 	let cameraIsDetached = false;
 	/** @type {number | undefined} */
 	let timeoutCameraUnlock;
-	const updateCamera = (updateStatus = false) => {
+	const updateCamera = (_updateStatus = false) => {
 		if (cameraIsIdle) {
-			console.debug("Camera update requested while camera was idle.");
+			//console.debug("Camera update requested while camera was idle.");
 			return true;
 		}
 
-		if (updateStatus) {
-			focusShiftPending = false;
-
-			if (idFocused !== undefined && timelineFocused !== undefined) {
-				const newNeighbors = findNodeNeighbors(idFocused, timelineFocused);
-				if (1 < newNeighbors.intersection.length) {
-					statusOptions.classList.add("visible");
-					statusOptionX.textContent = "Umsteigen";
-					statusButtonX.style.display =
-						"inline-block";
-				} else {
-					statusOptions.classList.remove("visible");
-					statusButtonX.style.display =
-						"none";
-				}
-
-				statusButtonA.style.display =
-					"none";
-				statusButtonB.style.display =
-					"none";
-				statusButtonY.style.display =
-					"none";
-
-				const timelineColor =
-					lookupTimelineToMetadata.get(timelineFocused)?.[0];
-
-				timelineMediaIds = newNeighbors.mediaItems;
-
-				const timelineIdentityName =
-					lookupTimelineToMetadata.get(timelineFocused)?.[3];
-				const mediaIdentityName =
-					timelineMediaIdActive !== undefined
-						? lookupTimelineToMetadata.get(
-							timelineMediaIds[timelineMediaIdActive],
-						)?.[3]
-						: undefined;
-				if (timelineIdentityName === undefined) {
-					console.error(
-						`Unable to look up identity for timeline ID '${timelineFocused}'. Using fallback status.`,
-					);
-				}
-
-				statusText.textContent =
-					mediaIdentityName ?? timelineIdentityName ?? "???";
-				intro.style.color = timelineColor ?? "";
-				statusText.style.textShadow = `2px 2px 3px ${timelineColor}`;
-
-				shoulderLeft.style.visibility =
-					0 < newNeighbors.mediaItems.length &&
-						timelineMediaIdActive !== undefined
-						? "visible"
-						: "hidden";
-				shoulderLeft.textContent =
-					timelineMediaIdActive === 0 ? "Schließen" : "Zurück blättern";
-
-				shoulderRight.style.visibility =
-					0 < newNeighbors.mediaItems.length ? "visible" : "hidden";
-				shoulderRight.textContent =
-					timelineMediaIdActive === undefined
-						? "Artefakte anzeigen"
-						: timelineMediaIdActive === timelineMediaIds.length - 1
-							? "Schließen"
-							: "Vorwärts blättern";
-			}
-		}
-
 		if (camera.x === focusTargetBox.x && camera.y === focusTargetBox.y) {
-			console.debug("Camera update was redundant.");
+			//console.debug("Camera update was redundant.");
 			return false;
 		}
 
@@ -1419,7 +1495,7 @@ const main = async () => {
 			) {
 				lookupSegments[segmentIndex].style.visibility =
 					focusedSegment - 1 <= segmentIndex &&
-						segmentIndex <= focusedSegment + 1
+					segmentIndex <= focusedSegment + 1
 						? ""
 						: "hidden";
 			}
@@ -1431,30 +1507,52 @@ const main = async () => {
 			behavior: requestInstantFocusUpdate ? "instant" : "smooth",
 			left: focusTargetBox.x,
 		});
-		timeoutCameraUnlock = window.setTimeout(() => { timeoutCameraUnlock = undefined; cameraMovementFinalize(); console.warn("Forced camera movement finalization!") }, 3000);
+		timeoutCameraUnlock = window.setTimeout(() => {
+			timeoutCameraUnlock = undefined;
+			cameraMovementFinalize();
+			console.warn("Forced camera movement finalization!");
+		}, 3000);
 
 		requestInstantFocusUpdate = false;
 
 		return false;
 	};
 
+	/** @type {number | undefined} */
+	let cssRuleHighlightActive;
 	const menuSwitchTimeline = () => {
+		updateStatusMenuSwitchTimeline();
 		const options = findNodeNeighbors().intersection;
 		const existingMenuItems = menuContainer.querySelectorAll(".item");
-		existingMenuItems.forEach(_ => void menuContainer.removeChild(_));
+		existingMenuItems.forEach((_) => void menuContainer.removeChild(_));
+		const styleHighlight = `g.event, g.edge { &:not(.${idFocusedTimeline}) { opacity: 0.1; } }`;
+		if (cssRuleHighlightActive !== undefined) {
+			stylesheet.deleteRule(cssRuleHighlightActive);
+		}
+		cssRuleHighlightActive = stylesheet.cssRules.length;
+		stylesheet.insertRule(styleHighlight, stylesheet.cssRules.length);
 		for (const timeline of options) {
-			const menuItem = document.createElement("div")
+			const menuItem = document.createElement("div");
 			menuItem.classList.add("item", timeline);
-			menuItem.textContent = lookupTimelineToMetadata.get(timeline)?.[3] ?? "???";
+			if (idFocusedTimeline === timeline) {
+				menuItem.classList.add("active");
+			}
+			menuItem.textContent =
+				lookupTimelineToMetadata.get(timeline)?.[3] ?? "???";
 			menuContainer.appendChild(menuItem);
 		}
-	}
+		statusOptions.classList.add("visible");
+		statusOptionA.textContent = "Umsteigen";
+		statusButtonA.style.display = "inline-block";
+		statusOptionX.textContent = "Zurück";
+		statusButtonX.style.display = "inline-block";
+	};
 
 	const cameraMovementFinalize = () => {
 		cameraIsIdle = false;
 		camera = { ...focusTargetBox };
 		lastKnownScrollPosition = focusTargetBox.y;
-	}
+	};
 	const onScrollEnd = () => {
 		window.clearTimeout(timeoutCameraUnlock);
 		timeoutCameraUnlock = undefined;
@@ -1479,12 +1577,8 @@ const main = async () => {
 
 		const delta = timestamp - previousTimestamp;
 		const deltaStarfield = timestamp - previousTimestampStarfield;
-		handleInputs(delta);
-
-		if (focusShiftPending) {
-			updateCamera(
-				true
-			);
+		if (handleInputs(delta)) {
+			updateCamera();
 		}
 
 		// We don't want to update the starfield every frame, because it doesn't

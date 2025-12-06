@@ -193,7 +193,9 @@ canvas {
 }
 
 #calendar {
-	transition: ease-in-out opacity 0.6s, ease-in-out transform 0.5s;
+	transition:
+		ease-in-out opacity 0.6s,
+		ease-in-out transform 0.5s;
 
 	display: grid;
 	z-index: 5;
@@ -202,7 +204,7 @@ canvas {
 	left: 0;
 	margin: 0;
 	padding: 0;
-	background-color: rgb(0 0 0 / 0.7);
+	background-color: rgb(0 0 0 / 0.8);
 	transform: translateY(-100%);
 	opacity: 0;
 
@@ -227,7 +229,9 @@ canvas {
 	}
 }
 #menu {
-	transition: ease-in-out opacity 0.6s, ease-in-out transform 0.5s;
+	transition:
+		ease-in-out opacity 0.6s,
+		ease-in-out transform 0.5s;
 
 	display: flex;
 	flex-direction: column;
@@ -236,8 +240,9 @@ canvas {
 	top: 0;
 	bottom: 0;
 	height: 100vh;
+	min-width: 100mm;
 	margin: 0;
-	padding: 0;
+	padding: 0 0 0 4mm;
 	background-color: rgb(0 0 0 / 0.8);
 	transform: translateX(-100%);
 	opacity: 0;
@@ -254,13 +259,25 @@ canvas {
 	}
 
 	.item {
+		transition: ease-in-out all 0.3s;
+
 		/* FONT_SIZE_READ */
 		color: rgb(255 255 255 / 1);
 		user-select: none;
+		padding: 0.5em 1em;
+		border: 1mm solid transparent;
+
+		&.active {
+			background-color: rgb(255 255 255 / 0.1);
+			border: 1mm solid rgb(255 255 255 / 0.8);
+			font-weight: bold;
+		}
 	}
 }
 #status {
-	transition: ease-in-out opacity 0.6s, ease-in-out transform 0.5s;
+	transition:
+		ease-in-out opacity 0.6s,
+		ease-in-out transform 0.5s;
 
 	display: flex;
 	flex-direction: column;
@@ -285,10 +302,17 @@ canvas {
 	}
 
 	.shoulders {
+		transition: ease-in-out opacity 0.3s;
+
 		display: flex;
 		flex-direction: row;
 		justify-content: space-between;
 		width: 100%;
+		opacity: 0;
+
+		&.visible {
+			opacity: 1;
+		}
 
 		.shoulder {
 			padding: 0.5vmin 1vmin;
