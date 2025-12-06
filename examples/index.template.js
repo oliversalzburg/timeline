@@ -74,6 +74,12 @@ const main = async () => {
 	}
 
 	/** @type {HTMLDivElement | null} */
+	const menuContainer = document.querySelector("#menu");
+	if (menuContainer === null) {
+		throw new Error("Unable to find #menu element.");
+	}
+
+	/** @type {HTMLDivElement | null} */
 	const statusContainer = document.querySelector("#status");
 	if (statusContainer === null) {
 		throw new Error("Unable to find #status element.");
@@ -221,7 +227,6 @@ const main = async () => {
 		}
 	}
 
-	const rapidKeys = new Map();
 	const starPlanes = Array.from({
 		length: 12,
 	}).map(
@@ -306,10 +311,14 @@ const main = async () => {
 	//#endregion
 
 	/**
-	 * @param id {string} -
-	 * @param onTimelineId {string} -
+	 * @param id {string | undefined} -
+	 * @param onTimelineId {string | undefined} -
 	 */
-	const findNodeNeighbors = (id, onTimelineId) => {
+	const findNodeNeighbors = (id = idFocused, onTimelineId = timelineFocused) => {
+		if (id === undefined || onTimelineId === undefined) {
+			throw new Error("missing id");
+		}
+
 		const eventDateMatch = id.match(/^Z\d{4}-\d{2}-\d{2}/);
 		if (eventDateMatch === null || eventDateMatch.length === 0) {
 			throw new Error(`Unable to match date in ID '${id}'`);
@@ -351,7 +360,7 @@ const main = async () => {
 					? null
 					: eventIds[eventIndexOnTimeline + 1],
 			intersection: timelineIds.filter(
-				(_) => _ !== onTimelineId && lookupTimelineToMetadata.get(_)?.[1] === 1,
+				(_) => [1, 2].includes(lookupTimelineToMetadata.get(_)?.[1] ?? 0),
 			),
 			mediaItems: timelineIds.filter(
 				(_) => lookupTimelineToMetadata.get(_)?.[1] === 3,
@@ -469,13 +478,6 @@ const main = async () => {
 	 */
 	const onKeyUp = (event) => {
 		console.debug(`keyup: key:${event.key} code:${event.code}`);
-
-		if (!rapidKeys.has(event.code)) {
-			rapidKeys.set(event.code, 0);
-		}
-
-		const _keyIsRapid = Date.now() - rapidKeys.get(event.code) < 1000;
-		rapidKeys.set(event.code, Date.now());
 
 		switch (event.code) {
 			case "KeyA": {
@@ -819,12 +821,18 @@ const main = async () => {
 					released: { [Inputs.BUTTON_RB]: returnToMedia },
 				};
 			},
+			[Inputs.BUTTON_X]: () => {
+				menuSwitchTimeline();
+				menuContainer.classList.add("open");
+				return {
+					name: "return",
+					released: { [Inputs.BUTTON_X]: returnToMenuSwitchTimeline },
+				};
+			},
 		},
 	};
 
-	/**
-	 * @type {InputPlane}
-	*/
+	/** @type {InputPlane} */
 	const InputPlaneMedia = {
 		name: "media",
 		pressed: {
@@ -864,16 +872,43 @@ const main = async () => {
 		}
 	}
 
+	/** @type {InputPlane} */
+	const InputPlaneMenuSwitchTimeline = {
+		name: "menuSwitchTimeline",
+		pressed: {
+			[Inputs.BUTTON_X]: () => {
+				return {
+					name: "return",
+					released: { [Inputs.BUTTON_X]: returnToNeutral },
+				};
+			},
+		},
+	};
+
 	const returnToNeutral = () => {
 		console.debug("Clearing input cache, returning neutral plane.");
 		InputFrameCache = [];
+		calendarContainer.classList.add("open");
+		menuContainer.classList.remove("open");
+		statusContainer.classList.add("open");
 		return InputPlaneNeutral;
 	};
 	const returnToMedia = () => {
 		console.debug("Clearing input cache, returning media plane.");
 		InputFrameCache = [];
+		calendarContainer.classList.add("open");
+		menuContainer.classList.remove("open");
+		statusContainer.classList.add("open");
 		return InputPlaneMedia;
 	};
+	const returnToMenuSwitchTimeline = () => {
+		console.debug("Clearing input cache, returning menu plane.");
+		InputFrameCache = [];
+		calendarContainer.classList.remove("open");
+		menuContainer.classList.add("open");
+		statusContainer.classList.remove("open");
+		return InputPlaneMenuSwitchTimeline;
+	}
 
 	let activeInputPlane = InputPlaneNeutral;
 
@@ -1304,24 +1339,23 @@ const main = async () => {
 
 			if (idFocused !== undefined && timelineFocused !== undefined) {
 				const newNeighbors = findNodeNeighbors(idFocused, timelineFocused);
-				const navOptions = {
-					A:
-						0 < newNeighbors.intersection.length
-							? newNeighbors.intersection[0]
-							: null,
-					B:
-						1 < newNeighbors.intersection.length
-							? newNeighbors.intersection[1]
-							: null,
-					X:
-						2 < newNeighbors.intersection.length
-							? newNeighbors.intersection[2]
-							: null,
-					Y:
-						3 < newNeighbors.intersection.length
-							? newNeighbors.intersection[3]
-							: null,
-				};
+				if (1 < newNeighbors.intersection.length) {
+					statusOptions.classList.add("visible");
+					statusOptionX.textContent = "Umsteigen";
+					statusButtonX.style.display =
+						"inline-block";
+				} else {
+					statusOptions.classList.remove("visible");
+					statusButtonX.style.display =
+						"none";
+				}
+
+				statusButtonA.style.display =
+					"none";
+				statusButtonB.style.display =
+					"none";
+				statusButtonY.style.display =
+					"none";
 
 				const timelineColor =
 					lookupTimelineToMetadata.get(timelineFocused)?.[0];
@@ -1347,12 +1381,6 @@ const main = async () => {
 				intro.style.color = timelineColor ?? "";
 				statusText.style.textShadow = `2px 2px 3px ${timelineColor}`;
 
-				statusContainer.style.visibility =
-					0 < newNeighbors.intersection.length ||
-						0 < newNeighbors.mediaItems.length
-						? "visible"
-						: "hidden";
-
 				shoulderLeft.style.visibility =
 					0 < newNeighbors.mediaItems.length &&
 						timelineMediaIdActive !== undefined
@@ -1369,93 +1397,6 @@ const main = async () => {
 						: timelineMediaIdActive === timelineMediaIds.length - 1
 							? "Schließen"
 							: "Vorwärts blättern";
-
-				if (1 < newNeighbors.intersection.length) {
-					statusOptions.classList.add("visible");
-				} else {
-					statusOptions.classList.remove("visible");
-				}
-				statusOptionA.textContent =
-					navOptions.A === null || newNeighbors.intersection.length < 1
-						? ""
-						: (lookupTimelineToMetadata.get(navOptions.A)?.[3] ?? "???");
-				statusOptionA.style.color =
-					navOptions.A === null || newNeighbors.intersection.length < 1
-						? ""
-						: (lookupTimelineToMetadata.get(navOptions.A)?.[0] ?? "#f00");
-				statusOptionB.textContent =
-					navOptions.B === null || newNeighbors.intersection.length < 2
-						? ""
-						: (lookupTimelineToMetadata.get(navOptions.B)?.[3] ?? "???");
-				statusOptionB.style.color =
-					navOptions.B === null || newNeighbors.intersection.length < 2
-						? ""
-						: (lookupTimelineToMetadata.get(navOptions.B)?.[0] ?? "#f00");
-				statusOptionX.textContent =
-					navOptions.X === null || newNeighbors.intersection.length < 3
-						? ""
-						: (lookupTimelineToMetadata.get(navOptions.X)?.[3] ?? "???");
-				statusOptionX.style.color =
-					navOptions.X === null || newNeighbors.intersection.length < 3
-						? ""
-						: (lookupTimelineToMetadata.get(navOptions.X)?.[0] ?? "#f00");
-				statusOptionY.textContent =
-					navOptions.Y === null || newNeighbors.intersection.length < 4
-						? ""
-						: (lookupTimelineToMetadata.get(navOptions.Y)?.[3] ?? "???");
-				statusOptionY.style.color =
-					navOptions.Y === null || newNeighbors.intersection.length < 4
-						? ""
-						: (lookupTimelineToMetadata.get(navOptions.Y)?.[0] ?? "#f00");
-
-				statusButtonA.style.display =
-					navOptions.A === null ||
-						newNeighbors.intersection.length < 1 ||
-						mediaItemVisible
-						? "none"
-						: "inline-block";
-				statusButtonB.style.display =
-					navOptions.B === null ||
-						newNeighbors.intersection.length < 2 ||
-						mediaItemVisible
-						? "none"
-						: "inline-block";
-				statusButtonX.style.display =
-					navOptions.X === null ||
-						newNeighbors.intersection.length < 3 ||
-						mediaItemVisible
-						? "none"
-						: "inline-block";
-				statusButtonY.style.display =
-					navOptions.Y === null ||
-						newNeighbors.intersection.length < 4 ||
-						mediaItemVisible
-						? "none"
-						: "inline-block";
-				statusOptionA.style.display =
-					navOptions.A === null ||
-						newNeighbors.intersection.length < 1 ||
-						mediaItemVisible
-						? "none"
-						: "inline-block";
-				statusOptionB.style.display =
-					navOptions.B === null ||
-						newNeighbors.intersection.length < 2 ||
-						mediaItemVisible
-						? "none"
-						: "inline-block";
-				statusOptionX.style.display =
-					navOptions.X === null ||
-						newNeighbors.intersection.length < 3 ||
-						mediaItemVisible
-						? "none"
-						: "inline-block";
-				statusOptionY.style.display =
-					navOptions.Y === null ||
-						newNeighbors.intersection.length < 4 ||
-						mediaItemVisible
-						? "none"
-						: "inline-block";
 			}
 		}
 
@@ -1496,6 +1437,18 @@ const main = async () => {
 
 		return false;
 	};
+
+	const menuSwitchTimeline = () => {
+		const options = findNodeNeighbors().intersection;
+		const existingMenuItems = menuContainer.querySelectorAll(".item");
+		existingMenuItems.forEach(_ => void menuContainer.removeChild(_));
+		for (const timeline of options) {
+			const menuItem = document.createElement("div")
+			menuItem.classList.add("item", timeline);
+			menuItem.textContent = lookupTimelineToMetadata.get(timeline)?.[3] ?? "???";
+			menuContainer.appendChild(menuItem);
+		}
+	}
 
 	const cameraMovementFinalize = () => {
 		cameraIsIdle = false;

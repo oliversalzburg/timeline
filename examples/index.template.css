@@ -193,24 +193,25 @@ canvas {
 }
 
 #calendar {
-	transition: ease-in opacity 6s;
+	transition: ease-in-out opacity 0.6s, ease-in-out transform 0.5s;
 
 	display: grid;
 	z-index: 5;
-
 	position: fixed;
 	top: 0;
 	left: 0;
 	margin: 0;
+	padding: 0;
 	background-color: rgb(0 0 0 / 0.7);
 	transform: translateY(-100%);
+	opacity: 0;
 
-	color: rgb(255 255 255);
+	color: rgb(255 255 255 / 1);
 	user-select: none;
 
 	&.open {
-		transition: ease-out transform 0.5s;
 		transform: none;
+		opacity: 1;
 	}
 
 	.date {
@@ -225,8 +226,41 @@ canvas {
 		margin: 0;
 	}
 }
+#menu {
+	transition: ease-in-out opacity 0.6s, ease-in-out transform 0.5s;
+
+	display: flex;
+	flex-direction: column;
+	z-index: 5;
+	position: fixed;
+	top: 0;
+	bottom: 0;
+	height: 100vh;
+	margin: 0;
+	padding: 0;
+	background-color: rgb(0 0 0 / 0.8);
+	transform: translateX(-100%);
+	opacity: 0;
+
+	&.open {
+		transform: none;
+		opacity: 1;
+	}
+
+	h2 {
+		/* FONT_SIZE_BROWSE */
+		color: rgb(255 255 255 / 1);
+		user-select: none;
+	}
+
+	.item {
+		/* FONT_SIZE_READ */
+		color: rgb(255 255 255 / 1);
+		user-select: none;
+	}
+}
 #status {
-	transition: ease-in opacity 6s;
+	transition: ease-in-out opacity 0.6s, ease-in-out transform 0.5s;
 
 	display: flex;
 	flex-direction: column;
@@ -238,6 +272,7 @@ canvas {
 	width: 100vw;
 	margin: 0;
 	transform: translateY(10vmin);
+	opacity: 0;
 
 	color: rgb(255 255 255);
 	background-color: rgb(0 0 0 / 0.8);
@@ -245,8 +280,8 @@ canvas {
 	user-select: none;
 
 	&.open {
-		transition: ease-out transform 0.5s;
 		transform: none;
+		opacity: 1;
 	}
 
 	.shoulders {
