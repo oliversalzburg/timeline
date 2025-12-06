@@ -794,17 +794,18 @@ const main = async () => {
 	};
 
 	let requestInstantFocusUpdate = false;
-	const _INPUT_THRESHOLD = 0.1;
+	const INPUT_THRESHOLD = 0.1;
 	const _SPEED_FREE_FLIGHT = 5.0;
-	const _SPEED_MEDIA_SCALE = 0.5;
-	const _SPEED_MEDIA_TRANSLATE = 0.5;
+	const SPEED_MEDIA_SCALE = 0.5;
+	const SPEED_MEDIA_TRANSLATE = 0.5;
 
 	let previousTimelineActive = idFocusedTimeline;
 	/**
 	 * @typedef {{
 	 * name: string,
-	 * pressed?: Record<number, () => (InputPlane|undefined)>,
-	 * released?: Record<number, () => (InputPlane|undefined)>,
+	 * axes?: undefined|((frame: InputFrame) => void),
+	 * pressed?: Record<number, undefined|((frame: InputFrame) => (InputPlane | undefined))>,
+	 * released?: Record<number, undefined|((frame: InputFrame) => (InputPlane | undefined))>,
 	 * }} InputPlane
 	 * @type {InputPlane}
 	 */
@@ -884,6 +885,63 @@ const main = async () => {
 					released: { [Inputs.BUTTON_RB]: returnToMedia },
 				};
 			},
+			[Inputs.BUTTON_LT]: (frame) => {
+				mediaItemPosition.z -= (frame.delta / (1000 / 60)) * SPEED_MEDIA_SCALE;
+				// Otherwise the item ends up behind the camera, or too far away.
+				mediaItemPosition.z = Math.max(Math.min(mediaItemPosition.z, 39), -130);
+				return {
+					name: "return",
+					pressed: {
+						[Inputs.BUTTON_LT]: InputPlaneMedia.pressed?.[Inputs.BUTTON_LT],
+					},
+					released: { [Inputs.BUTTON_LT]: returnToMedia },
+				};
+			},
+			[Inputs.BUTTON_RT]: (frame) => {
+				mediaItemPosition.z += (frame.delta / (1000 / 60)) * SPEED_MEDIA_SCALE;
+				// Otherwise the item ends up behind the camera, or too far away.
+				mediaItemPosition.z = Math.max(Math.min(mediaItemPosition.z, 39), -130);
+				return {
+					name: "return",
+					pressed: {
+						[Inputs.BUTTON_RT]: InputPlaneMedia.pressed?.[Inputs.BUTTON_RT],
+					},
+					released: { [Inputs.BUTTON_RT]: returnToMedia },
+				};
+			},
+		},
+		axes: (frame) => {
+			if (INPUT_THRESHOLD < Math.abs(frame.axes[Inputs.AXIS_LEFT_X])) {
+				mediaItemPosition.x -=
+					frame.axes[Inputs.AXIS_LEFT_X] *
+					(frame.delta / (1000 / 60)) *
+					SPEED_MEDIA_TRANSLATE;
+			}
+			if (INPUT_THRESHOLD < Math.abs(frame.axes[Inputs.AXIS_LEFT_Y])) {
+				mediaItemPosition.x -=
+					frame.axes[Inputs.AXIS_LEFT_Y] *
+					(frame.delta / (1000 / 60)) *
+					SPEED_MEDIA_TRANSLATE;
+			}
+
+			if (INPUT_THRESHOLD < Math.abs(frame.axes[Inputs.AXIS_RIGHT_X])) {
+				mediaItemPosition.x -=
+					frame.axes[Inputs.AXIS_RIGHT_X] *
+					(frame.delta / (1000 / 60)) *
+					SPEED_MEDIA_TRANSLATE;
+			}
+			if (INPUT_THRESHOLD < Math.abs(frame.axes[Inputs.AXIS_RIGHT_Y])) {
+				mediaItemPosition.y -=
+					frame.axes[Inputs.AXIS_RIGHT_Y] *
+					(frame.delta / (1000 / 60)) *
+					SPEED_MEDIA_TRANSLATE;
+			}
+
+			mediaItemPosition.x = Math.max(Math.min(mediaItemPosition.x, 95), -95);
+			mediaItemPosition.y = Math.max(
+				Math.min(mediaItemPosition.y, 10),
+				-1_000_000,
+			);
 		},
 	};
 
@@ -970,7 +1028,7 @@ const main = async () => {
 	let activeInputPlane = InputPlaneNeutral;
 
 	/**
-	 * @typedef {Record<number,number>} InputFrame
+	 * @typedef {Record<number, number> & { axes: Record<number, number>, delta: number }} InputFrame
 	 * @type {Array<InputFrame>}
 	 */
 	let InputFrameCache = [];
@@ -995,16 +1053,17 @@ const main = async () => {
 				? InputFrameCache[InputFrameCache.length - 1]
 				: null;
 		if (head === null) {
-			console.debug("Recorded input frame.", InputFrameCache.length);
+			//console.debug("Recorded input frame.", InputFrameCache.length);
 			InputFrameCache.push(frame);
 			return;
 		}
 
 		if (inputFramesAreEqual(head, frame)) {
+			InputFrameCache[InputFrameCache.length - 1] = frame;
 			return;
 		}
 
-		console.debug("Recorded input frame.", InputFrameCache.length);
+		//console.debug("Recorded input frame.", InputFrameCache.length);
 		InputFrameCache.push(frame);
 	};
 	const digestInputFrames = () => {
@@ -1014,6 +1073,10 @@ const main = async () => {
 				: null;
 		if (head === null) {
 			return;
+		}
+
+		if (activeInputPlane.axes !== undefined) {
+			activeInputPlane.axes(head);
 		}
 
 		const canPeekCount = InputFrameCache.length - 1;
@@ -1037,7 +1100,7 @@ const main = async () => {
 						`Triggering button press on ${activeInputPlane.name} input plane.`,
 					);
 					activeInputPlane =
-						activeInputPlane.pressed[buttonIndex]() ?? activeInputPlane;
+						activeInputPlane.pressed?.[buttonIndex]?.(head) ?? activeInputPlane;
 					if (activeInputPlane !== previousInputPlane) {
 						return true;
 					}
@@ -1055,7 +1118,8 @@ const main = async () => {
 						`Triggering button release on ${activeInputPlane.name} input plane.`,
 					);
 					activeInputPlane =
-						activeInputPlane.released[buttonIndex]() ?? activeInputPlane;
+						activeInputPlane.released?.[buttonIndex]?.(head) ??
+						activeInputPlane;
 					if (activeInputPlane !== previousInputPlane) {
 						return true;
 					}
@@ -1077,8 +1141,9 @@ const main = async () => {
 			gamepads[0] !== null
 		) {
 			const gp = gamepads[0];
-			const _scale = delta / (1000 / 60);
 			const InputFrame = {
+				delta,
+				axes: gp.axes,
 				[Inputs.BUTTON_A]: gp.buttons[Inputs.BUTTON_A].pressed ? 1 : 0,
 				[Inputs.BUTTON_B]: gp.buttons[Inputs.BUTTON_B].pressed ? 1 : 0,
 				[Inputs.BUTTON_X]: gp.buttons[Inputs.BUTTON_X].pressed ? 1 : 0,
@@ -1103,128 +1168,6 @@ const main = async () => {
 			};
 			pushInputFrame(InputFrame);
 			return digestInputFrames();
-
-			/*
-			if (INPUT_THRESHOLD < Math.abs(gp.axes[Inputs.AXIS_LEFT_X])) {
-				focusTargetBox.x +=
-					gp.axes[Inputs.AXIS_LEFT_X] * scale * SPEED_FREE_FLIGHT;
-				requestInstantFocusUpdate = true;
-				cameraIsDetached = true;
-			}
-			if (INPUT_THRESHOLD < Math.abs(gp.axes[Inputs.AXIS_LEFT_Y])) {
-				focusTargetBox.y +=
-					gp.axes[Inputs.AXIS_LEFT_Y] * scale * SPEED_FREE_FLIGHT;
-				requestInstantFocusUpdate = true;
-				cameraIsDetached = true;
-			}
-
-			if (INPUT_THRESHOLD < Math.abs(gp.axes[Inputs.AXIS_RIGHT_X])) {
-				mediaItemPosition.x -=
-					gp.axes[Inputs.AXIS_RIGHT_X] * scale * SPEED_MEDIA_TRANSLATE;
-			}
-			if (INPUT_THRESHOLD < Math.abs(gp.axes[Inputs.AXIS_RIGHT_Y])) {
-				mediaItemPosition.y -=
-					gp.axes[Inputs.AXIS_RIGHT_Y] * scale * SPEED_MEDIA_TRANSLATE;
-			}
-			if (gp.buttons[Inputs.BUTTON_LT].pressed === true) {
-				mediaItemPosition.z -= scale * SPEED_MEDIA_SCALE;
-			}
-			if (gp.buttons[Inputs.BUTTON_RT].pressed === true) {
-				mediaItemPosition.z += scale * SPEED_MEDIA_SCALE;
-			}
-			mediaItemPosition.x = Math.max(Math.min(mediaItemPosition.x, 95), -95);
-			mediaItemPosition.y = Math.max(
-				Math.min(mediaItemPosition.y, 10),
-				-1_000_000,
-			);
-			// Otherwise the item ends up behind the camera, or too far away.
-			mediaItemPosition.z = Math.max(Math.min(mediaItemPosition.z, 39), -130);
-
-			if (
-				gp.buttons[Inputs.BUTTON_START].pressed === false &&
-				previousButtons?.[Inputs.BUTTON_START].pressed === true
-			) {
-				navigateStart();
-			}
-			if (
-				gp.buttons[Inputs.BUTTON_BACK].pressed === false &&
-				previousButtons?.[Inputs.BUTTON_BACK].pressed === true
-			) {
-				navigateBack();
-			}
-			if (
-				gp.buttons[Inputs.BUTTON_DOWN].pressed === false &&
-				previousButtons?.[Inputs.BUTTON_DOWN].pressed === true
-			) {
-				navigateForward();
-			}
-			if (
-				gp.buttons[Inputs.BUTTON_UP].pressed === false &&
-				previousButtons?.[Inputs.BUTTON_UP].pressed === true
-			) {
-				navigateBackward();
-			}
-			if (
-				gp.buttons[Inputs.BUTTON_LEFT].pressed === false &&
-				previousButtons?.[Inputs.BUTTON_LEFT].pressed === true
-			) {
-				navigateLeft();
-			}
-			if (
-				gp.buttons[Inputs.BUTTON_RIGHT].pressed === false &&
-				previousButtons?.[Inputs.BUTTON_RIGHT].pressed === true
-			) {
-				navigateRight();
-			}
-			if (
-				gp.buttons[Inputs.BUTTON_XBOX].pressed === false &&
-				previousButtons?.[Inputs.BUTTON_XBOX].pressed === true
-			) {
-				navigateHome();
-			}
-			if (
-				gp.buttons[Inputs.BUTTON_A].pressed === false &&
-				previousButtons?.[Inputs.BUTTON_A].pressed === true
-			) {
-				navigateA();
-			}
-			if (
-				gp.buttons[Inputs.BUTTON_B].pressed === false &&
-				previousButtons?.[Inputs.BUTTON_B].pressed === true
-			) {
-				navigateB();
-			}
-			if (
-				gp.buttons[Inputs.BUTTON_X].pressed === false &&
-				previousButtons?.[Inputs.BUTTON_X].pressed === true
-			) {
-				navigateX();
-			}
-			if (
-				gp.buttons[Inputs.BUTTON_Y].pressed === false &&
-				previousButtons?.[Inputs.BUTTON_Y].pressed === true
-			) {
-				navigateY();
-			}
-			if (
-				gp.buttons[Inputs.BUTTON_BACK].pressed === false &&
-				previousButtons?.[Inputs.BUTTON_BACK].pressed === true
-			) {
-				navigateToFocusNode();
-			}
-			if (
-				gp.buttons[Inputs.BUTTON_LB].pressed === false &&
-				previousButtons?.[Inputs.BUTTON_LB].pressed === true
-			) {
-				showMediaBackwardOrClose();
-			}
-			if (
-				gp.buttons[Inputs.BUTTON_RB].pressed === false &&
-				previousButtons?.[Inputs.BUTTON_RB].pressed === true
-			) {
-				showMediaForwardOrClose();
-			}
-			*/
 		}
 		return false;
 	};
@@ -1577,9 +1520,8 @@ const main = async () => {
 
 		const delta = timestamp - previousTimestamp;
 		const deltaStarfield = timestamp - previousTimestampStarfield;
-		if (handleInputs(delta)) {
-			updateCamera();
-		}
+		handleInputs(delta);
+		updateCamera();
 
 		// We don't want to update the starfield every frame, because it doesn't
 		// move much, but consumes a lot of fill rate.
@@ -1660,6 +1602,7 @@ const main = async () => {
 
 			window.setTimeout(() => {
 				statusContainer.classList.add("open");
+				returnToNeutral();
 				console.info("Status shown.");
 			}, 9000);
 

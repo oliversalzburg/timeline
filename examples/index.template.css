@@ -203,7 +203,7 @@ canvas {
 	top: 0;
 	left: 0;
 	margin: 0;
-	padding: 0;
+	padding: 3mm 1mm;
 	background-color: rgb(0 0 0 / 0.8);
 	transform: translateY(-100%);
 	opacity: 0;
