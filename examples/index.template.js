@@ -167,6 +167,43 @@ const main = async () => {
 	}
 	//#endregion
 
+	//#region SFX
+	const audioContext = new window.AudioContext();
+	const samples = new Map();
+	/**
+	 * @param {string} id -
+	 * @param {string} url -
+	 */
+	const sfxPrepareSample = async (id, url) => {
+		const raw = await fetch(url);
+		const data = await audioContext.decodeAudioData(await raw.arrayBuffer());
+		samples.set(id, data);
+	};
+
+	sfxPrepareSample("tap1", "/media/sfx/SND01_sine/tap_01.wav");
+	sfxPrepareSample("tap2", "/media/sfx/SND01_sine/tap_02.wav");
+	sfxPrepareSample("tap3", "/media/sfx/SND01_sine/tap_03.wav");
+	sfxPrepareSample("tap4", "/media/sfx/SND01_sine/tap_04.wav");
+	sfxPrepareSample("tap5", "/media/sfx/SND01_sine/tap_05.wav");
+	sfxPrepareSample("button", "/media/sfx/SND01_sine/button.wav");
+	sfxPrepareSample("swipe", "/media/sfx/SND01_sine/swipe.wav");
+
+	/**
+	 * @param {string} id -
+	 */
+	const sfxPlay = (id) => {
+		const sfxButton = audioContext.createBufferSource();
+		sfxButton.buffer = samples.get(id);
+		sfxButton.connect(audioContext.destination);
+		sfxButton.loop = false;
+		sfxButton.start();
+	};
+	const sfxPlayTap = () => {
+		const index = Math.round(1 + Math.random() * 4);
+		sfxPlay(`tap${index}`);
+	};
+	//#endregion
+
 	// A set of all the unique IDs.
 	const idSet = DATA[0].reduce(
 		(set, [, ids]) => {
@@ -262,66 +299,6 @@ const main = async () => {
 	];
 	const startTime = Date.now();
 	let lastKnownScrollPosition = 0;
-
-	//#region Audio
-	const context = new window.AudioContext();
-
-	function playSuccess() {
-		const successNoise = context.createOscillator();
-		successNoise.frequency.setValueAtTime(600, 0);
-		successNoise.type = "sine";
-		successNoise.frequency.exponentialRampToValueAtTime(
-			800,
-			context.currentTime + 0.05,
-		);
-		successNoise.frequency.exponentialRampToValueAtTime(
-			1000,
-			context.currentTime + 0.15,
-		);
-
-		const successGain = context.createGain();
-		successGain.gain.exponentialRampToValueAtTime(
-			0.01,
-			context.currentTime + 0.3,
-		);
-
-		const successFilter = context.createBiquadFilter();
-		successFilter.type = "bandpass";
-		successFilter.Q.setValueAtTime(0.01, 0);
-
-		successNoise
-			.connect(successFilter)
-			.connect(successGain)
-			.connect(context.destination);
-		successNoise.start();
-		successNoise.stop(context.currentTime + 0.2);
-	}
-
-	function _playError() {
-		const errorNoise = context.createOscillator();
-		errorNoise.frequency.setValueAtTime(400, 0);
-		errorNoise.type = "sine";
-		errorNoise.frequency.exponentialRampToValueAtTime(
-			200,
-			context.currentTime + 0.05,
-		);
-		errorNoise.frequency.exponentialRampToValueAtTime(
-			100,
-			context.currentTime + 0.2,
-		);
-
-		const errorGain = context.createGain();
-		errorGain.gain.exponentialRampToValueAtTime(
-			0.01,
-			context.currentTime + 0.3,
-		);
-
-		errorNoise.connect(errorGain).connect(context.destination);
-		errorNoise.start();
-		errorNoise.stop(context.currentTime + 0.3);
-	}
-
-	//#endregion
 
 	/**
 	 * @param id {string | undefined} -
@@ -814,7 +791,7 @@ const main = async () => {
 		pressed: {
 			[Inputs.BUTTON_UP]: () => {
 				if (navigateBackward()) {
-					playSuccess();
+					sfxPlayTap();
 				}
 				return {
 					name: "return",
@@ -823,7 +800,7 @@ const main = async () => {
 			},
 			[Inputs.BUTTON_DOWN]: () => {
 				if (navigateForward()) {
-					playSuccess();
+					sfxPlayTap();
 				}
 				return {
 					name: "return",
@@ -840,6 +817,7 @@ const main = async () => {
 			[Inputs.BUTTON_X]: () => {
 				previousTimelineActive = idFocusedTimeline;
 				menuSwitchTimeline();
+				sfxPlay("swipe");
 				return {
 					name: "return",
 					released: { [Inputs.BUTTON_X]: returnToMenuSwitchTimeline },
@@ -956,6 +934,7 @@ const main = async () => {
 				const neighbors = findNodeNeighbors();
 				const activeIndex = neighbors.intersection.indexOf(idFocusedTimeline);
 				focusNode(idFocused, neighbors.intersection[activeIndex - 1]);
+				sfxPlayTap();
 				menuSwitchTimeline();
 				return {
 					name: "return",
@@ -969,6 +948,7 @@ const main = async () => {
 				const neighbors = findNodeNeighbors();
 				const activeIndex = neighbors.intersection.indexOf(idFocusedTimeline);
 				focusNode(idFocused, neighbors.intersection[activeIndex + 1]);
+				sfxPlayTap();
 				menuSwitchTimeline();
 				return {
 					name: "return",
@@ -976,6 +956,8 @@ const main = async () => {
 				};
 			},
 			[Inputs.BUTTON_A]: () => {
+				sfxPlay("swipe");
+				sfxPlay("button");
 				return {
 					name: "return",
 					released: { [Inputs.BUTTON_A]: returnToNeutral },
@@ -983,6 +965,7 @@ const main = async () => {
 			},
 			[Inputs.BUTTON_X]: () => {
 				focusNode(idFocused, previousTimelineActive);
+				sfxPlay("swipe");
 				return {
 					name: "return",
 					released: { [Inputs.BUTTON_X]: returnToNeutral },
@@ -1468,7 +1451,7 @@ const main = async () => {
 		const options = findNodeNeighbors().intersection;
 		const existingMenuItems = menuContainer.querySelectorAll(".item");
 		existingMenuItems.forEach((_) => void menuContainer.removeChild(_));
-		const styleHighlight = `g.event, g.edge { &:not(.${idFocusedTimeline}) { opacity: 0.1; } }`;
+		const styleHighlight = `g.event, g.edge { &:not(.${idFocusedTimeline}) { opacity: 0.1; transition: ease-in-out opacity 0.6s; } }`;
 		if (cssRuleHighlightActive !== undefined) {
 			stylesheet.deleteRule(cssRuleHighlightActive);
 		}
