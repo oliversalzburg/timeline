@@ -3,7 +3,29 @@
 import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-const targetPath = "output";
+// Parse command line arguments.
+const args = process.argv
+	.slice(2)
+	.filter((_) => _.startsWith("--"))
+	.reduce(
+		(args, _) => {
+			const argument = _.substring(2);
+			const parts = argument.match(/^(?<name>[^=]+)=?(?<value>.*)$/);
+			if (parts === null || parts.groups === undefined) {
+				return args;
+			}
+
+			args[parts.groups.name ?? parts.groups.value] =
+				typeof parts.groups.value === "string" && parts.groups.value !== ""
+					? parts.groups.value
+					: true;
+
+			return args;
+		},
+		/** @type {Record<string, boolean | string>} */ ({}),
+	);
+
+const targetPath = typeof args.target === "string" ? args.target : "output";
 mkdirSync(targetPath, { recursive: true });
 
 const sourcePath = join(import.meta.dirname, "openmoji-svg-color");

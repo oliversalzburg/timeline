@@ -13,6 +13,8 @@ import {
 } from "./constants.js";
 import { dot, makeHtmlString, type NodeProperties } from "./dot.js";
 import {
+	isIdentityMedia,
+	isIdentityPeriod,
 	uncertainEventToDate,
 	uncertainEventToDateString,
 } from "./genealogy.js";
@@ -376,6 +378,8 @@ export const render = <
 		contributors: Set<TTimelines>,
 		leader?: TTimelines,
 	) => {
+		const style = isTransferMarker ? STYLE_TRANSFER_MARKER : getStyle(leader);
+
 		const classList = isTransferMarker
 			? ["tx", ...contributors.values().map((_) => classes.get(_.meta.id))]
 			: ["event", ...contributors.values().map((_) => classes.get(_.meta.id))];
@@ -383,15 +387,25 @@ export const render = <
 		const fillcolors = isTransferMarker
 			? [[255, 0, 0, 255] as RGBATuple]
 			: contributors.values().reduce((fillColors, timeline) => {
-					const fill = getStyle(timeline).fillcolor;
+					if (isIdentityMedia(timeline) || isIdentityPeriod(timeline)) {
+						return fillColors;
+					}
 
-					// Whatever we want to draw, _one_ transparent fill should be enough.
-					if (fill === TRANSPARENT && fillColors.includes(TRANSPARENT)) {
+					const timelineStyle = getStyle(timeline);
+					// If we know that the node will be filled, fall back to pen color
+					// in case the fill is transparent, to avoid ugly gradients.
+					const fill =
+						timelineStyle.fillcolor[3] === 0 && style.style.includes("filled")
+							? timelineStyle.pencolor
+							: timelineStyle.fillcolor;
+
+					// Ignore transparent fills.
+					if (fill[3] === 0) {
 						return fillColors;
 					}
 
 					fillColors.push(
-						timeline === leader || fill === TRANSPARENT
+						timeline === leader || fill[3] === 0
 							? fill
 							: matchLuminance(fill, getStyle(leader).fillcolor),
 					);
@@ -427,8 +441,6 @@ export const render = <
 						? `${renderMilliseconds(timePassedSinceThen)} bis ${nowString}`
 						: `${renderMilliseconds(timePassedSinceThen)} seit ${nowString}`,
 				].join("");
-
-		const style = isTransferMarker ? STYLE_TRANSFER_MARKER : getStyle(leader);
 
 		const nodeProperties: Partial<NodeProperties> = {
 			class: classList.join(" "),
@@ -530,6 +542,7 @@ export const render = <
 						if (event.title !== title) {
 							continue;
 						}
+
 						contributors.add(event.timeline);
 						if (leader === undefined) {
 							leader = event.timeline;

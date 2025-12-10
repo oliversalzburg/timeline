@@ -18,17 +18,17 @@ import {
 import type { Identity, RenderMode, RGBATuple, Timeline } from "./types.js";
 
 export interface Style {
-	fillcolor: RGBATuple | typeof TRANSPARENT;
+	fillcolor: RGBATuple;
 	fontcolor: RGBATuple | typeof TRANSPARENT;
 	link: false | EdgeStyle;
-	pencolor: RGBATuple | typeof TRANSPARENT;
+	pencolor: RGBATuple;
 	penwidth: number;
 	shape: Shape;
 	style: Array<NodeStyle>;
 }
 
 export const StyleStatic: Style = {
-	fillcolor: TRANSPARENT,
+	fillcolor: [0, 0, 0, 0],
 	fontcolor: [160, 160, 160, 255],
 	link: "dashed",
 	pencolor: [160, 160, 160, 255],
@@ -38,11 +38,11 @@ export const StyleStatic: Style = {
 };
 
 export const STYLE_TRANSFER_MARKER: Style = {
-	fillcolor: TRANSPARENT,
+	fillcolor: [0, 0, 0, 0],
 	link: "invis",
 	penwidth: 1,
-	fontcolor: TRANSPARENT,
-	pencolor: TRANSPARENT,
+	fontcolor: [0, 0, 0, 0],
+	pencolor: [0, 0, 0, 0],
 	shape: "rect",
 	style: ["solid"],
 };
@@ -269,6 +269,28 @@ export class Styling<
 				continue;
 			}
 			if (!isIdentityPerson(timeline)) {
+				continue;
+			}
+
+			// Completely unrelated identities are expected to have infinite hops.
+			const identityHops = mustExist(
+				hops.get(mustExist(timeline.meta.identity).id),
+			);
+			// A finite amount of hops indicates a link beyond family relations.
+			if (Number.isFinite(identityHops)) {
+				// These identities are treated like cousins.
+				styleSheet.set(timeline.meta.id, {
+					fillcolor: fillColorForPen(
+						mustExist(palette.get(timeline)),
+						this.theme,
+					),
+					fontcolor: matchFontColorTo(mustExist(palette.get(timeline))),
+					link: "solid",
+					pencolor: mustExist(palette.get(timeline)),
+					penwidth: 1,
+					shape: "box",
+					style: ["filled", "rounded"],
+				});
 				continue;
 			}
 

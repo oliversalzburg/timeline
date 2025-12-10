@@ -115,7 +115,7 @@ const originIsLocation = isIdentityLocation(
 );
 const hops = graphUniverse.calculateHopsFrom(originIdentityId, {
 	allowChildHop: !originIsLocation,
-	allowLocationHop: originIsLocation,
+	allowEventHop: originIsLocation,
 	allowMarriageHop: false,
 	allowParentHop: !originIsLocation,
 });
@@ -173,7 +173,12 @@ const renderOptions = {
 	origin: originIdentityId,
 	rendererAnalytics: args.analytics === true ? "enabled" : "disabled",
 	rendererAnonymization: args.anonymize === true ? "enabled" : "disabled",
-	segment: typeof args.segment === "string" ? Number(args.segment) : undefined,
+	segment:
+		typeof args.segment === "string"
+			? Number(args.segment) !== 0
+				? Number(args.segment)
+				: undefined
+			: undefined,
 	skipBefore:
 		typeof args["skip-before"] === "string"
 			? new Date(args["skip-before"]).valueOf()

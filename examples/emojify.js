@@ -244,6 +244,10 @@ const PREFIXES = {
 		name: "rote armee fraktion",
 		src: "logo-raf.svg",
 	},
+	u60311: {
+		name: "u60311",
+		src: "logo-u60311.svg",
+	},
 };
 
 let svgPrefixes = content;

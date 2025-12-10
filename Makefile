@@ -60,13 +60,10 @@ lib/tsconfig.source.tsbuildinfo $(_LIBS_D_TS) $(_LIBS_D_TS_MAP) $(_LIBS_JS) $(_L
 	@npm exec -- tsc --build tsconfig.json
 	@date +"%FT%T%z Library code rebuilt."
 
-$(IMAGES) &: contrib/prepare-emoji.js examples/emojify.js
+$(IMAGES) &: contrib/prepare-emoji.js
 	@mkdir -p $(OUTPUT)
-	@node --enable-source-maps contrib/prepare-emoji.js
+	@node --enable-source-maps contrib/prepare-emoji.js --target=$(OUTPUT)
 	@cp contrib/wikimedia/* $(OUTPUT)/
-	@node --enable-source-maps examples/emojify.js \
-		--copy-only \
-		--target=$(OUTPUT)
 	@date +"%FT%T%z Vector image data prepared."
 
 %-demo.universe : %.yml $(TIMELINES) lib/tsconfig.source.tsbuildinfo $(_SOURCES_TS) examples/space-time-generator.js
@@ -132,7 +129,6 @@ $(IMAGES) &: contrib/prepare-emoji.js examples/emojify.js
 	@node --enable-source-maps examples/universe.js \
 		$(UNIVERSE_FLAGS) \
 		--origin=$< \
-		--segment=300 \
 		--target=$(patsubst %-universe.info,%-universe.gvus,$@)
 	@date +"%FT%T%z Universe (Meta-)Information generated '$@'."
 # We intentionally don't pass --anonymize here, because we're already operating
@@ -141,7 +137,6 @@ $(IMAGES) &: contrib/prepare-emoji.js examples/emojify.js
 	@node --enable-source-maps examples/universe.js \
 		$(UNIVERSE_FLAGS) \
 		--origin=$< \
-		--segment=300 \
 		--target=$(patsubst %-demo-universe.info,%-demo-universe.gvus,$@)
 	@date +"%FT%T%z DEMO Universe (Meta-)Information generated '$@'."
 %-universe.svg : %-universe.info $(IMAGES) contrib/make.sh

@@ -465,6 +465,7 @@ export class Graph<
 		id = this.origin,
 		options: Partial<{
 			allowChildHop: boolean;
+			allowEventHop: boolean;
 			allowLocationHop: boolean;
 			allowMarriageHop: boolean;
 			allowParentHop: boolean;
@@ -484,13 +485,38 @@ export class Graph<
 		);
 		distances.set(root.id, 0);
 
+		if (options?.allowEventHop === true) {
+			const rootTimeline = this.timelineOf()?.records ?? [];
+			for (const identity of this.identities) {
+				for (const [timestampA, recordA] of this.timelineOf(identity.id)
+					?.records ?? []) {
+					for (const [timestampB, recordB] of rootTimeline) {
+						if (timestampA !== timestampB) {
+							continue;
+						}
+						if (recordA.title === recordB.title) {
+							const currentDistance =
+								distances.get(identity.id) ?? Number.POSITIVE_INFINITY;
+							distances.set(
+								identity.id,
+								Math.min(Math.max(0, currentDistance - 1), 100),
+							);
+						}
+					}
+				}
+			}
+		}
+
 		if (options?.allowLocationHop === true) {
+			// Locations that are associated with the root identity.
 			const rootLocations = this.locations(id, false);
-			const identityLocations = new Map(
-				this.identities.map((_) => [_.id, this.locations(_.id) ?? []]),
-			);
 
 			if (rootLocations !== undefined && 0 < rootLocations.length) {
+				// All identities, and their associated locations.
+				const identityLocations = new Map(
+					this.identities.map((_) => [_.id, this.locations(_.id) ?? []]),
+				);
+
 				for (const [identity, locations] of identityLocations) {
 					if (identity === id) {
 						continue;

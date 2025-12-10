@@ -127,13 +127,7 @@ const fill = (timeline) => {
 	}
 
 	let birth;
-	if (timeline.meta.identity.born === null) {
-		if (timeline.records.length === 0) {
-			return timeline;
-		}
-
-		birth = new Date(timeline.records[0][0]);
-	} else {
+	if (timeline.meta.identity.born !== null) {
 		birth = uncertainEventToDate(timeline.meta.identity.born);
 	}
 
@@ -230,13 +224,7 @@ const fillOthers = (timeline, graph) => {
 	const name = timeline.meta.identity.name ?? timeline.meta.identity.id;
 
 	let birth;
-	if (timeline.meta.identity.born === null) {
-		if (timeline.records.length === 0) {
-			return;
-		}
-
-		birth = new Date(timeline.records[0][0]);
-	} else {
+	if (timeline.meta.identity.born !== null) {
 		birth = uncertainEventToDate(timeline.meta.identity.born);
 	}
 
