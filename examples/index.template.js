@@ -823,6 +823,14 @@ const main = async () => {
 					released: { [Inputs.BUTTON_X]: returnToMenuSwitchTimeline },
 				};
 			},
+			[Inputs.BUTTON_START]: () => {
+				menuMain();
+				sfxPlay("swipe");
+				return {
+					name: "return",
+					released: { [Inputs.BUTTON_START]: returnToMenuMain },
+				};
+			},
 		},
 	};
 
@@ -974,6 +982,140 @@ const main = async () => {
 		},
 	};
 
+	/** @type {InputPlane} */
+	const InputPlaneMenuMain = {
+		name: "menuMain",
+		pressed: {
+			[Inputs.BUTTON_UP]: () => {
+				menuMainFocusIndex = Math.min(2, Math.max(0, menuMainFocusIndex - 1));
+				menuMain();
+				sfxPlayTap();
+				return {
+					name: "return",
+					released: { [Inputs.BUTTON_UP]: returnToMenuMain },
+				};
+			},
+			[Inputs.BUTTON_DOWN]: () => {
+				menuMainFocusIndex = Math.min(2, Math.max(0, menuMainFocusIndex + 1));
+				menuMain();
+				sfxPlayTap();
+				return {
+					name: "return",
+					released: { [Inputs.BUTTON_DOWN]: returnToMenuMain },
+				};
+			},
+			[Inputs.BUTTON_A]: () => {
+				menuMainJump();
+				sfxPlay("swipe");
+				sfxPlay("button");
+				return {
+					name: "return",
+					released: { [Inputs.BUTTON_A]: returnToMenuMainJump },
+				};
+			},
+			[Inputs.BUTTON_START]: () => {
+				sfxPlay("swipe");
+				return {
+					name: "return",
+					released: { [Inputs.BUTTON_START]: returnToNeutral },
+				};
+			},
+		},
+	};
+
+	/** @type {InputPlane} */
+	const InputPlaneMenuMainJump = {
+		name: "menuMainJump",
+		pressed: {
+			[Inputs.BUTTON_UP]: () => {
+				menuMainJumpFocusIndex = Math.min(
+					2,
+					Math.max(0, menuMainJumpFocusIndex - 1),
+				);
+				menuMainJump();
+				sfxPlayTap();
+				return {
+					name: "return",
+					released: { [Inputs.BUTTON_UP]: returnToMenuMainJump },
+				};
+			},
+			[Inputs.BUTTON_DOWN]: () => {
+				menuMainJumpFocusIndex = Math.min(
+					2,
+					Math.max(0, menuMainJumpFocusIndex + 1),
+				);
+				menuMainJump();
+				sfxPlayTap();
+				return {
+					name: "return",
+					released: { [Inputs.BUTTON_DOWN]: returnToMenuMainJump },
+				};
+			},
+			[Inputs.BUTTON_A]: () => {
+				menuMainJumpDate();
+				sfxPlay("swipe");
+				sfxPlay("button");
+				return {
+					name: "return",
+					released: { [Inputs.BUTTON_A]: returnToMenuMainJumpDate },
+				};
+			},
+			[Inputs.BUTTON_START]: () => {
+				sfxPlay("swipe");
+				return {
+					name: "return",
+					released: { [Inputs.BUTTON_START]: returnToNeutral },
+				};
+			},
+		},
+	};
+
+	/** @type {InputPlane} */
+	const InputPlaneMenuMainJumpDate = {
+		name: "menuMainJumpDate",
+		pressed: {
+			[Inputs.BUTTON_LEFT]: () => {
+				menuMainJumpDateFocusIndex = Math.min(
+					2,
+					Math.max(0, menuMainJumpDateFocusIndex - 1),
+				);
+				menuMainJumpDate();
+				sfxPlayTap();
+				return {
+					name: "return",
+					released: { [Inputs.BUTTON_LEFT]: returnToMenuMainJumpDate },
+				};
+			},
+			[Inputs.BUTTON_RIGHT]: () => {
+				menuMainJumpDateFocusIndex = Math.min(
+					2,
+					Math.max(0, menuMainJumpDateFocusIndex + 1),
+				);
+				menuMainJumpDate();
+				sfxPlayTap();
+				return {
+					name: "return",
+					released: { [Inputs.BUTTON_RIGHT]: returnToMenuMainJumpDate },
+				};
+			},
+			[Inputs.BUTTON_A]: () => {
+				sfxPlay("swipe");
+				sfxPlay("button");
+				return {
+					name: "return",
+					released: { [Inputs.BUTTON_A]: returnToNeutral },
+				};
+			},
+			[Inputs.BUTTON_START]: () => {
+				sfxPlay("swipe");
+				return {
+					name: "return",
+					released: { [Inputs.BUTTON_START]: returnToNeutral },
+				};
+			},
+		},
+	};
+
 	const returnToNeutral = () => {
 		console.debug("Clearing input cache, returning neutral plane.");
 		InputFrameCache = [];
@@ -998,8 +1140,37 @@ const main = async () => {
 		updateStatus();
 		return InputPlaneMedia;
 	};
+	const returnToMenuMain = () => {
+		console.debug("Clearing input cache, returning main menu plane.");
+		InputFrameCache = [];
+		calendarContainer.classList.remove("open");
+		menuContainer.classList.add("open");
+		statusContainer.classList.add("open");
+		shouldersContainer.classList.remove("visible");
+		return InputPlaneMenuMain;
+	};
+	const returnToMenuMainJump = () => {
+		console.debug("Clearing input cache, returning jump menu plane.");
+		InputFrameCache = [];
+		calendarContainer.classList.remove("open");
+		menuContainer.classList.add("open");
+		statusContainer.classList.add("open");
+		shouldersContainer.classList.remove("visible");
+		return InputPlaneMenuMainJump;
+	};
+	const returnToMenuMainJumpDate = () => {
+		console.debug("Clearing input cache, returning jump-date menu plane.");
+		InputFrameCache = [];
+		calendarContainer.classList.remove("open");
+		menuContainer.classList.add("open");
+		statusContainer.classList.add("open");
+		shouldersContainer.classList.remove("visible");
+		return InputPlaneMenuMainJumpDate;
+	};
 	const returnToMenuSwitchTimeline = () => {
-		console.debug("Clearing input cache, returning menu plane.");
+		console.debug(
+			"Clearing input cache, returning switch-timeline menu plane.",
+		);
 		InputFrameCache = [];
 		calendarContainer.classList.remove("open");
 		menuContainer.classList.add("open");
@@ -1442,6 +1613,119 @@ const main = async () => {
 		requestInstantFocusUpdate = false;
 
 		return false;
+	};
+
+	let menuMainFocusIndex = 0;
+	const menuMain = () => {
+		updateStatusMenuSwitchTimeline();
+		const existingMenuItems = menuContainer.querySelectorAll(".level");
+		existingMenuItems.forEach((_) => void menuContainer.removeChild(_));
+
+		const menuLevel0 = document.createElement("div");
+		menuLevel0.classList.add("level", "active");
+		menuContainer.appendChild(menuLevel0);
+
+		const menuItemJump = document.createElement("div");
+		menuItemJump.classList.add("item");
+		if (menuMainFocusIndex === 0) {
+			menuItemJump.classList.add("active");
+		}
+		menuItemJump.textContent = "Springen";
+		menuLevel0.appendChild(menuItemJump);
+
+		const menuItemSwitch = document.createElement("div");
+		menuItemSwitch.classList.add("item");
+		if (menuMainFocusIndex === 1) {
+			menuItemSwitch.classList.add("active");
+		}
+		menuItemSwitch.textContent = "Umsteigen";
+		menuLevel0.appendChild(menuItemSwitch);
+
+		const menuItemArtifacts = document.createElement("div");
+		menuItemArtifacts.classList.add("item");
+		if (menuMainFocusIndex === 2) {
+			menuItemArtifacts.classList.add("active");
+		}
+		menuItemArtifacts.textContent = "Artefakte";
+		menuLevel0.appendChild(menuItemArtifacts);
+
+		statusOptions.classList.add("visible");
+		statusOptionA.textContent = "Auswählen";
+		statusButtonA.style.display = "inline-block";
+		statusOptionX.textContent = "Zurück";
+		statusButtonX.style.display = "inline-block";
+	};
+	let menuMainJumpFocusIndex = 0;
+	const menuMainJump = () => {
+		menuMain();
+
+		const menuLevel1 = document.createElement("div");
+		menuLevel1.classList.add("level", "active");
+		menuContainer.appendChild(menuLevel1);
+
+		const menuItemJump = document.createElement("div");
+		menuItemJump.classList.add("item");
+		if (menuMainJumpFocusIndex === 0) {
+			menuItemJump.classList.add("active");
+		}
+		menuItemJump.textContent = "zu Datum";
+		menuLevel1.appendChild(menuItemJump);
+
+		const menuItemSwitch = document.createElement("div");
+		menuItemSwitch.classList.add("item");
+		if (menuMainJumpFocusIndex === 1) {
+			menuItemSwitch.classList.add("active");
+		}
+		menuItemSwitch.textContent = "an Anfang";
+		menuLevel1.appendChild(menuItemSwitch);
+
+		const menuItemArtifacts = document.createElement("div");
+		menuItemArtifacts.classList.add("item");
+		if (menuMainJumpFocusIndex === 2) {
+			menuItemArtifacts.classList.add("active");
+		}
+		menuItemArtifacts.textContent = "an Ende";
+		menuLevel1.appendChild(menuItemArtifacts);
+	};
+	let menuMainJumpDateFocusIndex = 0;
+	const menuMainJumpDate = () => {
+		menuMainJump();
+
+		const menuLevel2 = document.createElement("div");
+		menuLevel2.classList.add("level", "active");
+		menuContainer.appendChild(menuLevel2);
+
+		const menuItemYear = document.createElement("div");
+		menuItemYear.classList.add("item");
+		if (menuMainJumpDateFocusIndex === 0) {
+			menuItemYear.classList.add("active");
+		}
+		menuItemYear.textContent = "1999";
+		menuLevel2.appendChild(menuItemYear);
+
+		const menuLevel3 = document.createElement("div");
+		menuLevel3.classList.add("level", "active");
+		menuContainer.appendChild(menuLevel3);
+
+		const menuItemMonth = document.createElement("div");
+		menuItemMonth.classList.add("item");
+		if (menuMainJumpDateFocusIndex === 1) {
+			menuItemMonth.classList.add("active");
+		}
+		menuItemMonth.textContent = "10 (Oktober)";
+		menuLevel3.appendChild(menuItemMonth);
+
+		const menuLevel4 = document.createElement("div");
+		menuLevel4.classList.add("level", "active");
+		menuContainer.appendChild(menuLevel4);
+
+		const menuItemDay = document.createElement("div");
+		menuItemDay.classList.add("item");
+		if (menuMainJumpDateFocusIndex === 2) {
+			menuItemDay.classList.add("active");
+		}
+		menuItemDay.textContent = "7";
+		menuLevel4.appendChild(menuItemDay);
 	};
 
 	/** @type {number | undefined} */

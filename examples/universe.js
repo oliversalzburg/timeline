@@ -17,7 +17,7 @@ import {
 } from "../lib/genealogy.js";
 import { load } from "../lib/loader.js";
 import { rgbaToString } from "../lib/palette.js";
-import { render } from "../lib/renderer.js";
+import { plan, render } from "../lib/renderer.js";
 import { Styling } from "../lib/style.js";
 
 /** @import {RendererOptions} from "../lib/renderer.js" */
@@ -116,6 +116,7 @@ const originIsLocation = isIdentityLocation(
 const hops = graphUniverse.calculateHopsFrom(originIdentityId, {
 	allowChildHop: !originIsLocation,
 	allowEventHop: originIsLocation,
+	allowLocationHop: originIsLocation,
 	allowMarriageHop: false,
 	allowParentHop: !originIsLocation,
 });
@@ -190,6 +191,8 @@ const renderOptions = {
 	styleSheet,
 	theme,
 };
+const _renderPlan = plan(trimmedTimelines, renderOptions);
+
 const dotGraph = render(trimmedTimelines, renderOptions, hops);
 
 // Calculate universe metrics.
@@ -236,11 +239,67 @@ const info = [
 	`${dIso} universal coordinated time (${NOW})`,
 	`Device self-identified as "${hostname()}" being operated by "${userInfo().username}".`,
 	`Universe has ${finalEntryCount} individual entries from ${data.size} timeline documents.`,
+	`The document window contains entries from ${trimmedTimelines.length} timeline documents.`,
 	`Universe Horizon`,
 	`${dStart} - ${dEnd}`,
 	`Exported Document Window`,
 	`${dFrom} - ${dTo}`,
 ];
+const infoDebug = [
+	`CSS Classes assigned to Timelines:`,
+	...dotGraph.timelineIds
+		.keys()
+		.map((timeline) =>
+			[
+				`CSS Class: ${dotGraph.timelineClasses.get(timeline)}`,
+				`Timeline ID: ${timeline.meta.id}`,
+			].join(" "),
+		),
+];
+
+const resolvedIdentitiy = graphTrimmed.resolveIdentity();
+const originBirthDate =
+	uncertainEventToDate(
+		resolvedIdentitiy?.born ?? resolvedIdentitiy?.established,
+	) ?? new Date();
+const metadata = /** @type {RenderResultMetadata} */ ([
+	[
+		...dotGraph.timelineIds
+			.entries()
+			.map(([timeline, ids]) => [dotGraph.timelineClasses.get(timeline), ids]),
+	],
+	[
+		...dotGraph.timelineIds
+			.entries()
+			.map(([timeline]) => [
+				dotGraph.timelineClasses.get(timeline),
+				[
+					rgbaToString(
+						styleSheet.get(timeline.meta.id)?.pencolor ?? TRANSPARENT,
+					),
+					isIdentityPerson(timeline)
+						? 1
+						: isIdentityLocation(timeline)
+							? 2
+							: isIdentityMedia(timeline)
+								? 3
+								: 0,
+					"identity" in timeline.meta
+						? timeline.meta.identity.id
+						: timeline.meta.id,
+					"identity" in timeline.meta
+						? (timeline.meta.identity.name ?? timeline.meta.identity.id)
+						: timeline.meta.id,
+				],
+			]),
+	],
+	[
+		graphTrimmed.resolveIdentity()?.name,
+		`Z${originBirthDate.getFullYear().toFixed().padStart(4, "0")}-${(originBirthDate.getMonth() + 1).toFixed().padStart(2, "0")}-${originBirthDate.getDate().toFixed().padStart(2, "0")}-0`,
+		dotGraph.timelineClasses.get(mustExist(graphTrimmed.timelineOf())),
+	],
+	dotGraph.graph.map((_) => [_.start, _.end]),
+]);
 
 process.stdout.write("Writing graph...");
 if (dotGraph.graph.length === 1) {
@@ -261,59 +320,18 @@ if (dotGraph.graph.length === 1) {
 	}
 }
 process.stdout.write("\n");
-const resolvedIdentitiy = graphTrimmed.resolveIdentity();
-const originBirthDate =
-	uncertainEventToDate(
-		resolvedIdentitiy?.born ?? resolvedIdentitiy?.established,
-	) ?? new Date();
+process.stdout.write(infoDebug.join("\n"));
+process.stdout.write("\n");
 
 writeFileSync(
 	targetPath.replace(/\.gv(?:us)?$/, ".info"),
 	`${info.join("\n")}\n`,
 );
 writeFileSync(
+	targetPath.replace(/\.gv(?:us)?$/, ".debug"),
+	`${infoDebug.join("\n")}\n`,
+);
+writeFileSync(
 	targetPath.replace(/\.gv(?:us)?$/, ".meta"),
-	`${JSON.stringify(
-		/** @type {RenderResultMetadata} */ ([
-			[
-				...dotGraph.timelineIds
-					.entries()
-					.map(([timeline, ids]) => [
-						dotGraph.timelineClasses.get(timeline),
-						ids,
-					]),
-			],
-			[
-				...dotGraph.timelineIds
-					.entries()
-					.map(([timeline]) => [
-						dotGraph.timelineClasses.get(timeline),
-						[
-							rgbaToString(
-								styleSheet.get(timeline.meta.id)?.pencolor ?? TRANSPARENT,
-							),
-							isIdentityPerson(timeline)
-								? 1
-								: isIdentityLocation(timeline)
-									? 2
-									: isIdentityMedia(timeline)
-										? 3
-										: 0,
-							"identity" in timeline.meta
-								? timeline.meta.identity.id
-								: timeline.meta.id,
-							"identity" in timeline.meta
-								? (timeline.meta.identity.name ?? timeline.meta.identity.id)
-								: timeline.meta.id,
-						],
-					]),
-			],
-			[
-				graphTrimmed.resolveIdentity()?.name,
-				`Z${originBirthDate.getFullYear().toFixed().padStart(4, "0")}-${(originBirthDate.getMonth() + 1).toFixed().padStart(2, "0")}-${originBirthDate.getDate().toFixed().padStart(2, "0")}-0`,
-				dotGraph.timelineClasses.get(mustExist(graphTrimmed.timelineOf())),
-			],
-			dotGraph.graph.map((_) => [_.start, _.end]),
-		]),
-	)}\n`,
+	`${JSON.stringify(metadata)}\n`,
 );

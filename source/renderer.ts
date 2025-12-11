@@ -112,11 +112,6 @@ export const plan = <
 		weights: Map<TTimelines, number>;
 	}>();
 
-	// A list of every timestamp that is used in any of the given timelines.
-	const timestampsUnique = [
-		...new Set(timelines.flatMap((t) => t.records.map(([time, _]) => time))),
-	];
-
 	// Determine if a given timestamp is in the current window.
 	const isTimestampInRange = (timestamp: number): boolean =>
 		(options.skipBefore ?? Number.NEGATIVE_INFINITY) < timestamp &&
@@ -141,6 +136,10 @@ export const plan = <
 		return timeline.records[0][0] <= timestamp;
 	};
 
+	// A list of every timestamp that is used in any of the given timelines.
+	const timestampsUnique = [
+		...new Set(timelines.flatMap((t) => t.records.map(([time, _]) => time))),
+	];
 	const eventHorizon = timestampsUnique.filter(isTimestampInRange);
 	const globalHistory = eventHorizon.sort((a, b) => a - b);
 
@@ -235,6 +234,7 @@ export const plan = <
 		localHistoryIndexes[timelineIndex] = localHistoryIndex;
 	}
 
+	// Iterate over all timestamps in the document window.
 	while (globalHistoryIndex < globalHistory.length) {
 		const timestamp = globalHistory[globalHistoryIndex];
 		for (
@@ -529,14 +529,14 @@ export const render = <
 				// The map only contains a single entry for each title.
 				// If that entry is a transfer marker, we assume that it also
 				// has no contributors.
-				const transferMarker = mustExist(eventTitles.get(title));
+				const maybeTransferMarker = mustExist(eventTitles.get(title));
 
 				// Remember which timelines contribute to the event.
 				const contributors = new Set<TTimelines>();
 				// Remember the contributor with the highest rank.
 				let leader: TTimelines | undefined;
 
-				if (!transferMarker.isTransferMarker) {
+				if (!maybeTransferMarker.isTransferMarker) {
 					// We now further iterate over all global events at this timestamp which share the same title.
 					for (const event of events) {
 						if (event.title !== title) {
@@ -544,6 +544,7 @@ export const render = <
 						}
 
 						contributors.add(event.timeline);
+
 						if (leader === undefined) {
 							leader = event.timeline;
 							continue;
@@ -559,14 +560,14 @@ export const render = <
 						}
 					}
 				} else {
-					leader = transferMarker.timeline;
-					contributors.add(transferMarker.timeline);
+					leader = maybeTransferMarker.timeline;
+					contributors.add(maybeTransferMarker.timeline);
 				}
 
-				const style = getStyle(transferMarker.timeline);
-				if (!transferMarker.isTransferMarker || style.link) {
+				const style = getStyle(maybeTransferMarker.timeline);
+				if (!maybeTransferMarker.isTransferMarker || style.link) {
 					const nodeProperties = computeNodeProperties(
-						transferMarker.isTransferMarker,
+						maybeTransferMarker.isTransferMarker,
 						timestamp,
 						title,
 						contributors,
@@ -574,7 +575,7 @@ export const render = <
 					);
 					d.node(title, nodeProperties);
 					if (
-						!transferMarker.isTransferMarker &&
+						!maybeTransferMarker.isTransferMarker &&
 						nodeProperties.id !== undefined
 					) {
 						for (const _ of contributors) {
