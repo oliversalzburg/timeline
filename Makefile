@@ -54,7 +54,7 @@ endif
 
 .PHONY: default build clean docs git-hook pretty lint test coverage universe
 .INTERMEDIATE: $(IMAGES)
-#.PRECIOUS: %.dotus %.idotus %.isvgus
+.PRECIOUS: %.dotus %.idotus %.isvgus
 
 lib/tsconfig.source.tsbuildinfo $(_LIBS_D_TS) $(_LIBS_D_TS_MAP) $(_LIBS_JS) $(_LIBS_JS_MAP) : node_modules/.package-lock.json $(_SOURCES_TS)
 	@npm exec -- tsc --build tsconfig.json

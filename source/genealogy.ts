@@ -293,8 +293,8 @@ export class Graph<
 		);
 	}
 
-	parentOf(id = this.origin) {
-		return this.identities.find((_) =>
+	parentsOf(id = this.origin) {
+		return this.identities.filter((_) =>
 			_.relations?.some(
 				(relation) =>
 					("fatherOf" in relation && relation.fatherOf === id) ||
@@ -561,30 +561,21 @@ export class Graph<
 		while (0 < changes) {
 			changes = 0;
 			for (const identity of this.identities) {
-				const currentBest =
+				let currentBest =
 					distances.get(identity.id) ?? Number.POSITIVE_INFINITY;
 
-				const father = this.fatherOf(identity.id);
-				const mother = this.motherOf(identity.id);
-				const fatherDistance =
-					(options.allowParentHop !== false && father !== undefined
-						? distances.get(father.id)
-						: undefined) ?? Number.POSITIVE_INFINITY;
-				const motherDistance =
-					(options.allowParentHop !== false && mother !== undefined
-						? distances.get(mother.id)
-						: undefined) ?? Number.POSITIVE_INFINITY;
-				const hopFatherDistance = fatherDistance + 1;
-				const hopMotherDistance = motherDistance + 1;
-				if (hopFatherDistance < currentBest) {
-					distances.set(identity.id, hopFatherDistance);
-					++changes;
-					continue;
-				}
-				if (hopMotherDistance < currentBest) {
-					distances.set(identity.id, hopMotherDistance);
-					++changes;
-					continue;
+				if (options.allowParentHop !== false) {
+					const parents = this.parentsOf(identity.id);
+					for (const parent of parents) {
+						const parentDistance =
+							distances.get(parent.id) ?? Number.POSITIVE_INFINITY;
+						const hopDistance = parentDistance + 1;
+						if (hopDistance < currentBest) {
+							distances.set(identity.id, hopDistance);
+							currentBest = hopDistance;
+							++changes;
+						}
+					}
 				}
 
 				const children = this.childrenOf(identity.id);
@@ -595,8 +586,8 @@ export class Graph<
 						const hopDistance = childDistance + 1;
 						if (hopDistance < currentBest) {
 							distances.set(identity.id, hopDistance);
+							currentBest = hopDistance;
 							++changes;
-							break;
 						}
 					}
 				}
@@ -611,8 +602,8 @@ export class Graph<
 						const hopDistance = spouseDistance + 1;
 						if (hopDistance < currentBest) {
 							distances.set(identity.id, hopDistance);
+							currentBest = hopDistance;
 							++changes;
-							break;
 						}
 					}
 				}

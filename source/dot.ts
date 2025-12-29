@@ -151,6 +151,17 @@ export interface EdgeProperties {
 	URL: string;
 	weight: number;
 }
+export interface GraphProperties {
+	bgcolor: Color;
+	comment: string;
+	fontname: string;
+	fontsize: number;
+	label: string;
+	rankdir: RankDir;
+	ranksep: number;
+	skipDraw: boolean;
+	tooltip: string;
+}
 export interface NodeProperties {
 	class: string;
 	color: Color;
@@ -224,7 +235,9 @@ export const dot = () => {
 		if (closes) {
 			--indentation;
 		}
-		buffer.push(`${indent(_, indentation)}${!opens && !closes ? ";" : ""}`);
+		buffer.push(
+			`${indent(_, indentation, "\t")}${!opens && !closes ? ";" : ""}`,
+		);
 		if (opens) {
 			++indentation;
 		}
@@ -244,6 +257,12 @@ export const dot = () => {
 			throw new InvalidOperationError(
 				`${color} is expected to have #RRGGBBAA format. received '${options.color}'`,
 			);
+		}
+	};
+
+	const renderGraph = (options?: Partial<GraphProperties>) => {
+		if (options?.skipDraw !== true) {
+			renderRaw(`graph ${makePropertyString({ ...options })}`);
 		}
 	};
 
@@ -295,6 +314,7 @@ export const dot = () => {
 
 	return {
 		raw: renderRaw,
+		graph: renderGraph,
 		node: renderNode,
 		link: renderLink,
 		toString: () => buffer.join("\n"),

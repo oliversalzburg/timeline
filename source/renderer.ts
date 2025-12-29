@@ -470,22 +470,21 @@ export const render = <
 	const dotGraph = (d = dot()) => {
 		const fontsize = FONT_SIZE_1000MM_V07_READ_PT;
 		d.raw("digraph {");
+		d.graph({
+			bgcolor: "transparent",
+			comment: " ",
+			fontname:
+				options.rendererAnonymization === "enabled" ? "Dummy Text2" : FONT_NAME,
+			fontsize,
+			rankdir: "TB",
+			ranksep: 0.5,
+		});
 		d.raw(
 			`node [fontname="${options.rendererAnonymization === "enabled" ? "Dummy Text2" : FONT_NAME}"; fontsize="${fontsize}";]`,
 		);
 		d.raw(
 			`edge [fontname="${options.rendererAnonymization === "enabled" ? "Dummy Text2" : FONT_NAME}"; fontsize="${fontsize}";]`,
 		);
-		d.raw(`bgcolor="${TRANSPARENT}"`);
-		d.raw('comment=" "');
-		d.raw(
-			`fontname="${options.rendererAnonymization === "enabled" ? "Dummy Text2" : FONT_NAME}"`,
-		);
-		d.raw(`fontsize="${fontsize}"`);
-		//d.raw('label=" "');
-		d.raw(`rankdir="TD"`);
-		d.raw(`ranksep="0.5"`);
-		//d.raw(`tooltip=" "`);
 		return d;
 	};
 
