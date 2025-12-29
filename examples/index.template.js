@@ -169,7 +169,6 @@ const main = async () => {
 
 	//#region SFX
 	const audioContext = new window.AudioContext();
-	await audioContext.resume();
 	const samples = new Map();
 	/**
 	 * @param {string} id -
@@ -203,7 +202,8 @@ const main = async () => {
 	/**
 	 * @param {string} id -
 	 */
-	const sfxPlay = (id) => {
+	const sfxPlay = async (id) => {
+		await audioContext.resume();
 		const sfxButton = audioContext.createBufferSource();
 		sfxButton.buffer = samples.get(id);
 		sfxButton.connect(audioContext.destination);
