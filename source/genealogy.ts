@@ -293,6 +293,17 @@ export class Graph<
 		);
 	}
 
+	parentOf(id = this.origin) {
+		return this.identities.find((_) =>
+			_.relations?.some(
+				(relation) =>
+					("fatherOf" in relation && relation.fatherOf === id) ||
+					("motherOf" in relation && relation.motherOf === id) ||
+					("adopted" in relation && relation.adopted === id),
+			),
+		);
+	}
+
 	containersOf(id = this.origin) {
 		return (
 			this.identities.filter((_) =>
@@ -334,10 +345,17 @@ export class Graph<
 				(_) =>
 					_.relations
 						?.filter(
-							(relation) => "fatherOf" in relation || "motherOf" in relation,
+							(relation) =>
+								"fatherOf" in relation ||
+								"motherOf" in relation ||
+								"adopted" in relation,
 						)
 						.map((relation) =>
-							"fatherOf" in relation ? relation.fatherOf : relation.motherOf,
+							"fatherOf" in relation
+								? relation.fatherOf
+								: "motherOf" in relation
+									? relation.motherOf
+									: relation.adopted,
 						) ?? [],
 			)
 			.map((childId) => this.resolveIdentity(childId))

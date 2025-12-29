@@ -175,10 +175,10 @@ $(IMAGES) &: contrib/prepare-emoji.js
 	@date +"%FT%T%z Generated embedded iDOTus fragment '$@'."
 
 %.svg : %.dot
-	@dot $(DOT_FLAGS) -Gpad=0 -Tsvg:cairo -o $@ $<
+	@dot $(DOT_FLAGS) -Tsvg:cairo -o $@ $<
 	@date +"%FT%T%z Rendered DOT graph SVG (Cairo) image '$@'."
 %.isvgus : %.idotus
-	@dot $(DOT_FLAGS) -Gpad=0 -Tsvg -o $@ $<
+	@dot $(DOT_FLAGS) -Tsvg -o $@ $<
 	@date +"%FT%T%z Rendered DOT graph iSVGus image '$@'."
 
 %-analytics.pdf : %-analytics.md %-pedigree-light.svg

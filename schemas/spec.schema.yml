@@ -176,6 +176,31 @@ definitions:
               properties:
                 motherOf:
                   type: string
+            - title: Adoptive Parenthood
+              type: object
+              required:
+                - adopted
+              properties:
+                adopted:
+                  type: string
+                date:
+                  title: Exact Day of Adoption
+                  type: string
+                when:
+                  title: Uncertain Date of Adoption
+                  type: object
+                  properties:
+                    after:
+                      type: string
+                    before:
+                      type: string
+                    showAs:
+                      type: string
+                where:
+                  title: Uncertain Location of Adoption
+                  type: string
+                as:
+                  type: string
   location:
     title: Location
     type: object

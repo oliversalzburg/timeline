@@ -53,22 +53,23 @@ export interface TimelineReferenceRenderer extends Timeline {
 	records: Array<TimelineRecord>;
 }
 
-export interface RelationConnection {
-	connectedTo: string;
-}
-export interface RelationFamily {
-	relatedTo: string;
+export interface Linked {
+	linkedTo: string;
 }
 export interface Marriage extends Event {
 	marriedTo: string;
 	as?: string;
 }
-export interface Mother {
-	motherOf: string;
-}
 export interface Father {
 	fatherOf: string;
 }
+export interface Mother {
+	motherOf: string;
+}
+export interface AdoptiveParent extends Event {
+	adopted: string;
+}
+
 export interface Event {
 	date?: string;
 	in?: string;
@@ -105,7 +106,7 @@ export interface Identity {
 	born?: Birth | null;
 	died?: Death | null;
 	name?: string;
-	relations?: Array<Marriage | Father | Mother>;
+	relations?: Array<Linked | Marriage | Father | Mother | AdoptiveParent>;
 }
 export interface MetaSectionAncestryRenderer
 	extends MetaSectionReferenceRenderer {
