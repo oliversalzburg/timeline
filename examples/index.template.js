@@ -169,6 +169,7 @@ const main = async () => {
 
 	//#region SFX
 	const audioContext = new window.AudioContext();
+	await audioContext.resume();
 	const samples = new Map();
 	/**
 	 * @param {string} id -
@@ -180,13 +181,24 @@ const main = async () => {
 		samples.set(id, data);
 	};
 
+	sfxPrepareSample("swipe1", "/media/sfx/SND01_sine/swipe_01.wav");
+	sfxPrepareSample("swipe2", "/media/sfx/SND01_sine/swipe_02.wav");
+	sfxPrepareSample("swipe3", "/media/sfx/SND01_sine/swipe_03.wav");
+	sfxPrepareSample("swipe4", "/media/sfx/SND01_sine/swipe_04.wav");
+	sfxPrepareSample("swipe5", "/media/sfx/SND01_sine/swipe_05.wav");
 	sfxPrepareSample("tap1", "/media/sfx/SND01_sine/tap_01.wav");
 	sfxPrepareSample("tap2", "/media/sfx/SND01_sine/tap_02.wav");
 	sfxPrepareSample("tap3", "/media/sfx/SND01_sine/tap_03.wav");
 	sfxPrepareSample("tap4", "/media/sfx/SND01_sine/tap_04.wav");
 	sfxPrepareSample("tap5", "/media/sfx/SND01_sine/tap_05.wav");
 	sfxPrepareSample("button", "/media/sfx/SND01_sine/button.wav");
+	sfxPrepareSample("disabled", "/media/sfx/SND01_sine/disabled.wav");
 	sfxPrepareSample("swipe", "/media/sfx/SND01_sine/swipe.wav");
+	sfxPrepareSample(
+		"transition_down",
+		"/media/sfx/SND01_sine/transition_down.wav",
+	);
+	sfxPrepareSample("transition_up", "/media/sfx/SND01_sine/transition_up.wav");
 
 	/**
 	 * @param {string} id -
@@ -198,13 +210,19 @@ const main = async () => {
 		sfxButton.loop = false;
 		sfxButton.start();
 	};
+	const sfxPlaySwipe = () => {
+		const index = Math.round(1 + Math.random() * 4);
+		sfxPlay(`swipe${index}`);
+	};
 	const sfxPlayTap = () => {
 		const index = Math.round(1 + Math.random() * 4);
 		sfxPlay(`tap${index}`);
 	};
 	//#endregion
 
-	// A set of all the unique IDs.
+	/**
+	 * A set of all the unique event IDs.
+	 */
 	const idSet = DATA[0].reduce(
 		(set, [, ids]) => {
 			ids.forEach((id) => {
@@ -361,6 +379,7 @@ const main = async () => {
 		};
 	};
 
+	//#region Focus Select
 	/**
 	 * @param {string | undefined} id -
 	 * @param {string | undefined} onTimelineId -
@@ -412,6 +431,14 @@ const main = async () => {
 				? idFocusedTimeline
 				: lookupTimelinesFromEventId.get(id)?.[0]);
 
+		const currentDate =
+			idFocused !== undefined
+				? new Date(idFocused.substring(1, 11))
+				: new Date();
+		menuMainJumpDateYear = currentDate.getFullYear();
+		menuMainJumpDateMonth = currentDate.getMonth();
+		menuMainJumpDateDate = currentDate.getDate();
+
 		if (setState) {
 			window.history.pushState(
 				{ id },
@@ -427,6 +454,63 @@ const main = async () => {
 		requestFocusShift(id);
 	};
 
+	/**
+	 * @param {Date} date -
+	 */
+	const focusDate = (date) => {
+		const ids =
+			idFocusedTimeline !== undefined
+				? (lookupTimelineToEventIDs.get(idFocusedTimeline)?.values() ?? [])
+				: idSet;
+		let distance = Number.POSITIVE_INFINITY;
+		let best;
+		for (const id of ids) {
+			const idDate = new Date(id.substring(1, 11));
+			const idDistance = Math.abs(idDate.valueOf() - date.valueOf());
+			if (idDistance < distance) {
+				distance = idDistance;
+				best = id;
+			}
+		}
+		if (best !== undefined) {
+			focusNode(best);
+		}
+	};
+
+	/**
+	 * @param id {string | undefined}
+	 */
+	const requestFocusShift = (id) => {
+		if (!id) {
+			return;
+		}
+
+		const anchor = `#${id}`;
+		/** @type {SVGElement | null} */
+		const node = document.querySelector(anchor);
+
+		if (node === null) {
+			return;
+		}
+
+		const rect = node.getBoundingClientRect();
+
+		let left = window.pageXOffset + rect.left;
+		let top = window.pageYOffset + rect.top;
+
+		left += rect.width / 2;
+		top += rect.height / 2;
+
+		left -= document.documentElement.clientWidth / 2;
+		top -= document.documentElement.clientHeight / 2;
+
+		cameraIsDetached = false;
+		focusTargetBox = { x: left, y: top };
+		console.debug("New focus box requested", focusTargetBox);
+	};
+	//#endregion
+
+	//#region Mouse Handling
 	/**
 	 * @param {MouseEvent} event -
 	 */
@@ -450,7 +534,9 @@ const main = async () => {
 			focusNode(node.id);
 		}
 	};
+	//#endregion
 
+	//#region Keyboard Handling
 	/**
 	 * @param {KeyboardEvent} event -
 	 */
@@ -523,39 +609,13 @@ const main = async () => {
 				return;
 		}
 	};
+	//#endregion
 
 	let focusTargetBox = { x: 0, y: 0 };
 	let camera = { x: 0, y: 0 };
 	let mediaItemRotation = { x: 0, y: 0 };
 	let mediaItemPosition = { x: 0, y: 0, z: 0 };
 	let mediaItemVisible = false;
-
-	/**
-	 * @param id {string | undefined}
-	 */
-	const requestFocusShift = (id) => {
-		if (!id) {
-			return;
-		}
-
-		const anchor = `#${id}`;
-		/** @type {SVGElement | null} */
-		const node = document.querySelector(anchor);
-
-		if (node === null) {
-			return;
-		}
-
-		let left = window.pageXOffset + node.getBoundingClientRect().left;
-		let top = window.pageYOffset + node.getBoundingClientRect().top;
-
-		left = left - document.documentElement.clientWidth / 2;
-		top = top - document.documentElement.clientHeight / 2;
-
-		cameraIsDetached = false;
-		focusTargetBox = { x: left, y: top };
-		console.debug("New focus box requested", focusTargetBox);
-	};
 
 	//#region Navigation Helper
 	const navigateForward = () => {
@@ -817,18 +877,22 @@ const main = async () => {
 			[Inputs.BUTTON_X]: () => {
 				previousTimelineActive = idFocusedTimeline;
 				menuSwitchTimeline();
-				sfxPlay("swipe");
+				sfxPlaySwipe();
 				return {
 					name: "return",
-					released: { [Inputs.BUTTON_X]: returnToMenuSwitchTimeline },
+					released: {
+						[Inputs.BUTTON_X]: returnToMenuPlane(InputPlaneMenuSwitchTimeline),
+					},
 				};
 			},
 			[Inputs.BUTTON_START]: () => {
 				menuMain();
-				sfxPlay("swipe");
+				sfxPlay("transition_up");
 				return {
 					name: "return",
-					released: { [Inputs.BUTTON_START]: returnToMenuMain },
+					released: {
+						[Inputs.BUTTON_START]: returnToMenuPlane(InputPlaneMenuMain),
+					},
 				};
 			},
 		},
@@ -946,7 +1010,9 @@ const main = async () => {
 				menuSwitchTimeline();
 				return {
 					name: "return",
-					released: { [Inputs.BUTTON_UP]: returnToMenuSwitchTimeline },
+					released: {
+						[Inputs.BUTTON_UP]: returnToMenuPlane(InputPlaneMenuSwitchTimeline),
+					},
 				};
 			},
 			[Inputs.BUTTON_DOWN]: () => {
@@ -960,11 +1026,15 @@ const main = async () => {
 				menuSwitchTimeline();
 				return {
 					name: "return",
-					released: { [Inputs.BUTTON_DOWN]: returnToMenuSwitchTimeline },
+					released: {
+						[Inputs.BUTTON_DOWN]: returnToMenuPlane(
+							InputPlaneMenuSwitchTimeline,
+						),
+					},
 				};
 			},
 			[Inputs.BUTTON_A]: () => {
-				sfxPlay("swipe");
+				sfxPlaySwipe();
 				sfxPlay("button");
 				return {
 					name: "return",
@@ -973,144 +1043,10 @@ const main = async () => {
 			},
 			[Inputs.BUTTON_X]: () => {
 				focusNode(idFocused, previousTimelineActive);
-				sfxPlay("swipe");
+				sfxPlaySwipe();
 				return {
 					name: "return",
 					released: { [Inputs.BUTTON_X]: returnToNeutral },
-				};
-			},
-		},
-	};
-
-	/** @type {InputPlane} */
-	const InputPlaneMenuMain = {
-		name: "menuMain",
-		pressed: {
-			[Inputs.BUTTON_UP]: () => {
-				menuMainFocusIndex = Math.min(2, Math.max(0, menuMainFocusIndex - 1));
-				menuMain();
-				sfxPlayTap();
-				return {
-					name: "return",
-					released: { [Inputs.BUTTON_UP]: returnToMenuMain },
-				};
-			},
-			[Inputs.BUTTON_DOWN]: () => {
-				menuMainFocusIndex = Math.min(2, Math.max(0, menuMainFocusIndex + 1));
-				menuMain();
-				sfxPlayTap();
-				return {
-					name: "return",
-					released: { [Inputs.BUTTON_DOWN]: returnToMenuMain },
-				};
-			},
-			[Inputs.BUTTON_A]: () => {
-				menuMainJump();
-				sfxPlay("swipe");
-				sfxPlay("button");
-				return {
-					name: "return",
-					released: { [Inputs.BUTTON_A]: returnToMenuMainJump },
-				};
-			},
-			[Inputs.BUTTON_START]: () => {
-				sfxPlay("swipe");
-				return {
-					name: "return",
-					released: { [Inputs.BUTTON_START]: returnToNeutral },
-				};
-			},
-		},
-	};
-
-	/** @type {InputPlane} */
-	const InputPlaneMenuMainJump = {
-		name: "menuMainJump",
-		pressed: {
-			[Inputs.BUTTON_UP]: () => {
-				menuMainJumpFocusIndex = Math.min(
-					2,
-					Math.max(0, menuMainJumpFocusIndex - 1),
-				);
-				menuMainJump();
-				sfxPlayTap();
-				return {
-					name: "return",
-					released: { [Inputs.BUTTON_UP]: returnToMenuMainJump },
-				};
-			},
-			[Inputs.BUTTON_DOWN]: () => {
-				menuMainJumpFocusIndex = Math.min(
-					2,
-					Math.max(0, menuMainJumpFocusIndex + 1),
-				);
-				menuMainJump();
-				sfxPlayTap();
-				return {
-					name: "return",
-					released: { [Inputs.BUTTON_DOWN]: returnToMenuMainJump },
-				};
-			},
-			[Inputs.BUTTON_A]: () => {
-				menuMainJumpDate();
-				sfxPlay("swipe");
-				sfxPlay("button");
-				return {
-					name: "return",
-					released: { [Inputs.BUTTON_A]: returnToMenuMainJumpDate },
-				};
-			},
-			[Inputs.BUTTON_START]: () => {
-				sfxPlay("swipe");
-				return {
-					name: "return",
-					released: { [Inputs.BUTTON_START]: returnToNeutral },
-				};
-			},
-		},
-	};
-
-	/** @type {InputPlane} */
-	const InputPlaneMenuMainJumpDate = {
-		name: "menuMainJumpDate",
-		pressed: {
-			[Inputs.BUTTON_LEFT]: () => {
-				menuMainJumpDateFocusIndex = Math.min(
-					2,
-					Math.max(0, menuMainJumpDateFocusIndex - 1),
-				);
-				menuMainJumpDate();
-				sfxPlayTap();
-				return {
-					name: "return",
-					released: { [Inputs.BUTTON_LEFT]: returnToMenuMainJumpDate },
-				};
-			},
-			[Inputs.BUTTON_RIGHT]: () => {
-				menuMainJumpDateFocusIndex = Math.min(
-					2,
-					Math.max(0, menuMainJumpDateFocusIndex + 1),
-				);
-				menuMainJumpDate();
-				sfxPlayTap();
-				return {
-					name: "return",
-					released: { [Inputs.BUTTON_RIGHT]: returnToMenuMainJumpDate },
-				};
-			},
-			[Inputs.BUTTON_A]: () => {
-				sfxPlay("swipe");
-				sfxPlay("button");
-				return {
-					name: "return",
-					released: { [Inputs.BUTTON_A]: returnToNeutral },
-				};
-			},
-			[Inputs.BUTTON_START]: () => {
-				sfxPlay("swipe");
-				return {
-					name: "return",
-					released: { [Inputs.BUTTON_START]: returnToNeutral },
 				};
 			},
 		},
@@ -1140,43 +1076,17 @@ const main = async () => {
 		updateStatus();
 		return InputPlaneMedia;
 	};
-	const returnToMenuMain = () => {
-		console.debug("Clearing input cache, returning main menu plane.");
+	/**
+	 * @param {InputPlane} plane -
+	 */
+	const returnToMenuPlane = (plane) => () => {
+		console.debug("Clearing input cache, returning provided menu plane.");
 		InputFrameCache = [];
 		calendarContainer.classList.remove("open");
 		menuContainer.classList.add("open");
 		statusContainer.classList.add("open");
 		shouldersContainer.classList.remove("visible");
-		return InputPlaneMenuMain;
-	};
-	const returnToMenuMainJump = () => {
-		console.debug("Clearing input cache, returning jump menu plane.");
-		InputFrameCache = [];
-		calendarContainer.classList.remove("open");
-		menuContainer.classList.add("open");
-		statusContainer.classList.add("open");
-		shouldersContainer.classList.remove("visible");
-		return InputPlaneMenuMainJump;
-	};
-	const returnToMenuMainJumpDate = () => {
-		console.debug("Clearing input cache, returning jump-date menu plane.");
-		InputFrameCache = [];
-		calendarContainer.classList.remove("open");
-		menuContainer.classList.add("open");
-		statusContainer.classList.add("open");
-		shouldersContainer.classList.remove("visible");
-		return InputPlaneMenuMainJumpDate;
-	};
-	const returnToMenuSwitchTimeline = () => {
-		console.debug(
-			"Clearing input cache, returning switch-timeline menu plane.",
-		);
-		InputFrameCache = [];
-		calendarContainer.classList.remove("open");
-		menuContainer.classList.add("open");
-		statusContainer.classList.add("open");
-		shouldersContainer.classList.remove("visible");
-		return InputPlaneMenuSwitchTimeline;
+		return plane;
 	};
 
 	let activeInputPlane = InputPlaneNeutral;
@@ -1615,14 +1525,18 @@ const main = async () => {
 		return false;
 	};
 
+	//#region Main Menu
 	let menuMainFocusIndex = 0;
-	const menuMain = () => {
+	const menuMain = (isActive = true) => {
 		updateStatusMenuSwitchTimeline();
 		const existingMenuItems = menuContainer.querySelectorAll(".level");
 		existingMenuItems.forEach((_) => void menuContainer.removeChild(_));
 
 		const menuLevel0 = document.createElement("div");
-		menuLevel0.classList.add("level", "active");
+		menuLevel0.classList.add("level");
+		if (isActive) {
+			menuLevel0.classList.add("active");
+		}
 		menuContainer.appendChild(menuLevel0);
 
 		const menuItemJump = document.createElement("div");
@@ -1655,12 +1569,76 @@ const main = async () => {
 		statusOptionX.textContent = "Zurück";
 		statusButtonX.style.display = "inline-block";
 	};
+
+	/** @type {InputPlane} */
+	const InputPlaneMenuMain = {
+		name: "menuMain",
+		pressed: {
+			[Inputs.BUTTON_UP]: () => {
+				menuMainFocusIndex = Math.min(2, Math.max(0, menuMainFocusIndex - 1));
+				menuMain();
+				sfxPlayTap();
+				return {
+					name: "return",
+					released: {
+						[Inputs.BUTTON_UP]: returnToMenuPlane(InputPlaneMenuMain),
+					},
+				};
+			},
+			[Inputs.BUTTON_DOWN]: () => {
+				menuMainFocusIndex = Math.min(2, Math.max(0, menuMainFocusIndex + 1));
+				menuMain();
+				sfxPlayTap();
+				return {
+					name: "return",
+					released: {
+						[Inputs.BUTTON_DOWN]: returnToMenuPlane(InputPlaneMenuMain),
+					},
+				};
+			},
+			[Inputs.BUTTON_RIGHT]: () => {
+				if (menuMainFocusIndex === 0) {
+					menuMainJump();
+					sfxPlaySwipe();
+					return {
+						name: "return",
+						released: {
+							[Inputs.BUTTON_RIGHT]: returnToMenuPlane(InputPlaneMenuMainJump),
+						},
+					};
+				}
+			},
+			[Inputs.BUTTON_A]: () => {
+				menuMainJump();
+				sfxPlaySwipe();
+				return {
+					name: "return",
+					released: {
+						[Inputs.BUTTON_A]: returnToMenuPlane(InputPlaneMenuMainJump),
+					},
+				};
+			},
+			[Inputs.BUTTON_START]: () => {
+				sfxPlay("transition_down");
+				return {
+					name: "return",
+					released: { [Inputs.BUTTON_START]: returnToNeutral },
+				};
+			},
+		},
+	};
+	//#endregion
+
+	//#region Jump Menu
 	let menuMainJumpFocusIndex = 0;
-	const menuMainJump = () => {
-		menuMain();
+	const menuMainJump = (isActive = true) => {
+		menuMain(false);
 
 		const menuLevel1 = document.createElement("div");
-		menuLevel1.classList.add("level", "active");
+		menuLevel1.classList.add("level");
+		if (isActive) {
+			menuLevel1.classList.add("active");
+		}
 		menuContainer.appendChild(menuLevel1);
 
 		const menuItemJump = document.createElement("div");
@@ -1687,12 +1665,101 @@ const main = async () => {
 		menuItemArtifacts.textContent = "an Ende";
 		menuLevel1.appendChild(menuItemArtifacts);
 	};
+
+	/** @type {InputPlane} */
+	const InputPlaneMenuMainJump = {
+		name: "menuMainJump",
+		pressed: {
+			[Inputs.BUTTON_UP]: () => {
+				menuMainJumpFocusIndex = Math.min(
+					2,
+					Math.max(0, menuMainJumpFocusIndex - 1),
+				);
+				menuMainJump();
+				sfxPlayTap();
+				return {
+					name: "return",
+					released: {
+						[Inputs.BUTTON_UP]: returnToMenuPlane(InputPlaneMenuMainJump),
+					},
+				};
+			},
+			[Inputs.BUTTON_DOWN]: () => {
+				menuMainJumpFocusIndex = Math.min(
+					2,
+					Math.max(0, menuMainJumpFocusIndex + 1),
+				);
+				menuMainJump();
+				sfxPlayTap();
+				return {
+					name: "return",
+					released: {
+						[Inputs.BUTTON_DOWN]: returnToMenuPlane(InputPlaneMenuMainJump),
+					},
+				};
+			},
+			[Inputs.BUTTON_LEFT]: () => {
+				menuMain();
+				sfxPlayTap();
+				return {
+					name: "return",
+					released: {
+						[Inputs.BUTTON_LEFT]: returnToMenuPlane(InputPlaneMenuMain),
+					},
+				};
+			},
+			[Inputs.BUTTON_RIGHT]: () => {
+				if (menuMainJumpFocusIndex === 0) {
+					menuMainJumpDateFocusIndex = 0;
+					menuMainJumpDate();
+					sfxPlaySwipe();
+					return {
+						name: "return",
+						released: {
+							[Inputs.BUTTON_RIGHT]: returnToMenuPlane(
+								InputPlaneMenuMainJumpDateYear,
+							),
+						},
+					};
+				}
+			},
+			[Inputs.BUTTON_A]: () => {
+				menuMainJumpDateFocusIndex = 0;
+				menuMainJumpDate();
+				sfxPlaySwipe();
+				return {
+					name: "return",
+					released: {
+						[Inputs.BUTTON_A]: returnToMenuPlane(
+							InputPlaneMenuMainJumpDateYear,
+						),
+					},
+				};
+			},
+			[Inputs.BUTTON_START]: () => {
+				sfxPlay("transition_down");
+				return {
+					name: "return",
+					released: { [Inputs.BUTTON_START]: returnToNeutral },
+				};
+			},
+		},
+	};
+	//#endregion
+
+	//#region Jump Date Menu
 	let menuMainJumpDateFocusIndex = 0;
-	const menuMainJumpDate = () => {
-		menuMainJump();
+	let menuMainJumpDateYear = 1983;
+	let menuMainJumpDateMonth = 11;
+	let menuMainJumpDateDate = 25;
+	const menuMainJumpDate = (isActive = true) => {
+		menuMainJump(false);
 
 		const menuLevel2 = document.createElement("div");
-		menuLevel2.classList.add("level", "active");
+		menuLevel2.classList.add("level");
+		if (isActive) {
+			menuLevel2.classList.add("active");
+		}
 		menuContainer.appendChild(menuLevel2);
 
 		const menuItemYear = document.createElement("div");
@@ -1700,7 +1767,7 @@ const main = async () => {
 		if (menuMainJumpDateFocusIndex === 0) {
 			menuItemYear.classList.add("active");
 		}
-		menuItemYear.textContent = "1999";
+		menuItemYear.textContent = menuMainJumpDateYear.toString();
 		menuLevel2.appendChild(menuItemYear);
 
 		const menuLevel3 = document.createElement("div");
@@ -1712,7 +1779,7 @@ const main = async () => {
 		if (menuMainJumpDateFocusIndex === 1) {
 			menuItemMonth.classList.add("active");
 		}
-		menuItemMonth.textContent = "10 (Oktober)";
+		menuItemMonth.textContent = (menuMainJumpDateMonth + 1).toString();
 		menuLevel3.appendChild(menuItemMonth);
 
 		const menuLevel4 = document.createElement("div");
@@ -1724,23 +1791,278 @@ const main = async () => {
 		if (menuMainJumpDateFocusIndex === 2) {
 			menuItemDay.classList.add("active");
 		}
-		menuItemDay.textContent = "7";
+		menuItemDay.textContent = menuMainJumpDateDate.toString();
 		menuLevel4.appendChild(menuItemDay);
 	};
+
+	/** @type {InputPlane} */
+	const InputPlaneMenuMainJumpDateYear = {
+		name: "menuMainJumpDateYear",
+		pressed: {
+			[Inputs.BUTTON_LEFT]: () => {
+				menuMainJump();
+				sfxPlayTap();
+				return {
+					name: "return",
+					released: {
+						[Inputs.BUTTON_LEFT]: returnToMenuPlane(InputPlaneMenuMainJump),
+					},
+				};
+			},
+			[Inputs.BUTTON_RIGHT]: () => {
+				menuMainJumpDateFocusIndex = 1;
+				menuMainJumpDate();
+				sfxPlayTap();
+				return {
+					name: "return",
+					released: {
+						[Inputs.BUTTON_RIGHT]: returnToMenuPlane(
+							InputPlaneMenuMainJumpDateMonth,
+						),
+					},
+				};
+			},
+			[Inputs.BUTTON_UP]: () => {
+				menuMainJumpDateYear = Math.min(
+					2030,
+					Math.max(0, menuMainJumpDateYear - 1),
+				);
+				menuMainJumpDate();
+				sfxPlayTap();
+				return {
+					name: "return",
+					released: {
+						[Inputs.BUTTON_UP]: returnToMenuPlane(
+							InputPlaneMenuMainJumpDateYear,
+						),
+					},
+				};
+			},
+			[Inputs.BUTTON_DOWN]: () => {
+				menuMainJumpDateYear = Math.min(
+					2030,
+					Math.max(0, menuMainJumpDateYear + 1),
+				);
+				menuMainJumpDate();
+				sfxPlayTap();
+				return {
+					name: "return",
+					released: {
+						[Inputs.BUTTON_DOWN]: returnToMenuPlane(
+							InputPlaneMenuMainJumpDateYear,
+						),
+					},
+				};
+			},
+			[Inputs.BUTTON_A]: () => {
+				focusDate(
+					new Date(
+						`${menuMainJumpDateYear}-${menuMainJumpDateMonth + 1}-${menuMainJumpDateDate}`,
+					),
+				);
+				sfxPlay("transition_down");
+				return {
+					name: "return",
+					released: { [Inputs.BUTTON_A]: returnToNeutral },
+				};
+			},
+			[Inputs.BUTTON_START]: () => {
+				sfxPlay("transition_down");
+				return {
+					name: "return",
+					released: { [Inputs.BUTTON_START]: returnToNeutral },
+				};
+			},
+		},
+	};
+
+	/** @type {InputPlane} */
+	const InputPlaneMenuMainJumpDateMonth = {
+		name: "menuMainJumpDateMonth",
+		pressed: {
+			[Inputs.BUTTON_LEFT]: () => {
+				menuMainJumpDateFocusIndex = 0;
+				menuMainJumpDate();
+				sfxPlayTap();
+				return {
+					name: "return",
+					released: {
+						[Inputs.BUTTON_LEFT]: returnToMenuPlane(
+							InputPlaneMenuMainJumpDateYear,
+						),
+					},
+				};
+			},
+			[Inputs.BUTTON_RIGHT]: () => {
+				menuMainJumpDateFocusIndex = 2;
+				menuMainJumpDate();
+				sfxPlayTap();
+				return {
+					name: "return",
+					released: {
+						[Inputs.BUTTON_RIGHT]: returnToMenuPlane(
+							InputPlaneMenuMainJumpDateDay,
+						),
+					},
+				};
+			},
+			[Inputs.BUTTON_UP]: () => {
+				menuMainJumpDateMonth = Math.min(
+					11,
+					Math.max(0, menuMainJumpDateMonth - 1),
+				);
+				menuMainJumpDate();
+				sfxPlayTap();
+				return {
+					name: "return",
+					released: {
+						[Inputs.BUTTON_UP]: returnToMenuPlane(
+							InputPlaneMenuMainJumpDateMonth,
+						),
+					},
+				};
+			},
+			[Inputs.BUTTON_DOWN]: () => {
+				menuMainJumpDateMonth = Math.min(
+					11,
+					Math.max(0, menuMainJumpDateMonth + 1),
+				);
+				menuMainJumpDate();
+				sfxPlayTap();
+				return {
+					name: "return",
+					released: {
+						[Inputs.BUTTON_DOWN]: returnToMenuPlane(
+							InputPlaneMenuMainJumpDateMonth,
+						),
+					},
+				};
+			},
+			[Inputs.BUTTON_A]: () => {
+				focusDate(
+					new Date(
+						`${menuMainJumpDateYear}-${menuMainJumpDateMonth + 1}-${menuMainJumpDateDate}`,
+					),
+				);
+				sfxPlay("transition_down");
+				return {
+					name: "return",
+					released: { [Inputs.BUTTON_A]: returnToNeutral },
+				};
+			},
+			[Inputs.BUTTON_START]: () => {
+				sfxPlay("transition_down");
+				return {
+					name: "return",
+					released: { [Inputs.BUTTON_START]: returnToNeutral },
+				};
+			},
+		},
+	};
+	/** @type {InputPlane} */
+	const InputPlaneMenuMainJumpDateDay = {
+		name: "menuMainJumpDateDay",
+		pressed: {
+			[Inputs.BUTTON_LEFT]: () => {
+				menuMainJumpDateFocusIndex = 1;
+				menuMainJumpDate();
+				sfxPlayTap();
+				return {
+					name: "return",
+					released: {
+						[Inputs.BUTTON_LEFT]: returnToMenuPlane(
+							InputPlaneMenuMainJumpDateMonth,
+						),
+					},
+				};
+			},
+			[Inputs.BUTTON_RIGHT]: () => {
+				menuMainJumpDate();
+				sfxPlay("disabled");
+				return {
+					name: "return",
+					released: {
+						[Inputs.BUTTON_RIGHT]: returnToMenuPlane(
+							InputPlaneMenuMainJumpDateDay,
+						),
+					},
+				};
+			},
+			[Inputs.BUTTON_UP]: () => {
+				menuMainJumpDateDate = Math.min(
+					31,
+					Math.max(0, menuMainJumpDateDate - 1),
+				);
+				menuMainJumpDate();
+				sfxPlayTap();
+				return {
+					name: "return",
+					released: {
+						[Inputs.BUTTON_UP]: returnToMenuPlane(
+							InputPlaneMenuMainJumpDateDay,
+						),
+					},
+				};
+			},
+			[Inputs.BUTTON_DOWN]: () => {
+				menuMainJumpDateDate = Math.min(
+					31,
+					Math.max(0, menuMainJumpDateDate + 1),
+				);
+				menuMainJumpDate();
+				sfxPlayTap();
+				return {
+					name: "return",
+					released: {
+						[Inputs.BUTTON_DOWN]: returnToMenuPlane(
+							InputPlaneMenuMainJumpDateDay,
+						),
+					},
+				};
+			},
+			[Inputs.BUTTON_A]: () => {
+				focusDate(
+					new Date(
+						`${menuMainJumpDateYear}-${menuMainJumpDateMonth + 1}-${menuMainJumpDateDate}`,
+					),
+				);
+				sfxPlay("transition_down");
+				return {
+					name: "return",
+					released: { [Inputs.BUTTON_A]: returnToNeutral },
+				};
+			},
+			[Inputs.BUTTON_START]: () => {
+				sfxPlay("transition_down");
+				return {
+					name: "return",
+					released: { [Inputs.BUTTON_START]: returnToNeutral },
+				};
+			},
+		},
+	};
+	//#endregion
 
 	/** @type {number | undefined} */
 	let cssRuleHighlightActive;
 	const menuSwitchTimeline = () => {
 		updateStatusMenuSwitchTimeline();
+
 		const options = findNodeNeighbors().intersection;
-		const existingMenuItems = menuContainer.querySelectorAll(".item");
+		const existingMenuItems = menuContainer.querySelectorAll(".level");
 		existingMenuItems.forEach((_) => void menuContainer.removeChild(_));
+
 		const styleHighlight = `g.event, g.edge { &:not(.${idFocusedTimeline}) { opacity: 0.1; transition: ease-in-out opacity 0.6s; } }`;
 		if (cssRuleHighlightActive !== undefined) {
 			stylesheet.deleteRule(cssRuleHighlightActive);
 		}
 		cssRuleHighlightActive = stylesheet.cssRules.length;
 		stylesheet.insertRule(styleHighlight, stylesheet.cssRules.length);
+
+		const menuLevel0 = document.createElement("div");
+		menuLevel0.classList.add("level", "active");
+		menuContainer.appendChild(menuLevel0);
+
 		for (const timeline of options) {
 			const menuItem = document.createElement("div");
 			menuItem.classList.add("item", timeline);
@@ -1749,7 +2071,7 @@ const main = async () => {
 			}
 			menuItem.textContent =
 				lookupTimelineToMetadata.get(timeline)?.[3] ?? "???";
-			menuContainer.appendChild(menuItem);
+			menuLevel0.appendChild(menuItem);
 		}
 		statusOptions.classList.add("visible");
 		statusOptionA.textContent = "Umsteigen";
@@ -1770,6 +2092,7 @@ const main = async () => {
 		console.debug("Camera updated", camera);
 	};
 
+	//#region Frame Loop
 	/** @type {number | undefined} */
 	let previousTimestamp;
 	/** @type {number | undefined} */
@@ -1843,7 +2166,9 @@ const main = async () => {
 		window.requestAnimationFrame(present);
 		previousTimestamp = timestamp;
 	};
+	//#endregion
 
+	//#region Init
 	document.addEventListener("click", onClick);
 	document.addEventListener("keydown", onKeyDown);
 	document.addEventListener("keyup", onKeyUp);
@@ -1881,6 +2206,7 @@ const main = async () => {
 	});
 
 	console.info("Next-frame ignition requested.");
+	//#endregion
 };
 
 document.addEventListener("DOMContentLoaded", () => {
