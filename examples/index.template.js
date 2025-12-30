@@ -1,3 +1,5 @@
+const FEATURE_FLAG_CULL_SEGMENTS = false;
+
 const Inputs = {
 	BUTTON_A: 0,
 	BUTTON_B: 1,
@@ -1091,6 +1093,7 @@ const main = async () => {
 
 	let activeInputPlane = InputPlaneNeutral;
 
+	//#region Input Handling
 	/**
 	 * @typedef {Record<number, number> & { axes: Record<number, number>, delta: number }} InputFrame
 	 * @type {Array<InputFrame>}
@@ -1235,6 +1238,7 @@ const main = async () => {
 		}
 		return false;
 	};
+	//#endregion
 
 	/** @type {Array<string> | undefined} */
 	let timelineMediaIds;
@@ -1285,13 +1289,17 @@ const main = async () => {
 		dialogImage.style.display = "none";
 		dialogIFrame.style.display = "none";
 		dialogIFrame.style.height = "150px";
+		dialogIFrame.style.width = "";
 	};
-	const mediaShow = () => {
+	const mediaShow = (mediaIndex = 0) => {
 		if (timelineMediaIds === undefined || timelineMediaIds.length === 0) {
 			return false;
 		}
 
-		timelineMediaIdActive = 0;
+		timelineMediaIdActive = mediaIndex;
+		if (timelineMediaIdActive === undefined) {
+			return false;
+		}
 
 		mediaReset();
 
@@ -1302,6 +1310,11 @@ const main = async () => {
 		if (mediaPath.startsWith("/kiwix/")) {
 			dialogIFrame.src = mediaPath;
 			dialogIFrame.style.display = "block";
+		} else if (mediaPath.endsWith(".pdf")) {
+			dialogIFrame.src = `${mediaPath}#toolbar=0&navpanes=0`;
+			dialogIFrame.style.display = "block";
+			dialogIFrame.style.height = "600mm";
+			dialogIFrame.style.width = "215mm";
 		} else {
 			dialogImage.src = mediaPath;
 			dialogImage.style.display = "block";
@@ -1318,35 +1331,13 @@ const main = async () => {
 			return false;
 		}
 
-		timelineMediaIdActive =
+		return mediaShow(
 			timelineMediaIdActive === undefined
 				? 0
 				: timelineMediaIdActive === timelineMediaIds.length - 1
 					? undefined
-					: timelineMediaIdActive + 1;
-		if (timelineMediaIdActive === undefined) {
-			return false;
-		}
-
-		mediaReset();
-
-		const mediaPath =
-			lookupTimelineToMetadata.get(
-				timelineMediaIds[timelineMediaIdActive],
-			)?.[2] ?? "";
-		if (mediaPath.startsWith("/kiwix/")) {
-			dialogIFrame.src = mediaPath;
-			dialogIFrame.style.display = "block";
-		} else {
-			dialogImage.src = mediaPath;
-			dialogImage.style.display = "block";
-		}
-
-		intro.textContent = "Artefaktname:";
-
-		dialog.show();
-		mediaItemVisible = true;
-		return true;
+					: timelineMediaIdActive + 1,
+		);
 	};
 	const mediaBackward = () => {
 		if (timelineMediaIds === undefined || timelineMediaIds.length === 0) {
@@ -1357,31 +1348,9 @@ const main = async () => {
 			return false;
 		}
 
-		timelineMediaIdActive =
-			timelineMediaIdActive === 0 ? undefined : timelineMediaIdActive - 1;
-		if (timelineMediaIdActive === undefined) {
-			return false;
-		}
-
-		mediaReset();
-
-		const mediaPath =
-			lookupTimelineToMetadata.get(
-				timelineMediaIds[timelineMediaIdActive],
-			)?.[2] ?? "";
-		if (mediaPath.startsWith("/kiwix/")) {
-			dialogIFrame.src = mediaPath;
-			dialogIFrame.style.display = "block";
-		} else {
-			dialogImage.src = mediaPath;
-			dialogImage.style.display = "block";
-		}
-
-		intro.textContent = "Artefaktname:";
-
-		dialog.show();
-		mediaItemVisible = true;
-		return true;
+		return mediaShow(
+			timelineMediaIdActive === 0 ? undefined : timelineMediaIdActive - 1,
+		);
 	};
 
 	const mediaClose = () => {
@@ -1489,22 +1458,27 @@ const main = async () => {
 		}
 
 		// Determine timestamp from ID.
-		const timestampFocused = idFocused?.replace(/^Z/, "").replace(/-\d+$/, "");
-		if (timestampFocused !== undefined) {
-			const timestamp = new Date(timestampFocused).valueOf();
-			const focusedSegment = lookupSegmentBounds.findIndex(
-				([start, end]) => start < timestamp && timestamp < end,
-			);
-			for (
-				let segmentIndex = 0;
-				segmentIndex < lookupSegments.length;
-				++segmentIndex
-			) {
-				lookupSegments[segmentIndex].style.visibility =
-					focusedSegment - 1 <= segmentIndex &&
-					segmentIndex <= focusedSegment + 1
-						? ""
-						: "hidden";
+		// @ts-expect-error The flag is intended to be toggled in code manually.
+		if (FEATURE_FLAG_CULL_SEGMENTS === true) {
+			const timestampFocused = idFocused
+				?.replace(/^Z/, "")
+				.replace(/-\d+$/, "");
+			if (timestampFocused !== undefined) {
+				const timestamp = new Date(timestampFocused).valueOf();
+				const focusedSegment = lookupSegmentBounds.findIndex(
+					([start, end]) => start < timestamp && timestamp < end,
+				);
+				for (
+					let segmentIndex = 0;
+					segmentIndex < lookupSegments.length;
+					++segmentIndex
+				) {
+					lookupSegments[segmentIndex].style.visibility =
+						focusedSegment - 1 <= segmentIndex &&
+						segmentIndex <= focusedSegment + 1
+							? ""
+							: "hidden";
+				}
 			}
 		}
 
