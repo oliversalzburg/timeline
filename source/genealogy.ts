@@ -314,6 +314,13 @@ export class Graph<
 		);
 	}
 
+	linksOf(id = this.origin) {
+		return this.resolveRootIdentities(id)
+			?.flatMap((_) =>
+				_.relations?.filter((relation) => "linkedTo" in relation),
+			)
+			.filter((_) => _ !== undefined);
+	}
 	linksTo(id = this.origin) {
 		return (
 			this.identities.filter((_) =>
@@ -484,6 +491,7 @@ export class Graph<
 		options: Partial<{
 			allowChildHop: boolean;
 			allowEventHop: boolean;
+			allowLinkHop: boolean;
 			allowLocationHop: boolean;
 			allowMarriageHop: boolean;
 			allowParentHop: boolean;
@@ -600,6 +608,21 @@ export class Graph<
 							(spouse !== undefined ? distances.get(spouse.id) : undefined) ??
 							Number.POSITIVE_INFINITY;
 						const hopDistance = spouseDistance + 1;
+						if (hopDistance < currentBest) {
+							distances.set(identity.id, hopDistance);
+							currentBest = hopDistance;
+							++changes;
+						}
+					}
+				}
+
+				if (options.allowLinkHop === true) {
+					const links = this.linksOf(identity.id);
+					for (const link of links) {
+						const linkDistance =
+							(link !== undefined ? distances.get(link.linkedTo) : undefined) ??
+							Number.POSITIVE_INFINITY;
+						const hopDistance = linkDistance + 3;
 						if (hopDistance < currentBest) {
 							distances.set(identity.id, hopDistance);
 							currentBest = hopDistance;

@@ -116,6 +116,7 @@ const originIsLocation = isIdentityLocation(
 const hops = graphUniverse.calculateHopsFrom(originIdentityId, {
 	allowChildHop: !originIsLocation,
 	allowEventHop: originIsLocation,
+	allowLinkHop: true,
 	allowLocationHop: originIsLocation,
 	allowMarriageHop: false,
 	allowParentHop: !originIsLocation,

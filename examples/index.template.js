@@ -753,7 +753,7 @@ const main = async () => {
 		}
 		focusNode(idFocused);
 	};
-	const _navigateStart = () => {
+	const navigateStart = () => {
 		if (idFocusedTimeline === undefined) {
 			return;
 		}
@@ -764,6 +764,18 @@ const main = async () => {
 		}
 
 		focusNode(events[0], idFocusedTimeline);
+	};
+	const navigateEnd = () => {
+		if (idFocusedTimeline === undefined) {
+			return;
+		}
+
+		const events = lookupTimelineToEventIDs.get(idFocusedTimeline);
+		if (events === undefined) {
+			throw Error("unexpected lookup miss");
+		}
+
+		focusNode(events[events.length - 1], idFocusedTimeline);
 	};
 	const _navigateBack = () => {
 		history.back();
@@ -1698,17 +1710,34 @@ const main = async () => {
 				}
 			},
 			[Inputs.BUTTON_A]: () => {
-				menuMainJumpDateFocusIndex = 0;
-				menuMainJumpDate();
-				sfxPlaySwipe();
-				return {
-					name: "return",
-					released: {
-						[Inputs.BUTTON_A]: returnToMenuPlane(
-							InputPlaneMenuMainJumpDateYear,
-						),
-					},
-				};
+				switch (menuMainJumpFocusIndex) {
+					case 0:
+						menuMainJumpDateFocusIndex = 0;
+						menuMainJumpDate();
+						sfxPlaySwipe();
+						return {
+							name: "return",
+							released: {
+								[Inputs.BUTTON_A]: returnToMenuPlane(
+									InputPlaneMenuMainJumpDateYear,
+								),
+							},
+						};
+					case 1:
+						navigateStart();
+						sfxPlay("transition_down");
+						return {
+							name: "return",
+							released: { [Inputs.BUTTON_A]: returnToNeutral },
+						};
+					case 2:
+						navigateEnd();
+						sfxPlay("transition_down");
+						return {
+							name: "return",
+							released: { [Inputs.BUTTON_A]: returnToNeutral },
+						};
+				}
 			},
 			[Inputs.BUTTON_START]: () => {
 				sfxPlay("transition_down");
