@@ -40,9 +40,14 @@ if (typeof args.target !== "string") {
 }
 
 if (!copyOnly) {
-	if (!args.target.endsWith(".dot") && !args.target.endsWith(".dotus")) {
+	if (
+		!args.target.endsWith(".dot") &&
+		!args.target.endsWith(".dotus") &&
+		!args.target.endsWith(".gv") &&
+		!args.target.endsWith(".gvus")
+	) {
 		process.stdout.write(
-			`Invalid target document. File name is expected to end in '.dot'.\nProvided: ${args.target}\n`,
+			`Invalid target document. File name is expected to end in '.dot', '.dotus', '.gv', '.gvus'.\nProvided: ${args.target}\n`,
 		);
 		process.exit(1);
 	}
@@ -261,7 +266,7 @@ for (const [prefix, config] of Object.entries(PREFIXES)) {
 		`<TD FIXEDSIZE="TRUE" WIDTH="24" HEIGHT="24"><IMG SRC="${config.src}"/></TD>`,
 		`<TD>$1</TD>`,
 	];
-	const row = `<TR>${cells.join()}</TR>`;
+	const row = `<TR>${cells.join("")}</TR>`;
 	const table = `<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0" CELLSPACING="5">${row}</TABLE>`;
 	svgPrefixes = svgPrefixes.replaceAll(
 		new RegExp(`<${prefix}.*\u{00A0}(.+)>,`, "gu"),
@@ -273,5 +278,9 @@ if (copyOnly) {
 	process.exit(0);
 }
 
-const filename = contentName.replace(/\.dotus$/, ".idotus");
+const filename = contentName
+	.replace(/\.dot$/, ".idot")
+	.replace(/\.dotus$/, ".idotus")
+	.replace(/\.gv$/, ".igv")
+	.replace(/\.gvus$/, ".igvus");
 writeFileSync(join(contentLocation, filename), svgPrefixes);

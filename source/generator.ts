@@ -19,6 +19,7 @@ export const recurringYearly = (
 			date.getMilliseconds(),
 		).valueOf(),
 		{
+			generated: true,
 			title:
 				typeof title === "string"
 					? 0 < index + offset + skip

@@ -173,11 +173,19 @@ $(IMAGES) &: contrib/prepare-emoji.js
 		--assets=$(OUTPUT) \
 		--target=$<
 	@date +"%FT%T%z Generated embedded iDOTus fragment '$@'."
+%.igvus : %.gvus $(IMAGES)
+	@node --enable-source-maps examples/emojify.js \
+		--assets=$(OUTPUT) \
+		--target=$<
+	@date +"%FT%T%z Generated embedded iGVus fragment '$@'."
 
 %.svg : %.dot
 	@dot $(DOT_FLAGS) -Tsvg:cairo -o $@ $<
 	@date +"%FT%T%z Rendered DOT graph SVG (Cairo) image '$@'."
-%.isvgus : %.idotus
+#%.isvgus : %.idotus
+#	@dot $(DOT_FLAGS) -Tsvg -o $@ $<
+#	@date +"%FT%T%z Rendered DOT graph iSVGus image '$@'."
+%.isvgus : %.igvus
 	@dot $(DOT_FLAGS) -Tsvg -o $@ $<
 	@date +"%FT%T%z Rendered DOT graph iSVGus image '$@'."
 

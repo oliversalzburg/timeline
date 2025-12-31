@@ -8,12 +8,13 @@ export interface TimelineDocumentInternal extends TimelineDocument {
 export interface TimelineFlexibleInput
 	extends Record<
 		string,
-		string | number | Array<string | number | TimelineEntry>
+		string | number | TimelineEntry | Array<string | number | TimelineEntry>
 	> {}
 
 export interface TimelineEntry {
 	title: string;
 	notes?: string;
+	generated?: boolean;
 }
 export type TimelineRecord = [number, TimelineEntry];
 export interface TimelinePlain {

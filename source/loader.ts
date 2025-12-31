@@ -11,7 +11,10 @@ export const voidInvalidEntry = (entry?: unknown) => {
 	if (entry && "title" in (entry as Record<string, unknown>)) {
 		return entry as TimelineEntry;
 	}
-	return { title: "Entry is malformed. Please check input document." };
+	return {
+		title: "Entry is malformed. Please check input document.",
+		generated: true,
+	};
 };
 
 export const load = <T extends Timeline>(
@@ -43,7 +46,7 @@ export const load = <T extends Timeline>(
 			timelineEntries.push([
 				isUnixTimestamp ? timestampAsNumber : Date.parse(timestampRaw),
 				["number", "string"].includes(typeof entryElement)
-					? { title: entryElement.toString() }
+					? { title: entryElement.toString(), generated: false }
 					: voidInvalidEntry(entryElement),
 			]);
 		}

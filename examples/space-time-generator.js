@@ -207,7 +207,7 @@ const fill = (timeline) => {
 	if (death !== undefined) {
 		document.records.push([
 			death.valueOf(),
-			{ title: `☠️ ${nameAtDate(death)} verstorben` },
+			{ title: `☠️ ${nameAtDate(death)} verstorben`, generated: true },
 		]);
 	}
 	return sort(document);
@@ -235,10 +235,13 @@ const fillOthers = (timeline, graph) => {
 	/** @type {import("../lib/types.js").TimelineRecord} */
 	const conceptionRecord = [
 		Math.trunc(birth.valueOf() - 9 * MILLISECONDS.ONE_MONTH),
-		{ title: `Geschätzte Zeugung\n${name}` },
+		{ title: `Geschätzte Zeugung\n${name}`, generated: true },
 	];
 	/** @type {import("../lib/types.js").TimelineRecord} */
-	const birthRecord = [birth.valueOf(), { title: `👶 Geburt ${name}` }];
+	const birthRecord = [
+		birth.valueOf(),
+		{ title: `* Geburt ${name}`, generated: true },
+	];
 
 	timeline.records = sortRecords(
 		timeline.records.concat([conceptionRecord, birthRecord]),

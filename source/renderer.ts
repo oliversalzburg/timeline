@@ -4,7 +4,6 @@ import {
 	mustExist,
 } from "@oliversalzburg/js-utils/data/nil.js";
 import { hashCyrb53 } from "@oliversalzburg/js-utils/data/string.js";
-import { formatMilliseconds } from "@oliversalzburg/js-utils/format/milliseconds.js";
 import {
 	FONT_NAME,
 	FONT_SIZE_1000MM_V07_READ_PT,
@@ -91,9 +90,19 @@ export interface PlanEvent<
 		| TimelineReferenceRenderer
 		| TimelineAncestryRenderer,
 > {
-	timeline: TTimelines;
+	generated: boolean;
 	index?: number;
-	isTransferMarker: boolean;
+	timeline: TTimelines;
+	timestamp: number;
+	title: string;
+}
+export interface TransferMarker<
+	TTimelines extends TimelineReferenceRenderer | TimelineAncestryRenderer =
+		| TimelineReferenceRenderer
+		| TimelineAncestryRenderer,
+> {
+	omitted?: boolean;
+	timeline: TTimelines;
 	timestamp: number;
 	title: string;
 }
@@ -107,6 +116,8 @@ export const plan = <
 ) => {
 	const segments = new Array<{
 		events: Array<PlanEvent<TTimelines>>;
+		transferIn: Array<TransferMarker<TTimelines>>;
+		transferOut: Array<TransferMarker<TTimelines>>;
 		timelines: Array<TTimelines>;
 		timestamps: Array<number>;
 		weights: Map<TTimelines, number>;
@@ -144,11 +155,23 @@ export const plan = <
 	const globalHistory = eventHorizon.sort((a, b) => a - b);
 
 	let globalHistoryIndex = 0;
-	let segmentRanks = 0;
+	let segmentGraphRanks = 0;
 	let segmentEvents = new Array<{
-		timeline: TTimelines;
+		generated: boolean;
 		index?: number;
-		isTransferMarker: boolean;
+		timeline: TTimelines;
+		timestamp: number;
+		title: string;
+	}>();
+	let segmentTransferIn = new Array<{
+		index?: number;
+		timeline: TTimelines;
+		timestamp: number;
+		title: string;
+	}>();
+	let segmentTransferOut = new Array<{
+		index?: number;
+		timeline: TTimelines;
 		timestamp: number;
 		title: string;
 	}>();
@@ -165,11 +188,10 @@ export const plan = <
 			if (timestamp === undefined || hasTimelineEnded(timeline, timestamp)) {
 				continue;
 			}
-			segmentEvents.push({
+			segmentTransferOut.push({
 				timeline,
 				timestamp: timestamp + 1,
 				title: `TX-OUT-${timeline.meta.id}-${timestamp}`,
-				isTransferMarker: true,
 			});
 		}
 		const timelines = [...segmentTimelines];
@@ -185,6 +207,8 @@ export const plan = <
 					),
 				),
 			].sort((a, b) => a - b),
+			transferIn: segmentTransferIn,
+			transferOut: segmentTransferOut,
 			weights: new Map(
 				timelines.map((_) => [
 					_,
@@ -196,8 +220,10 @@ export const plan = <
 			),
 		});
 
-		segmentRanks = 0;
+		segmentGraphRanks = 0;
 		segmentEvents = [];
+		segmentTransferIn = [];
+		segmentTransferOut = [];
 		for (const timeline of segmentTimelines) {
 			if (hasTimelineEnded(timeline, timestamp)) {
 				segmentTimelines.delete(timeline);
@@ -208,11 +234,10 @@ export const plan = <
 	const startSegment = () => {
 		const timestamp = globalHistory[globalHistoryIndex];
 		for (const timeline of segmentTimelines) {
-			segmentEvents.push({
+			segmentTransferIn.push({
 				timeline,
 				timestamp: timestamp - 1,
 				title: `TX-IN-${timeline.meta.id}-${timestamp}`,
-				isTransferMarker: true,
 			});
 		}
 	};
@@ -258,18 +283,18 @@ export const plan = <
 				timeline.records[localHistoryIndex][0] === timestamp
 			) {
 				segmentEvents.push({
-					timeline,
+					generated: timeline.records[localHistoryIndex][1].generated ?? false,
 					index: localHistoryIndex,
-					title: timeline.records[localHistoryIndex][1].title,
+					timeline,
 					timestamp: timeline.records[localHistoryIndex][0],
-					isTransferMarker: false,
+					title: timeline.records[localHistoryIndex][1].title,
 				});
-				++segmentRanks;
+				++segmentGraphRanks;
 				++localHistoryIndex;
 			}
 			localHistoryIndexes[timelineIndex] = localHistoryIndex;
 		}
-		if ((options.segment ?? Number.POSITIVE_INFINITY) < segmentRanks) {
+		if ((options.segment ?? Number.POSITIVE_INFINITY) < segmentGraphRanks) {
 			endSegment();
 			startSegment();
 		}
@@ -380,9 +405,12 @@ export const render = <
 	) => {
 		const style = isTransferMarker ? STYLE_TRANSFER_MARKER : getStyle(leader);
 
+		const contributorClasses = [
+			...contributors.values().map((_) => classes.get(_.meta.id)),
+		];
 		const classList = isTransferMarker
-			? ["tx", ...contributors.values().map((_) => classes.get(_.meta.id))]
-			: ["event", ...contributors.values().map((_) => classes.get(_.meta.id))];
+			? ["tx", ...contributorClasses]
+			: ["event", ...contributorClasses];
 		const color = isTransferMarker ? "transparent" : getStyle(leader).pencolor;
 		const fillcolors = isTransferMarker
 			? [[255, 0, 0, 255] as RGBATuple]
@@ -445,6 +473,9 @@ export const render = <
 		const nodeProperties: Partial<NodeProperties> = {
 			class: classList.join(" "),
 			color: rgbaToHexString(color),
+			comment: isTransferMarker
+				? `Transfermarker for ${contributorClasses.join(",")}`
+				: undefined,
 			fillcolor: style.style.includes("filled")
 				? fillcolors.length === 1
 					? rgbaToHexString(fillcolors[0])
@@ -470,7 +501,7 @@ export const render = <
 	const dotGraph = (d = dot()) => {
 		const fontsize = FONT_SIZE_1000MM_V07_READ_PT;
 		d.raw("digraph {");
-		d.graph({
+		d.graphSpec({
 			bgcolor: "transparent",
 			comment: " ",
 			fontname:
@@ -479,12 +510,16 @@ export const render = <
 			rankdir: "TB",
 			ranksep: 0.5,
 		});
-		d.raw(
-			`node [fontname="${options.rendererAnonymization === "enabled" ? "Dummy Text2" : FONT_NAME}"; fontsize="${fontsize}";]`,
-		);
-		d.raw(
-			`edge [fontname="${options.rendererAnonymization === "enabled" ? "Dummy Text2" : FONT_NAME}"; fontsize="${fontsize}";]`,
-		);
+		d.nodeSpec({
+			fontname:
+				options.rendererAnonymization === "enabled" ? "Dummy Text2" : FONT_NAME,
+			fontsize,
+		});
+		d.linkSpec({
+			fontname:
+				options.rendererAnonymization === "enabled" ? "Dummy Text2" : FONT_NAME,
+			fontsize,
+		});
 		return d;
 	};
 
@@ -509,133 +544,333 @@ export const render = <
 		d.clear();
 		d = dotGraph(d);
 
-		/**
+		//#region Transfer Marker Section
+		if (0 < segment.transferIn.length) {
+			d.raw("{");
+			d.graphSpec({ comment: "Transfer In Section", rank: "same" });
+
+			const markers = segment.transferIn;
+			const nodeProperties = computeNodeProperties(
+				true,
+				markers[0].timestamp,
+				markers[0].title,
+				new Set([markers[0].timeline]),
+			);
+			d.node(markers[0].title, nodeProperties);
+			let previous: string | undefined;
+			let markersDrawn = 0;
+			for (
+				let linkedEventIndex = 0;
+				linkedEventIndex < markers.length;
+				++linkedEventIndex
+			) {
+				const style = getStyle(markers[linkedEventIndex].timeline);
+				if (!style.link) {
+					markers[linkedEventIndex].omitted = true;
+					continue;
+				}
+				const nodeProperties = computeNodeProperties(
+					true,
+					markers[linkedEventIndex].timestamp,
+					markers[linkedEventIndex].title,
+					new Set([markers[linkedEventIndex].timeline]),
+				);
+				d.node(markers[linkedEventIndex].title, nodeProperties);
+				++markersDrawn;
+				if (previous !== undefined) {
+					d.link(previous, markers[linkedEventIndex].title, {
+						comment: "Marker Link",
+						style: options.debug ? "dashed" : "invis",
+						weight: 1_000_000,
+					});
+				}
+				previous = markers[linkedEventIndex].title;
+			}
+			if (markersDrawn === 0) {
+				const nodeProperties = computeNodeProperties(
+					true,
+					markers[0].timestamp,
+					markers[0].title,
+					new Set([markers[0].timeline]),
+				);
+				d.node(markers[0].title, nodeProperties);
+				markers[0].omitted = false;
+			}
+			d.raw("}");
+		}
+		if (0 < segment.transferOut.length) {
+			d.raw("{");
+			d.graphSpec({ comment: "Transfer Out Section", rank: "same" });
+
+			const markers = segment.transferOut;
+			const nodeProperties = computeNodeProperties(
+				true,
+				markers[0].timestamp,
+				markers[0].title,
+				new Set([markers[0].timeline]),
+			);
+			d.node(markers[0].title, nodeProperties);
+			let previous: string | undefined;
+			let markersDrawn = 0;
+			for (
+				let linkedEventIndex = 1;
+				linkedEventIndex < markers.length;
+				++linkedEventIndex
+			) {
+				const style = getStyle(markers[linkedEventIndex].timeline);
+				if (!style.link) {
+					markers[linkedEventIndex].omitted = true;
+					continue;
+				}
+				const nodeProperties = computeNodeProperties(
+					true,
+					markers[linkedEventIndex].timestamp,
+					markers[linkedEventIndex].title,
+					new Set([markers[linkedEventIndex].timeline]),
+				);
+				d.node(markers[linkedEventIndex].title, nodeProperties);
+				++markersDrawn;
+				if (previous !== undefined) {
+					d.link(previous, markers[linkedEventIndex].title, {
+						comment: "Marker Section Link",
+						style: options.debug ? "dashed" : "invis",
+						weight: 1_000_000,
+					});
+				}
+				previous = markers[linkedEventIndex].title;
+			}
+			if (markersDrawn === 0) {
+				const nodeProperties = computeNodeProperties(
+					true,
+					markers[0].timestamp,
+					markers[0].title,
+					new Set([markers[0].timeline]),
+				);
+				d.node(markers[0].title, nodeProperties);
+				markers[0].omitted = false;
+			}
+			d.raw("}");
+		}
+		//#endregion
+
+		//#region Render Events
+		/*
 		 * We iterate over each unique timestamp that exists globally.
 		 * For each unique timestamp, we want to look at all global events that
 		 * exist at this timestamp.
 		 */
+		let previousEvents: Array<PlanEvent<TTimelines>> | undefined;
 		for (const timestamp of timestampsSegment) {
 			eventIndex = 0;
 
-			// We now iterate over all global events at the current timestamp.
-			const events = segment.events.filter((_) => _.timestamp === timestamp);
-
-			const eventTitles = new Map<string, PlanEvent<TTimelines>>(
-				events.map((event) => [event.title, event]),
+			/*
+			 * We now iterate over all global events at the current timestamp.
+			 * These events should appear next to each other in the graph.
+			 */
+			const eventsAtTimestamp = segment.events.filter(
+				(_) => _.timestamp === timestamp,
 			);
 
-			for (const title of new Set(eventTitles.keys())) {
-				// The map only contains a single entry for each title.
-				// If that entry is a transfer marker, we assume that it also
-				// has no contributors.
-				const maybeTransferMarker = mustExist(eventTitles.get(title));
+			const eventTitles = new Map<string, PlanEvent<TTimelines>>(
+				eventsAtTimestamp.map((event) => [event.title, event]),
+			);
 
+			/*
+			 * Unique titles are unique events.
+			 * We want to render a single node for each of these events.
+			 * The events might appear in multiple timelines.
+			 */
+			for (const title of new Set(eventTitles.keys())) {
 				// Remember which timelines contribute to the event.
 				const contributors = new Set<TTimelines>();
 				// Remember the contributor with the highest rank.
 				let leader: TTimelines | undefined;
+				const transfersIn = new Array<
+					[TransferMarker<TTimelines>, PlanEvent<TTimelines>]
+				>();
+				const transfersOut = new Array<
+					[TransferMarker<TTimelines>, PlanEvent<TTimelines>]
+				>();
 
-				if (!maybeTransferMarker.isTransferMarker) {
-					// We now further iterate over all global events at this timestamp which share the same title.
-					for (const event of events) {
-						if (event.title !== title) {
-							continue;
-						}
-
-						contributors.add(event.timeline);
-
-						if (leader === undefined) {
-							leader = event.timeline;
-							continue;
-						}
-
-						if (
-							mustExist(ranks.get(mustExist(leader.meta.id, "no leader"))) <=
-							mustExist(
-								ranks.get(mustExist(event.timeline.meta.id, "no timeline")),
-							)
-						) {
-							leader = event.timeline;
-						}
+				/*
+				 * Now we go through all events on this timestamp again,
+				 * to find the timelines which have this event.
+				 */
+				for (const event of eventsAtTimestamp) {
+					if (event.title !== title) {
+						continue;
 					}
-				} else {
-					leader = maybeTransferMarker.timeline;
-					contributors.add(maybeTransferMarker.timeline);
-				}
 
-				const style = getStyle(maybeTransferMarker.timeline);
-				if (!maybeTransferMarker.isTransferMarker || style.link) {
-					const nodeProperties = computeNodeProperties(
-						maybeTransferMarker.isTransferMarker,
-						timestamp,
-						title,
-						contributors,
-						leader,
+					contributors.add(event.timeline);
+
+					const timelineSegmentEvents = segment.events.filter(
+						(_) => _.timeline === event.timeline,
 					);
-					d.node(title, nodeProperties);
+
+					const transferIn = segment.transferIn.find(
+						(_) => _.timeline === event.timeline,
+					);
 					if (
-						!maybeTransferMarker.isTransferMarker &&
-						nodeProperties.id !== undefined
+						transferIn &&
+						timelineSegmentEvents[0].timestamp === event.timestamp
 					) {
-						for (const _ of contributors) {
-							idMesh.get(_)?.push(nodeProperties.id);
+						transfersIn.push([transferIn, event]);
+					}
+					const transferOut = segment.transferOut.find(
+						(_) => _.timeline === event.timeline,
+					);
+					if (
+						transferOut &&
+						timelineSegmentEvents[timelineSegmentEvents.length - 1]
+							.timestamp === event.timestamp
+					) {
+						transfersOut.push([transferOut, event]);
+					}
+
+					if (leader === undefined) {
+						leader = event.timeline;
+						continue;
+					}
+
+					if (
+						mustExist(ranks.get(mustExist(leader.meta.id, "no leader"))) <=
+						mustExist(
+							ranks.get(mustExist(event.timeline.meta.id, "no timeline")),
+						)
+					) {
+						leader = event.timeline;
+					}
+				}
+
+				const nodeProperties = computeNodeProperties(
+					false,
+					timestamp,
+					title,
+					contributors,
+					leader,
+				);
+				d.node(title, nodeProperties);
+
+				if (0 < transfersIn.length) {
+					const availableTransferMarker = segment.transferIn.filter(
+						(_) => _.omitted !== true,
+					);
+					for (const [transferMarker, event] of transfersIn) {
+						const timelineStyle = getStyle(event.timeline);
+						// If a timeline is generally not linked, it still needs
+						// an invisible "transfer in" link. Without this link,
+						// the events would appear above the transfer marker section
+						// in the resulting graph.
+						if (event.generated || timelineStyle.link === false) {
+							if (availableTransferMarker.length === 0) {
+								throw new Error("no transfer markers available");
+							}
+							// We don't want to use the actual transfer marker for the
+							// timeline, because this would require us to have hundreds
+							// of transfer markers, for invisible edges.
+							// Instead, we just order below the transfer marker in the middle.
+							const substituteMarker =
+								availableTransferMarker[
+									Math.trunc(availableTransferMarker.length / 2)
+								];
+							d.link(substituteMarker.title, title, {
+								class: classes.get(event.timeline.meta.id),
+								comment: "Link from Transfer In (Order Only, Substitute)",
+								skipDraw: !isTimestampInRange(timestamp),
+								style: "invis",
+								tailport: "s",
+							});
+							continue;
 						}
+						d.link(transferMarker.title, title, {
+							class: classes.get(event.timeline.meta.id),
+							color: rgbaToHexString(timelineStyle.pencolor),
+							comment: "Link from Transfer In",
+							penwidth: timelineStyle.penwidth,
+							skipDraw: !isTimestampInRange(timestamp),
+							style: timelineStyle.link || undefined,
+							tailport: "s",
+						});
+					}
+				}
+
+				if (0 < transfersOut.length) {
+					const availableTransferMarker = segment.transferOut.filter(
+						(_) => _.omitted !== true,
+					);
+					for (const [transferMarker, event] of transfersOut) {
+						const timelineStyle = getStyle(event.timeline);
+						if (event.generated || timelineStyle.link === false) {
+							if (availableTransferMarker.length === 0) {
+								throw new Error("no transfer markers available");
+							}
+							const substituteMarker =
+								availableTransferMarker[
+									Math.trunc(availableTransferMarker.length / 2)
+								];
+							d.link(title, substituteMarker.title, {
+								class: classes.get(event.timeline.meta.id),
+								comment: "Link to Transfer Out (Order Only, Substitute)",
+								headport: "n",
+								skipDraw: !isTimestampInRange(timestamp),
+								style: "invis",
+							});
+							continue;
+						}
+						d.link(title, transferMarker.title, {
+							class: classes.get(event.timeline.meta.id),
+							color: rgbaToHexString(timelineStyle.pencolor),
+							comment: "Link to Transfer Out",
+							headport: "n",
+							arrowhead: "none",
+							penwidth: timelineStyle.penwidth,
+							skipDraw: !isTimestampInRange(timestamp),
+							style: timelineStyle.link || undefined,
+						});
+					}
+				}
+
+				if (previousEvents !== undefined) {
+					for (const previousEvent of previousEvents) {
+						d.link(previousEvent.title, title, {
+							comment: "All Event Link",
+							skipDraw: !isTimestampInRange(timestamp),
+							style: "invis",
+						});
+					}
+				}
+
+				if (nodeProperties.id !== undefined) {
+					for (const _ of contributors) {
+						idMesh.get(_)?.push(nodeProperties.id);
 					}
 				}
 			}
 
-			const isTransferMarkerSection =
-				events[0].isTransferMarker ||
-				events[events.length - 1].isTransferMarker;
-
-			if (isTransferMarkerSection) {
-				d.raw("{");
-				d.raw('rank="same"');
-				const linkedEvents = events.filter((_) => getStyle(_.timeline).link);
-				for (
-					let linkedEventIndex = 1;
-					linkedEventIndex < linkedEvents.length;
-					++linkedEventIndex
-				) {
-					d.link(
-						linkedEvents[linkedEventIndex - 1].title,
-						linkedEvents[linkedEventIndex].title,
-						{
-							style: options.debug ? "dashed" : "invis",
-							weight: 1_000_000,
-							label: "",
-						},
-					);
-				}
-				d.raw("}");
-			}
+			previousEvents = eventsAtTimestamp;
 		}
+		//#endregion
 
+		//#region Link Timeline Events
 		// Link items in their individual timelines together.
 		for (const timeline of timelinesSegment) {
 			const style = getStyle(timeline);
 
-			if (!style.link) {
+			if (style.link === false) {
 				continue;
 			}
 
 			// The timestamp we looked at during the last iteration.
 			let previousTimestamp: number | undefined;
 			// The entries at the previous timestamp.
-			let previousEntries = new Array<string>();
+			let previousEntries = new Array<PlanEvent<TTimelines>>();
 			// How many milliseconds passed since the previous timestamp.
 			let timePassed = 0;
 
 			const eventsInSegment = segment.events.filter(
 				(_) => _.timeline.meta.id === timeline.meta.id,
 			);
-			const eventTimesInSegment = eventsInSegment.map((_) =>
-				_.index !== undefined
-					? timeline.records[_.index][0]
-					: mustExist(_.timestamp),
-			);
-
-			let previousWasTransferMarker = true;
+			const eventTimesInSegment = eventsInSegment.map((_) => _.timestamp);
 
 			for (const timestamp of eventTimesInSegment) {
 				if (previousTimestamp && timestamp <= previousTimestamp) {
@@ -647,7 +882,7 @@ export const render = <
 					: 0;
 
 				// We need to remember these for the next timestamp iteration.
-				const processedTitles = new Array<string>();
+				const linkableEvents = new Array<PlanEvent<TTimelines>>();
 
 				const eventsAtTimestamp = eventsInSegment.filter(
 					(_) =>
@@ -657,142 +892,32 @@ export const render = <
 				);
 
 				for (const event of eventsAtTimestamp) {
-					const timelineEvent =
-						event.index !== undefined
-							? event.timeline.records[event.index][1].title
-							: event.title;
 					const _timelineWeight = segment.weights.get(event.timeline);
 
-					processedTitles.push(timelineEvent);
-					if (0 === previousEntries.length) {
-						continue;
-					}
+					linkableEvents.push(event);
 
 					for (const previousEntry of previousEntries) {
-						d.link(previousEntry, timelineEvent, {
-							arrowhead: event.isTransferMarker ? "none" : undefined,
+						if (previousEntry.generated && event.generated) {
+							continue;
+						}
+
+						d.link(previousEntry.title, event.title, {
 							class: classes.get(event.timeline.meta.id),
 							color: rgbaToHexString(style.pencolor),
-							headport: event.isTransferMarker ? "n" : undefined,
-							label: "",
+							comment: "Intra-Timeline Link",
 							penwidth: style.penwidth,
 							skipDraw: !isTimestampInRange(timestamp),
 							style: style.link,
-							tailport: previousWasTransferMarker ? "s" : undefined,
-							tooltip: !event.isTransferMarker
-								? `${renderMilliseconds(timePassed)} vergangen`
-								: undefined,
+							tooltip: `${renderMilliseconds(timePassed)} vergangen`,
 						});
 					}
 				}
 
 				previousTimestamp = timestamp;
-				previousEntries = processedTitles;
-				previousWasTransferMarker = eventsAtTimestamp.some(
-					(_) => _.isTransferMarker,
-				);
+				previousEntries = linkableEvents;
 			}
 		}
-
-		// Link up all entries in a single time chain.
-		let previousTimestamp: number | undefined;
-		let previousTimestampEntries = new Array<PlanEvent<TTimelines>>();
-		let timePassed = 0;
-		for (const timestamp of timestampsSegment) {
-			timePassed = previousTimestamp
-				? Math.max(1, timestamp - previousTimestamp)
-				: 0;
-
-			// We need to remember these for the next timestamp iteration.
-			const processedEntries = new Array<PlanEvent<TTimelines>>();
-
-			// We now iterate over all global events at the current timestamp.
-			const events = segment.events
-				.filter((_) => _.timestamp === timestamp)
-				.sort((a, b) => a.title.localeCompare(b.title));
-
-			const isTimestampTransfer = events.some(
-				(event) => event.isTransferMarker,
-			);
-			if (isTimestampTransfer) {
-				const bestTransferMarker = events.reduce(
-					(previous, current) => {
-						const style = getStyle(current.timeline);
-						const weight = segment.weights.get(current.timeline);
-
-						if (style.link && weight !== undefined && previous.score < weight) {
-							previous.timeline = current.timeline;
-							previous.score = weight;
-							previous.event = current;
-						}
-						return previous;
-					},
-					{
-						score: Number.NEGATIVE_INFINITY,
-						timeline: timelines[0],
-						event: events[0],
-					},
-				);
-				if (!Number.isFinite(bestTransferMarker.score)) {
-					continue;
-				}
-
-				processedEntries.push(bestTransferMarker.event);
-				if (bestTransferMarker.event.title.startsWith("TX-OUT")) {
-					if (0 === previousTimestampEntries.length) {
-						continue;
-					}
-
-					for (const previousEntry of previousTimestampEntries) {
-						// Draw rank-forcing link between merged timeline entries.
-						// This forces all entries into a globally linear order.
-						d.link(previousEntry.title, bestTransferMarker.event.title, {
-							label: "",
-							skipDraw: !isTimestampInRange(timestamp),
-							style: options.debug ? "dashed" : "invis",
-							tooltip:
-								options.debug && !bestTransferMarker.event.isTransferMarker
-									? `${formatMilliseconds(timePassed)} passed`
-									: undefined,
-						});
-					}
-				}
-				previousTimestamp = timestamp;
-				previousTimestampEntries = processedEntries;
-				continue;
-			}
-
-			for (const event of events) {
-				if (processedEntries.find((_) => _.title === event.title)) {
-					// Events in multiple timelines share time and title.
-					// By skipping here, we automatically end up with only a
-					// single node with that identity.
-					continue;
-				}
-
-				processedEntries.push(event);
-
-				if (0 === previousTimestampEntries.length) {
-					continue;
-				}
-
-				for (const previousEntry of previousTimestampEntries) {
-					// Draw rank-forcing link between merged timeline entries.
-					// This forces all entries into a globally linear order.
-					d.link(previousEntry.title, event.title, {
-						skipDraw: !isTimestampInRange(timestamp),
-						style: options.debug ? "dashed" : "invis",
-						tooltip:
-							options.debug && !event.isTransferMarker
-								? `${formatMilliseconds(timePassed)} passed`
-								: undefined,
-					});
-				}
-			}
-
-			previousTimestamp = timestamp;
-			previousTimestampEntries = processedEntries;
-		}
+		//#endregion
 
 		d.raw("}");
 		graphSegments.push({

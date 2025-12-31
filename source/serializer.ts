@@ -4,6 +4,7 @@ import type {
 	MetaSectionReferenceRenderer,
 	Timeline,
 	TimelineDocumentInternal,
+	TimelineEntry,
 	TimelineFlexibleInput,
 	TimelinePlain,
 } from "./types.js";
@@ -13,6 +14,11 @@ export const serialize = (
 	metadata: MetaSectionAncestryRenderer | MetaSectionReferenceRenderer,
 	serializeId = false,
 ) => {
+	const serializeEntry = (entry: TimelineEntry) => {
+		return entry.generated
+			? { title: entry.title, generated: true }
+			: entry.title;
+	};
 	const document: TimelineDocumentInternal = {
 		...("meta" in timeline && typeof timeline.meta === "object"
 			? timeline.meta
@@ -24,9 +30,9 @@ export const serialize = (
 			serialized[dateString] =
 				dateString in serialized
 					? Array.isArray(serialized[dateString])
-						? [...serialized[dateString], entry.title]
-						: [serialized[dateString], entry.title]
-					: entry.title;
+						? [...serialized[dateString], serializeEntry(entry)]
+						: [serialized[dateString], serializeEntry(entry)]
+					: serializeEntry(entry);
 			return serialized;
 		}, {} as TimelineFlexibleInput),
 	};

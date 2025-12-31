@@ -15,7 +15,13 @@ import {
 	rgbaFromString,
 	rgbaToString,
 } from "./palette.js";
-import type { Identity, RenderMode, RGBATuple, Timeline } from "./types.js";
+import type {
+	MetaSectionAncestryRenderer,
+	MetaSectionReferenceRenderer,
+	RenderMode,
+	RGBATuple,
+	Timeline,
+} from "./types.js";
 
 export interface Style {
 	fillcolor: RGBATuple;
@@ -49,12 +55,7 @@ export const STYLE_TRANSFER_MARKER: Style = {
 
 export class Styling<
 	TTimeline extends Timeline & {
-		meta: {
-			color?: string;
-			generated?: boolean;
-			identity?: Identity;
-			rank?: number;
-		};
+		meta: MetaSectionAncestryRenderer | MetaSectionReferenceRenderer;
 	},
 > {
 	constructor(
@@ -127,14 +128,19 @@ export class Styling<
 		const styleSheet = new Map<string, Style>();
 
 		const originTimeline = mustExist(
-			this.timelines.find((_) => _.meta.identity?.id === identityGraph.origin),
+			this.timelines.find(
+				(_) =>
+					"identity" in _.meta && _.meta.identity?.id === identityGraph.origin,
+			),
 			`unable to find timeline for origin identity '${identityGraph.origin}'`,
 		);
 		const timelinesAntecedents =
 			identityGraph.antecedents()?.map((_) =>
 				mustExist(
 					this.timelines.find(
-						(timeline) => timeline.meta.identity?.id === _.id,
+						(timeline) =>
+							"identity" in timeline.meta &&
+							timeline.meta.identity?.id === _.id,
 					),
 					`identity graph references identity without registered timeline '${_.id}'`,
 				),
@@ -143,7 +149,9 @@ export class Styling<
 			identityGraph.descendants()?.map((_) =>
 				mustExist(
 					this.timelines.find(
-						(timeline) => timeline.meta.identity?.id === _.id,
+						(timeline) =>
+							"identity" in timeline.meta &&
+							timeline.meta.identity?.id === _.id,
 					),
 					`identity graph references identity without registered timeline '${_.id}'`,
 				),
@@ -152,7 +160,9 @@ export class Styling<
 			identityGraph.bloodline()?.map((_) =>
 				mustExist(
 					this.timelines.find(
-						(timeline) => timeline.meta.identity?.id === _.id,
+						(timeline) =>
+							"identity" in timeline.meta &&
+							timeline.meta.identity?.id === _.id,
 					),
 					`identity graph references identity without registered timeline '${_.id}'`,
 				),
@@ -161,7 +171,9 @@ export class Styling<
 			identityGraph.siblings()?.map((_) =>
 				mustExist(
 					this.timelines.find(
-						(timeline) => timeline.meta.identity?.id === _.id,
+						(timeline) =>
+							"identity" in timeline.meta &&
+							timeline.meta.identity?.id === _.id,
 					),
 					`identity graph references identity without registered timeline '${_.id}'`,
 				),
@@ -208,13 +220,16 @@ export class Styling<
 			});
 		}
 		for (const timeline of timelinesAntecedents) {
-			const penwidth = Math.max(
-				1,
-				5 -
-					(mustExist(hops.get(mustExist(timeline.meta.identity).id)) /
-						maxHopsForStyling) *
-						5,
-			);
+			const penwidth =
+				"identity" in timeline.meta
+					? Math.max(
+							1,
+							5 -
+								(mustExist(hops.get(mustExist(timeline.meta.identity).id)) /
+									maxHopsForStyling) *
+									5,
+						)
+					: 0;
 			styleSheet.set(timeline.meta.id, {
 				fillcolor: fillColorForPen(
 					mustExist(palette.get(timeline)),
@@ -237,10 +252,13 @@ export class Styling<
 				fontcolor: matchFontColorTo(mustExist(palette.get(timeline))),
 				link: "solid",
 				pencolor: mustExist(palette.get(timeline)),
-				penwidth: Math.max(
-					1,
-					5 - mustExist(hops.get(mustExist(timeline.meta.identity).id)),
-				),
+				penwidth:
+					"identity" in timeline.meta
+						? Math.max(
+								1,
+								5 - mustExist(hops.get(mustExist(timeline.meta.identity).id)),
+							)
+						: 0,
 				shape: "box",
 				style: ["filled", "rounded"],
 			});
@@ -273,9 +291,10 @@ export class Styling<
 			}
 
 			// Completely unrelated identities are expected to have infinite hops.
-			const identityHops = mustExist(
-				hops.get(mustExist(timeline.meta.identity).id),
-			);
+			const identityHops =
+				"identity" in timeline.meta
+					? mustExist(hops.get(mustExist(timeline.meta.identity).id))
+					: Number.POSITIVE_INFINITY;
 			// A finite amount of hops indicates a link beyond family relations.
 			if (Number.isFinite(identityHops)) {
 				// These identities are treated like cousins.

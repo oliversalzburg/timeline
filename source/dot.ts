@@ -54,6 +54,7 @@ export type PortPos =
 	| "c"
 	| "_";
 export type RankDir = "LR" | "RL" | "TB" | "BT";
+export type RankType = "same" | "min" | "source" | "max" | "sink";
 export type Shape =
 	| "assembly"
 	| "box"
@@ -157,6 +158,7 @@ export interface GraphProperties {
 	fontname: string;
 	fontsize: number;
 	label: string;
+	rank: RankType;
 	rankdir: RankDir;
 	ranksep: number;
 	skipDraw: boolean;
@@ -165,6 +167,7 @@ export interface GraphProperties {
 export interface NodeProperties {
 	class: string;
 	color: Color;
+	comment: string;
 	fillcolor: Color;
 	fixedsize: boolean | string;
 	fontcolor: Color;
@@ -188,19 +191,36 @@ export interface NodeProperties {
 
 const makePropertyString = (
 	properties: Record<string, boolean | number | string | undefined>,
+	terminateLastAttribute = false,
 ) => {
-	const propertyString = Object.entries(properties)
+	const entries = Object.entries(properties);
+	const propertyString = entries
 		.filter(([key, _]) => key !== "skipDraw" && _ !== undefined)
-		.map(([key, _]) =>
-			key === "label"
-				? _ === ""
-					? 'label=""'
-					: `${key}=<${_}>`
-				: `${key}="${_}"`,
-		)
+		.map(([key, _]) => {
+			if (key === "label") {
+				if (_ === "") {
+					return 'label=""';
+				}
+				if (_ === " ") {
+					return 'label=" "';
+				}
+				return `${key}=<${_}>`;
+			}
+			if (
+				_?.toString().includes(" ") ||
+				_?.toString().includes("#") ||
+				_?.toString().includes("-") ||
+				_?.toString().includes(",")
+			) {
+				return `${key}="${_}"`;
+			}
+			return `${key}=${_}`;
+		})
 		.sort()
-		.join("; ");
-	return propertyString !== "" ? `[${propertyString};]` : "";
+		.join(",\n\t");
+	return propertyString !== ""
+		? `[${propertyString}${1 < entries.length && terminateLastAttribute ? "\n" : ""}]`
+		: "";
 };
 
 /**
@@ -260,9 +280,21 @@ export const dot = () => {
 		}
 	};
 
-	const renderGraph = (options?: Partial<GraphProperties>) => {
+	const renderGraphDefaults = (options?: Partial<GraphProperties>) => {
 		if (options?.skipDraw !== true) {
-			renderRaw(`graph ${makePropertyString({ ...options })}`);
+			renderRaw(`graph ${makePropertyString({ ...options }, true)}`);
+		}
+	};
+	const renderNodeDefaults = (options?: Partial<NodeProperties>) => {
+		if (options?.skipDraw !== true) {
+			renderRaw(
+				`node ${makePropertyString({ label: "\\N", ...options }, true)}`,
+			);
+		}
+	};
+	const renderEdgeDefaults = (options?: Partial<EdgeProperties>) => {
+		if (options?.skipDraw !== true) {
+			renderRaw(`edge ${makePropertyString({ ...options }, true)}`);
 		}
 	};
 
@@ -277,7 +309,7 @@ export const dot = () => {
 		validateColorHex("color", options);
 
 		if (options?.skipDraw !== true) {
-			renderRaw(`${id} ${makePropertyString({ label: _, ...options })}`);
+			renderRaw(`${id}\t${makePropertyString({ label: _, ...options })}`);
 		}
 	};
 
@@ -307,16 +339,18 @@ export const dot = () => {
 
 		if (options?.skipDraw !== true) {
 			renderRaw(
-				`${aId} -> ${bId}${options ? ` ${makePropertyString(options ?? {})}` : ""}`,
+				`${aId} -> ${bId}${options ? `\t${makePropertyString(options ?? {})}` : ""}`,
 			);
 		}
 	};
 
 	return {
 		raw: renderRaw,
-		graph: renderGraph,
+		graphSpec: renderGraphDefaults,
 		node: renderNode,
+		nodeSpec: renderNodeDefaults,
 		link: renderLink,
+		linkSpec: renderEdgeDefaults,
 		toString: () => buffer.join("\n"),
 		clear: () => {
 			buffer = new Array<string>();

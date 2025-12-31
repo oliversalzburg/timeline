@@ -267,6 +267,7 @@ const main = async () => {
 	/** @type {string | undefined} */
 	let idFocusedTimeline;
 
+	console.info("Generating neighborhoods...");
 	const neighborhoods = new Map();
 	for (const id of allEventIDs) {
 		if (id.match(/-1$/)) {
@@ -297,6 +298,7 @@ const main = async () => {
 		}
 	}
 
+	console.info("Constructing star planes...");
 	const starPlanes = Array.from({
 		length: 12,
 	}).map(

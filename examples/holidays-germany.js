@@ -486,9 +486,9 @@ const timeline = {
 		.flatMap((_, index) =>
 			holidays(startYear + index).map(
 				(_) =>
-					/** @type {[number, {title:string}]} */ ([
+					/** @type {[number, { title: string, generated: boolean }]} */ ([
 						_[0].valueOf(),
-						{ title: `${_[1]} ${startYear + index}` },
+						{ title: `${_[1]} ${startYear + index}`, generated: true },
 					]),
 			),
 		),
