@@ -191,18 +191,17 @@ const fill = (timeline) => {
 		return marriageBeforeDate?.as ?? name;
 	};
 
+	const birthdays = recurringYearly(
+		new Date(birthYear, birthMonth - 1, birthDay, 0, 0, 0, 0),
+		(index) =>
+			`${index}. Geburtstag ${nameAtDate(new Date(birthYear + index, birthMonth - 1, birthDay, 0, 0, 0, 0))}`,
+		age,
+	).filter((_) => !timeline.records.some((record) => record[0] === _[0]));
+
 	/** @type {typeof timeline} */
 	const document = {
 		...timeline,
-		records: [
-			...timeline.records,
-			...recurringYearly(
-				new Date(birthYear, birthMonth - 1, birthDay, 0, 0, 0, 0),
-				(index) =>
-					`${index}. Geburtstag ${nameAtDate(new Date(birthYear + index, birthMonth - 1, birthDay, 0, 0, 0, 0))}`,
-				age,
-			),
-		],
+		records: [...timeline.records, ...birthdays],
 	};
 	if (death !== undefined) {
 		document.records.push([

@@ -770,24 +770,24 @@ export const render = <
 						(_) => _.timeline === event.timeline,
 					);
 
-					const transferIn = segment.transferIn.find(
+					const transferInMarker = segment.transferIn.find(
 						(_) => _.timeline === event.timeline,
 					);
 					if (
-						transferIn &&
+						transferInMarker !== undefined &&
 						timelineSegmentEvents[0].timestamp === event.timestamp
 					) {
-						transfersIn.push([transferIn, event]);
+						transfersIn.push([transferInMarker, event]);
 					}
-					const transferOut = segment.transferOut.find(
+					const transferOutMarker = segment.transferOut.find(
 						(_) => _.timeline === event.timeline,
 					);
 					if (
-						transferOut &&
+						transferOutMarker !== undefined &&
 						timelineSegmentEvents[timelineSegmentEvents.length - 1]
 							.timestamp === event.timestamp
 					) {
-						transfersOut.push([transferOut, event]);
+						transfersOut.push([transferOutMarker, event]);
 					}
 
 					if (leader === undefined) {
@@ -838,6 +838,11 @@ export const render = <
 							});
 							continue;
 						}
+
+						if (timestampsSegment[0] !== timestamp) {
+							continue;
+						}
+
 						// If nothing is being transferred, we don't need to force any
 						// order.
 						if (availableTransferMarker.length === 0) {
@@ -853,9 +858,10 @@ export const render = <
 							];
 						d.link(substituteMarker.title, title, {
 							class: classes.get(event.timeline.meta.id),
+							color: options.debug ? "#ffffffff" : undefined,
 							comment: "Link from Transfer In (Order Only, Substitute)",
 							skipDraw: !isTimestampInRange(timestamp),
-							style: "invis",
+							style: options.debug ? "dotted" : "invis",
 							tailport: "s",
 						});
 					}
@@ -883,6 +889,10 @@ export const render = <
 							continue;
 						}
 
+						if (timestampsSegment[timestampsSegment.length - 1] !== timestamp) {
+							continue;
+						}
+
 						if (availableTransferMarker.length === 0) {
 							continue;
 						}
@@ -893,10 +903,11 @@ export const render = <
 							];
 						d.link(title, substituteMarker.title, {
 							class: classes.get(event.timeline.meta.id),
+							color: options.debug ? "#ffffffff" : undefined,
 							comment: "Link to Transfer Out (Order Only, Substitute)",
 							headport: "n",
 							skipDraw: !isTimestampInRange(timestamp),
-							style: "invis",
+							style: options.debug ? "dotted" : "invis",
 						});
 					}
 				}
@@ -904,10 +915,10 @@ export const render = <
 				if (previousEventTitles !== undefined) {
 					for (const previousEventTitle of previousEventTitles) {
 						d.link(previousEventTitle, title, {
-							color: "#ffffffff",
+							color: options.debug ? "#ffffffff" : undefined,
 							comment: "All Event Link",
 							skipDraw: !isTimestampInRange(timestamp),
-							style: "solid",
+							style: options.debug ? "dashed" : "invis",
 						});
 					}
 				} else {
@@ -915,12 +926,18 @@ export const render = <
 						(_) => _.omitted !== true,
 					);
 					if (0 < availableTransferInMarker.length) {
-						d.link(availableTransferInMarker[0].title, title, {
-							color: "#ffffffff",
-							comment: "All Event Link",
-							skipDraw: !isTimestampInRange(timestamp),
-							style: "solid",
-						});
+						d.link(
+							availableTransferInMarker[
+								Math.trunc(availableTransferInMarker.length / 2)
+							].title,
+							title,
+							{
+								color: options.debug ? "#ffffffff" : undefined,
+								comment: "All Event Link",
+								skipDraw: !isTimestampInRange(timestamp),
+								style: options.debug ? "dashed" : "invis",
+							},
+						);
 					}
 				}
 
@@ -954,6 +971,32 @@ export const render = <
 			const eventsInSegment = segment.events.filter(
 				(_) => _.timeline.meta.id === timeline.meta.id,
 			);
+
+			if (eventsInSegment.length === 0) {
+				const transferInMarker = segment.transferIn.find(
+					(_) => _.timeline === timeline,
+				);
+				const transferOutMarker = segment.transferOut.find(
+					(_) => _.timeline === timeline,
+				);
+				if (
+					transferInMarker?.omitted === false &&
+					transferOutMarker?.omitted === false
+				) {
+					d.link(transferInMarker.title, transferOutMarker.title, {
+						arrowhead: "none",
+						class: classes.get(timeline.meta.id),
+						color: rgbaToHexString(style.pencolor),
+						comment: "Intra-Timeline Link",
+						headport: "n",
+						penwidth: style.penwidth,
+						style: style.link,
+						tailport: "s",
+						tooltip: `${renderMilliseconds(timePassed)} vergangen`,
+					});
+				}
+			}
+
 			const eventTimesInSegment = eventsInSegment.map((_) => _.timestamp);
 
 			for (const timestamp of eventTimesInSegment) {

@@ -9,15 +9,11 @@ export const recurringYearly = (
 	skip = 0,
 ): Array<TimelineRecord> =>
 	new Array(limit - skip).fill(0).map((_, index) => [
-		new Date(
-			date.getFullYear() + index + offset + skip,
-			date.getMonth(),
-			date.getDate(),
-			date.getHours(),
-			date.getMinutes(),
-			date.getSeconds(),
-			date.getMilliseconds(),
-		).valueOf(),
+		Date.parse(
+			`${date.getFullYear() + index + offset + skip}-${
+				date.getMonth() + 1
+			}-${date.getDate()}`,
+		),
 		{
 			generated: true,
 			title:
