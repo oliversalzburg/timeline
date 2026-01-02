@@ -1,6 +1,25 @@
 digraph {
-	graph [bgcolor="transparent"; comment=" "; fontname="Carlito"; fontsize="22.8"; rankdir="TB"; ranksep="0.5";];
-	node [fontname="Carlito"; fontsize="22.8";];
-	edge [fontname="Carlito"; fontsize="22.8";];
-	1 [class="event td408927559ee23e3"; color="#A0A0A0FF"; fontcolor="#A0A0A0FF"; id="Z2025-06-15-0"; label=<🎭 Now>; penwidth="1"; shape="box"; style="dotted"; tooltip="Sun Jun 15 2025\n0 Tage bis now\n0 Tage seit 1749945600000";];
+	graph [bgcolor=transparent,
+		comment=" ",
+		fontname=Carlito,
+		fontsize=22.8,
+		rankdir=TB,
+		ranksep=0.5
+	];
+	node [fontname=Carlito,
+		fontsize=22.8,
+		label=<\N>
+	];
+	edge [fontname=Carlito,
+		fontsize=22.8
+	];
+	1	[class="event td408927559ee23e3",
+		color="#A0A0A0FF",
+		fontcolor="#A0A0A0FF",
+		id="Z2025-06-15-0",
+		label=<🎭 Now>,
+		penwidth=1,
+		shape=box,
+		style=dotted,
+		tooltip="Sun Jun 15 2025\n0 Tage bis now\n0 Tage seit 1749945600000"];
 }
