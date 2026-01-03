@@ -320,8 +320,8 @@ if (dotGraph.graph.length === 1) {
 		writeFileSync(segmentFilename, uniqueGraph);
 	}
 }
-process.stdout.write("\n");
-process.stdout.write(infoDebug.join("\n"));
+//process.stdout.write("\n");
+//process.stdout.write(infoDebug.join("\n"));
 process.stdout.write("\n");
 
 writeFileSync(

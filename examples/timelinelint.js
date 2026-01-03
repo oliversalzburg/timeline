@@ -1,9 +1,13 @@
 #!/bin/env node
 
-import { readdirSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { Report } from "@oliversalzburg/js-utils/log/report.js";
 import { parse } from "yaml";
-import { isIdentityPerson, uncertainEventToDate } from "../lib/genealogy.js";
+import {
+	isIdentityMedia,
+	isIdentityPerson,
+	uncertainEventToDate,
+} from "../lib/genealogy.js";
 import { load } from "../lib/loader.js";
 
 // Parse command line arguments.
@@ -158,6 +162,14 @@ const lint = (job) => {
 			job.report.log(
 				`Marriage with '${marriage.marriedTo}' in identity is missing a date, and will cause issues with name changes of the identity.`,
 			);
+		}
+	}
+
+	const isMedia = isIdentityMedia(job.timeline);
+	if (isMedia) {
+		const mediaPath = job.timeline.meta.id;
+		if (!existsSync(mediaPath)) {
+			job.report.log(`Media item path wasn't found!`);
 		}
 	}
 };
