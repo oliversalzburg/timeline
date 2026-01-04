@@ -884,7 +884,7 @@ const main = async () => {
 				};
 			},
 			[Inputs.BUTTON_RB]: () => {
-				mediaShow();
+				mediaShow(0);
 				return {
 					name: "return",
 					released: { [Inputs.BUTTON_RB]: returnToMedia },
@@ -1305,22 +1305,35 @@ const main = async () => {
 		dialogIFrame.style.height = "150px";
 		dialogIFrame.style.width = "";
 	};
-	const mediaShow = (mediaIndex = 0) => {
+
+	/**
+	 * @param {number} mediaIndex -
+	 */
+	const mediaShow = (mediaIndex) => {
 		if (timelineMediaIds === undefined || timelineMediaIds.length === 0) {
 			return false;
 		}
 
-		timelineMediaIdActive = mediaIndex;
-		if (timelineMediaIdActive === undefined) {
+		if (
+			mediaIndex === undefined ||
+			mediaIndex < 0 ||
+			timelineMediaIds.length <= mediaIndex
+		) {
+			timelineMediaIdActive = undefined;
 			return false;
 		}
 
+		const mediaPath =
+			lookupTimelineToMetadata.get(timelineMediaIds[mediaIndex])?.[2] ?? "";
+		if (mediaPath === "") {
+			timelineMediaIdActive = undefined;
+			return false;
+		}
+
+		console.info(`Showing media item ${mediaIndex}...`);
+		timelineMediaIdActive = mediaIndex;
 		mediaReset();
 
-		const mediaPath =
-			lookupTimelineToMetadata.get(
-				timelineMediaIds[timelineMediaIdActive],
-			)?.[2] ?? "";
 		if (mediaPath.startsWith("/kiwix/")) {
 			dialogIFrame.src = mediaPath;
 			dialogIFrame.style.display = "block";
@@ -1346,11 +1359,7 @@ const main = async () => {
 		}
 
 		return mediaShow(
-			timelineMediaIdActive === undefined
-				? 0
-				: timelineMediaIdActive === timelineMediaIds.length - 1
-					? undefined
-					: timelineMediaIdActive + 1,
+			timelineMediaIdActive === undefined ? 0 : timelineMediaIdActive + 1,
 		);
 	};
 	const mediaBackward = () => {
@@ -1358,16 +1367,13 @@ const main = async () => {
 			return false;
 		}
 
-		if (timelineMediaIdActive === undefined) {
-			return false;
-		}
-
 		return mediaShow(
-			timelineMediaIdActive === 0 ? undefined : timelineMediaIdActive - 1,
+			timelineMediaIdActive === undefined ? 0 : timelineMediaIdActive - 1,
 		);
 	};
 
 	const mediaClose = () => {
+		console.info("Closing media...");
 		if (iFrameResizeHandle !== null) {
 			window.clearTimeout(iFrameResizeHandle);
 		}
@@ -2185,7 +2191,16 @@ const main = async () => {
 		initGraphics();
 
 		console.info("Requesting initial focus...");
-		navigateHome();
+		const existingAnchor = window.location.hash;
+		if (existingAnchor !== "") {
+			try {
+				focusNode(existingAnchor.replace(/^#/, ""));
+			} catch (_) {
+				navigateHome();
+			}
+		} else {
+			navigateHome();
+		}
 
 		window.requestAnimationFrame(present);
 		window.setTimeout(() => {
