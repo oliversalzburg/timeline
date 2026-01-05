@@ -23,8 +23,8 @@ describe("Serializer", () => {
 		const timeline: Timeline = {
 			meta: { id: "test", private: true },
 			records: [
-				[100, { title: "one" }],
-				[100, { title: "two" }],
+				[0, { title: "one" }],
+				[0, { title: "two" }],
 			],
 		};
 		const document = serialize(timeline, timeline.meta);
