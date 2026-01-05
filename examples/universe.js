@@ -17,7 +17,7 @@ import {
 } from "../lib/genealogy.js";
 import { load } from "../lib/loader.js";
 import { rgbaToString } from "../lib/palette.js";
-import { plan, render } from "../lib/renderer.js";
+import { render } from "../lib/renderer.js";
 import { Styling } from "../lib/style.js";
 
 /** @import {RendererOptions} from "../lib/renderer.js" */
@@ -192,8 +192,6 @@ const renderOptions = {
 	styleSheet,
 	theme,
 };
-const _renderPlan = plan(trimmedTimelines, renderOptions);
-
 const dotGraph = render(trimmedTimelines, renderOptions, hops);
 
 // Calculate universe metrics.

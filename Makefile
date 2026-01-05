@@ -30,7 +30,7 @@ ifneq ($(DEBUG_DOT),)
 	DOT_FLAGS += -v5
 endif
 
-ifneq ($(DEBUG),)
+ifneq ($(DEBUG)$(DEBUG_RENDERER),)
 	PEDIGREE_FLAGS += --debug
 	UNIVERSE_FLAGS += --debug
 endif
@@ -56,7 +56,7 @@ endif
 .INTERMEDIATE: $(IMAGES)
 .PRECIOUS: %.dotus %.idotus %.isvgus
 
-lib/tsconfig.source.tsbuildinfo $(_LIBS_D_TS) $(_LIBS_D_TS_MAP) $(_LIBS_JS) $(_LIBS_JS_MAP) : node_modules/.package-lock.json $(_SOURCES_TS)
+lib/tsconfig.source.tsbuildinfo $(_LIBS_D_TS) $(_LIBS_D_TS_MAP) $(_LIBS_JS) $(_LIBS_JS_MAP) &: node_modules/.package-lock.json $(_SOURCES_TS)
 	@npm exec -- tsc --build tsconfig.json
 	@date +"%FT%T%z Library code rebuilt."
 
@@ -267,11 +267,11 @@ validate-data: .venv validate-schema lib/tsconfig.source.tsbuildinfo
 		$(TIMELINES)
 
 # Run available software tests.
-test: node_modules/.package-lock.json lib
+test: node_modules/.package-lock.json $(_LIBS_JS)
 	TZ=UTC node --enable-source-maps --inspect \
 		node_modules/.bin/mocha --reporter-option maxDiffSize=16000 \
 		lib/*.test.js
-coverage: node_modules/.package-lock.json lib
+coverage: node_modules/.package-lock.json $(_LIBS_JS)
 	NODE_OPTIONS=--enable-source-maps TZ=UTC npm exec -- \
 		c8 --reporter=html-spa \
 		mocha --reporter-option maxDiffSize=16000 \

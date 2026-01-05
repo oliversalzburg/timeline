@@ -96,10 +96,10 @@ describe("Generator - Yearly Occurrence", () => {
 
 		expect(records).to.eql(
 			[
-				[946684800000, { title: "Some Event" }],
-				[978307200000, { title: "Some Event #1" }],
-				[1009843200000, { title: "Some Event #2" }],
-				[1041379200000, { title: "Some Event #3" }],
+				[946684800000, { generated: true, title: "Some Event" }],
+				[978307200000, { generated: true, title: "Some Event #1" }],
+				[1009843200000, { generated: true, title: "Some Event #2" }],
+				[1041379200000, { generated: true, title: "Some Event #3" }],
 			],
 			"The generated series does not match our expected timeline.",
 		);

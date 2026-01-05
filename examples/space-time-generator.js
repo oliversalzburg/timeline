@@ -300,7 +300,7 @@ targetStream.on("error", () => {
 });
 
 targetStream.write(
-	`---\n${serialize(originTimeline, originTimeline.meta, true)}\n---\n${finalTimelines.map((_) => serialize(_, _.meta, true)).join("\n---\n")}`,
+	`---\n${finalTimelines.map((_) => serialize(_, _.meta, true)).join("\n---\n")}`,
 );
 
 if (targetStream !== process.stdout) {

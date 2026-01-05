@@ -136,7 +136,18 @@ export interface EdgeProperties {
 	label: string;
 	labeltooltip: string;
 	labelfontcolor: Color;
+
+	/**
+	 * Preferred edge length, in inches
+	 * @see minlen
+	 */
 	len: number;
+
+	/**
+	 * Minimum edge length (rank difference between head and tail)
+	 * @default 1
+	 * @see len
+	 */
 	minlen: number;
 	penwidth: number;
 	samehead: string;
@@ -150,6 +161,26 @@ export interface EdgeProperties {
 	tailURL: string;
 	tooltip: string;
 	URL: string;
+
+	/**
+	 * Weight of edge
+	 *
+	 * In `dot`, the heavier the weight, the shorter, straighter and more vertical the edge is.
+	 *
+	 * For `twopi`, `weight=0` indicates the edge should not be used in
+	 * constructing a spanning tree from the root.
+	 *
+	 * For other layouts, a larger weight encourages the layout to make the edge
+	 * length closer to that specified by the `len` attribute.
+	 *
+	 * Weights in `dot` must be integers.
+	 *
+	 * digraph {
+	 *   root -> a
+	 *   root -> b [weight=2]
+	 *   root -> c [weight=3]
+	 * }
+	 */
 	weight: number;
 }
 export interface GraphProperties {
@@ -158,6 +189,23 @@ export interface GraphProperties {
 	fontname: string;
 	fontsize: number;
 	label: string;
+
+	/**
+	 * Rank constraints on the nodes in a subgraph
+	 *
+	 * * If `rank="same"`, all nodes are placed on the same rank.
+	 * * If `rank="min"`, all nodes are placed on the minimum rank.
+	 * * If `rank="source"`, all nodes are placed on the minimum rank, and
+	 *   the only nodes on the minimum rank belong to some subgraph with
+	 *   `rank="source"` or `rank="min"`.
+	 *
+	 * Analogous criteria hold for `rank="max"` and `rank="sink"`.
+	 *
+	 * (Note: the minimum rank is topmost or leftmost, and the maximum rank is
+	 * bottommost or rightmost.)
+	 *
+	 * For more information check [this answer in Stack Overflow](https://stackoverflow.com/a/6155783/3416774)
+	 */
 	rank: RankType;
 	rankdir: RankDir;
 	ranksep: number;

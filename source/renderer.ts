@@ -1019,10 +1019,9 @@ export const render = <
 				);
 
 				for (const event of eventsAtTimestamp) {
-					const _timelineWeight = segment.weights.get(event.timeline);
-
 					linkableEvents.push(event);
 
+					let isFirstLink = true;
 					for (const previousEntry of previousEntries) {
 						if (previousEntry.generated && event.generated) {
 							continue;
@@ -1034,9 +1033,10 @@ export const render = <
 							comment: "Intra-Timeline Link",
 							penwidth: style.penwidth,
 							skipDraw: !isTimestampInRange(timestamp),
-							style: style.link,
+							style: isFirstLink ? style.link : "invis",
 							tooltip: `${renderMilliseconds(timePassed)} vergangen`,
 						});
+						isFirstLink = false;
 					}
 				}
 

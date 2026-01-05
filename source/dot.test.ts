@@ -27,7 +27,7 @@ describe("DOT", () => {
 
 		expect(d.toString()).to.equal(
 			"digraph {\n" +
-				'    1 [color="#FF0000FF"; label=<GraphViz is great>;];\n' +
+				'\t1\t[color="#FF0000FF",\n\t\tlabel=<GraphViz is great>];\n' +
 				"}",
 			"The GraphViz helper produced unexpected output.",
 		);
