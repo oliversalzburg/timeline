@@ -332,13 +332,15 @@ export class Styling<
 			if (styleSheet.has(timeline.meta.id)) {
 				continue;
 			}
+			const pencolor = mustExist(palette.get(timeline));
 			styleSheet.set(timeline.meta.id, {
 				fillcolor: this.theme === "light" ? [255, 255, 255, 0] : [0, 0, 0, 0],
 				fontcolor: matchFontColorTo(
 					this.theme === "light" ? [255, 255, 255] : [0, 0, 0],
+					pencolor[3] === 0 && isIdentityMedia(timeline) ? 128 : 255,
 				),
 				link: isIdentityPeriod(timeline) ? "dotted" : false,
-				pencolor: mustExist(palette.get(timeline)),
+				pencolor,
 				penwidth: 1,
 				shape: "box",
 				style: ["dotted", "rounded"],

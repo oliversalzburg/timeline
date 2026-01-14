@@ -2,7 +2,7 @@ import { indent } from "@oliversalzburg/js-utils/data/string.js";
 import { InvalidOperationError } from "@oliversalzburg/js-utils/errors/InvalidOperationError.js";
 import { TRANSPARENT } from "./constants.js";
 
-export type Arrow =
+export type ArrowType =
 	| "box"
 	| "crow"
 	| "diamond"
@@ -117,9 +117,69 @@ export type Shape =
 	| "utr";
 
 export interface EdgeProperties {
-	arrowhead: Arrow;
-	arrowtail: Arrow;
+	/**
+	 * Style of arrowhead on the head node of an edge
+	 * This will only appear if the `dir` attribute is `forward` or `both`.
+	 * @see arrowtail
+	 */
+	arrowhead: ArrowType;
+
+	/**
+	 * Multiplicative scale factor for arrowheads
+	 */
+	arrowsize: number;
+
+	/**
+	 * Style of arrowhead on the tail node of an edge
+	 * This will only appear if the `dir` attribute is `forward` or `both`.
+	 * @see arrowhead
+	 */
+	arrowtail: ArrowType;
+
+	/**
+	 * Classnames to attach to the node, edge, graph, or cluster's SVG element
+	 * Combine with `stylesheet` for styling SVG output using CSS classnames.
+	 *
+	 * Multiple space-separated classes are supported.
+	 *
+	 * @see stylesheet
+	 * @see id
+	 * @example
+	 * ```dot
+	 * digraph G {
+	 *   graph [class="cats"];
+	 *
+	 *   subgraph cluster_big {
+	 *     graph [class="big_cats"];
+	 *
+	 *     "Lion" [class="yellow social"];
+	 *     "Snow Leopard" [class="white solitary"];
+	 *   }
+	 * }
+	 * ```
+	 */
 	class: string;
+
+	/**
+	 * description: Basic drawing color for graphics, not text
+	 * For the latter, use the `fontcolor` attribute.
+	 *
+	 * The value can either be a single color or a `colorList`.
+	 *
+	 * In the latter case, if `colorList` has no fractions,
+	 * the edge is drawn using parallel splines or lines,
+	 * one for each color in the list, in the order given.
+	 *
+	 * The head arrow, if any, is drawn using the first color in the list,
+	 * and the tail arrow, if any, the second color. This supports the common
+	 * case of drawing opposing edges, but using parallel splines instead of
+	 * separately routed multiedges.
+	 *
+	 * If any fraction is used, the colors are drawn in series, with each color
+	 * being given roughly its specified fraction of the edge.
+	 *
+	 * @see colorscheme
+	 */
 	color: Color;
 	comment: string;
 	constraint: boolean;

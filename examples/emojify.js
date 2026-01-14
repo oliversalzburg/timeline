@@ -148,6 +148,11 @@ const PREFIXES = {
 		name: "penguin",
 		src: "1F427.svg",
 	},
+	"\u{1F431}": {
+		emoji: "🐱",
+		name: "cat face",
+		src: "1F431.svg",
+	},
 	"\u{1F480}": {
 		emoji: "💀",
 		name: "skull",
@@ -157,6 +162,11 @@ const PREFIXES = {
 		emoji: "💊",
 		name: "pill",
 		src: "1F48A.svg",
+	},
+	"\u{1F4C3}": {
+		emoji: "📃",
+		name: "page with curl",
+		src: "1F4C3.svg",
 	},
 	"\u{1F4FA}": {
 		emoji: "📺",
@@ -207,6 +217,11 @@ const PREFIXES = {
 		emoji: "⛔",
 		name: "no entry",
 		src: "26D4.svg",
+	},
+	"\u2709": {
+		emoji: "✉",
+		name: "envelope",
+		src: "2709.svg",
 	},
 	"\u270A": {
 		emoji: "✊",
@@ -264,12 +279,12 @@ for (const [prefix, config] of Object.entries(PREFIXES)) {
 
 	const cells = [
 		`<TD FIXEDSIZE="TRUE" WIDTH="24" HEIGHT="24"><IMG SRC="${config.src}"/></TD>`,
-		`<TD>$1</TD>`,
+		`<TD>$1 $2</TD>`,
 	];
 	const row = `<TR>${cells.join("")}</TR>`;
 	const table = `<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0" CELLSPACING="5">${row}</TABLE>`;
 	svgPrefixes = svgPrefixes.replaceAll(
-		new RegExp(`<${prefix}.*\u{00A0}(.+)>,`, "gu"),
+		new RegExp(`<${prefix}(.*)\u{00A0}(.+)>,`, "gu"),
 		`<${table}>;`,
 	);
 }
