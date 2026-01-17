@@ -265,6 +265,70 @@ export class Graph<
 		return identity.name ?? identity?.id;
 	}
 
+	resolveRelation(
+		from: string | null,
+		to = this.origin,
+		visited: Array<string> = [],
+	): Array<{ label: string; identity: string }> | false {
+		if (from === null || visited.includes(from)) {
+			return false;
+		}
+		if (from === to) {
+			return [];
+		}
+
+		let chainBest: Array<{ label: string; identity: string }> | undefined;
+		for (const child of this.childrenOf(from)) {
+			const chain = this.resolveRelation(child.id, to, [from, ...visited]);
+			if (
+				chain !== false &&
+				(chainBest === undefined ||
+					(chainBest !== undefined && chain.length < chainBest.length - 1))
+			) {
+				chainBest = [{ label: "parent of", identity: child.id }, ...chain];
+			}
+		}
+
+		if (this.fatherOf(from)?.id === to) {
+			return [
+				{ label: "father of", identity: from },
+				{ label: "subject", identity: to },
+			];
+		} else {
+			const chain = this.resolveRelation(this.fatherOf(from)?.id ?? null, to, [
+				from,
+				...visited,
+			]);
+			if (
+				chain !== false &&
+				(chainBest === undefined ||
+					(chainBest !== undefined && chain.length < chainBest.length - 1))
+			) {
+				chainBest = [{ label: "father of", identity: from }, ...chain];
+			}
+		}
+
+		if (this.motherOf(from)?.id === to) {
+			return [
+				{ label: "mother of", identity: from },
+				{ label: "subject", identity: to },
+			];
+		} else {
+			const chain = this.resolveRelation(this.motherOf(from)?.id ?? null, to, [
+				from,
+				...visited,
+			]);
+			if (
+				chain !== false &&
+				(chainBest === undefined ||
+					(chainBest !== undefined && chain.length < chainBest.length - 1))
+			) {
+				chainBest = [{ label: "mother of", identity: from }, ...chain];
+			}
+		}
+		return chainBest ?? false;
+	}
+
 	timelineOf(id = this.origin) {
 		return this.timelines.find((timeline) => timeline.meta.identity?.id === id);
 	}
