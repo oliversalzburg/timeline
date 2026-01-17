@@ -270,23 +270,35 @@ const PREFIXES = {
 	},
 };
 
-let svgPrefixes = content;
-for (const [prefix, config] of Object.entries(PREFIXES)) {
+const svgPrefixes = content.replaceAll(
+	/<(.*)\u{00A0}(.+)>,/gu,
+	/**
+	 * @param {string} substring -
+	 * @param {string|undefined} prefixes -
+	 * @param {string|undefined} label -
+	 */
+	(substring, prefixes, label) => {
+		let imageString = "";
+		for (const [prefix, config] of Object.entries(PREFIXES)) {
+			while (prefixes?.includes(prefix)) {
+				imageString += `<TD FIXEDSIZE="TRUE" WIDTH="24" HEIGHT="24"><IMG SRC="${config.src}"/></TD>`;
+				prefixes = prefixes.replace(prefix, "");
+			}
+		}
+		if (imageString === "") {
+			return substring;
+		}
+		const cells = [imageString, `<TD>${label}</TD>`];
+		const row = `<TR>${cells.join("")}</TR>`;
+		const table = `<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0" CELLSPACING="5">${row}</TABLE>`;
+		return `<${table}>;`;
+	},
+);
+
+for (const [_prefix, config] of Object.entries(PREFIXES)) {
 	if (copyOnly) {
 		copyFileSync(join(assets, config.src), join(contentLocation, config.src));
-		continue;
 	}
-
-	const cells = [
-		`<TD FIXEDSIZE="TRUE" WIDTH="24" HEIGHT="24"><IMG SRC="${config.src}"/></TD>`,
-		`<TD>$1 $2</TD>`,
-	];
-	const row = `<TR>${cells.join("")}</TR>`;
-	const table = `<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0" CELLSPACING="5">${row}</TABLE>`;
-	svgPrefixes = svgPrefixes.replaceAll(
-		new RegExp(`<${prefix}(.*)\u{00A0}(.+)>,`, "gu"),
-		`<${table}>;`,
-	);
 }
 
 if (copyOnly) {

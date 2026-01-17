@@ -1,7 +1,12 @@
 import { mustExist } from "@oliversalzburg/js-utils/data/nil.js";
 import { hashCyrb53 } from "@oliversalzburg/js-utils/data/string.js";
 import { FONT_NAME, FONT_SIZE_1000MM_V07_READ_PT } from "./constants.js";
-import { dot, makeHtmlString, type NodeProperties } from "./dot.js";
+import {
+	dot,
+	type EdgeProperties,
+	makeHtmlString,
+	type NodeProperties,
+} from "./dot.js";
 import {
 	isIdentityMedia,
 	isIdentityPeriod,
@@ -9,7 +14,11 @@ import {
 	uncertainEventToDateString,
 } from "./genealogy.js";
 import { matchLuminance, rgbaToHexString } from "./palette.js";
-import { type RendererMetaResult, renderMilliseconds } from "./renderer.js";
+import {
+	type RendererMetaResult,
+	rank,
+	renderMilliseconds,
+} from "./renderer.js";
 import { STYLE_TRANSFER_MARKER, type Style } from "./style.js";
 import type {
 	RenderMode,
@@ -151,8 +160,71 @@ export const renderTransferMarker = <
 		style: style.style.join(","),
 		width: 1,
 	};
-
 	return nodeProperties;
+};
+export const renderLinkTransferMarker = (debug = false) => {
+	const linkProperties: Partial<EdgeProperties> = debug
+		? {
+				arrowhead: "none",
+				color: "#FF0000FF",
+				comment: "Transfer Marker Inter-Link",
+				minlen: 7,
+				style: "solid",
+				weight: 1_000_000,
+			}
+		: {
+				comment: "Transfer Marker Inter-Link",
+				minlen: 7,
+				style: "invis",
+				weight: 1_000_000,
+			};
+	return linkProperties;
+};
+export const renderLinkGlobal = (debug = false) => {
+	const linkProperties: Partial<EdgeProperties> = debug
+		? {
+				arrowhead: "open",
+				color: "#0080FF80",
+				comment: "Global Link Chain",
+				style: "dashed",
+				weight: 1,
+			}
+		: {
+				comment: "Global Link Chain",
+				style: "invis",
+				weight: 1,
+			};
+	return linkProperties;
+};
+export const renderLinkUnlinked = (debug = false) => {
+	const linkProperties: Partial<EdgeProperties> = debug
+		? {
+				arrowhead: "open",
+				color: "#808000FF",
+				comment: `Link Events in UNLINKED timelines`,
+				minlen: 2,
+				style: "dashed",
+				weight: 10,
+			}
+		: {
+				comment: `Link Events in UNLINKED timelines`,
+				minlen: 2,
+				style: "invis",
+				weight: 10,
+			};
+	return linkProperties;
+};
+export const renderLinkLinked = (classes: string, style: Style) => {
+	const linkProperties: Partial<EdgeProperties> = {
+		class: classes,
+		color: rgbaToHexString(style.pencolor),
+		comment: "Intra-Timeline Link",
+		minlen: 2,
+		penwidth: style.penwidth,
+		style: style.link === false ? "invis" : style.link,
+		weight: style.penwidth,
+	};
+	return linkProperties;
 };
 
 export interface Origin<
@@ -174,7 +246,7 @@ export const render = <
 >(
 	timelines: Array<TTimelines>,
 	options: RendererOptions,
-	_hops?: Map<string, number> | undefined,
+	hops?: Map<string, number> | undefined,
 ): RendererMetaResult<TTimelines> => {
 	const dotGraph = (d = dot()) => {
 		const fontsize = FONT_SIZE_1000MM_V07_READ_PT;
@@ -238,6 +310,17 @@ export const render = <
 	);
 	const classes = new Map<string, string>(
 		timelines.map((_) => [_.meta.id, `t${hashCyrb53(_.meta.id)}`]),
+	);
+	const ranks = new Map<string, number>(
+		timelines.map((_) => [
+			_.meta.id,
+			rank(
+				_,
+				"identity" in _.meta
+					? hops?.get(_.meta.identity.id)
+					: Number.POSITIVE_INFINITY,
+			),
+		]),
 	);
 	const idMesh = new Map<TTimelines, Array<string>>();
 	for (const timeline of timelines) {
@@ -303,13 +386,11 @@ export const render = <
 					);
 					d.node(transferMarker, nodeProperties);
 					if (previousTransferMarker !== undefined) {
-						d.link(previousTransferMarker, transferMarker, {
-							arrowhead: "none",
-							color: "#FF0000FF",
-							comment: "Transfer Marker Inter-Link",
-							minlen: 7,
-							weight: 1_000_000,
-						});
+						d.link(
+							previousTransferMarker,
+							transferMarker,
+							renderLinkTransferMarker(options.debug),
+						);
 					}
 					previousTransferMarker = transferMarker;
 				}
@@ -320,13 +401,13 @@ export const render = <
 						mustExist(frameCache.pendingConnect.get(timeline)).title,
 						`TX-OUT-${timeline.meta.id}-${timestamp}`,
 						{
+							...renderLinkLinked(
+								mustExist(classes.get(timeline.meta.id)),
+								mustExist(options.styleSheet?.get(timeline.meta.id)),
+							),
 							arrowhead: "none",
-							class: classes.get(timeline.meta.id),
-							color: "#FFFFFFFF",
 							comment: `Link Records to Transfer Out in ${timeline.meta.id}`,
 							headport: "n",
-							minlen: 2,
-							weight: 10,
 						},
 					);
 				}
@@ -334,13 +415,7 @@ export const render = <
 					d.link(
 						frameCache.previousFrameTrailer,
 						mustExist(firstTransferMarker),
-						{
-							arrowhead: "open",
-							color: "#0080FF80",
-							comment: "Force Transfer Section to BOTTOM",
-							style: "dotted",
-							weight: 1,
-						},
+						renderLinkGlobal(options.debug),
 					);
 				}
 			}
@@ -371,13 +446,11 @@ export const render = <
 					);
 					d.node(transferMarker, nodeProperties);
 					if (previousTransferMarker !== undefined) {
-						d.link(previousTransferMarker, transferMarker, {
-							arrowhead: "none",
-							color: "#FF0000FF",
-							comment: "Transfer Marker Inter-Link",
-							minlen: 7,
-							weight: 1_000_000,
-						});
+						d.link(
+							previousTransferMarker,
+							transferMarker,
+							renderLinkTransferMarker(options.debug),
+						);
 					}
 					previousTransferMarker = transferMarker;
 					frameCache.pendingConnect.set(timeline, {
@@ -398,6 +471,10 @@ export const render = <
 		for (const [eventTitle, frameTimelines] of frame.events) {
 			frameCache.frameTrailer ??= eventTitle;
 
+			const leader = [...frameTimelines.values()].sort(
+				(a, b) =>
+					mustExist(ranks.get(b.meta.id)) - mustExist(ranks.get(a.meta.id)),
+			)[0];
 			const nodeProperties = renderEventAsNode(
 				options,
 				classes,
@@ -411,7 +488,7 @@ export const render = <
 				timestamp,
 				eventTitle,
 				frameTimelines,
-				[...frameTimelines.values()][0],
+				leader,
 			);
 			const id = `Z${date.getFullYear().toFixed().padStart(4, "0")}-${(date.getMonth() + 1).toFixed().padStart(2, "0")}-${date.getDate().toFixed().padStart(2, "0")}-${eventIndex++}`;
 			d.node(eventTitle, { ...nodeProperties, id });
@@ -433,14 +510,14 @@ export const render = <
 				if (previousRecord !== undefined) {
 					if (style.link) {
 						d.link(previousRecord.title, record.title, {
-							class: classes.get(timeline.meta.id),
-							color: "#FFFFFFFF",
-							comment: `Link Records in ${timeline.meta.id}`,
-							minlen: 2,
+							...renderLinkLinked(
+								mustExist(classes.get(timeline.meta.id)),
+								mustExist(options.styleSheet?.get(timeline.meta.id)),
+							),
+							comment: `Intra-Timeline Link for ${timeline.meta.id}`,
 							tailport: previousRecord.title.startsWith("TX-IN-")
 								? "s"
 								: undefined,
-							weight: 10,
 						});
 					} else {
 						if (
@@ -449,14 +526,11 @@ export const render = <
 						) {
 							continue;
 						}
-						d.link(previousRecord.title, record.title, {
-							arrowhead: "open",
-							color: "#808000FF",
-							comment: `Link Records in UNLINKED ${timeline.meta.id}`,
-							minlen: 2,
-							style: "solid",
-							weight: 1_000,
-						});
+						d.link(
+							previousRecord.title,
+							record.title,
+							renderLinkUnlinked(options.debug),
+						);
 					}
 					linksOut.add(previousRecord.title);
 					linksIn.add(record.title);
@@ -473,14 +547,11 @@ export const render = <
 				!linksOut.has(previousEventTitle) &&
 				!linksIn.has(eventTitle)
 			) {
-				d.link(previousEventTitle, eventTitle, {
-					arrowhead: "open",
-					color: "#808000FF",
-					comment: `Link Events in UNLINKED timelines`,
-					minlen: 2,
-					style: "dashed",
-					weight: 10,
-				});
+				d.link(
+					previousEventTitle,
+					eventTitle,
+					renderLinkUnlinked(options.debug),
+				);
 				linksOut.add(previousEventTitle);
 				linksIn.add(eventTitle);
 				previousEventTitle = undefined;
@@ -497,12 +568,12 @@ export const render = <
 				const entryPending = mustExist(frameCache.pendingConnect.get(pending));
 				const entryFrame = mustExist(frame.records.get(pending)?.[0]);
 				d.link(entryPending.title, entryFrame.title, {
-					class: classes.get(pending.meta.id),
-					color: "#FFFFFFFF",
-					comment: `Link Records in ${pending.meta.id}`,
-					minlen: 2,
+					...renderLinkLinked(
+						mustExist(classes.get(pending.meta.id)),
+						mustExist(options.styleSheet?.get(pending.meta.id)),
+					),
+					comment: `Intra-Timeline Link for ${pending.meta.id}`,
 					tailport: entryPending.title.startsWith("TX-IN-") ? "s" : undefined,
-					weight: 10,
 				});
 				if (entryPending.title === frameCache.previousFrameTrailer) {
 					frameCache.previousFrameTrailer = undefined;
@@ -514,13 +585,11 @@ export const render = <
 			frameCache.previousFrameTrailer !== undefined &&
 			frameCache.frameTrailer !== undefined
 		) {
-			d.link(frameCache.previousFrameTrailer, frameCache.frameTrailer, {
-				arrowhead: "open",
-				color: "#0080FF80",
-				comment: "Global Link Chain",
-				style: "dashed",
-				weight: 1,
-			});
+			d.link(
+				frameCache.previousFrameTrailer,
+				frameCache.frameTrailer,
+				renderLinkGlobal(options.debug),
+			);
 		}
 
 		// Update frame cache
@@ -553,6 +622,11 @@ export const render = <
 	}
 
 	d.raw("}");
+	graphSegments.push({
+		graph: d.toString(),
+		start: segmentStart,
+		end: renderPlan[renderPlan.length - 1][0],
+	});
 
 	return {
 		graph: graphSegments,
