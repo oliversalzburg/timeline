@@ -17,7 +17,7 @@ import {
 } from "../lib/genealogy.js";
 import { load } from "../lib/loader.js";
 import { rgbaToString } from "../lib/palette.js";
-import { render } from "../lib/renderer.js";
+import { render } from "../lib/renderer-stream.js";
 import { Styling } from "../lib/style.js";
 
 /** @import {RendererOptions} from "../lib/renderer.js" */

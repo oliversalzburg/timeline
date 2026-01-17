@@ -382,12 +382,10 @@ export const render = <
 	const styleSheet = options.styleSheet;
 
 	let eventIndex = 0;
-	const allNodeIds = new Set<string>();
 	const registerId = (timestamp: number) => {
 		// Convert the timestamp to a Date for API features.
 		const date = new Date(timestamp);
 		const id = `Z${date.getFullYear().toFixed().padStart(4, "0")}-${(date.getMonth() + 1).toFixed().padStart(2, "0")}-${date.getDate().toFixed().padStart(2, "0")}-${eventIndex++}`;
-		allNodeIds.add(id);
 		return id;
 	};
 
