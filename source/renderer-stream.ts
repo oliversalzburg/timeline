@@ -274,11 +274,11 @@ export const render = <
 	// Render frames
 	const renderPlan = [...frames.entries()].sort(([a], [b]) => a - b);
 	const frameCache: {
-		frameTrailer: string;
+		frameTrailer: string | undefined;
 		pendingConnect: Map<TTimelines, TimelineEntry>;
 		previousFrameTrailer: string | undefined;
 	} = {
-		frameTrailer: "",
+		frameTrailer: undefined,
 		pendingConnect: new Map<TTimelines, TimelineEntry>(),
 		previousFrameTrailer: undefined,
 	};
@@ -305,7 +305,9 @@ export const render = <
 					if (previousTransferMarker !== undefined) {
 						d.link(previousTransferMarker, transferMarker, {
 							arrowhead: "none",
-							minlen: 5,
+							color: "#FF0000FF",
+							comment: "Transfer Marker Inter-Link",
+							minlen: 7,
 							weight: 1_000_000,
 						});
 					}
@@ -319,7 +321,12 @@ export const render = <
 						`TX-OUT-${timeline.meta.id}-${timestamp}`,
 						{
 							arrowhead: "none",
+							class: classes.get(timeline.meta.id),
 							color: "#FFFFFFFF",
+							comment: `Link Records to Transfer Out in ${timeline.meta.id}`,
+							headport: "n",
+							minlen: 2,
+							weight: 10,
 						},
 					);
 				}
@@ -329,8 +336,10 @@ export const render = <
 						mustExist(firstTransferMarker),
 						{
 							arrowhead: "open",
-							color: "#FFFFFF80",
+							color: "#0080FF80",
+							comment: "Force Transfer Section to BOTTOM",
 							style: "dotted",
+							weight: 1,
 						},
 					);
 				}
@@ -365,7 +374,8 @@ export const render = <
 						d.link(previousTransferMarker, transferMarker, {
 							arrowhead: "none",
 							color: "#FF0000FF",
-							minlen: 5,
+							comment: "Transfer Marker Inter-Link",
+							minlen: 7,
 							weight: 1_000_000,
 						});
 					}
@@ -386,7 +396,7 @@ export const render = <
 		d.raw("{");
 		d.graphSpec({ comment: `Frame for ${date.toISOString()}`, rank: "same" });
 		for (const [eventTitle, frameTimelines] of frame.events) {
-			frameCache.frameTrailer = eventTitle;
+			frameCache.frameTrailer ??= eventTitle;
 
 			const nodeProperties = renderEventAsNode(
 				options,
@@ -410,45 +420,107 @@ export const render = <
 				mustExist(idMesh.get(timeline)).push(id);
 			}
 		}
+
+		const linksIn = new Set<string>();
+		const linksOut = new Set<string>();
 		for (const [timeline, timelineFrameRecords] of frame.records) {
 			const style = mustExist(
 				options.styleSheet?.get(timeline.meta.id),
 				`missing style for '${timeline.meta.id}'`,
 			);
-			if (!style.link) {
-				continue;
-			}
 			let previousRecord: TimelineEntry | undefined;
 			for (const record of timelineFrameRecords) {
 				if (previousRecord !== undefined) {
-					d.link(previousRecord.title, record.title, {
-						color: "#FFFFFFFF",
-						minlen: 2,
-					});
+					if (style.link) {
+						d.link(previousRecord.title, record.title, {
+							class: classes.get(timeline.meta.id),
+							color: "#FFFFFFFF",
+							comment: `Link Records in ${timeline.meta.id}`,
+							minlen: 2,
+							tailport: previousRecord.title.startsWith("TX-IN-")
+								? "s"
+								: undefined,
+							weight: 10,
+						});
+					} else {
+						if (
+							linksOut.has(previousRecord.title) ||
+							linksIn.has(record.title)
+						) {
+							continue;
+						}
+						d.link(previousRecord.title, record.title, {
+							arrowhead: "open",
+							color: "#808000FF",
+							comment: `Link Records in UNLINKED ${timeline.meta.id}`,
+							minlen: 2,
+							style: "solid",
+							weight: 1_000,
+						});
+					}
+					linksOut.add(previousRecord.title);
+					linksIn.add(record.title);
 				}
 				previousRecord = record;
 			}
+		}
+
+		let previousEventTitle: string | undefined;
+		for (const [eventTitle] of frame.events) {
+			if (
+				previousEventTitle !== undefined &&
+				previousEventTitle !== eventTitle &&
+				!linksOut.has(previousEventTitle) &&
+				!linksIn.has(eventTitle)
+			) {
+				d.link(previousEventTitle, eventTitle, {
+					arrowhead: "open",
+					color: "#808000FF",
+					comment: `Link Events in UNLINKED timelines`,
+					minlen: 2,
+					style: "dashed",
+					weight: 10,
+				});
+				linksOut.add(previousEventTitle);
+				linksIn.add(eventTitle);
+				previousEventTitle = undefined;
+			}
+			previousEventTitle = eventTitle;
 		}
 		d.raw("}");
 		++segmentLength;
 
 		// Inter-Frame
-		if (frameCache.previousFrameTrailer !== undefined) {
-			d.link(frameCache.previousFrameTrailer, frameCache.frameTrailer, {
-				arrowhead: "open",
-				color: "#FFFFFF80",
-				style: "dotted",
-			});
-		}
+
 		for (const pending of frameCache.pendingConnect.keys()) {
 			if (frame.timelines.has(pending)) {
 				const entryPending = mustExist(frameCache.pendingConnect.get(pending));
 				const entryFrame = mustExist(frame.records.get(pending)?.[0]);
 				d.link(entryPending.title, entryFrame.title, {
+					class: classes.get(pending.meta.id),
 					color: "#FFFFFFFF",
+					comment: `Link Records in ${pending.meta.id}`,
+					minlen: 2,
+					tailport: entryPending.title.startsWith("TX-IN-") ? "s" : undefined,
+					weight: 10,
 				});
+				if (entryPending.title === frameCache.previousFrameTrailer) {
+					frameCache.previousFrameTrailer = undefined;
+				}
 				frameCache.pendingConnect.delete(pending);
 			}
+		}
+		if (
+			frameCache.previousFrameTrailer !== undefined &&
+			frameCache.frameTrailer !== undefined
+		) {
+			d.link(frameCache.previousFrameTrailer, frameCache.frameTrailer, {
+				arrowhead: "open",
+				color: "#0080FF80",
+				comment: "Global Link Chain",
+				style: "dashed",
+				weight: 1,
+			});
 		}
 
 		// Update frame cache
@@ -475,8 +547,9 @@ export const render = <
 			) {
 				frameCache.pendingConnect.set(timeline, entries[entries.length - 1]);
 			}
-			frameCache.previousFrameTrailer = entries[entries.length - 1].title;
 		}
+		frameCache.previousFrameTrailer = [...frame.events.keys()][0];
+		frameCache.frameTrailer = undefined;
 	}
 
 	d.raw("}");
