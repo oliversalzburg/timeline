@@ -241,21 +241,36 @@ const main = async () => {
 	const timelines = new Map(DATA[1].map((_) => [_[0], _]));
 	/** @type {Map<string, Array<{timestamp:number,id:string,title:string,contributors:Array<string>}>>} */
 	const timelineEvents = new Map();
-	/** @type {Array<{timestamp:number,id:string,title:string,contributors:Array<string>}>} */
+	/** @type {Array<{timestamp:number,id:string,title:string,contributors:Array<string>,bb:{x:number,y:number,w:number,h:number}}>} */
 	const events = new Array();
+	/** @type {Map<string,{timestamp:number,id:string,title:string,contributors:Array<string>,bb:{x:number,y:number,w:number,h:number}}>} */
+	const eventsById = new Map();
 	/** @type {Map<string, Array<string>>} */
 	const contributors = new Map();
 	for (const [
 		index,
 		[timestamp, id, title, eventContributors],
 	] of DATA[0].entries()) {
+		const element = document.querySelector(`#${id}`);
+		if (element === null) {
+			throw new Error(`Couldn't find '#${id}'`);
+		}
+		const boundingRect = element.getBoundingClientRect();
 		events[index] = {
 			timestamp,
 			id,
 			title,
 			contributors: eventContributors,
+			bb: {
+				x: boundingRect.x + window.scrollX,
+				y: boundingRect.y + window.scrollY,
+				w: boundingRect.width,
+				h: boundingRect.height,
+			},
 		};
 		contributors.set(id, events[index].contributors);
+		eventsById.set(id, events[index]);
+
 		for (const contributor of events[index].contributors) {
 			const contributorMeta = timelines.get(contributor);
 			if (contributorMeta === undefined) {
@@ -458,24 +473,15 @@ const main = async () => {
 			return;
 		}
 
-		const anchor = `#${id}`;
-		/** @type {SVGElement | null} */
-		const node = document.querySelector(anchor);
-
-		if (node === null) {
-			return;
+		const event = eventsById.get(id);
+		if (event === undefined) {
+			throw new Error(`can't find event '${id}'`);
 		}
 
-		const rect = node.getBoundingClientRect();
-
-		let left = window.pageXOffset + rect.left;
-		let top = window.pageYOffset + rect.top;
-
-		left += rect.width / 2;
-		top += rect.height / 2;
-
-		left -= document.documentElement.clientWidth / 2;
-		top -= document.documentElement.clientHeight / 2;
+		const left =
+			event.bb.x + event.bb.w / 2 - document.documentElement.clientWidth / 2;
+		const top =
+			event.bb.y + event.bb.h / 2 - document.documentElement.clientHeight / 2;
 
 		cameraIsDetached = false;
 		focusTargetBox = { x: left, y: top };
