@@ -212,25 +212,41 @@ canvas {
 		opacity: 1;
 	}
 }
-hr#target {
-	border: 0mm dashed rgb(255 255 255 / 0.8);
+hr.target {
 	opacity: 0;
-	position: fixed;
-	top: 50vh;
-	height: 0;
-	width: 100%;
+	position: absolute;
 	margin: 0;
 	z-index: -1;
-	transform: scaleX(10);
 
-	transition: ease-out transform 0.2s;
+	transition:
+		ease-in-out width 1s,
+		ease-in-out height 1s;
 
 	&.visible {
-		border: 1mm dashed rgba(80, 255, 80, 0.466);
-		top: calc(50vh - 1mm);
-		transform: scaleX(3);
 		animation: flicker forwards 0.2s;
 		animation-delay: 0.5s;
+	}
+
+	&#target-x {
+		left: 0;
+		height: 100%;
+		width: 0;
+		background-color: rgb(255 180 180 / 0.5);
+	}
+	&#target-y {
+		height: 0;
+		width: 100%;
+		background-color: rgb(255 255 0 / 0.5);
+	}
+	&#target-w {
+		height: 100%;
+		width: 0;
+		background-color: rgb(255 0 255 / 0.5);
+	}
+	&#target-h {
+		height: 0;
+		width: 100%;
+		background-color: rgb(0 255 255 / 0.5);
 	}
 }
 

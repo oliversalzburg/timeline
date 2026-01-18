@@ -84,8 +84,23 @@ const main = async () => {
 	}
 
 	/** @type {HTMLHRElement | null} */
-	const targetElement = document.querySelector("hr#target");
-	if (targetElement === null) {
+	const targetElementX = document.querySelector("hr#target-x");
+	if (targetElementX === null) {
+		throw new Error("Unable to find #target element.");
+	}
+	/** @type {HTMLHRElement | null} */
+	const targetElementY = document.querySelector("hr#target-y");
+	if (targetElementY === null) {
+		throw new Error("Unable to find #target element.");
+	}
+	/** @type {HTMLHRElement | null} */
+	const targetElementW = document.querySelector("hr#target-w");
+	if (targetElementW === null) {
+		throw new Error("Unable to find #target element.");
+	}
+	/** @type {HTMLHRElement | null} */
+	const targetElementH = document.querySelector("hr#target-h");
+	if (targetElementH === null) {
 		throw new Error("Unable to find #target element.");
 	}
 
@@ -478,13 +493,8 @@ const main = async () => {
 			throw new Error(`can't find event '${id}'`);
 		}
 
-		const left =
-			event.bb.x + event.bb.w / 2 - document.documentElement.clientWidth / 2;
-		const top =
-			event.bb.y + event.bb.h / 2 - document.documentElement.clientHeight / 2;
-
 		cameraIsDetached = false;
-		focusTargetBox = { x: left, y: top };
+		focusTargetBox = event.bb;
 		console.debug("New focus box requested", focusTargetBox);
 	};
 	//#endregion
@@ -557,7 +567,7 @@ const main = async () => {
 	};
 	//#endregion
 
-	let focusTargetBox = { x: 0, y: 0 };
+	let focusTargetBox = { x: 0, y: 0, w: 0, h: 0 };
 	let camera = { x: 0, y: 0 };
 	let mediaItemRotation = { x: 0, y: 0 };
 	let mediaItemPosition = { x: 0, y: 0, z: 0 };
@@ -1323,13 +1333,44 @@ const main = async () => {
 			return false;
 		}
 
-		targetElement.classList.add("visible");
+		console.debug("Focusing new focus box...", focusTargetBox);
+
+		targetElementX.classList.add("visible");
+		targetElementY.classList.add("visible");
+		targetElementW.classList.add("visible");
+		targetElementH.classList.add("visible");
+
+		targetElementX.style.left = `${focusTargetBox.x + focusTargetBox.w / 2 - document.documentElement.clientWidth / 2}px`;
+		targetElementX.style.top = `${focusTargetBox.y + focusTargetBox.h / 2 - document.documentElement.clientHeight / 2}px`;
+		targetElementX.style.height = `${document.documentElement.clientHeight}px`;
+		targetElementX.style.width = `${document.documentElement.clientWidth / 2 - focusTargetBox.w / 2}px`;
+
+		targetElementY.style.left = `${focusTargetBox.x + focusTargetBox.w / 2 - document.documentElement.clientWidth / 2}px`;
+		targetElementY.style.top = `${focusTargetBox.y + focusTargetBox.h / 2 - document.documentElement.clientHeight / 2}px`;
+		targetElementY.style.height = `${document.documentElement.clientHeight / 2 - focusTargetBox.h / 2}px`;
+		targetElementY.style.width = `${document.documentElement.clientWidth}px`;
+
+		targetElementW.style.left = `${focusTargetBox.x + focusTargetBox.w}px`;
+		targetElementW.style.top = `${focusTargetBox.y + focusTargetBox.h / 2 - document.documentElement.clientHeight / 2}px`;
+		targetElementW.style.height = `${document.documentElement.clientHeight}px`;
+		targetElementW.style.width = `${document.documentElement.clientWidth / 2 - focusTargetBox.w / 2}px`;
+
+		targetElementH.style.left = `${focusTargetBox.x + focusTargetBox.w / 2 - document.documentElement.clientWidth / 2}px`;
+		targetElementH.style.top = `${focusTargetBox.y + focusTargetBox.h}px`;
+		targetElementH.style.height = `${document.documentElement.clientHeight / 2 - focusTargetBox.h / 2}px`;
+		targetElementH.style.width = `${document.documentElement.clientWidth}px`;
 
 		cameraIsIdle = true;
 		window.scrollTo({
-			top: focusTargetBox.y,
+			top:
+				focusTargetBox.y +
+				focusTargetBox.h / 2 -
+				document.documentElement.clientHeight / 2,
 			behavior: requestInstantFocusUpdate ? "instant" : "smooth",
-			left: focusTargetBox.x,
+			left:
+				focusTargetBox.x +
+				focusTargetBox.w / 2 -
+				document.documentElement.clientWidth / 2,
 		});
 		timeoutCameraUnlock = window.setTimeout(() => {
 			timeoutCameraUnlock = undefined;
@@ -1918,7 +1959,8 @@ const main = async () => {
 		cameraIsIdle = false;
 		camera = { ...focusTargetBox };
 		lastKnownScrollPosition = focusTargetBox.y;
-		targetElement.classList.remove("visible");
+		//targetElementX.classList.remove("visible");
+		//targetElementY.classList.remove("visible");
 	};
 	const onScrollEnd = () => {
 		window.clearTimeout(timeoutCameraUnlock);
