@@ -83,23 +83,23 @@ const main = async () => {
 		throw new Error("Unable to find #calendar element.");
 	}
 
-	/** @type {HTMLHRElement | null} */
-	const targetElementX = document.querySelector("hr#target-x");
+	/** @type {HTMLDivElement | null} */
+	const targetElementX = document.querySelector("#target-x");
 	if (targetElementX === null) {
 		throw new Error("Unable to find #target element.");
 	}
-	/** @type {HTMLHRElement | null} */
-	const targetElementY = document.querySelector("hr#target-y");
+	/** @type {HTMLDivElement | null} */
+	const targetElementY = document.querySelector("#target-y");
 	if (targetElementY === null) {
 		throw new Error("Unable to find #target element.");
 	}
-	/** @type {HTMLHRElement | null} */
-	const targetElementW = document.querySelector("hr#target-w");
+	/** @type {HTMLDivElement | null} */
+	const targetElementW = document.querySelector("#target-w");
 	if (targetElementW === null) {
 		throw new Error("Unable to find #target element.");
 	}
-	/** @type {HTMLHRElement | null} */
-	const targetElementH = document.querySelector("hr#target-h");
+	/** @type {HTMLDivElement | null} */
+	const targetElementH = document.querySelector("#target-h");
 	if (targetElementH === null) {
 		throw new Error("Unable to find #target element.");
 	}
@@ -1333,32 +1333,34 @@ const main = async () => {
 			return false;
 		}
 
-		console.debug("Focusing new focus box...", focusTargetBox);
+		console.debug("Adjusting target box...");
 
-		targetElementX.classList.add("visible");
-		targetElementY.classList.add("visible");
-		targetElementW.classList.add("visible");
-		targetElementH.classList.add("visible");
+		targetElementX.classList.remove("visible");
+		targetElementY.classList.remove("visible");
+		targetElementW.classList.remove("visible");
+		targetElementH.classList.remove("visible");
 
 		targetElementX.style.left = `${focusTargetBox.x + focusTargetBox.w / 2 - document.documentElement.clientWidth / 2}px`;
-		targetElementX.style.top = `${focusTargetBox.y + focusTargetBox.h / 2 - document.documentElement.clientHeight / 2}px`;
-		targetElementX.style.height = `${document.documentElement.clientHeight}px`;
-		targetElementX.style.width = `${document.documentElement.clientWidth / 2 - focusTargetBox.w / 2}px`;
+		targetElementX.style.top = `${focusTargetBox.y - 2}px`;
+		targetElementX.style.height = `${focusTargetBox.h + 4}px`;
+		targetElementX.style.width = `${document.documentElement.clientWidth / 2 - focusTargetBox.w / 2 - 2}px`;
 
 		targetElementY.style.left = `${focusTargetBox.x + focusTargetBox.w / 2 - document.documentElement.clientWidth / 2}px`;
 		targetElementY.style.top = `${focusTargetBox.y + focusTargetBox.h / 2 - document.documentElement.clientHeight / 2}px`;
-		targetElementY.style.height = `${document.documentElement.clientHeight / 2 - focusTargetBox.h / 2}px`;
+		targetElementY.style.height = `${document.documentElement.clientHeight / 2 - focusTargetBox.h / 2 - 2}px`;
 		targetElementY.style.width = `${document.documentElement.clientWidth}px`;
 
-		targetElementW.style.left = `${focusTargetBox.x + focusTargetBox.w}px`;
-		targetElementW.style.top = `${focusTargetBox.y + focusTargetBox.h / 2 - document.documentElement.clientHeight / 2}px`;
-		targetElementW.style.height = `${document.documentElement.clientHeight}px`;
-		targetElementW.style.width = `${document.documentElement.clientWidth / 2 - focusTargetBox.w / 2}px`;
+		targetElementW.style.left = `${focusTargetBox.x + focusTargetBox.w + 2}px`;
+		targetElementW.style.top = `${focusTargetBox.y - 2}px`;
+		targetElementW.style.height = `${focusTargetBox.h + 4}px`;
+		targetElementW.style.width = `${document.documentElement.clientWidth / 2 - focusTargetBox.w / 2 - 2}px`;
 
 		targetElementH.style.left = `${focusTargetBox.x + focusTargetBox.w / 2 - document.documentElement.clientWidth / 2}px`;
-		targetElementH.style.top = `${focusTargetBox.y + focusTargetBox.h}px`;
-		targetElementH.style.height = `${document.documentElement.clientHeight / 2 - focusTargetBox.h / 2}px`;
+		targetElementH.style.top = `${focusTargetBox.y + focusTargetBox.h + 2}px`;
+		targetElementH.style.height = `${document.documentElement.clientHeight / 2 - focusTargetBox.h / 2 - 2}px`;
 		targetElementH.style.width = `${document.documentElement.clientWidth}px`;
+
+		console.debug("Focusing new focus box...", focusTargetBox);
 
 		cameraIsIdle = true;
 		window.scrollTo({
@@ -1959,8 +1961,10 @@ const main = async () => {
 		cameraIsIdle = false;
 		camera = { ...focusTargetBox };
 		lastKnownScrollPosition = focusTargetBox.y;
-		//targetElementX.classList.remove("visible");
-		//targetElementY.classList.remove("visible");
+		targetElementX.classList.add("visible");
+		targetElementY.classList.add("visible");
+		targetElementW.classList.add("visible");
+		targetElementH.classList.add("visible");
 	};
 	const onScrollEnd = () => {
 		window.clearTimeout(timeoutCameraUnlock);
