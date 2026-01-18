@@ -178,6 +178,16 @@ const PREFIXES = {
 		name: "radio",
 		src: "1F4FB.svg",
 	},
+	"\u{1F63A}": {
+		emoji: "😺",
+		name: "grinning cat",
+		src: "1F63A.svg",
+	},
+	"\u{1F63E}": {
+		emoji: "😾",
+		name: "pouting cat",
+		src: "1F63E.svg",
+	},
 	"\u{1F680}": {
 		emoji: "🚀",
 		name: "rocket",

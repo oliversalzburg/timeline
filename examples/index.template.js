@@ -85,6 +85,12 @@ const main = async () => {
 		throw new Error("Unable to find #calendar element.");
 	}
 
+	/** @type {HTMLHRElement | null} */
+	const targetElement = document.querySelector("hr#target");
+	if (targetElement === null) {
+		throw new Error("Unable to find #target element.");
+	}
+
 	/** @type {HTMLDivElement | null} */
 	const menuContainer = document.querySelector("#menu");
 	if (menuContainer === null) {
@@ -422,7 +428,6 @@ const main = async () => {
 		calendarDate.textContent = titleParts[0];
 		calendarText.textContent = `${titleParts[1]}\n${titleParts[2]}`;
 		document.title = titleParts[0];
-		intro.textContent = "Reise auf Zeit-Gleis:";
 
 		idFocused = id;
 		// If the newly focused node exists on the already focused timeline,
@@ -1347,8 +1352,6 @@ const main = async () => {
 			dialogImage.style.display = "block";
 		}
 
-		intro.textContent = "Artefaktname:";
-
 		dialog.show();
 		mediaItemVisible = true;
 		return true;
@@ -1380,7 +1383,6 @@ const main = async () => {
 		dialogIFrame.src = "about:blank";
 		dialog.close();
 		mediaReset();
-		intro.textContent = "Reise auf Zeit-Gleis:";
 		mediaItemVisible = false;
 	};
 
@@ -1426,7 +1428,14 @@ const main = async () => {
 			);
 		}
 
-		statusText.textContent = mediaIdentityName ?? timelineIdentityName ?? "???";
+		if (mediaIdentityName !== undefined) {
+			intro.textContent = "Artefaktname:";
+			statusText.textContent = mediaIdentityName;
+		} else {
+			intro.textContent = `Reise auf Zeit-Gleis: ${timelineIdentityName}`;
+			statusText.textContent = "EVENT_DETAILS";
+		}
+
 		intro.style.color = timelineColor ?? "";
 		statusText.style.textShadow = `2px 2px 3px ${timelineColor}`;
 
@@ -1501,6 +1510,8 @@ const main = async () => {
 				}
 			}
 		}
+
+		targetElement.classList.add("visible");
 
 		cameraIsIdle = true;
 		window.scrollTo({
@@ -2095,6 +2106,7 @@ const main = async () => {
 		cameraIsIdle = false;
 		camera = { ...focusTargetBox };
 		lastKnownScrollPosition = focusTargetBox.y;
+		targetElement.classList.remove("visible");
 	};
 	const onScrollEnd = () => {
 		window.clearTimeout(timeoutCameraUnlock);
