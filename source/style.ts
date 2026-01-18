@@ -42,6 +42,10 @@ export const StyleStatic: Style = {
 	shape: "box",
 	style: ["dotted"],
 };
+export const StyleSheetStatic: Map<string, Style> = new Map([
+	["document", StyleStatic],
+	["test", StyleStatic],
+]);
 
 export const STYLE_TRANSFER_MARKER: Style = {
 	fillcolor: [0, 0, 0, 0],

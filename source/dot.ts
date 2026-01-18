@@ -409,7 +409,7 @@ export const dot = () => {
 	const renderNode = (_: string, options?: Partial<NodeProperties>) => {
 		if (nodeIds.get(_)) {
 			// Not re-rendering node with already seen title.
-			return;
+			throw new InvalidOperationError(`Node has already been rendered: '${_}'`);
 		}
 		const id = ++nextNodeIndex;
 		nodeIds.set(_, id);

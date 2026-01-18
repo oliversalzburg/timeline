@@ -28,7 +28,7 @@ import type {
 
 export interface RendererOptions {
 	dateRenderer?: (date: number) => string;
-	styleSheet?: Map<string, Style>;
+	styleSheet: Map<string, Style>;
 	debug?: boolean;
 	now: number;
 	origin: string;
@@ -309,7 +309,7 @@ export const plan = <
 	return segments;
 };
 
-export interface RendererMetaResult<
+export interface RendererResultMetadata<
 	TTimelines extends TimelineReferenceRenderer | TimelineAncestryRenderer =
 		| TimelineReferenceRenderer
 		| TimelineAncestryRenderer,
@@ -333,7 +333,7 @@ export const render = <
 	timelines: Array<TTimelines>,
 	options: RendererOptions,
 	hops?: Map<string, number> | undefined,
-): RendererMetaResult<TTimelines> => {
+): RendererResultMetadata<TTimelines> => {
 	const now = options?.now ?? Date.now();
 	const nowString = options.dateRenderer?.(now) ?? now.toString();
 	const origin: TTimelines =

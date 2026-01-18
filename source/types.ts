@@ -118,6 +118,8 @@ export interface TimelineAncestryRenderer extends Timeline {
 	records: Array<TimelineRecord>;
 }
 export type TimelineMetadata = [
+	/** CSS class */
+	string,
 	/** pencolor */
 	string,
 	/** type */
@@ -144,4 +146,30 @@ export type RenderResultMetadata = [
 	 * Start and end timestamps of all segments in order.
 	 */
 	Array<[number, number]>,
+];
+export interface RendererResultMetadataNG<
+	TTimelines extends TimelineReferenceRenderer | TimelineAncestryRenderer =
+		| TimelineReferenceRenderer
+		| TimelineAncestryRenderer,
+> {
+	events: Map<number, Set<[string, string]>>;
+	timelines: Map<TTimelines, TimelineMetadata>;
+	contributors: Map<string, Set<TTimelines>>;
+	origin: TimelineMetadata;
+	graph: Array<{ graph: string; start: number; end: number }>;
+}
+export type UniverseResultMetadataNG = [
+	/**
+	 * Key-value pairs of all global events IDs, and their title.
+	 * And Ordered list of events contributors.
+	 */
+	Array<[number, string, string, Array<string>]>,
+	/**
+	 * Ordered list of timeline metadata.
+	 */
+	Array<TimelineMetadata>,
+	/**
+	 * Root identity name, ID of event relating to their birth, CSS class of their timeline.
+	 */
+	[string, string, string],
 ];

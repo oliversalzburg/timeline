@@ -1,5 +1,3 @@
-const FEATURE_FLAG_CULL_SEGMENTS = false;
-
 const Inputs = {
 	BUTTON_A: 0,
 	BUTTON_B: 1,
@@ -24,8 +22,8 @@ const Inputs = {
 	AXIS_RIGHT_Y: 3,
 };
 
-/** @type {import("source/types.js").RenderResultMetadata} */
-const DATA = [[], [], ["", "", ""], []];
+/** @type {import("source/types.js").UniverseResultMetadataNG} */
+const DATA = [[], [], ["", "", ""]];
 
 const main = async () => {
 	console.info("Program init started.");
@@ -232,39 +230,44 @@ const main = async () => {
 	 * A set of all the unique event IDs.
 	 */
 	const idSet = DATA[0].reduce(
-		(set, [, ids]) => {
-			ids.forEach((id) => {
-				set.add(id);
-			});
+		(set, [, id]) => {
+			set.add(id);
 			return set;
 		},
 		/** @type {Set<string>} */ (new Set()),
 	);
-	// Get all their IDs into a single order. The IDs are designed to fall into
-	// chronological order when sorted based on their ASCII values.
-	const allEventIDs = [...idSet.values()].sort();
-	/** @type {Map<string, Array<string>>} */
-	const lookupTimelineToEventIDs = new Map(DATA[0]);
+
 	/** @type {Map<string, import("source/types.js").TimelineMetadata>} */
-	const lookupTimelineToMetadata = new Map(DATA[1]);
-	const lookupSegmentBounds = DATA[3];
-	/** @type {NodeListOf<SVGElement>} */
-	const graphGroups = svg.querySelectorAll("g.graph");
-	/** @type {Array<SVGElement>} */
-	const lookupSegments = [...graphGroups.values()];
+	const timelines = new Map(DATA[1].map((_) => [_[0], _]));
+	/** @type {Map<string, Array<{timestamp:number,id:string,title:string,contributors:Array<string>}>>} */
+	const timelineEvents = new Map();
+	/** @type {Array<{timestamp:number,id:string,title:string,contributors:Array<string>}>} */
+	const events = new Array();
 	/** @type {Map<string, Array<string>>} */
-	const lookupTimelinesFromEventId = lookupTimelineToEventIDs
-		.entries()
-		.reduce((all, [timelineId, ids]) => {
-			ids.forEach((id) => {
-				if (all.has(id)) {
-					all.get(id).push(timelineId);
-				} else {
-					all.set(id, [timelineId]);
-				}
-			});
-			return all;
-		}, new Map());
+	const contributors = new Map();
+	for (const [
+		index,
+		[timestamp, id, title, eventContributors],
+	] of DATA[0].entries()) {
+		events[index] = {
+			timestamp,
+			id,
+			title,
+			contributors: eventContributors,
+		};
+		contributors.set(id, events[index].contributors);
+		for (const contributor of events[index].contributors) {
+			const contributorMeta = timelines.get(contributor);
+			if (contributorMeta === undefined) {
+				throw new Error("couldn't find meta");
+			}
+			const contributorEvents = timelineEvents.get(contributorMeta[0]) ?? [];
+			contributorEvents.push(events[index]);
+			timelineEvents.set(contributorMeta[0], contributorEvents);
+		}
+	}
+	/** @type {Map<string, import("source/types.js").TimelineMetadata>} */
+	const lookupTimelineToMetadata = new Map(DATA[1].map((_) => [_[0], _]));
 
 	// The ID of the currently focused node.
 	/** @type {string | undefined} */
@@ -272,37 +275,6 @@ const main = async () => {
 	// The ID of the timeline the focused node is part of.
 	/** @type {string | undefined} */
 	let idFocusedTimeline;
-
-	console.info("Generating neighborhoods...");
-	const neighborhoods = new Map();
-	for (const id of allEventIDs) {
-		if (id.match(/-1$/)) {
-			const baseId = id.substring(0, id.length - 2);
-			const neighborhood = allEventIDs.filter((needle) =>
-				needle.startsWith(baseId),
-			);
-
-			neighborhood.sort((a, b) => {
-				/** @type {SVGElement | null} */
-				const nodeA = document.querySelector(`#${a}`);
-				if (nodeA === null) {
-					throw new Error(`unable to find node '#${a}'`);
-				}
-
-				/** @type {SVGElement | null} */
-				const nodeB = document.querySelector(`#${b}`);
-				if (nodeB === null) {
-					throw new Error(`unable to find node '#${b}'`);
-				}
-
-				return (
-					nodeA.getBoundingClientRect().left -
-					nodeB.getBoundingClientRect().left
-				);
-			});
-			neighborhoods.set(baseId, neighborhood);
-		}
-	}
 
 	console.info("Constructing star planes...");
 	const starPlanes = Array.from({
@@ -345,12 +317,7 @@ const main = async () => {
 			throw new Error(`Unable to match date in ID '${id}'`);
 		}
 
-		const eventDate = eventDateMatch[0];
-		const neighborhood = neighborhoods.get(eventDate) || [id];
-		const onDate = neighborhood;
-		const ownIndexOnDate = onDate.indexOf(id);
-
-		const timelineIds = lookupTimelinesFromEventId.get(id);
+		const timelineIds = contributors.get(id);
 		if (timelineIds === undefined) {
 			throw new Error(`Unable to find timeline ID for event ID '${id}'`);
 		}
@@ -361,19 +328,16 @@ const main = async () => {
 			);
 		}
 
-		const eventIds = lookupTimelineToEventIDs.get(onTimelineId);
+		const eventIds = timelineEvents.get(onTimelineId)?.map((_) => _.id);
 		if (eventIds === undefined) {
-			throw new Error(`Unable to find event IDs for timeline ID '${id}'`);
+			throw new Error(
+				`Unable to find event IDs for timeline ID '${onTimelineId}'`,
+			);
 		}
 
 		const eventIndexOnTimeline = eventIds.indexOf(id);
 
 		return {
-			left: ownIndexOnDate === 0 ? null : onDate[ownIndexOnDate - 1],
-			right:
-				ownIndexOnDate === onDate.length - 1
-					? null
-					: onDate[ownIndexOnDate + 1],
 			up:
 				eventIndexOnTimeline === 0 ? null : eventIds[eventIndexOnTimeline - 1],
 			down:
@@ -381,10 +345,10 @@ const main = async () => {
 					? null
 					: eventIds[eventIndexOnTimeline + 1],
 			intersection: timelineIds.filter((_) =>
-				[1, 2].includes(lookupTimelineToMetadata.get(_)?.[1] ?? 0),
+				[1, 2].includes(lookupTimelineToMetadata.get(_)?.[2] ?? 0),
 			),
 			mediaItems: timelineIds.filter(
-				(_) => lookupTimelineToMetadata.get(_)?.[1] === 3,
+				(_) => lookupTimelineToMetadata.get(_)?.[2] === 3,
 			),
 		};
 	};
@@ -436,9 +400,9 @@ const main = async () => {
 		idFocusedTimeline =
 			onTimelineId ??
 			(idFocusedTimeline !== undefined &&
-			lookupTimelinesFromEventId.get(id)?.includes(idFocusedTimeline)
+			contributors.get(id)?.includes(idFocusedTimeline)
 				? idFocusedTimeline
-				: lookupTimelinesFromEventId.get(id)?.[0]);
+				: contributors.get(id)?.[0]);
 
 		const currentDate =
 			idFocused !== undefined
@@ -469,7 +433,7 @@ const main = async () => {
 	const focusDate = (date) => {
 		const ids =
 			idFocusedTimeline !== undefined
-				? (lookupTimelineToEventIDs.get(idFocusedTimeline)?.values() ?? [])
+				? (contributors.get(idFocusedTimeline)?.values() ?? [])
 				: idSet;
 		let distance = Number.POSITIVE_INFINITY;
 		let best;
@@ -567,48 +531,15 @@ const main = async () => {
 		console.debug(`keyup: key:${event.key} code:${event.code}`);
 
 		switch (event.code) {
-			case "KeyA": {
-				event.preventDefault();
-				navigateA();
-				return;
-			}
-			case "KeyB": {
-				event.preventDefault();
-				navigateB();
-				return;
-			}
-			case "KeyX": {
-				event.preventDefault();
-				navigateX();
-				return;
-			}
-			case "KeyZ": {
-				event.preventDefault();
-				navigateY();
-				return;
-			}
-
 			case "ArrowDown":
 			case "Numpad2":
 				event.preventDefault();
 				navigateForward();
 				return;
 
-			case "ArrowLeft":
-			case "Numpad4":
-				event.preventDefault();
-				navigateLeft();
-				return;
-
 			case "Numpad5":
 				event.preventDefault();
 				navigateHome();
-				return;
-
-			case "ArrowRight":
-			case "Numpad6":
-				event.preventDefault();
-				navigateRight();
 				return;
 
 			case "ArrowUp":
@@ -651,106 +582,6 @@ const main = async () => {
 		focusNode(neighbors.up);
 		return true;
 	};
-	const navigateLeft = () => {
-		if (idFocused === undefined || idFocusedTimeline === undefined) {
-			return false;
-		}
-		const neighbors = findNodeNeighbors(idFocused, idFocusedTimeline);
-		if (neighbors.left === null) {
-			return false;
-		}
-
-		focusNode(neighbors.left);
-		return true;
-	};
-	const navigateRight = () => {
-		if (idFocused === undefined || idFocusedTimeline === undefined) {
-			return false;
-		}
-		const neighbors = findNodeNeighbors(idFocused, idFocusedTimeline);
-		if (neighbors.right === null) {
-			return false;
-		}
-
-		focusNode(neighbors.right);
-		return true;
-	};
-	const navigateA = () => {
-		if (idFocused === undefined || idFocusedTimeline === undefined) {
-			console.warn(
-				"Unable to navigate, due to missing focus information.",
-				idFocused,
-				idFocusedTimeline,
-			);
-			return;
-		}
-		const neighbors = findNodeNeighbors(idFocused, idFocusedTimeline);
-		if (neighbors.intersection.length < 1) {
-			console.warn(
-				"Unable to navigate, due to lack of intersections.",
-				neighbors,
-			);
-			return;
-		}
-		focusNode(idFocused, neighbors.intersection[0]);
-	};
-	const navigateB = () => {
-		if (idFocused === undefined || idFocusedTimeline === undefined) {
-			console.warn(
-				"Unable to navigate, due to missing focus information.",
-				idFocused,
-				idFocusedTimeline,
-			);
-			return;
-		}
-		const neighbors = findNodeNeighbors(idFocused, idFocusedTimeline);
-		if (neighbors.intersection.length < 2) {
-			console.warn(
-				"Unable to navigate, due to lack of intersections.",
-				neighbors,
-			);
-			return;
-		}
-		focusNode(idFocused, neighbors.intersection[1]);
-	};
-	const navigateX = () => {
-		if (idFocused === undefined || idFocusedTimeline === undefined) {
-			console.warn(
-				"Unable to navigate, due to missing focus information.",
-				idFocused,
-				idFocusedTimeline,
-			);
-			return;
-		}
-		const neighbors = findNodeNeighbors(idFocused, idFocusedTimeline);
-		if (neighbors.intersection.length < 3) {
-			console.warn(
-				"Unable to navigate, due to lack of intersections.",
-				neighbors,
-			);
-			return;
-		}
-		focusNode(idFocused, neighbors.intersection[2]);
-	};
-	const navigateY = () => {
-		if (idFocused === undefined || idFocusedTimeline === undefined) {
-			console.warn(
-				"Unable to navigate, due to missing focus information.",
-				idFocused,
-				idFocusedTimeline,
-			);
-			return;
-		}
-		const neighbors = findNodeNeighbors(idFocused, idFocusedTimeline);
-		if (neighbors.intersection.length < 4) {
-			console.warn(
-				"Unable to navigate, due to lack of intersections.",
-				neighbors,
-			);
-			return;
-		}
-		focusNode(idFocused, neighbors.intersection[3]);
-	};
 	const navigateHome = () => {
 		focusNode(DATA[2][1], DATA[2][2]);
 	};
@@ -765,7 +596,7 @@ const main = async () => {
 			return;
 		}
 
-		const events = lookupTimelineToEventIDs.get(idFocusedTimeline);
+		const events = contributors.get(idFocusedTimeline);
 		if (events === undefined) {
 			throw Error("unexpected lookup miss");
 		}
@@ -777,7 +608,7 @@ const main = async () => {
 			return;
 		}
 
-		const events = lookupTimelineToEventIDs.get(idFocusedTimeline);
+		const events = contributors.get(idFocusedTimeline);
 		if (events === undefined) {
 			throw Error("unexpected lookup miss");
 		}
@@ -1329,7 +1160,7 @@ const main = async () => {
 		}
 
 		const mediaPath =
-			lookupTimelineToMetadata.get(timelineMediaIds[mediaIndex])?.[2] ?? "";
+			lookupTimelineToMetadata.get(timelineMediaIds[mediaIndex])?.[3] ?? "";
 		if (mediaPath === "") {
 			timelineMediaIdActive = undefined;
 			return false;
@@ -1484,31 +1315,6 @@ const main = async () => {
 		if (camera.x === focusTargetBox.x && camera.y === focusTargetBox.y) {
 			//console.debug("Camera update was redundant.");
 			return false;
-		}
-
-		// Determine timestamp from ID.
-		// @ts-expect-error The flag is intended to be toggled in code manually.
-		if (FEATURE_FLAG_CULL_SEGMENTS === true) {
-			const timestampFocused = idFocused
-				?.replace(/^Z/, "")
-				.replace(/-\d+$/, "");
-			if (timestampFocused !== undefined) {
-				const timestamp = new Date(timestampFocused).valueOf();
-				const focusedSegment = lookupSegmentBounds.findIndex(
-					([start, end]) => start < timestamp && timestamp < end,
-				);
-				for (
-					let segmentIndex = 0;
-					segmentIndex < lookupSegments.length;
-					++segmentIndex
-				) {
-					lookupSegments[segmentIndex].style.visibility =
-						focusedSegment - 1 <= segmentIndex &&
-						segmentIndex <= focusedSegment + 1
-							? ""
-							: "hidden";
-				}
-			}
 		}
 
 		targetElement.classList.add("visible");

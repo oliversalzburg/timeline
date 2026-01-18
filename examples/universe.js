@@ -5,7 +5,6 @@ import { hostname, userInfo } from "node:os";
 import { mustExist } from "@oliversalzburg/js-utils/data/nil.js";
 import { parse } from "yaml";
 import { analyze } from "../lib/analyzer.js";
-import { TRANSPARENT } from "../lib/constants.js";
 import {
 	Graph,
 	isIdentityLocation,
@@ -16,12 +15,11 @@ import {
 	uncertainEventToDate,
 } from "../lib/genealogy.js";
 import { load } from "../lib/loader.js";
-import { rgbaToString } from "../lib/palette.js";
 import { render } from "../lib/renderer-stream.js";
 import { Styling } from "../lib/style.js";
 
 /** @import {RendererOptions} from "../lib/renderer.js" */
-/** @import {RenderResultMetadata, TimelineAncestryRenderer, TimelineReferenceRenderer } from "../lib/types.js" */
+/** @import {RenderResultMetadata, UniverseResultMetadataNG, TimelineAncestryRenderer, TimelineReferenceRenderer } from "../lib/types.js" */
 
 const NOW = Date.now();
 
@@ -244,60 +242,40 @@ const info = [
 	`Exported Document Window`,
 	`${dFrom} - ${dTo}`,
 ];
-const infoDebug = [
-	`CSS Classes assigned to Timelines:`,
-	...dotGraph.timelineIds
-		.keys()
-		.map((timeline) =>
-			[
-				`CSS Class: ${dotGraph.timelineClasses.get(timeline)}`,
-				`Timeline ID: ${timeline.meta.id}`,
-			].join(" "),
-		),
-];
+const infoDebug = ["intentionally left blank"];
 
 const resolvedIdentitiy = graphTrimmed.resolveIdentity();
 const originBirthDate =
 	uncertainEventToDate(
 		resolvedIdentitiy?.born ?? resolvedIdentitiy?.established,
 	) ?? new Date();
-const metadata = /** @type {RenderResultMetadata} */ ([
+const metadata = /** @type {UniverseResultMetadataNG} */ ([
 	[
-		...dotGraph.timelineIds
-			.entries()
-			.map(([timeline, ids]) => [dotGraph.timelineClasses.get(timeline), ids]),
+		...dotGraph.events.entries().flatMap(([timestamp, eventTitles]) =>
+			eventTitles.values().map(
+				(_) =>
+					/** @type {[Number, string,string,Array<string>]} */ ([
+						timestamp,
+						_[0],
+						_[1],
+						[
+							...mustExist(dotGraph.contributors.get(_[1]))
+								.values()
+								.map(
+									(timeline) => mustExist(dotGraph.timelines.get(timeline))[0],
+								),
+						],
+					]),
+			),
+		),
 	],
+	[...dotGraph.timelines.entries().map(([_timeline, metadata]) => metadata)],
 	[
-		...dotGraph.timelineIds
-			.entries()
-			.map(([timeline]) => [
-				dotGraph.timelineClasses.get(timeline),
-				[
-					rgbaToString(
-						styleSheet.get(timeline.meta.id)?.pencolor ?? TRANSPARENT,
-					),
-					isIdentityPerson(timeline)
-						? 1
-						: isIdentityLocation(timeline)
-							? 2
-							: isIdentityMedia(timeline)
-								? 3
-								: 0,
-					"identity" in timeline.meta
-						? timeline.meta.identity.id
-						: timeline.meta.id,
-					"identity" in timeline.meta
-						? (timeline.meta.identity.name ?? timeline.meta.identity.id)
-						: timeline.meta.id,
-				],
-			]),
-	],
-	[
-		graphTrimmed.resolveIdentity()?.name,
+		mustExist(graphTrimmed.resolveIdentity()).name ??
+			mustExist(graphTrimmed.resolveIdentity()).id,
 		`Z${originBirthDate.getFullYear().toFixed().padStart(4, "0")}-${(originBirthDate.getMonth() + 1).toFixed().padStart(2, "0")}-${originBirthDate.getDate().toFixed().padStart(2, "0")}-0`,
-		dotGraph.timelineClasses.get(mustExist(graphTrimmed.timelineOf())),
+		dotGraph.origin[0],
 	],
-	dotGraph.graph.map((_) => [_.start, _.end]),
 ]);
 
 process.stdout.write("Writing graph...");

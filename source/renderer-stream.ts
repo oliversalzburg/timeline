@@ -8,39 +8,24 @@ import {
 	type NodeProperties,
 } from "./dot.js";
 import {
+	isIdentityLocation,
 	isIdentityMedia,
 	isIdentityPeriod,
+	isIdentityPerson,
 	uncertainEventToDate,
 	uncertainEventToDateString,
 } from "./genealogy.js";
 import { matchLuminance, rgbaToHexString } from "./palette.js";
-import {
-	type RendererMetaResult,
-	rank,
-	renderMilliseconds,
-} from "./renderer.js";
+import { type RendererOptions, rank, renderMilliseconds } from "./renderer.js";
 import { STYLE_TRANSFER_MARKER, type Style } from "./style.js";
 import type {
-	RenderMode,
+	RendererResultMetadataNG,
 	RGBATuple,
 	TimelineAncestryRenderer,
 	TimelineEntry,
+	TimelineMetadata,
 	TimelineReferenceRenderer,
 } from "./types.js";
-
-export interface RendererOptions {
-	dateRenderer?: (date: number) => string;
-	styleSheet?: Map<string, Style>;
-	debug?: boolean;
-	now: number;
-	origin: string;
-	segment?: number | undefined;
-	skipAfter?: number | undefined;
-	skipBefore?: number | undefined;
-	theme: RenderMode;
-	rendererAnalytics: "enabled" | "disabled";
-	rendererAnonymization: "enabled" | "disabled";
-}
 
 export const renderEventAsNode = <
 	TTimelines extends TimelineReferenceRenderer | TimelineAncestryRenderer =
@@ -247,7 +232,7 @@ export const render = <
 	timelines: Array<TTimelines>,
 	options: RendererOptions,
 	hops?: Map<string, number> | undefined,
-): RendererMetaResult<TTimelines> => {
+): RendererResultMetadataNG<TTimelines> => {
 	const dotGraph = (d = dot()) => {
 		const fontsize = FONT_SIZE_1000MM_V07_READ_PT;
 		d.raw("digraph {");
@@ -326,6 +311,10 @@ export const render = <
 	for (const timeline of timelines) {
 		idMesh.set(timeline, new Array<string>());
 	}
+
+	// Metadata to collect during rendering process
+	const allEventsInGraph = new Map<number, Set<[string, string]>>();
+	const allEventContributors = new Map<string, Set<TTimelines>>();
 
 	// Segment universe into frames
 	type Frame = {
@@ -466,12 +455,13 @@ export const render = <
 		// Render Events
 		const date = new Date(timestamp);
 		let eventIndex = 0;
+		allEventsInGraph.set(timestamp, new Set<[string, string]>());
 		d.raw("{");
 		d.graphSpec({ comment: `Frame for ${date.toISOString()}`, rank: "same" });
-		for (const [eventTitle, frameTimelines] of frame.events) {
+		for (const [eventTitle, eventTimelines] of frame.events) {
 			frameCache.frameTrailer ??= eventTitle;
 
-			const leader = [...frameTimelines.values()].sort(
+			const leader = [...eventTimelines.values()].sort(
 				(a, b) =>
 					mustExist(ranks.get(b.meta.id)) - mustExist(ranks.get(a.meta.id)),
 			)[0];
@@ -487,13 +477,15 @@ export const render = <
 				},
 				timestamp,
 				eventTitle,
-				frameTimelines,
+				eventTimelines,
 				leader,
 			);
 			const id = `Z${date.getFullYear().toFixed().padStart(4, "0")}-${(date.getMonth() + 1).toFixed().padStart(2, "0")}-${date.getDate().toFixed().padStart(2, "0")}-${eventIndex++}`;
 			d.node(eventTitle, { ...nodeProperties, id });
+			mustExist(allEventsInGraph.get(timestamp)).add([id, eventTitle]);
+			allEventContributors.set(eventTitle, eventTimelines);
 
-			for (const timeline of frameTimelines) {
+			for (const timeline of eventTimelines) {
 				mustExist(idMesh.get(timeline)).push(id);
 			}
 		}
@@ -628,16 +620,34 @@ export const render = <
 		end: renderPlan[renderPlan.length - 1][0],
 	});
 
+	const timelineMetaMap = new Map(
+		timelines.map((_) => {
+			const style = mustExist(options.styleSheet.get(_.meta.id));
+			return [
+				_,
+				[
+					mustExist(classes.get(_.meta.id)),
+					rgbaToHexString(style.pencolor),
+					isIdentityPerson(_)
+						? 1
+						: isIdentityLocation(_)
+							? 2
+							: isIdentityMedia(_)
+								? 3
+								: 0,
+					"identity" in _.meta ? _.meta.identity.id : _.meta.id,
+					"identity" in _.meta
+						? (_.meta.identity.name ?? _.meta.identity.id)
+						: _.meta.id,
+				] as TimelineMetadata,
+			];
+		}),
+	);
 	return {
+		contributors: allEventContributors,
+		events: allEventsInGraph,
+		origin: mustExist(timelineMetaMap.get(origin)),
+		timelines: timelineMetaMap,
 		graph: graphSegments,
-		timelineClasses: new Map(
-			classes
-				.entries()
-				.map(([id, className]) => [
-					mustExist(timelines.find((_) => _.meta.id === id)),
-					className,
-				]),
-		),
-		timelineIds: idMesh,
 	};
 };

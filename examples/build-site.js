@@ -107,7 +107,7 @@ const css = templateCss
 	);
 
 const js = templateJs.replace(
-	'const DATA = [[], [], ["", "", ""], []];',
+	'const DATA = [[], [], ["", "", ""]];',
 	`const DATA = ${settings.meta};`,
 );
 

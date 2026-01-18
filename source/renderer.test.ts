@@ -12,6 +12,7 @@ import {
 import { load } from "./loader.js";
 import { matchFontColorTo } from "./palette.js";
 import { render } from "./renderer.js";
+import { StyleSheetStatic } from "./style.js";
 import type { RGBTuple, TimelineDocument } from "./types.js";
 
 /**
@@ -51,6 +52,7 @@ describe("Renderer", () => {
 			origin: "document",
 			rendererAnonymization: "disabled",
 			rendererAnalytics: "enabled",
+			styleSheet: StyleSheetStatic,
 			theme: "dark",
 		});
 		expect(artifact.graph).to.have.lengthOf(1);
@@ -72,6 +74,7 @@ describe("Renderer", () => {
 			origin: "document",
 			rendererAnonymization: "disabled",
 			rendererAnalytics: "enabled",
+			styleSheet: StyleSheetStatic,
 			theme: "dark",
 		});
 		expect(artifact.graph).to.have.lengthOf(1);
@@ -93,6 +96,7 @@ describe("Renderer", () => {
 			origin: "0",
 			rendererAnonymization: "disabled",
 			rendererAnalytics: "enabled",
+			styleSheet: StyleSheetStatic,
 			theme: "dark",
 		});
 		expect(artifact.graph).to.have.lengthOf(1);
@@ -122,6 +126,7 @@ describe("Renderer", () => {
 				origin: "document",
 				rendererAnonymization: "disabled",
 				rendererAnalytics: "enabled",
+				styleSheet: StyleSheetStatic,
 				theme: "dark",
 			},
 		);
@@ -151,6 +156,7 @@ describe("Renderer", () => {
 				origin: "document",
 				rendererAnonymization: "disabled",
 				rendererAnalytics: "enabled",
+				styleSheet: StyleSheetStatic,
 				theme: "dark",
 			},
 		);
@@ -180,6 +186,7 @@ describe("Renderer", () => {
 				origin: "document",
 				rendererAnonymization: "disabled",
 				rendererAnalytics: "enabled",
+				styleSheet: StyleSheetStatic,
 				theme: "dark",
 			},
 		);
@@ -207,6 +214,7 @@ describe("Renderer", () => {
 				origin: "document",
 				rendererAnonymization: "disabled",
 				rendererAnalytics: "enabled",
+				styleSheet: StyleSheetStatic,
 				theme: "dark",
 			},
 		);
