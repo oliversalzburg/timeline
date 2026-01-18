@@ -220,7 +220,9 @@ const fillOthers = (timeline, graph) => {
 		return;
 	}
 
-	const name = timeline.meta.identity.name ?? timeline.meta.identity.id;
+	// We can't use the "name" of the identity here, as those might result in
+	// duplicate labels in the DOT graph. This is a hack to allow lax event dates.
+	const name = timeline.meta.identity.id;
 
 	let birth;
 	if (timeline.meta.identity.born !== null) {
