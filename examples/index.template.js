@@ -494,8 +494,13 @@ const main = async () => {
 		}
 
 		cameraIsDetached = false;
-		focusTargetBox = event.bb;
-		console.debug("New focus box requested", focusTargetBox);
+		view.focus = {
+			x: event.bb.x,
+			y: event.bb.y,
+			width: event.bb.w,
+			height: event.bb.h,
+		};
+		console.debug("New focus box requested", view.focus);
 	};
 	//#endregion
 
@@ -567,8 +572,6 @@ const main = async () => {
 	};
 	//#endregion
 
-	let focusTargetBox = { x: 0, y: 0, w: 0, h: 0 };
-	let camera = { x: 0, y: 0 };
 	let mediaItemRotation = { x: 0, y: 0 };
 	let mediaItemPosition = { x: 0, y: 0, z: 0 };
 	let mediaItemVisible = false;
@@ -651,20 +654,42 @@ const main = async () => {
 		return `rgb(${color})`;
 	};
 
-	let windowHeight = 1;
-	let windowWidth = 1;
+	const view = {
+		window: {
+			width: 0,
+			height: 0,
+		},
+		bounds: {
+			width: 0,
+			height: 0,
+		},
+		scope: {
+			x: 0,
+			y: 0,
+			width: 0,
+			height: 0,
+		},
+		focus: {
+			x: 0,
+			y: 0,
+			width: 0,
+			height: 0,
+		},
+	};
 	const initGraphics = () => {
 		console.info("Initializing graphics...");
 
-		camera.x = window.scrollX;
-		camera.y = window.screenY;
+		view.window.width = document.documentElement.clientWidth;
+		view.window.height = document.documentElement.clientHeight;
+		view.scope.x = window.scrollX;
+		view.scope.y = window.screenY;
+		view.scope.width = view.window.width;
+		view.scope.height = view.window.height;
 
-		windowHeight = window.innerHeight;
-		windowWidth = window.innerWidth;
 		for (const [, , planeTop, planeBottom] of starPlanes) {
 			for (const plane of [planeTop, planeBottom]) {
-				plane.width = windowWidth;
-				plane.height = windowHeight;
+				plane.width = view.window.width;
+				plane.height = view.window.height;
 			}
 		}
 
@@ -1328,51 +1353,54 @@ const main = async () => {
 			return true;
 		}
 
-		if (camera.x === focusTargetBox.x && camera.y === focusTargetBox.y) {
+		const newScope = {
+			x: view.focus.x + view.focus.width / 2 - view.window.width / 2,
+			y: view.focus.y + view.focus.height / 2 - view.window.height / 2,
+			width: view.window.width,
+			height: view.window.height,
+		};
+
+		if (newScope.x === view.scope.x && newScope.y === view.scope.y) {
 			//console.debug("Camera update was redundant.");
 			return false;
 		}
 
-		console.debug("Adjusting target box...");
+		console.debug("Adjusting scope...",newScope);
 
 		targetElementX.classList.remove("visible");
 		targetElementY.classList.remove("visible");
 		targetElementW.classList.remove("visible");
 		targetElementH.classList.remove("visible");
 
-		targetElementX.style.left = `${focusTargetBox.x + focusTargetBox.w / 2 - document.documentElement.clientWidth / 2}px`;
-		targetElementX.style.top = `${focusTargetBox.y - 2}px`;
-		targetElementX.style.height = `${focusTargetBox.h + 4}px`;
-		targetElementX.style.width = `${document.documentElement.clientWidth / 2 - focusTargetBox.w / 2 - 2}px`;
+		view.scope = newScope;
 
-		targetElementY.style.left = `${focusTargetBox.x + focusTargetBox.w / 2 - document.documentElement.clientWidth / 2}px`;
-		targetElementY.style.top = `${focusTargetBox.y + focusTargetBox.h / 2 - document.documentElement.clientHeight / 2}px`;
-		targetElementY.style.height = `${document.documentElement.clientHeight / 2 - focusTargetBox.h / 2 - 2}px`;
-		targetElementY.style.width = `${document.documentElement.clientWidth}px`;
+		targetElementX.style.left = `${view.scope.x}px`;
+		targetElementX.style.top = `${view.focus.y - 2}px`;
+		targetElementX.style.width = `${view.window.width / 2 - view.focus.width / 2 - 2}px`;
+		targetElementX.style.height = `${view.focus.height + 4}px`;
 
-		targetElementW.style.left = `${focusTargetBox.x + focusTargetBox.w + 2}px`;
-		targetElementW.style.top = `${focusTargetBox.y - 2}px`;
-		targetElementW.style.height = `${focusTargetBox.h + 4}px`;
-		targetElementW.style.width = `${document.documentElement.clientWidth / 2 - focusTargetBox.w / 2 - 2}px`;
+		targetElementY.style.left = `${view.scope.x}px`;
+		targetElementY.style.top = `${view.scope.y}px`;
+		targetElementY.style.width = `${view.window.width}px`;
+		targetElementY.style.height = `${view.window.height / 2 - view.focus.height / 2 - 2}px`;
 
-		targetElementH.style.left = `${focusTargetBox.x + focusTargetBox.w / 2 - document.documentElement.clientWidth / 2}px`;
-		targetElementH.style.top = `${focusTargetBox.y + focusTargetBox.h + 2}px`;
-		targetElementH.style.height = `${document.documentElement.clientHeight / 2 - focusTargetBox.h / 2 - 2}px`;
-		targetElementH.style.width = `${document.documentElement.clientWidth}px`;
+		targetElementW.style.left = `${view.focus.x + view.focus.width + 2}px`;
+		targetElementW.style.top = `${view.focus.y - 2}px`;
+		targetElementW.style.width = `${view.window.width / 2 - view.focus.width / 2 - 2}px`;
+		targetElementW.style.height = `${view.focus.height + 4}px`;
 
-		console.debug("Focusing new focus box...", focusTargetBox);
+		targetElementH.style.left = `${view.scope.x}px`;
+		targetElementH.style.top = `${view.focus.y + view.focus.height + 2}px`;
+		targetElementH.style.width = `${view.window.width}px`;
+		targetElementH.style.height = `${view.window.height / 2 - view.focus.height / 2 - 2}px`;
+
+		console.debug("Focusing new focus box...", view.focus);
 
 		cameraIsIdle = true;
 		window.scrollTo({
-			top:
-				focusTargetBox.y +
-				focusTargetBox.h / 2 -
-				document.documentElement.clientHeight / 2,
 			behavior: requestInstantFocusUpdate ? "instant" : "smooth",
-			left:
-				focusTargetBox.x +
-				focusTargetBox.w / 2 -
-				document.documentElement.clientWidth / 2,
+			left: view.scope.x,
+			top: view.scope.y,
 		});
 		timeoutCameraUnlock = window.setTimeout(() => {
 			timeoutCameraUnlock = undefined;
@@ -1959,8 +1987,7 @@ const main = async () => {
 
 	const cameraMovementFinalize = () => {
 		cameraIsIdle = false;
-		camera = { ...focusTargetBox };
-		lastKnownScrollPosition = focusTargetBox.y;
+		lastKnownScrollPosition = view.scope.y;
 		targetElementX.classList.add("visible");
 		targetElementY.classList.add("visible");
 		targetElementW.classList.add("visible");
@@ -1970,7 +1997,7 @@ const main = async () => {
 		window.clearTimeout(timeoutCameraUnlock);
 		timeoutCameraUnlock = undefined;
 		cameraMovementFinalize();
-		console.debug("Camera updated", camera);
+		console.debug("Camera updated", view);
 	};
 
 	//#region Frame Loop
@@ -2009,23 +2036,23 @@ const main = async () => {
 				const planeOffsets = [planeSet[0], planeSet[1]];
 				const planes = [planeSet[2], planeSet[3]];
 
-				planeOffsets[0] = offset % windowHeight;
-				planeOffsets[1] = (offset % windowHeight) - windowHeight;
+				planeOffsets[0] = offset % view.window.height;
+				planeOffsets[1] = (offset % view.window.height) - view.window.height;
 
 				planes[0].style.transition =
-					windowHeight / 2 < Math.abs(planeSet[0] - planeOffsets[0])
+					view.window.height / 2 < Math.abs(planeSet[0] - planeOffsets[0])
 						? "none"
 						: "ease-out all 0.9s";
 				planes[1].style.transition =
-					windowHeight / 2 < Math.abs(planeSet[1] - planeOffsets[1])
+					view.window.height / 2 < Math.abs(planeSet[1] - planeOffsets[1])
 						? "none"
 						: "ease-out all 0.9s";
 				planes[0].style.opacity =
-					windowHeight / 2 < Math.abs(planeSet[0] - planeOffsets[0])
+					view.window.height / 2 < Math.abs(planeSet[0] - planeOffsets[0])
 						? "0"
 						: "1";
 				planes[1].style.opacity =
-					windowHeight / 2 < Math.abs(planeSet[1] - planeOffsets[1])
+					view.window.height / 2 < Math.abs(planeSet[1] - planeOffsets[1])
 						? "0"
 						: "1";
 
