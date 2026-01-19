@@ -681,6 +681,8 @@ const main = async () => {
 
 		view.window.width = document.documentElement.clientWidth;
 		view.window.height = document.documentElement.clientHeight;
+		view.bounds.width = svg.scrollWidth;
+		view.bounds.height = svg.scrollHeight;
 		view.scope.x = window.scrollX;
 		view.scope.y = window.screenY;
 		view.scope.width = view.window.width;
@@ -1350,6 +1352,7 @@ const main = async () => {
 	const updateCamera = (_updateStatus = false) => {
 		if (cameraIsIdle) {
 			//console.debug("Camera update requested while camera was idle.");
+			cull();
 			return true;
 		}
 
@@ -1365,7 +1368,7 @@ const main = async () => {
 			return false;
 		}
 
-		console.debug("Adjusting scope...",newScope);
+		console.debug("Adjusting scope...", newScope);
 
 		targetElementX.classList.remove("visible");
 		targetElementY.classList.remove("visible");
@@ -1992,12 +1995,47 @@ const main = async () => {
 		targetElementY.classList.add("visible");
 		targetElementW.classList.add("visible");
 		targetElementH.classList.add("visible");
+		cull();
 	};
+	const onScroll = () => {};
 	const onScrollEnd = () => {
 		window.clearTimeout(timeoutCameraUnlock);
 		timeoutCameraUnlock = undefined;
 		cameraMovementFinalize();
 		console.debug("Camera updated", view);
+	};
+
+	let previousFirstVisibleIndex = 0;
+	/** @type {Set<SVGElement>} */
+	let previousVisibleNodes = new Set(document.querySelectorAll("g.node.event"));
+	const cull = () => {
+		const visible = [];
+		let firstVisibleIndex = previousFirstVisibleIndex;
+		for (; 0 < firstVisibleIndex; --firstVisibleIndex) {
+			const event = events[firstVisibleIndex];
+			if (event.bb.y + event.bb.h < view.scope.y) {
+				break;
+			}
+		}
+		for (; firstVisibleIndex < events.length; ++firstVisibleIndex) {
+			const event = events[firstVisibleIndex];
+			if (view.scope.y + view.scope.height < event.bb.y) {
+				break;
+			}
+			visible.push(event);
+		}
+		for (const node of previousVisibleNodes) {
+			node.style.display = "none";
+		}
+		const visibleNodes = new Set();
+		for (const event of visible) {
+			visibleNodes.add(document.getElementById(event.id));
+		}
+		for (const node of visibleNodes) {
+			node.style.display = "block";
+		}
+		previousFirstVisibleIndex = firstVisibleIndex;
+		previousVisibleNodes = visibleNodes;
 	};
 
 	//#region Frame Loop
@@ -2082,6 +2120,7 @@ const main = async () => {
 	document.addEventListener("keyup", onKeyUp);
 	window.addEventListener("popstate", onPopState);
 	window.addEventListener("resize", initGraphics);
+	window.addEventListener("scroll", onScroll);
 	window.addEventListener("scrollend", onScrollEnd);
 
 	window.setTimeout(() => {

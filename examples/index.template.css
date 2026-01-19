@@ -228,7 +228,7 @@ canvas {
 		rgb(255 255 255 / 0) 40%
 	);
 	background-attachment: fixed;
-	/*mix-blend-mode: color-burn;*/
+	mix-blend-mode: color-burn;
 
 	&.visible {
 		transition: opacity 10s;
