@@ -297,15 +297,6 @@ const main = async () => {
 		}
 	}
 
-	// The ID of the currently focused node.
-	/** @type {string | undefined} */
-	let idFocused;
-	/**
-	 * The ID of the timeline the focused node is part of.
-	 * @type {string | undefined}
-	 */
-	let idFocusedTimeline;
-
 	console.info("Constructing star planes...");
 	const starPlanes = Array.from({
 		length: 12,
@@ -330,58 +321,18 @@ const main = async () => {
 	const startTime = Date.now();
 	let lastKnownScrollPosition = 0;
 
-	/**
-	 * @param id {string | undefined} -
-	 * @param onTimelineId {string | undefined} -
-	 */
-	const findNodeNeighbors = (
-		id = idFocused,
-		onTimelineId = idFocusedTimeline,
-	) => {
-		if (id === undefined || onTimelineId === undefined) {
-			throw new Error("missing id");
-		}
-
-		const eventDateMatch = id.match(/^Z\d{4}-\d{2}-\d{2}/);
-		if (eventDateMatch === null || eventDateMatch.length === 0) {
-			throw new Error(`Unable to match date in ID '${id}'`);
-		}
-
-		const timelineIds = contributors.get(id);
-		if (timelineIds === undefined) {
-			throw new Error(`Unable to find timeline ID for event ID '${id}'`);
-		}
-
-		if (!timelineIds.includes(onTimelineId)) {
-			throw new Error(
-				`Event ID '${id}' is not on timeline ID '${onTimelineId}'`,
-			);
-		}
-
-		const eventIds = timelineEvents.get(onTimelineId)?.map((_) => _.id);
-		if (eventIds === undefined) {
-			throw new Error(
-				`Unable to find event IDs for timeline ID '${onTimelineId}'`,
-			);
-		}
-
-		const eventIndexOnTimeline = eventIds.indexOf(id);
-
-		return {
-			up:
-				eventIndexOnTimeline === 0 ? null : eventIds[eventIndexOnTimeline - 1],
-			down:
-				eventIndexOnTimeline === eventIds.length - 1
-					? null
-					: eventIds[eventIndexOnTimeline + 1],
-			intersection: timelineIds.filter((_) =>
-				[1, 2].includes(timelines.get(_)?.[2] ?? 0),
-			),
-			mediaItems: timelineIds.filter((_) => timelines.get(_)?.[2] === 3),
-		};
-	};
-
 	//#region Focus Select
+	// The ID of the currently focused node.
+	/** @type {string | undefined} */
+	let idFocused;
+	/**
+	 * The ID of the timeline the focused node is part of.
+	 * @type {string | undefined}
+	 */
+	let idFocusedTimeline;
+
+	let previousTimelineActive = idFocusedTimeline;
+
 	/**
 	 * @param {Date} date -
 	 */
@@ -512,6 +463,189 @@ const main = async () => {
 		};
 		console.debug("New focus box requested", view.focus);
 	};
+
+	/**
+	 * @param id {string | undefined} -
+	 * @param onTimelineId {string | undefined} -
+	 */
+	const findNodeNeighbors = (
+		id = idFocused,
+		onTimelineId = idFocusedTimeline,
+	) => {
+		if (id === undefined || onTimelineId === undefined) {
+			throw new Error("missing id");
+		}
+
+		const eventDateMatch = id.match(/^Z\d{4}-\d{2}-\d{2}/);
+		if (eventDateMatch === null || eventDateMatch.length === 0) {
+			throw new Error(`Unable to match date in ID '${id}'`);
+		}
+
+		const timelineIds = contributors.get(id);
+		if (timelineIds === undefined) {
+			throw new Error(`Unable to find timeline ID for event ID '${id}'`);
+		}
+
+		if (!timelineIds.includes(onTimelineId)) {
+			throw new Error(
+				`Event ID '${id}' is not on timeline ID '${onTimelineId}'`,
+			);
+		}
+
+		const eventIds = timelineEvents.get(onTimelineId)?.map((_) => _.id);
+		if (eventIds === undefined) {
+			throw new Error(
+				`Unable to find event IDs for timeline ID '${onTimelineId}'`,
+			);
+		}
+
+		const eventIndexOnTimeline = eventIds.indexOf(id);
+
+		return {
+			up:
+				eventIndexOnTimeline === 0 ? null : eventIds[eventIndexOnTimeline - 1],
+			down:
+				eventIndexOnTimeline === eventIds.length - 1
+					? null
+					: eventIds[eventIndexOnTimeline + 1],
+			intersection: timelineIds.filter((_) =>
+				[1, 2].includes(timelines.get(_)?.[2] ?? 0),
+			),
+			mediaItems: timelineIds.filter((_) => timelines.get(_)?.[2] === 3),
+		};
+	};
+	//#endregion
+
+	//#region Camera
+	let cameraFocus = { x: 0, y: 0 };
+	let cameraIsIdle = false;
+	let cameraIsDetached = false;
+	/** @type {number | undefined} */
+	let timeoutCameraUnlock;
+	const updateCamera = (_updateStatus = false) => {
+		if (cameraIsIdle) {
+			//console.debug("Camera update requested while camera was idle.");
+			view.scope.x = window.scrollX;
+			view.scope.y = window.scrollY;
+			return true;
+		}
+
+		const newFocus = {
+			x: view.focus.x + view.focus.width / 2,
+			y: view.focus.y + view.focus.height / 2,
+		};
+
+		if (newFocus.x === cameraFocus.x && newFocus.y === cameraFocus.y) {
+			//console.debug("Camera update was redundant.");
+			return false;
+		}
+
+		const newScope = {
+			x: newFocus.x - view.window.width / 2,
+			y: newFocus.y - view.window.height / 2,
+			width: view.window.width,
+			height: view.window.height,
+		};
+
+		console.debug("Camera doesn't match focus. Adjusting scope...", newScope);
+
+		targetElementX.classList.remove("visible");
+		targetElementY.classList.remove("visible");
+		targetElementW.classList.remove("visible");
+		targetElementH.classList.remove("visible");
+
+		cameraFocus = newFocus;
+
+		cameraIsIdle = true;
+		window.scrollTo({
+			behavior: requestInstantFocusUpdate ? "instant" : "smooth",
+			left: newScope.x,
+			top: newScope.y,
+		});
+		timeoutCameraUnlock = window.setTimeout(() => {
+			timeoutCameraUnlock = undefined;
+			cameraMovementFinalize();
+			console.warn("Forced camera movement finalization!");
+		}, 3000);
+
+		return false;
+	};
+
+	const cameraMovementFinalize = () => {
+		cameraIsIdle = false;
+		requestInstantFocusUpdate = false;
+		lastKnownScrollPosition = view.scope.y;
+
+		cull();
+
+		targetElementX.style.left = `${view.scope.x}px`;
+		targetElementX.style.top = `${view.focus.y - 2}px`;
+		targetElementX.style.width = `${view.window.width / 2 - view.focus.width / 2 - 2}px`;
+		targetElementX.style.height = `${view.focus.height + 4}px`;
+
+		targetElementY.style.left = `${view.scope.x}px`;
+		targetElementY.style.top = `${view.scope.y}px`;
+		targetElementY.style.width = `${view.window.width}px`;
+		targetElementY.style.height = `${view.window.height / 2 - view.focus.height / 2 - 2}px`;
+
+		targetElementW.style.left = `${view.focus.x + view.focus.width + 2}px`;
+		targetElementW.style.top = `${view.focus.y - 2}px`;
+		targetElementW.style.width = `${view.window.width / 2 - view.focus.width / 2 - 2}px`;
+		targetElementW.style.height = `${view.focus.height + 4}px`;
+
+		targetElementH.style.left = `${view.scope.x}px`;
+		targetElementH.style.top = `${view.focus.y + view.focus.height + 2}px`;
+		targetElementH.style.width = `${view.window.width}px`;
+		targetElementH.style.height = `${view.window.height / 2 - view.focus.height / 2 - 2}px`;
+
+		targetElementX.classList.add("visible");
+		targetElementY.classList.add("visible");
+		targetElementW.classList.add("visible");
+		targetElementH.classList.add("visible");
+	};
+	const onScrollEnd = () => {
+		window.clearTimeout(timeoutCameraUnlock);
+		timeoutCameraUnlock = undefined;
+
+		view.scope.x = window.scrollX;
+		view.scope.y = window.scrollY;
+
+		cameraMovementFinalize();
+		console.debug("Camera updated", view);
+	};
+
+	let previousFirstVisibleIndex = 0;
+	/** @type {Set<SVGElement>} */
+	let previousVisibleNodes = new Set(document.querySelectorAll("g.node.event"));
+	const cull = () => {
+		const visible = [];
+		let firstVisibleIndex = previousFirstVisibleIndex;
+		for (; 0 < firstVisibleIndex; --firstVisibleIndex) {
+			const event = events[firstVisibleIndex];
+			if (event.bb.y + event.bb.h < view.scope.y) {
+				break;
+			}
+		}
+		for (; firstVisibleIndex < events.length; ++firstVisibleIndex) {
+			const event = events[firstVisibleIndex];
+			if (view.scope.y + view.scope.height < event.bb.y) {
+				break;
+			}
+			visible.push(event);
+		}
+		for (const node of previousVisibleNodes) {
+			node.style.display = "none";
+		}
+		const visibleNodes = new Set();
+		for (const event of visible) {
+			visibleNodes.add(document.getElementById(event.id));
+		}
+		for (const node of visibleNodes) {
+			node.style.display = "block";
+		}
+		previousFirstVisibleIndex = firstVisibleIndex;
+		previousVisibleNodes = visibleNodes;
+	};
 	//#endregion
 
 	//#region Mouse Handling
@@ -581,10 +715,6 @@ const main = async () => {
 		}
 	};
 	//#endregion
-
-	let mediaItemRotation = { x: 0, y: 0 };
-	let mediaItemPosition = { x: 0, y: 0, z: 0 };
-	let mediaItemVisible = false;
 
 	//#region Navigation Helper
 	const navigateForward = () => {
@@ -656,98 +786,19 @@ const main = async () => {
 		focusNode(event.state.id, undefined, false);
 	};
 
-	const getRandomColor = () => {
-		const components =
-			starColorsRGB[Math.floor(Math.random() * starColorsRGB.length)];
-		const scale = 1 / (Math.random() * 3);
-		const color = components.map((_) => Math.floor(_ * scale)).join(" ");
-		return `rgb(${color})`;
-	};
-
-	const view = {
-		window: {
-			width: 0,
-			height: 0,
-		},
-		bounds: {
-			width: 0,
-			height: 0,
-		},
-		scope: {
-			x: 0,
-			y: 0,
-			width: 0,
-			height: 0,
-		},
-		focus: {
-			x: 0,
-			y: 0,
-			width: 0,
-			height: 0,
-		},
-	};
-	const initGraphics = () => {
-		console.info("Initializing graphics...");
-
-		view.window.width = document.documentElement.clientWidth;
-		view.window.height = document.documentElement.clientHeight;
-		view.bounds.width = svg.scrollWidth;
-		view.bounds.height = svg.scrollHeight;
-		view.scope.x = window.scrollX;
-		view.scope.y = window.scrollY;
-		view.scope.width = view.window.width;
-		view.scope.height = view.window.height;
-
-		for (const [, , planeTop, planeBottom] of starPlanes) {
-			for (const plane of [planeTop, planeBottom]) {
-				plane.width = view.window.width;
-				plane.height = view.window.height;
-			}
-		}
-
-		let stars = 2 ** 11;
-		for (const [, , planeTop, planeBottom] of starPlanes) {
-			for (const plane of [planeTop, planeBottom]) {
-				const context = plane.getContext("2d");
-				if (context === null) {
-					throw new Error(
-						"Unable to initialize 2D rendering context for star plane.",
-					);
-				}
-
-				for (let _ = 0; _ < stars; ++_) {
-					context.beginPath();
-					context.arc(
-						Math.random() * plane.width,
-						Math.random() * plane.height,
-						Math.random(),
-						0,
-						Math.PI * 2,
-					);
-					context.fillStyle = getRandomColor();
-					context.fill();
-				}
-
-				document.body.append(plane);
-			}
-
-			stars *= 0.9;
-		}
-	};
-
 	let requestInstantFocusUpdate = false;
 	const INPUT_THRESHOLD = 0.1;
-	const _SPEED_FREE_FLIGHT = 5.0;
+	const SPEED_FREE_FLIGHT = 5.0;
 	const SPEED_MEDIA_SCALE = 0.5;
 	const SPEED_MEDIA_TRANSLATE = 0.5;
 
-	let previousTimelineActive = idFocusedTimeline;
+	//#region Input Plane Neutral
 	/**
 	 * @typedef {{
-	 * name: string,
-	 * axes?: undefined|((frame: InputFrame) => void),
-	 * pressed?: Record<number, undefined|((frame: InputFrame) => (InputPlane | undefined))>,
-	 * released?: Record<number, undefined|((frame: InputFrame) => (InputPlane | undefined))>,
+	 * 	name: string,
+	 * 	axes?: undefined | ((frame: InputFrame) => void),
+	 * 	pressed?: Record<number, undefined | ((frame: InputFrame) => (InputPlane | undefined))>,
+	 * 	released?: Record<number, undefined | ((frame: InputFrame) => (InputPlane | undefined))>,
 	 * }} InputPlane
 	 * @type {InputPlane}
 	 */
@@ -801,159 +852,25 @@ const main = async () => {
 				};
 			},
 		},
-	};
-
-	/** @type {InputPlane} */
-	const InputPlaneMedia = {
-		name: "media",
-		pressed: {
-			[Inputs.BUTTON_BACK]: () => {
-				mediaClose();
-				return {
-					name: "return",
-					released: { [Inputs.BUTTON_BACK]: returnToNeutral },
-				};
-			},
-			[Inputs.BUTTON_LB]: () => {
-				if (!mediaBackward()) {
-					mediaClose();
-					return {
-						name: "return",
-						released: { [Inputs.BUTTON_LB]: returnToNeutral },
-					};
-				}
-				return {
-					name: "return",
-					released: { [Inputs.BUTTON_LB]: returnToMedia },
-				};
-			},
-			[Inputs.BUTTON_RB]: () => {
-				if (!mediaForward()) {
-					mediaClose();
-					return {
-						name: "return",
-						released: { [Inputs.BUTTON_RB]: returnToNeutral },
-					};
-				}
-				return {
-					name: "return",
-					released: { [Inputs.BUTTON_RB]: returnToMedia },
-				};
-			},
-			[Inputs.BUTTON_LT]: (frame) => {
-				mediaItemPosition.z -= (frame.delta / (1000 / 60)) * SPEED_MEDIA_SCALE;
-				// Otherwise the item ends up behind the camera, or too far away.
-				mediaItemPosition.z = Math.max(Math.min(mediaItemPosition.z, 39), -130);
-				return {
-					name: "return",
-					pressed: {
-						[Inputs.BUTTON_LT]: InputPlaneMedia.pressed?.[Inputs.BUTTON_LT],
-					},
-					released: { [Inputs.BUTTON_LT]: returnToMedia },
-				};
-			},
-			[Inputs.BUTTON_RT]: (frame) => {
-				mediaItemPosition.z += (frame.delta / (1000 / 60)) * SPEED_MEDIA_SCALE;
-				// Otherwise the item ends up behind the camera, or too far away.
-				mediaItemPosition.z = Math.max(Math.min(mediaItemPosition.z, 39), -130);
-				return {
-					name: "return",
-					pressed: {
-						[Inputs.BUTTON_RT]: InputPlaneMedia.pressed?.[Inputs.BUTTON_RT],
-					},
-					released: { [Inputs.BUTTON_RT]: returnToMedia },
-				};
-			},
-		},
 		axes: (frame) => {
 			if (INPUT_THRESHOLD < Math.abs(frame.axes[Inputs.AXIS_LEFT_X])) {
-				mediaItemPosition.x -=
+				cameraIsDetached = true;
+				view.focus.x -=
 					frame.axes[Inputs.AXIS_LEFT_X] *
 					(frame.delta / (1000 / 60)) *
-					SPEED_MEDIA_TRANSLATE;
+					SPEED_FREE_FLIGHT;
 			}
 			if (INPUT_THRESHOLD < Math.abs(frame.axes[Inputs.AXIS_LEFT_Y])) {
-				mediaItemPosition.x -=
+				cameraIsDetached = true;
+				view.focus.y -=
 					frame.axes[Inputs.AXIS_LEFT_Y] *
 					(frame.delta / (1000 / 60)) *
-					SPEED_MEDIA_TRANSLATE;
+					SPEED_FREE_FLIGHT;
 			}
 
-			if (INPUT_THRESHOLD < Math.abs(frame.axes[Inputs.AXIS_RIGHT_X])) {
-				mediaItemPosition.x -=
-					frame.axes[Inputs.AXIS_RIGHT_X] *
-					(frame.delta / (1000 / 60)) *
-					SPEED_MEDIA_TRANSLATE;
-			}
-			if (INPUT_THRESHOLD < Math.abs(frame.axes[Inputs.AXIS_RIGHT_Y])) {
-				mediaItemPosition.y -=
-					frame.axes[Inputs.AXIS_RIGHT_Y] *
-					(frame.delta / (1000 / 60)) *
-					SPEED_MEDIA_TRANSLATE;
-			}
-
-			mediaItemPosition.x = Math.max(Math.min(mediaItemPosition.x, 95), -95);
-			mediaItemPosition.y = Math.max(
-				Math.min(mediaItemPosition.y, 10),
-				-1_000_000,
-			);
-		},
-	};
-
-	/** @type {InputPlane} */
-	const InputPlaneMenuSwitchTimeline = {
-		name: "menuSwitchTimeline",
-		pressed: {
-			[Inputs.BUTTON_UP]: () => {
-				if (idFocusedTimeline === undefined || idFocused === undefined) {
-					return undefined;
-				}
-				const neighbors = findNodeNeighbors();
-				const activeIndex = neighbors.intersection.indexOf(idFocusedTimeline);
-				focusNode(idFocused, neighbors.intersection[activeIndex - 1]);
-				sfxPlayTap();
-				menuSwitchTimeline();
-				return {
-					name: "return",
-					released: {
-						[Inputs.BUTTON_UP]: returnToMenuPlane(InputPlaneMenuSwitchTimeline),
-					},
-				};
-			},
-			[Inputs.BUTTON_DOWN]: () => {
-				if (idFocusedTimeline === undefined || idFocused === undefined) {
-					return undefined;
-				}
-				const neighbors = findNodeNeighbors();
-				const activeIndex = neighbors.intersection.indexOf(idFocusedTimeline);
-				focusNode(idFocused, neighbors.intersection[activeIndex + 1]);
-				sfxPlayTap();
-				menuSwitchTimeline();
-				return {
-					name: "return",
-					released: {
-						[Inputs.BUTTON_DOWN]: returnToMenuPlane(
-							InputPlaneMenuSwitchTimeline,
-						),
-					},
-				};
-			},
-			[Inputs.BUTTON_A]: () => {
-				sfxPlaySwipe();
-				sfxPlay("button");
-				return {
-					name: "return",
-					released: { [Inputs.BUTTON_A]: returnToNeutral },
-				};
-			},
-			[Inputs.BUTTON_X]: () => {
-				focusNode(idFocused, previousTimelineActive);
-				sfxPlaySwipe();
-				return {
-					name: "return",
-					released: { [Inputs.BUTTON_X]: returnToNeutral },
-				};
-			},
+			view.focus.x = Math.max(Math.min(view.focus.x, view.bounds.width), 0);
+			view.focus.y = Math.max(Math.min(view.focus.y, view.bounds.height), 0);
+			requestInstantFocusUpdate = true;
 		},
 	};
 
@@ -974,16 +891,9 @@ const main = async () => {
 		updateStatus();
 		return InputPlaneNeutral;
 	};
-	const returnToMedia = () => {
-		console.debug("Clearing input cache, returning media plane.");
-		InputFrameCache = [];
-		calendarContainer.classList.add("open");
-		menuContainer.classList.remove("open");
-		statusContainer.classList.add("open");
-		shouldersContainer.classList.add("visible");
-		updateStatus();
-		return InputPlaneMedia;
-	};
+	//#endregion
+	let activeInputPlane = InputPlaneNeutral;
+
 	/**
 	 * @param {InputPlane} plane -
 	 */
@@ -996,8 +906,6 @@ const main = async () => {
 		shouldersContainer.classList.remove("visible");
 		return plane;
 	};
-
-	let activeInputPlane = InputPlaneNeutral;
 
 	//#region Input Handling
 	/**
@@ -1146,10 +1054,14 @@ const main = async () => {
 	};
 	//#endregion
 
+	//#region Media
 	/** @type {Array<string> | undefined} */
 	let timelineMediaIds;
 	/** @type {number | undefined} */
 	let timelineMediaIdActive;
+	let mediaItemRotation = { x: 0, y: 0 };
+	let mediaItemPosition = { x: 0, y: 0, z: 0 };
+	let mediaItemVisible = false;
 
 	/** @type {number | null} */
 	let iFrameResizeHandle = null;
@@ -1197,7 +1109,6 @@ const main = async () => {
 		dialogIFrame.style.height = "150px";
 		dialogIFrame.style.width = "";
 	};
-
 	/**
 	 * @param {number} mediaIndex -
 	 */
@@ -1260,7 +1171,6 @@ const main = async () => {
 			timelineMediaIdActive === undefined ? 0 : timelineMediaIdActive - 1,
 		);
 	};
-
 	const mediaClose = () => {
 		console.info("Closing media...");
 		if (iFrameResizeHandle !== null) {
@@ -1271,6 +1181,115 @@ const main = async () => {
 		mediaReset();
 		mediaItemVisible = false;
 	};
+
+	/** @type {InputPlane} */
+	const InputPlaneMedia = {
+		name: "media",
+		pressed: {
+			[Inputs.BUTTON_BACK]: () => {
+				mediaClose();
+				return {
+					name: "return",
+					released: { [Inputs.BUTTON_BACK]: returnToNeutral },
+				};
+			},
+			[Inputs.BUTTON_LB]: () => {
+				if (!mediaBackward()) {
+					mediaClose();
+					return {
+						name: "return",
+						released: { [Inputs.BUTTON_LB]: returnToNeutral },
+					};
+				}
+				return {
+					name: "return",
+					released: { [Inputs.BUTTON_LB]: returnToMedia },
+				};
+			},
+			[Inputs.BUTTON_RB]: () => {
+				if (!mediaForward()) {
+					mediaClose();
+					return {
+						name: "return",
+						released: { [Inputs.BUTTON_RB]: returnToNeutral },
+					};
+				}
+				return {
+					name: "return",
+					released: { [Inputs.BUTTON_RB]: returnToMedia },
+				};
+			},
+			[Inputs.BUTTON_LT]: (frame) => {
+				mediaItemPosition.z -= (frame.delta / (1000 / 60)) * SPEED_MEDIA_SCALE;
+				// Otherwise the item ends up behind the camera, or too far away.
+				mediaItemPosition.z = Math.max(Math.min(mediaItemPosition.z, 39), -130);
+				return {
+					name: "return",
+					pressed: {
+						[Inputs.BUTTON_LT]: InputPlaneMedia.pressed?.[Inputs.BUTTON_LT],
+					},
+					released: { [Inputs.BUTTON_LT]: returnToMedia },
+				};
+			},
+			[Inputs.BUTTON_RT]: (frame) => {
+				mediaItemPosition.z += (frame.delta / (1000 / 60)) * SPEED_MEDIA_SCALE;
+				// Otherwise the item ends up behind the camera, or too far away.
+				mediaItemPosition.z = Math.max(Math.min(mediaItemPosition.z, 39), -130);
+				return {
+					name: "return",
+					pressed: {
+						[Inputs.BUTTON_RT]: InputPlaneMedia.pressed?.[Inputs.BUTTON_RT],
+					},
+					released: { [Inputs.BUTTON_RT]: returnToMedia },
+				};
+			},
+		},
+		axes: (frame) => {
+			if (INPUT_THRESHOLD < Math.abs(frame.axes[Inputs.AXIS_LEFT_X])) {
+				mediaItemPosition.x -=
+					frame.axes[Inputs.AXIS_LEFT_X] *
+					(frame.delta / (1000 / 60)) *
+					SPEED_MEDIA_TRANSLATE;
+			}
+			if (INPUT_THRESHOLD < Math.abs(frame.axes[Inputs.AXIS_LEFT_Y])) {
+				mediaItemPosition.x -=
+					frame.axes[Inputs.AXIS_LEFT_Y] *
+					(frame.delta / (1000 / 60)) *
+					SPEED_MEDIA_TRANSLATE;
+			}
+
+			if (INPUT_THRESHOLD < Math.abs(frame.axes[Inputs.AXIS_RIGHT_X])) {
+				mediaItemPosition.x -=
+					frame.axes[Inputs.AXIS_RIGHT_X] *
+					(frame.delta / (1000 / 60)) *
+					SPEED_MEDIA_TRANSLATE;
+			}
+			if (INPUT_THRESHOLD < Math.abs(frame.axes[Inputs.AXIS_RIGHT_Y])) {
+				mediaItemPosition.y -=
+					frame.axes[Inputs.AXIS_RIGHT_Y] *
+					(frame.delta / (1000 / 60)) *
+					SPEED_MEDIA_TRANSLATE;
+			}
+
+			mediaItemPosition.x = Math.max(Math.min(mediaItemPosition.x, 95), -95);
+			mediaItemPosition.y = Math.max(
+				Math.min(mediaItemPosition.y, 10),
+				-1_000_000,
+			);
+		},
+	};
+
+	const returnToMedia = () => {
+		console.debug("Clearing input cache, returning media plane.");
+		InputFrameCache = [];
+		calendarContainer.classList.add("open");
+		menuContainer.classList.remove("open");
+		statusContainer.classList.add("open");
+		shouldersContainer.classList.add("visible");
+		updateStatus();
+		return InputPlaneMedia;
+	};
+	//#endregion
 
 	const updateStatus = () => {
 		statusOptions.classList.remove("visible");
@@ -1337,6 +1356,63 @@ const main = async () => {
 					? "Schließen"
 					: "Vorwärts blättern";
 	};
+
+	/** @type {InputPlane} */
+	const InputPlaneMenuSwitchTimeline = {
+		name: "menuSwitchTimeline",
+		pressed: {
+			[Inputs.BUTTON_UP]: () => {
+				if (idFocusedTimeline === undefined || idFocused === undefined) {
+					return undefined;
+				}
+				const neighbors = findNodeNeighbors();
+				const activeIndex = neighbors.intersection.indexOf(idFocusedTimeline);
+				focusNode(idFocused, neighbors.intersection[activeIndex - 1]);
+				sfxPlayTap();
+				menuSwitchTimeline();
+				return {
+					name: "return",
+					released: {
+						[Inputs.BUTTON_UP]: returnToMenuPlane(InputPlaneMenuSwitchTimeline),
+					},
+				};
+			},
+			[Inputs.BUTTON_DOWN]: () => {
+				if (idFocusedTimeline === undefined || idFocused === undefined) {
+					return undefined;
+				}
+				const neighbors = findNodeNeighbors();
+				const activeIndex = neighbors.intersection.indexOf(idFocusedTimeline);
+				focusNode(idFocused, neighbors.intersection[activeIndex + 1]);
+				sfxPlayTap();
+				menuSwitchTimeline();
+				return {
+					name: "return",
+					released: {
+						[Inputs.BUTTON_DOWN]: returnToMenuPlane(
+							InputPlaneMenuSwitchTimeline,
+						),
+					},
+				};
+			},
+			[Inputs.BUTTON_A]: () => {
+				sfxPlaySwipe();
+				sfxPlay("button");
+				return {
+					name: "return",
+					released: { [Inputs.BUTTON_A]: returnToNeutral },
+				};
+			},
+			[Inputs.BUTTON_X]: () => {
+				focusNode(idFocused, previousTimelineActive);
+				sfxPlaySwipe();
+				return {
+					name: "return",
+					released: { [Inputs.BUTTON_X]: returnToNeutral },
+				};
+			},
+		},
+	};
 	const updateStatusMenuSwitchTimeline = () => {
 		statusOptions.classList.remove("visible");
 		shoulderLeft.style.visibility = "hidden";
@@ -1351,62 +1427,6 @@ const main = async () => {
 		statusOptionY.textContent = "";
 		statusText.textContent = "";
 		intro.style.color = "transparent";
-	};
-
-	let cameraFocus = { x: 0, y: 0 };
-	let cameraIsIdle = false;
-	let cameraIsDetached = false;
-	/** @type {number | undefined} */
-	let timeoutCameraUnlock;
-	const updateCamera = (_updateStatus = false) => {
-		if (cameraIsIdle) {
-			//console.debug("Camera update requested while camera was idle.");
-			view.scope.x = window.scrollX;
-			view.scope.y = window.scrollY;
-			return true;
-		}
-
-		const newFocus = {
-			x: view.focus.x + view.focus.width / 2,
-			y: view.focus.y + view.focus.height / 2,
-		};
-
-		if (newFocus.x === cameraFocus.x && newFocus.y === cameraFocus.y) {
-			//console.debug("Camera update was redundant.");
-			return false;
-		}
-
-		const newScope = {
-			x: newFocus.x - view.window.width / 2,
-			y: newFocus.y - view.window.height / 2,
-			width: view.window.width,
-			height: view.window.height,
-		};
-
-		console.debug("Camera doesn't match focus. Adjusting scope...", newScope);
-
-		targetElementX.classList.remove("visible");
-		targetElementY.classList.remove("visible");
-		targetElementW.classList.remove("visible");
-		targetElementH.classList.remove("visible");
-
-		cameraFocus = newFocus;
-
-		cameraIsIdle = true;
-		window.scrollTo({
-			behavior: requestInstantFocusUpdate ? "instant" : "smooth",
-			left: newScope.x,
-			top: newScope.y,
-		});
-		timeoutCameraUnlock = window.setTimeout(() => {
-			timeoutCameraUnlock = undefined;
-			cameraMovementFinalize();
-			console.warn("Forced camera movement finalization!");
-		}, 3000);
-
-		requestInstantFocusUpdate = false;
-
-		return false;
 	};
 
 	//#region Main Menu
@@ -1944,6 +1964,7 @@ const main = async () => {
 	};
 	//#endregion
 
+	//#region Switch Timeline
 	/** @type {number | undefined} */
 	let cssRuleHighlightActive;
 	const menuSwitchTimeline = () => {
@@ -1979,81 +2000,7 @@ const main = async () => {
 		statusOptionX.textContent = "Zurück";
 		statusButtonX.style.display = "inline-block";
 	};
-
-	const cameraMovementFinalize = () => {
-		cameraIsIdle = false;
-		lastKnownScrollPosition = view.scope.y;
-
-		cull();
-
-		targetElementX.style.left = `${view.scope.x}px`;
-		targetElementX.style.top = `${view.focus.y - 2}px`;
-		targetElementX.style.width = `${view.window.width / 2 - view.focus.width / 2 - 2}px`;
-		targetElementX.style.height = `${view.focus.height + 4}px`;
-
-		targetElementY.style.left = `${view.scope.x}px`;
-		targetElementY.style.top = `${view.scope.y}px`;
-		targetElementY.style.width = `${view.window.width}px`;
-		targetElementY.style.height = `${view.window.height / 2 - view.focus.height / 2 - 2}px`;
-
-		targetElementW.style.left = `${view.focus.x + view.focus.width + 2}px`;
-		targetElementW.style.top = `${view.focus.y - 2}px`;
-		targetElementW.style.width = `${view.window.width / 2 - view.focus.width / 2 - 2}px`;
-		targetElementW.style.height = `${view.focus.height + 4}px`;
-
-		targetElementH.style.left = `${view.scope.x}px`;
-		targetElementH.style.top = `${view.focus.y + view.focus.height + 2}px`;
-		targetElementH.style.width = `${view.window.width}px`;
-		targetElementH.style.height = `${view.window.height / 2 - view.focus.height / 2 - 2}px`;
-
-		targetElementX.classList.add("visible");
-		targetElementY.classList.add("visible");
-		targetElementW.classList.add("visible");
-		targetElementH.classList.add("visible");
-	};
-	const onScrollEnd = () => {
-		window.clearTimeout(timeoutCameraUnlock);
-		timeoutCameraUnlock = undefined;
-
-		view.scope.x = window.scrollX;
-		view.scope.y = window.scrollY;
-
-		cameraMovementFinalize();
-		console.debug("Camera updated", view);
-	};
-
-	let previousFirstVisibleIndex = 0;
-	/** @type {Set<SVGElement>} */
-	let previousVisibleNodes = new Set(document.querySelectorAll("g.node.event"));
-	const cull = () => {
-		const visible = [];
-		let firstVisibleIndex = previousFirstVisibleIndex;
-		for (; 0 < firstVisibleIndex; --firstVisibleIndex) {
-			const event = events[firstVisibleIndex];
-			if (event.bb.y + event.bb.h < view.scope.y) {
-				break;
-			}
-		}
-		for (; firstVisibleIndex < events.length; ++firstVisibleIndex) {
-			const event = events[firstVisibleIndex];
-			if (view.scope.y + view.scope.height < event.bb.y) {
-				break;
-			}
-			visible.push(event);
-		}
-		for (const node of previousVisibleNodes) {
-			node.style.display = "none";
-		}
-		const visibleNodes = new Set();
-		for (const event of visible) {
-			visibleNodes.add(document.getElementById(event.id));
-		}
-		for (const node of visibleNodes) {
-			node.style.display = "block";
-		}
-		previousFirstVisibleIndex = firstVisibleIndex;
-		previousVisibleNodes = visibleNodes;
-	};
+	//#endregion
 
 	//#region Frame Loop
 	/** @type {number | undefined} */
@@ -2132,6 +2079,85 @@ const main = async () => {
 	//#endregion
 
 	//#region Init
+	const view = {
+		window: {
+			width: 0,
+			height: 0,
+		},
+		bounds: {
+			width: 0,
+			height: 0,
+		},
+		scope: {
+			x: 0,
+			y: 0,
+			width: 0,
+			height: 0,
+		},
+		focus: {
+			x: 0,
+			y: 0,
+			width: 0,
+			height: 0,
+		},
+	};
+
+	const getRandomColor = () => {
+		const components =
+			starColorsRGB[Math.floor(Math.random() * starColorsRGB.length)];
+		const scale = 1 / (Math.random() * 3);
+		const color = components.map((_) => Math.floor(_ * scale)).join(" ");
+		return `rgb(${color})`;
+	};
+	const initGraphics = () => {
+		console.info("Initializing graphics...");
+
+		view.window.width = document.documentElement.clientWidth;
+		view.window.height = document.documentElement.clientHeight;
+		view.bounds.width = svg.scrollWidth;
+		view.bounds.height = svg.scrollHeight;
+		view.scope.x = window.scrollX;
+		view.scope.y = window.scrollY;
+		view.scope.width = view.window.width;
+		view.scope.height = view.window.height;
+
+		for (const [, , planeTop, planeBottom] of starPlanes) {
+			for (const plane of [planeTop, planeBottom]) {
+				plane.width = view.window.width;
+				plane.height = view.window.height;
+			}
+		}
+
+		let stars = 2 ** 11;
+		for (const [, , planeTop, planeBottom] of starPlanes) {
+			for (const plane of [planeTop, planeBottom]) {
+				const context = plane.getContext("2d");
+				if (context === null) {
+					throw new Error(
+						"Unable to initialize 2D rendering context for star plane.",
+					);
+				}
+
+				for (let _ = 0; _ < stars; ++_) {
+					context.beginPath();
+					context.arc(
+						Math.random() * plane.width,
+						Math.random() * plane.height,
+						Math.random(),
+						0,
+						Math.PI * 2,
+					);
+					context.fillStyle = getRandomColor();
+					context.fill();
+				}
+
+				document.body.append(plane);
+			}
+
+			stars *= 0.9;
+		}
+	};
+
 	document.addEventListener("click", onClick);
 	document.addEventListener("keydown", onKeyDown);
 	document.addEventListener("keyup", onKeyUp);
