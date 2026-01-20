@@ -525,8 +525,6 @@ const main = async () => {
 	const updateCamera = (_updateStatus = false) => {
 		if (cameraIsIdle) {
 			//console.debug("Camera update requested while camera was idle.");
-			view.scope.x = window.scrollX;
-			view.scope.y = window.scrollY;
 			return true;
 		}
 
@@ -565,6 +563,7 @@ const main = async () => {
 		timeoutCameraUnlock = window.setTimeout(() => {
 			timeoutCameraUnlock = undefined;
 			cameraMovementFinalize();
+			cull();
 			console.warn("Forced camera movement finalization!");
 		}, 3000);
 
@@ -578,38 +577,39 @@ const main = async () => {
 
 		cull();
 
-		targetElementX.style.left = `${view.scope.x}px`;
-		targetElementX.style.top = `${view.focus.y - 2}px`;
-		targetElementX.style.width = `${view.window.width / 2 - view.focus.width / 2 - 2}px`;
-		targetElementX.style.height = `${view.focus.height + 4}px`;
+		if (!cameraIsDetached) {
+			view.scope.x = window.scrollX;
+			view.scope.y = window.scrollY;
 
-		targetElementY.style.left = `${view.scope.x}px`;
-		targetElementY.style.top = `${view.scope.y}px`;
-		targetElementY.style.width = `${view.window.width}px`;
-		targetElementY.style.height = `${view.window.height / 2 - view.focus.height / 2 - 2}px`;
+			targetElementX.style.left = `${view.scope.x}px`;
+			targetElementX.style.top = `${view.focus.y - 2}px`;
+			targetElementX.style.width = `${view.window.width / 2 - view.focus.width / 2 - 2}px`;
+			targetElementX.style.height = `${view.focus.height + 4}px`;
 
-		targetElementW.style.left = `${view.focus.x + view.focus.width + 2}px`;
-		targetElementW.style.top = `${view.focus.y - 2}px`;
-		targetElementW.style.width = `${view.window.width / 2 - view.focus.width / 2 - 2}px`;
-		targetElementW.style.height = `${view.focus.height + 4}px`;
+			targetElementY.style.left = `${view.scope.x}px`;
+			targetElementY.style.top = `${view.scope.y}px`;
+			targetElementY.style.width = `${view.window.width}px`;
+			targetElementY.style.height = `${view.window.height / 2 - view.focus.height / 2 - 2}px`;
 
-		targetElementH.style.left = `${view.scope.x}px`;
-		targetElementH.style.top = `${view.focus.y + view.focus.height + 2}px`;
-		targetElementH.style.width = `${view.window.width}px`;
-		targetElementH.style.height = `${view.window.height / 2 - view.focus.height / 2 - 2}px`;
+			targetElementW.style.left = `${view.focus.x + view.focus.width + 2}px`;
+			targetElementW.style.top = `${view.focus.y - 2}px`;
+			targetElementW.style.width = `${view.window.width / 2 - view.focus.width / 2 - 2}px`;
+			targetElementW.style.height = `${view.focus.height + 4}px`;
 
-		targetElementX.classList.add("visible");
-		targetElementY.classList.add("visible");
-		targetElementW.classList.add("visible");
-		targetElementH.classList.add("visible");
+			targetElementH.style.left = `${view.scope.x}px`;
+			targetElementH.style.top = `${view.focus.y + view.focus.height + 2}px`;
+			targetElementH.style.width = `${view.window.width}px`;
+			targetElementH.style.height = `${view.window.height / 2 - view.focus.height / 2 - 2}px`;
+
+			targetElementX.classList.add("visible");
+			targetElementY.classList.add("visible");
+			targetElementW.classList.add("visible");
+			targetElementH.classList.add("visible");
+		}
 	};
 	const onScrollEnd = () => {
 		window.clearTimeout(timeoutCameraUnlock);
 		timeoutCameraUnlock = undefined;
-
-		view.scope.x = window.scrollX;
-		view.scope.y = window.scrollY;
-
 		cameraMovementFinalize();
 		console.debug("Camera updated", view);
 	};
@@ -855,14 +855,16 @@ const main = async () => {
 		axes: (frame) => {
 			if (INPUT_THRESHOLD < Math.abs(frame.axes[Inputs.AXIS_LEFT_X])) {
 				cameraIsDetached = true;
-				view.focus.x -=
+				requestInstantFocusUpdate = true;
+				view.focus.x +=
 					frame.axes[Inputs.AXIS_LEFT_X] *
 					(frame.delta / (1000 / 60)) *
 					SPEED_FREE_FLIGHT;
 			}
 			if (INPUT_THRESHOLD < Math.abs(frame.axes[Inputs.AXIS_LEFT_Y])) {
 				cameraIsDetached = true;
-				view.focus.y -=
+				requestInstantFocusUpdate = true;
+				view.focus.y +=
 					frame.axes[Inputs.AXIS_LEFT_Y] *
 					(frame.delta / (1000 / 60)) *
 					SPEED_FREE_FLIGHT;
@@ -870,7 +872,6 @@ const main = async () => {
 
 			view.focus.x = Math.max(Math.min(view.focus.x, view.bounds.width), 0);
 			view.focus.y = Math.max(Math.min(view.focus.y, view.bounds.height), 0);
-			requestInstantFocusUpdate = true;
 		},
 	};
 
@@ -2020,6 +2021,9 @@ const main = async () => {
 
 		const delta = timestamp - previousTimestamp;
 		const deltaStarfield = timestamp - previousTimestampStarfield;
+
+		view.scope.x = window.scrollX;
+		view.scope.y = window.scrollY;
 		handleInputs(delta);
 		updateCamera();
 
@@ -2182,6 +2186,9 @@ const main = async () => {
 
 		window.requestAnimationFrame(present);
 		window.setTimeout(() => {
+			// Ensure initial view is culled.
+			cull();
+
 			console.info("Program init finalized.");
 			document.body.classList.remove("loading");
 
