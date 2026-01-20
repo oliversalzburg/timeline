@@ -13,6 +13,7 @@ import {
 	deduplicateRecords,
 	map,
 	mergeDuringPeriod,
+	roundDateToDay,
 	sort,
 	sortRecords,
 	uniquifyRecords,
@@ -235,7 +236,7 @@ const fillOthers = (timeline, graph) => {
 
 	/** @type {import("../lib/types.js").TimelineRecord} */
 	const conceptionRecord = [
-		Math.trunc(birth.valueOf() - 9 * MILLISECONDS.ONE_MONTH),
+		roundDateToDay(Math.trunc(birth.valueOf() - 9 * MILLISECONDS.ONE_MONTH)),
 		{ title: `Geschätzte Zeugung\n${name}`, generated: true },
 	];
 	/** @type {import("../lib/types.js").TimelineRecord} */

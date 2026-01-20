@@ -217,7 +217,6 @@ canvas {
 }
 .target {
 	opacity: 0;
-	visibility: hidden;
 	position: absolute;
 	margin: 0;
 	padding: 0;
@@ -229,11 +228,11 @@ canvas {
 	);
 	background-attachment: fixed;
 	mix-blend-mode: color-burn;
+	transition: ease-out opacity 0.2s;
 
 	&.visible {
 		transition: opacity 10s;
 		transition-delay: 5s;
-		visibility: visible;
 		opacity: 1;
 	}
 

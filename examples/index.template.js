@@ -296,14 +296,14 @@ const main = async () => {
 			timelineEvents.set(contributorMeta[0], contributorEvents);
 		}
 	}
-	/** @type {Map<string, import("source/types.js").TimelineMetadata>} */
-	const lookupTimelineToMetadata = new Map(DATA[1].map((_) => [_[0], _]));
 
 	// The ID of the currently focused node.
 	/** @type {string | undefined} */
 	let idFocused;
-	// The ID of the timeline the focused node is part of.
-	/** @type {string | undefined} */
+	/**
+	 * The ID of the timeline the focused node is part of.
+	 * @type {string | undefined}
+	 */
 	let idFocusedTimeline;
 
 	console.info("Constructing star planes...");
@@ -375,15 +375,36 @@ const main = async () => {
 					? null
 					: eventIds[eventIndexOnTimeline + 1],
 			intersection: timelineIds.filter((_) =>
-				[1, 2].includes(lookupTimelineToMetadata.get(_)?.[2] ?? 0),
+				[1, 2].includes(timelines.get(_)?.[2] ?? 0),
 			),
-			mediaItems: timelineIds.filter(
-				(_) => lookupTimelineToMetadata.get(_)?.[2] === 3,
-			),
+			mediaItems: timelineIds.filter((_) => timelines.get(_)?.[2] === 3),
 		};
 	};
 
 	//#region Focus Select
+	/**
+	 * @param {Date} date -
+	 */
+	const focusDate = (date) => {
+		const ids =
+			idFocusedTimeline !== undefined
+				? (contributors.get(idFocusedTimeline)?.values() ?? [])
+				: idSet;
+		let distance = Number.POSITIVE_INFINITY;
+		let best;
+		for (const id of ids) {
+			const idDate = new Date(id.substring(1, 11));
+			const idDistance = Math.abs(idDate.valueOf() - date.valueOf());
+			if (idDistance < distance) {
+				distance = idDistance;
+				best = id;
+			}
+		}
+		if (best !== undefined) {
+			focusNode(best);
+		}
+	};
+
 	/**
 	 * @param {string | undefined} id -
 	 * @param {string | undefined} onTimelineId -
@@ -403,6 +424,7 @@ const main = async () => {
 			"http://www.w3.org/1999/xlink",
 			"title",
 		)?.value;
+		const event = eventsById.get(id);
 
 		if (node === null) {
 			console.error(
@@ -418,10 +440,19 @@ const main = async () => {
 			return;
 		}
 
+		if (event === undefined) {
+			console.error(
+				`Couldn't find event relating to node ID '${id}'. Unable to focus node.`,
+			);
+			return;
+		}
+
 		const titleParts = nodeTitle.split("\n");
 		calendarDate.textContent = titleParts[0];
 		calendarText.textContent = `${titleParts[1]}\n${titleParts[2]}`;
 		document.title = titleParts[0];
+
+		statusText.textContent = event.title;
 
 		idFocused = id;
 		// If the newly focused node exists on the already focused timeline,
@@ -458,29 +489,8 @@ const main = async () => {
 	};
 
 	/**
-	 * @param {Date} date -
-	 */
-	const focusDate = (date) => {
-		const ids =
-			idFocusedTimeline !== undefined
-				? (contributors.get(idFocusedTimeline)?.values() ?? [])
-				: idSet;
-		let distance = Number.POSITIVE_INFINITY;
-		let best;
-		for (const id of ids) {
-			const idDate = new Date(id.substring(1, 11));
-			const idDistance = Math.abs(idDate.valueOf() - date.valueOf());
-			if (idDistance < distance) {
-				distance = idDistance;
-				best = id;
-			}
-		}
-		if (best !== undefined) {
-			focusNode(best);
-		}
-	};
-
-	/**
+	 * Only requests the focus shift.
+	 * The actual focus shift happens in updateCamera().
 	 * @param id {string | undefined}
 	 */
 	const requestFocusShift = (id) => {
@@ -615,24 +625,24 @@ const main = async () => {
 			return;
 		}
 
-		const events = contributors.get(idFocusedTimeline);
+		const events = timelineEvents.get(idFocusedTimeline);
 		if (events === undefined) {
 			throw Error("unexpected lookup miss");
 		}
 
-		focusNode(events[0], idFocusedTimeline);
+		focusNode(events[0].id, idFocusedTimeline);
 	};
 	const navigateEnd = () => {
 		if (idFocusedTimeline === undefined) {
 			return;
 		}
 
-		const events = contributors.get(idFocusedTimeline);
+		const events = timelineEvents.get(idFocusedTimeline);
 		if (events === undefined) {
 			throw Error("unexpected lookup miss");
 		}
 
-		focusNode(events[events.length - 1], idFocusedTimeline);
+		focusNode(events[events.length - 1].id, idFocusedTimeline);
 	};
 	const _navigateBack = () => {
 		history.back();
@@ -684,7 +694,7 @@ const main = async () => {
 		view.bounds.width = svg.scrollWidth;
 		view.bounds.height = svg.scrollHeight;
 		view.scope.x = window.scrollX;
-		view.scope.y = window.screenY;
+		view.scope.y = window.scrollY;
 		view.scope.width = view.window.width;
 		view.scope.height = view.window.height;
 
@@ -950,6 +960,9 @@ const main = async () => {
 	const returnToNeutral = () => {
 		console.debug("Clearing input cache, returning neutral plane.");
 		InputFrameCache = [];
+		menuMainFocusIndex = 0;
+		menuMainJumpFocusIndex = 0;
+		menuMainJumpDateFocusIndex = 0;
 		if (cssRuleHighlightActive !== undefined) {
 			stylesheet.deleteRule(cssRuleHighlightActive);
 			cssRuleHighlightActive = undefined;
@@ -1202,8 +1215,7 @@ const main = async () => {
 			return false;
 		}
 
-		const mediaPath =
-			lookupTimelineToMetadata.get(timelineMediaIds[mediaIndex])?.[3] ?? "";
+		const mediaPath = timelines.get(timelineMediaIds[mediaIndex])?.[3] ?? "";
 		if (mediaPath === "") {
 			timelineMediaIdActive = undefined;
 			return false;
@@ -1284,17 +1296,14 @@ const main = async () => {
 			statusButtonX.style.display = "inline-block";
 		}
 
-		const timelineColor = lookupTimelineToMetadata.get(idFocusedTimeline)?.[0];
+		const timelineColor = timelines.get(idFocusedTimeline)?.[1];
 
 		timelineMediaIds = newNeighbors.mediaItems;
 
-		const timelineIdentityName =
-			lookupTimelineToMetadata.get(idFocusedTimeline)?.[3];
+		const timelineIdentityName = timelines.get(idFocusedTimeline)?.[4];
 		const mediaIdentityName =
 			timelineMediaIdActive !== undefined
-				? lookupTimelineToMetadata.get(
-						timelineMediaIds[timelineMediaIdActive],
-					)?.[3]
+				? timelines.get(timelineMediaIds[timelineMediaIdActive])?.[4]
 				: undefined;
 		if (timelineIdentityName === undefined) {
 			console.error(
@@ -1307,7 +1316,6 @@ const main = async () => {
 			statusText.textContent = mediaIdentityName;
 		} else {
 			intro.textContent = `Reise auf Zeit-Gleis: ${timelineIdentityName}`;
-			statusText.textContent = "EVENT_DETAILS";
 		}
 
 		intro.style.color = timelineColor ?? "";
@@ -1345,6 +1353,7 @@ const main = async () => {
 		intro.style.color = "transparent";
 	};
 
+	let cameraFocus = { x: 0, y: 0 };
 	let cameraIsIdle = false;
 	let cameraIsDetached = false;
 	/** @type {number | undefined} */
@@ -1352,58 +1361,42 @@ const main = async () => {
 	const updateCamera = (_updateStatus = false) => {
 		if (cameraIsIdle) {
 			//console.debug("Camera update requested while camera was idle.");
-			cull();
+			view.scope.x = window.scrollX;
+			view.scope.y = window.scrollY;
 			return true;
 		}
 
-		const newScope = {
-			x: view.focus.x + view.focus.width / 2 - view.window.width / 2,
-			y: view.focus.y + view.focus.height / 2 - view.window.height / 2,
-			width: view.window.width,
-			height: view.window.height,
+		const newFocus = {
+			x: view.focus.x + view.focus.width / 2,
+			y: view.focus.y + view.focus.height / 2,
 		};
 
-		if (newScope.x === view.scope.x && newScope.y === view.scope.y) {
+		if (newFocus.x === cameraFocus.x && newFocus.y === cameraFocus.y) {
 			//console.debug("Camera update was redundant.");
 			return false;
 		}
 
-		console.debug("Adjusting scope...", newScope);
+		const newScope = {
+			x: newFocus.x - view.window.width / 2,
+			y: newFocus.y - view.window.height / 2,
+			width: view.window.width,
+			height: view.window.height,
+		};
+
+		console.debug("Camera doesn't match focus. Adjusting scope...", newScope);
 
 		targetElementX.classList.remove("visible");
 		targetElementY.classList.remove("visible");
 		targetElementW.classList.remove("visible");
 		targetElementH.classList.remove("visible");
 
-		view.scope = newScope;
-
-		targetElementX.style.left = `${view.scope.x}px`;
-		targetElementX.style.top = `${view.focus.y - 2}px`;
-		targetElementX.style.width = `${view.window.width / 2 - view.focus.width / 2 - 2}px`;
-		targetElementX.style.height = `${view.focus.height + 4}px`;
-
-		targetElementY.style.left = `${view.scope.x}px`;
-		targetElementY.style.top = `${view.scope.y}px`;
-		targetElementY.style.width = `${view.window.width}px`;
-		targetElementY.style.height = `${view.window.height / 2 - view.focus.height / 2 - 2}px`;
-
-		targetElementW.style.left = `${view.focus.x + view.focus.width + 2}px`;
-		targetElementW.style.top = `${view.focus.y - 2}px`;
-		targetElementW.style.width = `${view.window.width / 2 - view.focus.width / 2 - 2}px`;
-		targetElementW.style.height = `${view.focus.height + 4}px`;
-
-		targetElementH.style.left = `${view.scope.x}px`;
-		targetElementH.style.top = `${view.focus.y + view.focus.height + 2}px`;
-		targetElementH.style.width = `${view.window.width}px`;
-		targetElementH.style.height = `${view.window.height / 2 - view.focus.height / 2 - 2}px`;
-
-		console.debug("Focusing new focus box...", view.focus);
+		cameraFocus = newFocus;
 
 		cameraIsIdle = true;
 		window.scrollTo({
 			behavior: requestInstantFocusUpdate ? "instant" : "smooth",
-			left: view.scope.x,
-			top: view.scope.y,
+			left: newScope.x,
+			top: newScope.y,
 		});
 		timeoutCameraUnlock = window.setTimeout(() => {
 			timeoutCameraUnlock = undefined;
@@ -1977,8 +1970,7 @@ const main = async () => {
 			if (idFocusedTimeline === timeline) {
 				menuItem.classList.add("active");
 			}
-			menuItem.textContent =
-				lookupTimelineToMetadata.get(timeline)?.[3] ?? "???";
+			menuItem.textContent = timelines.get(timeline)?.[4] ?? "???";
 			menuLevel0.appendChild(menuItem);
 		}
 		statusOptions.classList.add("visible");
@@ -1991,16 +1983,41 @@ const main = async () => {
 	const cameraMovementFinalize = () => {
 		cameraIsIdle = false;
 		lastKnownScrollPosition = view.scope.y;
+
+		cull();
+
+		targetElementX.style.left = `${view.scope.x}px`;
+		targetElementX.style.top = `${view.focus.y - 2}px`;
+		targetElementX.style.width = `${view.window.width / 2 - view.focus.width / 2 - 2}px`;
+		targetElementX.style.height = `${view.focus.height + 4}px`;
+
+		targetElementY.style.left = `${view.scope.x}px`;
+		targetElementY.style.top = `${view.scope.y}px`;
+		targetElementY.style.width = `${view.window.width}px`;
+		targetElementY.style.height = `${view.window.height / 2 - view.focus.height / 2 - 2}px`;
+
+		targetElementW.style.left = `${view.focus.x + view.focus.width + 2}px`;
+		targetElementW.style.top = `${view.focus.y - 2}px`;
+		targetElementW.style.width = `${view.window.width / 2 - view.focus.width / 2 - 2}px`;
+		targetElementW.style.height = `${view.focus.height + 4}px`;
+
+		targetElementH.style.left = `${view.scope.x}px`;
+		targetElementH.style.top = `${view.focus.y + view.focus.height + 2}px`;
+		targetElementH.style.width = `${view.window.width}px`;
+		targetElementH.style.height = `${view.window.height / 2 - view.focus.height / 2 - 2}px`;
+
 		targetElementX.classList.add("visible");
 		targetElementY.classList.add("visible");
 		targetElementW.classList.add("visible");
 		targetElementH.classList.add("visible");
-		cull();
 	};
-	const onScroll = () => {};
 	const onScrollEnd = () => {
 		window.clearTimeout(timeoutCameraUnlock);
 		timeoutCameraUnlock = undefined;
+
+		view.scope.x = window.scrollX;
+		view.scope.y = window.scrollY;
+
 		cameraMovementFinalize();
 		console.debug("Camera updated", view);
 	};
@@ -2120,7 +2137,6 @@ const main = async () => {
 	document.addEventListener("keyup", onKeyUp);
 	window.addEventListener("popstate", onPopState);
 	window.addEventListener("resize", initGraphics);
-	window.addEventListener("scroll", onScroll);
 	window.addEventListener("scrollend", onScrollEnd);
 
 	window.setTimeout(() => {

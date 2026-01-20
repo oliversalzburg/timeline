@@ -358,6 +358,10 @@ export const render = <
 	let segmentStart = renderPlan[0][0];
 	let segmentLength = 0;
 
+	// Event index for events on the same date.
+	let eventIndex = 0;
+	let previousDateString = "";
+
 	for (const [timestamp, frame] of renderPlan) {
 		// Graph Segmenting
 		if (options.segment !== undefined && options.segment < segmentLength) {
@@ -454,7 +458,11 @@ export const render = <
 
 		// Render Events
 		const date = new Date(timestamp);
-		let eventIndex = 0;
+		const dateString = `${date.getFullYear().toFixed().padStart(4, "0")}-${(date.getMonth() + 1).toFixed().padStart(2, "0")}-${date.getDate().toFixed().padStart(2, "0")}`;
+		if (dateString !== previousDateString) {
+			eventIndex = 0;
+		}
+
 		allEventsInGraph.set(timestamp, new Set<[string, string]>());
 		d.raw("{");
 		d.graphSpec({ comment: `Frame for ${date.toISOString()}`, rank: "same" });
@@ -554,7 +562,6 @@ export const render = <
 		++segmentLength;
 
 		// Inter-Frame
-
 		for (const pending of frameCache.pendingConnect.keys()) {
 			if (frame.timelines.has(pending)) {
 				const entryPending = mustExist(frameCache.pendingConnect.get(pending));
@@ -611,6 +618,8 @@ export const render = <
 		}
 		frameCache.previousFrameTrailer = [...frame.events.keys()][0];
 		frameCache.frameTrailer = undefined;
+
+		previousDateString = dateString;
 	}
 
 	d.raw("}");
