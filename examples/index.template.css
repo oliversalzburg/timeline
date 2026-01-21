@@ -229,6 +229,7 @@ canvas {
 	background-attachment: fixed;
 	mix-blend-mode: color-burn;
 	transition: ease-out opacity 0.2s;
+	pointer-events: none;
 
 	&.visible {
 		transition: opacity 10s;

@@ -274,6 +274,10 @@ const PREFIXES = {
 		name: "rote armee fraktion",
 		src: "logo-raf.svg",
 	},
+	transmission: {
+		name: "transmission",
+		src: "E0A1.svg",
+	},
 	u60311: {
 		name: "u60311",
 		src: "logo-u60311.svg",

@@ -207,7 +207,7 @@ const fill = (timeline) => {
 	if (death !== undefined) {
 		document.records.push([
 			death.valueOf(),
-			{ title: `☠️ ${nameAtDate(death)} verstorben`, generated: true },
+			{ title: `☠️ ${nameAtDate(death)} verstorben`, generated: false },
 		]);
 	}
 	return sort(document);
@@ -242,7 +242,7 @@ const fillOthers = (timeline, graph) => {
 	/** @type {import("../lib/types.js").TimelineRecord} */
 	const birthRecord = [
 		birth.valueOf(),
-		{ title: `* Geburt ${name}`, generated: true },
+		{ title: `* Geburt ${name}`, generated: false },
 	];
 
 	timeline.records = sortRecords(

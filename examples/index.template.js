@@ -256,9 +256,9 @@ const main = async () => {
 	const timelines = new Map(DATA[1].map((_) => [_[0], _]));
 	/** @type {Map<string, Array<{timestamp:number,id:string,title:string,contributors:Array<string>}>>} */
 	const timelineEvents = new Map();
-	/** @type {Array<{timestamp:number,id:string,title:string,contributors:Array<string>,bb:{x:number,y:number,w:number,h:number}}>} */
+	/** @type {Array<{timestamp:number,id:string,title:string,contributors:Array<string>,element:SVGElement,bb:{x:number,y:number,w:number,h:number}}>} */
 	const events = new Array();
-	/** @type {Map<string,{timestamp:number,id:string,title:string,contributors:Array<string>,bb:{x:number,y:number,w:number,h:number}}>} */
+	/** @type {Map<string,{timestamp:number,id:string,title:string,contributors:Array<string>,element:SVGElement,bb:{x:number,y:number,w:number,h:number}}>} */
 	const eventsById = new Map();
 	/** @type {Map<string, Array<string>>} */
 	const contributors = new Map();
@@ -266,6 +266,7 @@ const main = async () => {
 		index,
 		[timestamp, id, title, eventContributors],
 	] of DATA[0].entries()) {
+		/** @type {SVGElement|null} */
 		const element = document.querySelector(`#${id}`);
 		if (element === null) {
 			throw new Error(`Couldn't find '#${id}'`);
@@ -282,6 +283,7 @@ const main = async () => {
 				w: boundingRect.width,
 				h: boundingRect.height,
 			},
+			element
 		};
 		contributors.set(id, events[index].contributors);
 		eventsById.set(id, events[index]);
@@ -296,6 +298,26 @@ const main = async () => {
 			timelineEvents.set(contributorMeta[0], contributorEvents);
 		}
 	}
+	/** @type {Array<{element: SVGElement, bb: { x:number, y:number, w:number, h:number } }>} */
+	const timelineEdges = new Array();
+	for (const timelineId of timelines.keys()) {
+		/** @type {NodeListOf<SVGElement>} */
+		const elements = document.querySelectorAll(`g.edge.${timelineId}`);
+		for (const element of elements) {
+			const boundingRect = element.getBoundingClientRect();
+			const edge = {
+				element,
+				bb: {
+					x: boundingRect.x + window.scrollX,
+					y: boundingRect.y + window.scrollY,
+					w: boundingRect.width,
+					h: boundingRect.height,
+				},
+			};
+			timelineEdges.push(edge);
+		}
+	}
+	timelineEdges.toSorted((a, b) => a.bb.y - b.bb.y);
 
 	console.info("Constructing star planes...");
 	const starPlanes = Array.from({
@@ -575,8 +597,6 @@ const main = async () => {
 		requestInstantFocusUpdate = false;
 		lastKnownScrollPosition = view.scope.y;
 
-		cull();
-
 		if (!cameraIsDetached) {
 			view.scope.x = window.scrollX;
 			view.scope.y = window.scrollY;
@@ -606,6 +626,8 @@ const main = async () => {
 			targetElementW.classList.add("visible");
 			targetElementH.classList.add("visible");
 		}
+
+		cull();
 	};
 	const onScrollEnd = () => {
 		window.clearTimeout(timeoutCameraUnlock);
@@ -614,37 +636,71 @@ const main = async () => {
 		console.debug("Camera updated", view);
 	};
 
-	let previousFirstVisibleIndex = 0;
+	let previousFirstVisibleEdgeIndex = 0;
+	let previousFirstVisibleNodeIndex = 0;
+	/** @type {Set<SVGElement>} */
+	let previousVisibleEdges = new Set(document.querySelectorAll("g.edge"));
 	/** @type {Set<SVGElement>} */
 	let previousVisibleNodes = new Set(document.querySelectorAll("g.node.event"));
 	const cull = () => {
-		const visible = [];
-		let firstVisibleIndex = previousFirstVisibleIndex;
-		for (; 0 < firstVisibleIndex; --firstVisibleIndex) {
-			const event = events[firstVisibleIndex];
+		const visibleEdges = [];
+		let firstVisibleEdgeIndex = previousFirstVisibleEdgeIndex;
+		for (; 0 < firstVisibleEdgeIndex; --firstVisibleEdgeIndex) {
+			const edge = timelineEdges[firstVisibleEdgeIndex];
+			if (edge.bb.y + edge.bb.h < view.scope.y) {
+				break;
+			}
+		}
+		for (; firstVisibleEdgeIndex < timelineEdges.length; ++firstVisibleEdgeIndex) {
+			const edge = timelineEdges[firstVisibleEdgeIndex];
+			if (view.scope.y + view.scope.height < edge.bb.y) {
+				break;
+			}
+			visibleEdges.push(edge);
+		}
+
+		const visibleNodes = [];
+		let firstVisibleNodeIndex = previousFirstVisibleNodeIndex;
+		for (; 0 < firstVisibleNodeIndex; --firstVisibleNodeIndex) {
+			const event = events[firstVisibleNodeIndex];
 			if (event.bb.y + event.bb.h < view.scope.y) {
 				break;
 			}
 		}
-		for (; firstVisibleIndex < events.length; ++firstVisibleIndex) {
-			const event = events[firstVisibleIndex];
+		for (; firstVisibleNodeIndex < events.length; ++firstVisibleNodeIndex) {
+			const event = events[firstVisibleNodeIndex];
 			if (view.scope.y + view.scope.height < event.bb.y) {
 				break;
 			}
-			visible.push(event);
+			visibleNodes.push(event);
 		}
-		for (const node of previousVisibleNodes) {
-			node.style.display = "none";
+
+		for (const element of previousVisibleEdges) {
+			element.style.display = "none";
 		}
-		const visibleNodes = new Set();
-		for (const event of visible) {
-			visibleNodes.add(document.getElementById(event.id));
+		for (const element of previousVisibleNodes) {
+			element.style.display = "none";
 		}
-		for (const node of visibleNodes) {
-			node.style.display = "block";
+
+		const visibleEdgeElements = new Set();
+		for (const edge of visibleEdges) {
+			visibleEdgeElements.add(edge.element);
 		}
-		previousFirstVisibleIndex = firstVisibleIndex;
-		previousVisibleNodes = visibleNodes;
+		for (const element of visibleEdgeElements) {
+			element.style.display = "block";
+		}
+		const visibleNodeElements = new Set();
+		for (const event of visibleNodes) {
+			visibleNodeElements.add(document.getElementById(event.id));
+		}
+		for (const element of visibleNodeElements) {
+			element.style.display = "block";
+		}
+
+		previousFirstVisibleEdgeIndex = firstVisibleEdgeIndex;
+		previousVisibleEdges = visibleEdgeElements;
+		previousFirstVisibleNodeIndex = firstVisibleNodeIndex;
+		previousVisibleNodes = visibleNodeElements;
 	};
 	//#endregion
 
