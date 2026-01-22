@@ -171,6 +171,9 @@ body {
 	&.loading > .loader {
 		opacity: 1;
 	}
+	&.loading > svg {
+		opacity: 0;
+	}
 
 	/*
 	&.loading > *:not(.loader) {
@@ -195,26 +198,6 @@ canvas {
 	pointer-events: none;
 }
 
-@keyframes flicker {
-	0% {
-		opacity: 0;
-	}
-	20% {
-		opacity: 0.6;
-	}
-	40% {
-		opacity: 0;
-	}
-	60% {
-		opacity: 0.8;
-	}
-	80% {
-		opacity: 0;
-	}
-	100% {
-		opacity: 1;
-	}
-}
 .target {
 	opacity: 0;
 	position: absolute;

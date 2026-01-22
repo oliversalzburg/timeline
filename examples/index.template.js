@@ -26,7 +26,7 @@ const Inputs = {
 const DATA = [[], [], ["", "", ""]];
 
 const main = async () => {
-	console.info("Program init started.");
+	console.info("Program loaded. Starting static initialization...");
 
 	//#region DOM Element Selection
 	/** @type {HTMLStyleElement | null} */
@@ -188,6 +188,78 @@ const main = async () => {
 	}
 	//#endregion
 
+	const DOM = {
+		queueRead: new Map(),
+		queueWrite: new Map(),
+		/** @type {undefined|(() => unknown) } */
+		dominator: undefined,
+		writing: false,
+		/**
+		 * Schedule DOM read operation.
+		 * @param {string} id -
+		 * @param {() => unknown} operation -
+		 */
+		read: function readDOM(id, operation) {
+			if (DOM.writing) {
+				console.warn(
+					`DOM read operation '${id}' scheduled during write cycle!`,
+				);
+			}
+			Object.defineProperty(operation, "name", {
+				value: `DOMread_${id}`,
+				writable: false,
+			});
+			DOM.queueRead.set(id, operation);
+		},
+		/**
+		 * Schedule DOM write operation.
+		 * @param {string} id -
+		 * @param {() => unknown} operation -
+		 */
+		write: function writeDOM(id, operation) {
+			if (DOM.writing) {
+				console.warn(
+					`DOM write operation '${id}' scheduled during write cycle!`,
+				);
+			}
+			Object.defineProperty(operation, "name", {
+				value: `DOMwrite_${id}`,
+				writable: false,
+			});
+			DOM.queueWrite.set(id, operation);
+		},
+		/**
+		 * Schedule full DOM read-write cycle operation.
+		 * @param {string} id -
+		 * @param {() => unknown} operation -
+		 */
+		dominate: function dominateDOM(id, operation) {
+			Object.defineProperty(operation, "name", {
+				value: `DOM_${id}`,
+				writable: false,
+			});
+			DOM.dominator = operation;
+		},
+		run: function runTasksDOM() {
+			if (DOM.dominator !== undefined) {
+				DOM.dominator();
+				DOM.dominator = undefined;
+				return;
+			}
+
+			for (const [, operation] of DOM.queueRead.entries()) {
+				operation();
+			}
+			DOM.queueRead.clear();
+			DOM.writing = true;
+			for (const [, operation] of DOM.queueWrite.entries()) {
+				operation();
+			}
+			DOM.writing = false;
+			DOM.queueWrite.clear();
+		},
+	};
+
 	//#region SFX
 	const audioContext = new window.AudioContext();
 	const samples = new Map();
@@ -241,6 +313,29 @@ const main = async () => {
 	};
 	//#endregion
 
+	const view = {
+		window: {
+			width: 0,
+			height: 0,
+		},
+		bounds: {
+			width: 0,
+			height: 0,
+		},
+		scope: {
+			x: 0,
+			y: 0,
+			width: 0,
+			height: 0,
+		},
+		focus: {
+			x: 0,
+			y: 0,
+			width: 0,
+			height: 0,
+		},
+	};
+
 	/**
 	 * A set of all the unique event IDs.
 	 */
@@ -283,7 +378,7 @@ const main = async () => {
 				w: boundingRect.width,
 				h: boundingRect.height,
 			},
-			element
+			element,
 		};
 		contributors.set(id, events[index].contributors);
 		eventsById.set(id, events[index]);
@@ -389,74 +484,80 @@ const main = async () => {
 		}
 
 		const anchor = `#${id}`;
-		/** @type {HTMLElement | null} */
-		const node = document.querySelector(anchor);
-		/** @type {HTMLElement | null} */
-		const nodeTitleAnchor = document.querySelector(`${anchor} a`);
-		const nodeTitle = nodeTitleAnchor?.attributes.getNamedItemNS(
-			"http://www.w3.org/1999/xlink",
-			"title",
-		)?.value;
 		const event = eventsById.get(id);
+		/** @type {string|undefined} */
+		let nodeTitle;
+		DOM.read("focusNode", () => {
+			/** @type {HTMLElement | null} */
+			const node = document.querySelector(anchor);
+			/** @type {HTMLElement | null} */
+			const nodeTitleAnchor = document.querySelector(`${anchor} a`);
+			nodeTitle = nodeTitleAnchor?.attributes.getNamedItemNS(
+				"http://www.w3.org/1999/xlink",
+				"title",
+			)?.value;
 
-		if (node === null) {
-			console.error(
-				`Node with ID '${id}' wasn't found in DOM. Unable to focus node.`,
+			if (node === null) {
+				console.error(
+					`Node with ID '${id}' wasn't found in DOM. Unable to focus node.`,
+				);
+				return;
+			}
+		});
+
+		DOM.write("focusNode", () => {
+			if (nodeTitle === undefined) {
+				console.error(
+					`Node with ID '${id}' does not provide a title. Unable to focus node.`,
+				);
+				return;
+			}
+
+			if (event === undefined) {
+				console.error(
+					`Couldn't find event relating to node ID '${id}'. Unable to focus node.`,
+				);
+				return;
+			}
+
+			const titleParts = nodeTitle.split("\n");
+			calendarDate.textContent = titleParts[0];
+			calendarText.textContent = `${titleParts[1]}\n${titleParts[2]}`;
+			document.title = titleParts[0];
+
+			statusText.textContent = event.title;
+
+			idFocused = id;
+			// If the newly focused node exists on the already focused timeline,
+			// don't attempt to switch focus. This could cause focus to switch
+			// to another timeline when entering a merge node.
+			idFocusedTimeline =
+				onTimelineId ??
+				(idFocusedTimeline !== undefined &&
+				contributors.get(id)?.includes(idFocusedTimeline)
+					? idFocusedTimeline
+					: contributors.get(id)?.[0]);
+
+			const currentDate =
+				idFocused !== undefined
+					? new Date(idFocused.substring(1, 11))
+					: new Date();
+			menuMainJumpDateYear = currentDate.getFullYear();
+			menuMainJumpDateMonth = currentDate.getMonth();
+			menuMainJumpDateDate = currentDate.getDate();
+
+			if (setState) {
+				window.history.pushState(
+					{ id },
+					"",
+					window.location.toString().replace(/(#.*)|$/, anchor),
+				);
+			}
+
+			console.info(
+				`Focused node ${idFocused} of timeline ${idFocusedTimeline}. View update is pending.`,
 			);
-			return;
-		}
-
-		if (nodeTitle === undefined) {
-			console.error(
-				`Node with ID '${id}' does not provide a title. Unable to focus node.`,
-			);
-			return;
-		}
-
-		if (event === undefined) {
-			console.error(
-				`Couldn't find event relating to node ID '${id}'. Unable to focus node.`,
-			);
-			return;
-		}
-
-		const titleParts = nodeTitle.split("\n");
-		calendarDate.textContent = titleParts[0];
-		calendarText.textContent = `${titleParts[1]}\n${titleParts[2]}`;
-		document.title = titleParts[0];
-
-		statusText.textContent = event.title;
-
-		idFocused = id;
-		// If the newly focused node exists on the already focused timeline,
-		// don't attempt to switch focus. This could cause focus to switch
-		// to another timeline when entering a merge node.
-		idFocusedTimeline =
-			onTimelineId ??
-			(idFocusedTimeline !== undefined &&
-			contributors.get(id)?.includes(idFocusedTimeline)
-				? idFocusedTimeline
-				: contributors.get(id)?.[0]);
-
-		const currentDate =
-			idFocused !== undefined
-				? new Date(idFocused.substring(1, 11))
-				: new Date();
-		menuMainJumpDateYear = currentDate.getFullYear();
-		menuMainJumpDateMonth = currentDate.getMonth();
-		menuMainJumpDateDate = currentDate.getDate();
-
-		if (setState) {
-			window.history.pushState(
-				{ id },
-				"",
-				window.location.toString().replace(/(#.*)|$/, anchor),
-			);
-		}
-
-		console.info(
-			`Focused node ${idFocused} of timeline ${idFocusedTimeline}. View update is pending.`,
-		);
+		});
 
 		requestFocusShift(id);
 	};
@@ -490,7 +591,7 @@ const main = async () => {
 	 * @param id {string | undefined} -
 	 * @param onTimelineId {string | undefined} -
 	 */
-	const findNodeNeighbors = (
+	const getNodeNeighbors = (
 		id = idFocused,
 		onTimelineId = idFocusedTimeline,
 	) => {
@@ -569,25 +670,34 @@ const main = async () => {
 
 		console.debug("Camera doesn't match focus. Adjusting scope...", newScope);
 
-		targetElementX.classList.remove("visible");
-		targetElementY.classList.remove("visible");
-		targetElementW.classList.remove("visible");
-		targetElementH.classList.remove("visible");
+		DOM.write("updateCamera", () => {
+			targetElementX.classList.remove("visible");
+			targetElementY.classList.remove("visible");
+			targetElementW.classList.remove("visible");
+			targetElementH.classList.remove("visible");
 
-		cameraFocus = newFocus;
-
-		cameraIsIdle = true;
-		window.scrollTo({
-			behavior: requestInstantFocusUpdate ? "instant" : "smooth",
-			left: newScope.x,
-			top: newScope.y,
+			cameraFocus = newFocus;
+			if (requestInstantFocusUpdate) {
+				document.documentElement.scrollLeft = newScope.x;
+				document.documentElement.scrollTop = newScope.y;
+			}
 		});
-		timeoutCameraUnlock = window.setTimeout(() => {
-			timeoutCameraUnlock = undefined;
-			cameraMovementFinalize();
-			cull();
-			console.warn("Forced camera movement finalization!");
-		}, 3000);
+
+		if (!requestInstantFocusUpdate) {
+			DOM.dominate("scrollTo", () => {
+				cameraIsIdle = true;
+				window.scrollTo({
+					behavior: requestInstantFocusUpdate ? "instant" : "smooth",
+					left: newScope.x,
+					top: newScope.y,
+				});
+				timeoutCameraUnlock = window.setTimeout(() => {
+					timeoutCameraUnlock = undefined;
+					cameraMovementFinalize();
+					console.warn("Forced camera movement finalization!");
+				}, 3000);
+			});
+		}
 
 		return false;
 	};
@@ -597,37 +707,40 @@ const main = async () => {
 		requestInstantFocusUpdate = false;
 		lastKnownScrollPosition = view.scope.y;
 
-		if (!cameraIsDetached) {
+		DOM.read("cameraMovementFinalize", () => {
 			view.scope.x = window.scrollX;
 			view.scope.y = window.scrollY;
+		});
 
-			targetElementX.style.left = `${view.scope.x}px`;
-			targetElementX.style.top = `${view.focus.y - 2}px`;
-			targetElementX.style.width = `${view.window.width / 2 - view.focus.width / 2 - 2}px`;
-			targetElementX.style.height = `${view.focus.height + 4}px`;
+		DOM.write("cameraMovementFinalize", () => {
+			if (!cameraIsDetached) {
+				targetElementX.style.left = `${view.scope.x}px`;
+				targetElementX.style.top = `${view.focus.y - 2}px`;
+				targetElementX.style.width = `${view.window.width / 2 - view.focus.width / 2 - 2}px`;
+				targetElementX.style.height = `${view.focus.height + 4}px`;
 
-			targetElementY.style.left = `${view.scope.x}px`;
-			targetElementY.style.top = `${view.scope.y}px`;
-			targetElementY.style.width = `${view.window.width}px`;
-			targetElementY.style.height = `${view.window.height / 2 - view.focus.height / 2 - 2}px`;
+				targetElementY.style.left = `${view.scope.x}px`;
+				targetElementY.style.top = `${view.scope.y}px`;
+				targetElementY.style.width = `${view.window.width}px`;
+				targetElementY.style.height = `${view.window.height / 2 - view.focus.height / 2 - 2}px`;
 
-			targetElementW.style.left = `${view.focus.x + view.focus.width + 2}px`;
-			targetElementW.style.top = `${view.focus.y - 2}px`;
-			targetElementW.style.width = `${view.window.width / 2 - view.focus.width / 2 - 2}px`;
-			targetElementW.style.height = `${view.focus.height + 4}px`;
+				targetElementW.style.left = `${view.focus.x + view.focus.width + 2}px`;
+				targetElementW.style.top = `${view.focus.y - 2}px`;
+				targetElementW.style.width = `${view.window.width / 2 - view.focus.width / 2 - 2}px`;
+				targetElementW.style.height = `${view.focus.height + 4}px`;
 
-			targetElementH.style.left = `${view.scope.x}px`;
-			targetElementH.style.top = `${view.focus.y + view.focus.height + 2}px`;
-			targetElementH.style.width = `${view.window.width}px`;
-			targetElementH.style.height = `${view.window.height / 2 - view.focus.height / 2 - 2}px`;
+				targetElementH.style.left = `${view.scope.x}px`;
+				targetElementH.style.top = `${view.focus.y + view.focus.height + 2}px`;
+				targetElementH.style.width = `${view.window.width}px`;
+				targetElementH.style.height = `${view.window.height / 2 - view.focus.height / 2 - 2}px`;
 
-			targetElementX.classList.add("visible");
-			targetElementY.classList.add("visible");
-			targetElementW.classList.add("visible");
-			targetElementH.classList.add("visible");
-		}
-
-		cull();
+				targetElementX.classList.add("visible");
+				targetElementY.classList.add("visible");
+				targetElementW.classList.add("visible");
+				targetElementH.classList.add("visible");
+			}
+			cull();
+		});
 	};
 	const onScrollEnd = () => {
 		window.clearTimeout(timeoutCameraUnlock);
@@ -636,25 +749,24 @@ const main = async () => {
 		console.debug("Camera updated", view);
 	};
 
-	let previousFirstVisibleEdgeIndex = 0;
 	let previousFirstVisibleNodeIndex = 0;
-	/** @type {Set<SVGElement>} */
-	let previousVisibleEdges = new Set(document.querySelectorAll("g.edge"));
-	/** @type {Set<SVGElement>} */
-	let previousVisibleNodes = new Set(document.querySelectorAll("g.node.event"));
+	/** @type {Set<{element: SVGElement, bb: { x:number, y:number, w:number, h:number } }>} */
+	let previousVisibleEdges = new Set(timelineEdges);
+	/** @type {Set<{element: SVGElement, bb: { x:number, y:number, w:number, h:number } }>} */
+	let previousVisibleNodes = new Set(events);
 	const cull = () => {
 		const visibleEdges = [];
-		let firstVisibleEdgeIndex = previousFirstVisibleEdgeIndex;
-		for (; 0 < firstVisibleEdgeIndex; --firstVisibleEdgeIndex) {
-			const edge = timelineEdges[firstVisibleEdgeIndex];
-			if (edge.bb.y + edge.bb.h < view.scope.y) {
-				break;
-			}
-		}
-		for (; firstVisibleEdgeIndex < timelineEdges.length; ++firstVisibleEdgeIndex) {
+		for (
+			let firstVisibleEdgeIndex = 0;
+			firstVisibleEdgeIndex < timelineEdges.length;
+			++firstVisibleEdgeIndex
+		) {
 			const edge = timelineEdges[firstVisibleEdgeIndex];
 			if (view.scope.y + view.scope.height < edge.bb.y) {
-				break;
+				continue;
+			}
+			if (edge.bb.y + edge.bb.h < view.scope.y) {
+				continue;
 			}
 			visibleEdges.push(edge);
 		}
@@ -675,32 +787,23 @@ const main = async () => {
 			visibleNodes.push(event);
 		}
 
-		for (const element of previousVisibleEdges) {
-			element.style.display = "none";
+		for (const edge of previousVisibleEdges) {
+			edge.element.style.display = "none";
 		}
-		for (const element of previousVisibleNodes) {
-			element.style.display = "none";
+		for (const event of previousVisibleNodes) {
+			event.element.style.display = "none";
 		}
 
-		const visibleEdgeElements = new Set();
 		for (const edge of visibleEdges) {
-			visibleEdgeElements.add(edge.element);
+			edge.element.style.display = "block";
 		}
-		for (const element of visibleEdgeElements) {
-			element.style.display = "block";
-		}
-		const visibleNodeElements = new Set();
 		for (const event of visibleNodes) {
-			visibleNodeElements.add(document.getElementById(event.id));
-		}
-		for (const element of visibleNodeElements) {
-			element.style.display = "block";
+			event.element.style.display = "block";
 		}
 
-		previousFirstVisibleEdgeIndex = firstVisibleEdgeIndex;
-		previousVisibleEdges = visibleEdgeElements;
+		previousVisibleEdges = new Set(visibleEdges);
 		previousFirstVisibleNodeIndex = firstVisibleNodeIndex;
-		previousVisibleNodes = visibleNodeElements;
+		previousVisibleNodes = new Set(visibleNodes);
 	};
 	//#endregion
 
@@ -709,24 +812,28 @@ const main = async () => {
 	 * @param {MouseEvent} event -
 	 */
 	const onClick = (event) => {
-		document.documentElement.style.cursor = "default";
+		DOM.write("onClick", () => {
+			document.documentElement.style.cursor = "default";
+		});
 
 		if (event.target === null) {
 			return;
 		}
 
-		const nodeTarget = /** @type {SVGElement} */ (event.target);
-		const node = nodeTarget.classList.contains("event")
-			? nodeTarget
-			: nodeTarget.closest("g.event");
-		if (!node) {
-			return;
-		}
+		DOM.read("onClick", () => {
+			const nodeTarget = /** @type {SVGElement} */ (event.target);
+			const node = nodeTarget.classList.contains("event")
+				? nodeTarget
+				: nodeTarget.closest("g.event");
+			if (!node) {
+				return;
+			}
 
-		if (node.id !== idFocused && idSet.has(node.id)) {
-			console.info(`User selected ${node.id}. Focusing...`);
-			focusNode(node.id);
-		}
+			if (node.id !== idFocused && idSet.has(node.id)) {
+				console.info(`User selected ${node.id}. Focusing...`);
+				focusNode(node.id);
+			}
+		});
 	};
 	//#endregion
 
@@ -777,7 +884,7 @@ const main = async () => {
 		if (idFocused === undefined || idFocusedTimeline === undefined) {
 			return false;
 		}
-		const neighbors = findNodeNeighbors(idFocused, idFocusedTimeline);
+		const neighbors = getNodeNeighbors(idFocused, idFocusedTimeline);
 		if (neighbors.down === null) {
 			return false;
 		}
@@ -789,7 +896,7 @@ const main = async () => {
 		if (idFocused === undefined || idFocusedTimeline === undefined) {
 			return false;
 		}
-		const neighbors = findNodeNeighbors(idFocused, idFocusedTimeline);
+		const neighbors = getNodeNeighbors(idFocused, idFocusedTimeline);
 		if (neighbors.up === null) {
 			return false;
 		}
@@ -937,14 +1044,16 @@ const main = async () => {
 		menuMainFocusIndex = 0;
 		menuMainJumpFocusIndex = 0;
 		menuMainJumpDateFocusIndex = 0;
-		if (cssRuleHighlightActive !== undefined) {
-			stylesheet.deleteRule(cssRuleHighlightActive);
-			cssRuleHighlightActive = undefined;
-		}
-		calendarContainer.classList.add("open");
-		menuContainer.classList.remove("open");
-		statusContainer.classList.add("open");
-		shouldersContainer.classList.add("visible");
+		DOM.write("returnToNeutral", () => {
+			if (cssRuleHighlightActive !== undefined) {
+				stylesheet.deleteRule(cssRuleHighlightActive);
+				cssRuleHighlightActive = undefined;
+			}
+			calendarContainer.classList.add("open");
+			menuContainer.classList.remove("open");
+			statusContainer.classList.add("open");
+			shouldersContainer.classList.add("visible");
+		});
 		updateStatus();
 		return InputPlaneNeutral;
 	};
@@ -957,10 +1066,12 @@ const main = async () => {
 	const returnToMenuPlane = (plane) => () => {
 		console.debug("Clearing input cache, returning provided menu plane.");
 		InputFrameCache = [];
-		calendarContainer.classList.remove("open");
-		menuContainer.classList.add("open");
-		statusContainer.classList.add("open");
-		shouldersContainer.classList.remove("visible");
+		DOM.write("returnToMenuPlan", () => {
+			calendarContainer.classList.remove("open");
+			menuContainer.classList.add("open");
+			statusContainer.classList.add("open");
+			shouldersContainer.classList.remove("visible");
+		});
 		return plane;
 	};
 
@@ -1159,12 +1270,14 @@ const main = async () => {
 	const mediaReset = () => {
 		mediaItemRotation = { x: 0, y: 0 };
 		mediaItemPosition = { x: 0, y: 3, z: 0 };
-		dialog.style.transform = `perspective(50vmin) rotateY(${mediaItemRotation.x}deg) rotateX(${mediaItemRotation.y}deg) translate3d(${mediaItemPosition.x}vmin, ${mediaItemPosition.y}vmin, ${mediaItemPosition.z}vmin)`;
-		dialogImage.src = "";
-		dialogImage.style.display = "none";
-		dialogIFrame.style.display = "none";
-		dialogIFrame.style.height = "150px";
-		dialogIFrame.style.width = "";
+		DOM.write("mediaReset", () => {
+			dialog.style.transform = `perspective(50vmin) rotateY(${mediaItemRotation.x}deg) rotateX(${mediaItemRotation.y}deg) translate3d(${mediaItemPosition.x}vmin, ${mediaItemPosition.y}vmin, ${mediaItemPosition.z}vmin)`;
+			dialogImage.src = "";
+			dialogImage.style.display = "none";
+			dialogIFrame.style.display = "none";
+			dialogIFrame.style.height = "150px";
+			dialogIFrame.style.width = "";
+		});
 	};
 	/**
 	 * @param {number} mediaIndex -
@@ -1193,21 +1306,23 @@ const main = async () => {
 		timelineMediaIdActive = mediaIndex;
 		mediaReset();
 
-		if (mediaPath.startsWith("/kiwix/")) {
-			dialogIFrame.src = mediaPath;
-			dialogIFrame.style.display = "block";
-		} else if (mediaPath.endsWith(".pdf")) {
-			dialogIFrame.src = `${mediaPath}#toolbar=0&navpanes=0`;
-			dialogIFrame.style.display = "block";
-			dialogIFrame.style.height = "600mm";
-			dialogIFrame.style.width = "215mm";
-		} else {
-			dialogImage.src = mediaPath;
-			dialogImage.style.display = "block";
-		}
+		DOM.write("mediaShow", () => {
+			if (mediaPath.startsWith("/kiwix/")) {
+				dialogIFrame.src = mediaPath;
+				dialogIFrame.style.display = "block";
+			} else if (mediaPath.endsWith(".pdf")) {
+				dialogIFrame.src = `${mediaPath}#toolbar=0&navpanes=0`;
+				dialogIFrame.style.display = "block";
+				dialogIFrame.style.height = "600mm";
+				dialogIFrame.style.width = "215mm";
+			} else {
+				dialogImage.src = mediaPath;
+				dialogImage.style.display = "block";
+			}
 
-		dialog.show();
-		mediaItemVisible = true;
+			dialog.show();
+			mediaItemVisible = true;
+		});
 		return true;
 	};
 	const mediaForward = () => {
@@ -1233,10 +1348,12 @@ const main = async () => {
 		if (iFrameResizeHandle !== null) {
 			window.clearTimeout(iFrameResizeHandle);
 		}
-		dialogIFrame.src = "about:blank";
-		dialog.close();
+		DOM.write("mediaClose", () => {
+			dialogIFrame.src = "about:blank";
+			dialog.close();
+			mediaItemVisible = false;
+		});
 		mediaReset();
-		mediaItemVisible = false;
 	};
 
 	/** @type {InputPlane} */
@@ -1339,79 +1456,84 @@ const main = async () => {
 	const returnToMedia = () => {
 		console.debug("Clearing input cache, returning media plane.");
 		InputFrameCache = [];
-		calendarContainer.classList.add("open");
-		menuContainer.classList.remove("open");
-		statusContainer.classList.add("open");
-		shouldersContainer.classList.add("visible");
-		updateStatus();
+		DOM.write("returnToMedia", () => {
+			calendarContainer.classList.add("open");
+			menuContainer.classList.remove("open");
+			statusContainer.classList.add("open");
+			shouldersContainer.classList.add("visible");
+			updateStatus();
+		});
 		return InputPlaneMedia;
 	};
 	//#endregion
 
-	const updateStatus = () => {
-		statusOptions.classList.remove("visible");
-		shoulderLeft.style.visibility = "hidden";
-		shoulderRight.style.visibility = "hidden";
-		statusButtonA.style.display = "none";
-		statusButtonB.style.display = "none";
-		statusButtonX.style.display = "none";
-		statusButtonY.style.display = "none";
-		statusOptionA.textContent = "";
-		statusOptionB.textContent = "";
-		statusOptionX.textContent = "";
-		statusOptionY.textContent = "";
+	const updateStatus = function updateStatus() {
+		DOM.write("updateStatus", () => {
+			statusOptions.classList.remove("visible");
+			shoulderLeft.style.visibility = "hidden";
+			shoulderRight.style.visibility = "hidden";
+			statusButtonA.style.display = "none";
+			statusButtonB.style.display = "none";
+			statusButtonX.style.display = "none";
+			statusButtonY.style.display = "none";
+			statusOptionA.textContent = "";
+			statusOptionB.textContent = "";
+			statusOptionX.textContent = "";
+			statusOptionY.textContent = "";
 
-		if (idFocused === undefined || idFocusedTimeline === undefined) {
-			return;
-		}
+			if (idFocused === undefined || idFocusedTimeline === undefined) {
+				return;
+			}
 
-		const newNeighbors = findNodeNeighbors(idFocused, idFocusedTimeline);
-		if (1 < newNeighbors.intersection.length) {
-			statusOptions.classList.add("visible");
-			statusOptionX.textContent = "Umsteigen";
-			statusButtonX.style.display = "inline-block";
-		}
+			const newNeighbors = getNodeNeighbors(idFocused, idFocusedTimeline);
+			if (1 < newNeighbors.intersection.length) {
+				statusOptions.classList.add("visible");
+				statusOptionX.textContent = "Umsteigen";
+				statusButtonX.style.display = "inline-block";
+			}
 
-		const timelineColor = timelines.get(idFocusedTimeline)?.[1];
+			const timelineColor = timelines.get(idFocusedTimeline)?.[1];
 
-		timelineMediaIds = newNeighbors.mediaItems;
+			timelineMediaIds = newNeighbors.mediaItems;
 
-		const timelineIdentityName = timelines.get(idFocusedTimeline)?.[4];
-		const mediaIdentityName =
-			timelineMediaIdActive !== undefined
-				? timelines.get(timelineMediaIds[timelineMediaIdActive])?.[4]
-				: undefined;
-		if (timelineIdentityName === undefined) {
-			console.error(
-				`Unable to look up identity for timeline ID '${idFocusedTimeline}'. Using fallback status.`,
-			);
-		}
+			const timelineIdentityName = timelines.get(idFocusedTimeline)?.[4];
+			const mediaIdentityName =
+				timelineMediaIdActive !== undefined
+					? timelines.get(timelineMediaIds[timelineMediaIdActive])?.[4]
+					: undefined;
+			if (timelineIdentityName === undefined) {
+				console.error(
+					`Unable to look up identity for timeline ID '${idFocusedTimeline}'. Using fallback status.`,
+				);
+			}
 
-		if (mediaIdentityName !== undefined) {
-			intro.textContent = "Artefaktname:";
-			statusText.textContent = mediaIdentityName;
-		} else {
-			intro.textContent = `Reise auf Zeit-Gleis: ${timelineIdentityName}`;
-		}
+			if (mediaIdentityName !== undefined) {
+				intro.textContent = "Artefaktname:";
+				statusText.textContent = mediaIdentityName;
+			} else {
+				intro.textContent = `Reise auf Zeit-Gleis: ${timelineIdentityName}`;
+			}
 
-		intro.style.color = timelineColor ?? "";
-		statusText.style.textShadow = `2px 2px 3px ${timelineColor}`;
+			intro.style.color = timelineColor ?? "";
+			statusText.style.textShadow = `2px 2px 3px ${timelineColor}`;
 
-		shoulderLeft.style.visibility =
-			0 < newNeighbors.mediaItems.length && timelineMediaIdActive !== undefined
-				? "visible"
-				: "hidden";
-		shoulderLeft.textContent =
-			timelineMediaIdActive === 0 ? "Schließen" : "Zurück blättern";
+			shoulderLeft.style.visibility =
+				0 < newNeighbors.mediaItems.length &&
+				timelineMediaIdActive !== undefined
+					? "visible"
+					: "hidden";
+			shoulderLeft.textContent =
+				timelineMediaIdActive === 0 ? "Schließen" : "Zurück blättern";
 
-		shoulderRight.style.visibility =
-			0 < newNeighbors.mediaItems.length ? "visible" : "hidden";
-		shoulderRight.textContent =
-			timelineMediaIdActive === undefined
-				? "Artefakte anzeigen"
-				: timelineMediaIdActive === timelineMediaIds.length - 1
-					? "Schließen"
-					: "Vorwärts blättern";
+			shoulderRight.style.visibility =
+				0 < newNeighbors.mediaItems.length ? "visible" : "hidden";
+			shoulderRight.textContent =
+				timelineMediaIdActive === undefined
+					? "Artefakte anzeigen"
+					: timelineMediaIdActive === timelineMediaIds.length - 1
+						? "Schließen"
+						: "Vorwärts blättern";
+		});
 	};
 
 	/** @type {InputPlane} */
@@ -1422,7 +1544,7 @@ const main = async () => {
 				if (idFocusedTimeline === undefined || idFocused === undefined) {
 					return undefined;
 				}
-				const neighbors = findNodeNeighbors();
+				const neighbors = getNodeNeighbors();
 				const activeIndex = neighbors.intersection.indexOf(idFocusedTimeline);
 				focusNode(idFocused, neighbors.intersection[activeIndex - 1]);
 				sfxPlayTap();
@@ -1438,7 +1560,7 @@ const main = async () => {
 				if (idFocusedTimeline === undefined || idFocused === undefined) {
 					return undefined;
 				}
-				const neighbors = findNodeNeighbors();
+				const neighbors = getNodeNeighbors();
 				const activeIndex = neighbors.intersection.indexOf(idFocusedTimeline);
 				focusNode(idFocused, neighbors.intersection[activeIndex + 1]);
 				sfxPlayTap();
@@ -1471,64 +1593,72 @@ const main = async () => {
 		},
 	};
 	const updateStatusMenuSwitchTimeline = () => {
-		statusOptions.classList.remove("visible");
-		shoulderLeft.style.visibility = "hidden";
-		shoulderRight.style.visibility = "hidden";
-		statusButtonA.style.display = "none";
-		statusButtonB.style.display = "none";
-		statusButtonX.style.display = "none";
-		statusButtonY.style.display = "none";
-		statusOptionA.textContent = "";
-		statusOptionB.textContent = "";
-		statusOptionX.textContent = "";
-		statusOptionY.textContent = "";
-		statusText.textContent = "";
-		intro.style.color = "transparent";
+		DOM.write("updateStatusMenuSwitchTimeline", () => {
+			statusOptions.classList.remove("visible");
+			shoulderLeft.style.visibility = "hidden";
+			shoulderRight.style.visibility = "hidden";
+			statusButtonA.style.display = "none";
+			statusButtonB.style.display = "none";
+			statusButtonX.style.display = "none";
+			statusButtonY.style.display = "none";
+			statusOptionA.textContent = "";
+			statusOptionB.textContent = "";
+			statusOptionX.textContent = "";
+			statusOptionY.textContent = "";
+			statusText.textContent = "";
+			intro.style.color = "transparent";
+		});
 	};
 
 	//#region Main Menu
 	let menuMainFocusIndex = 0;
 	const menuMain = (isActive = true) => {
 		updateStatusMenuSwitchTimeline();
-		const existingMenuItems = menuContainer.querySelectorAll(".level");
-		existingMenuItems.forEach((_) => void menuContainer.removeChild(_));
+		/** @type {NodeListOf<HTMLDivElement>|undefined} */
+		let existingMenuItems;
+		DOM.read("menuMain", () => {
+			existingMenuItems = menuContainer.querySelectorAll(".level");
+		});
+		DOM.write("menuMeain", () => {
+			existingMenuItems?.forEach((_) => void menuContainer.removeChild(_));
 
-		const menuLevel0 = document.createElement("div");
-		menuLevel0.classList.add("level");
-		if (isActive) {
-			menuLevel0.classList.add("active");
-		}
-		menuContainer.appendChild(menuLevel0);
+			const menuLevel0 = document.createElement("div");
+			menuLevel0.classList.add("level");
+			if (isActive) {
+				menuLevel0.classList.add("active");
+			}
+			menuContainer.appendChild(menuLevel0);
 
-		const menuItemJump = document.createElement("div");
-		menuItemJump.classList.add("item");
-		if (menuMainFocusIndex === 0) {
-			menuItemJump.classList.add("active");
-		}
-		menuItemJump.textContent = "Springen";
-		menuLevel0.appendChild(menuItemJump);
+			const menuItemJump = document.createElement("div");
+			menuItemJump.classList.add("item");
+			if (menuMainFocusIndex === 0) {
+				menuItemJump.classList.add("active");
+			}
+			menuItemJump.textContent = "Springen";
+			menuLevel0.appendChild(menuItemJump);
 
-		const menuItemSwitch = document.createElement("div");
-		menuItemSwitch.classList.add("item");
-		if (menuMainFocusIndex === 1) {
-			menuItemSwitch.classList.add("active");
-		}
-		menuItemSwitch.textContent = "Umsteigen";
-		menuLevel0.appendChild(menuItemSwitch);
+			const menuItemSwitch = document.createElement("div");
+			menuItemSwitch.classList.add("item");
+			if (menuMainFocusIndex === 1) {
+				menuItemSwitch.classList.add("active");
+			}
+			menuItemSwitch.textContent = "Umsteigen";
+			menuLevel0.appendChild(menuItemSwitch);
 
-		const menuItemArtifacts = document.createElement("div");
-		menuItemArtifacts.classList.add("item");
-		if (menuMainFocusIndex === 2) {
-			menuItemArtifacts.classList.add("active");
-		}
-		menuItemArtifacts.textContent = "Artefakte";
-		menuLevel0.appendChild(menuItemArtifacts);
+			const menuItemArtifacts = document.createElement("div");
+			menuItemArtifacts.classList.add("item");
+			if (menuMainFocusIndex === 2) {
+				menuItemArtifacts.classList.add("active");
+			}
+			menuItemArtifacts.textContent = "Artefakte";
+			menuLevel0.appendChild(menuItemArtifacts);
 
-		statusOptions.classList.add("visible");
-		statusOptionA.textContent = "Auswählen";
-		statusButtonA.style.display = "inline-block";
-		statusOptionX.textContent = "Zurück";
-		statusButtonX.style.display = "inline-block";
+			statusOptions.classList.add("visible");
+			statusOptionA.textContent = "Auswählen";
+			statusButtonA.style.display = "inline-block";
+			statusOptionX.textContent = "Zurück";
+			statusButtonX.style.display = "inline-block";
+		});
 	};
 
 	/** @type {InputPlane} */
@@ -1595,36 +1725,38 @@ const main = async () => {
 	const menuMainJump = (isActive = true) => {
 		menuMain(false);
 
-		const menuLevel1 = document.createElement("div");
-		menuLevel1.classList.add("level");
-		if (isActive) {
-			menuLevel1.classList.add("active");
-		}
-		menuContainer.appendChild(menuLevel1);
+		DOM.write("menuMainJump", () => {
+			const menuLevel1 = document.createElement("div");
+			menuLevel1.classList.add("level");
+			if (isActive) {
+				menuLevel1.classList.add("active");
+			}
+			menuContainer.appendChild(menuLevel1);
 
-		const menuItemJump = document.createElement("div");
-		menuItemJump.classList.add("item");
-		if (menuMainJumpFocusIndex === 0) {
-			menuItemJump.classList.add("active");
-		}
-		menuItemJump.textContent = "zu Datum";
-		menuLevel1.appendChild(menuItemJump);
+			const menuItemJump = document.createElement("div");
+			menuItemJump.classList.add("item");
+			if (menuMainJumpFocusIndex === 0) {
+				menuItemJump.classList.add("active");
+			}
+			menuItemJump.textContent = "zu Datum";
+			menuLevel1.appendChild(menuItemJump);
 
-		const menuItemSwitch = document.createElement("div");
-		menuItemSwitch.classList.add("item");
-		if (menuMainJumpFocusIndex === 1) {
-			menuItemSwitch.classList.add("active");
-		}
-		menuItemSwitch.textContent = "an Anfang";
-		menuLevel1.appendChild(menuItemSwitch);
+			const menuItemSwitch = document.createElement("div");
+			menuItemSwitch.classList.add("item");
+			if (menuMainJumpFocusIndex === 1) {
+				menuItemSwitch.classList.add("active");
+			}
+			menuItemSwitch.textContent = "an Anfang";
+			menuLevel1.appendChild(menuItemSwitch);
 
-		const menuItemArtifacts = document.createElement("div");
-		menuItemArtifacts.classList.add("item");
-		if (menuMainJumpFocusIndex === 2) {
-			menuItemArtifacts.classList.add("active");
-		}
-		menuItemArtifacts.textContent = "an Ende";
-		menuLevel1.appendChild(menuItemArtifacts);
+			const menuItemArtifacts = document.createElement("div");
+			menuItemArtifacts.classList.add("item");
+			if (menuMainJumpFocusIndex === 2) {
+				menuItemArtifacts.classList.add("active");
+			}
+			menuItemArtifacts.textContent = "an Ende";
+			menuLevel1.appendChild(menuItemArtifacts);
+		});
 	};
 
 	/** @type {InputPlane} */
@@ -1733,44 +1865,46 @@ const main = async () => {
 	const menuMainJumpDate = (isActive = true) => {
 		menuMainJump(false);
 
-		const menuLevel2 = document.createElement("div");
-		menuLevel2.classList.add("level");
-		if (isActive) {
-			menuLevel2.classList.add("active");
-		}
-		menuContainer.appendChild(menuLevel2);
+		DOM.write("menuMainJumpDate", () => {
+			const menuLevel2 = document.createElement("div");
+			menuLevel2.classList.add("level");
+			if (isActive) {
+				menuLevel2.classList.add("active");
+			}
+			menuContainer.appendChild(menuLevel2);
 
-		const menuItemYear = document.createElement("div");
-		menuItemYear.classList.add("item");
-		if (menuMainJumpDateFocusIndex === 0) {
-			menuItemYear.classList.add("active");
-		}
-		menuItemYear.textContent = menuMainJumpDateYear.toString();
-		menuLevel2.appendChild(menuItemYear);
+			const menuItemYear = document.createElement("div");
+			menuItemYear.classList.add("item");
+			if (menuMainJumpDateFocusIndex === 0) {
+				menuItemYear.classList.add("active");
+			}
+			menuItemYear.textContent = menuMainJumpDateYear.toString();
+			menuLevel2.appendChild(menuItemYear);
 
-		const menuLevel3 = document.createElement("div");
-		menuLevel3.classList.add("level", "active");
-		menuContainer.appendChild(menuLevel3);
+			const menuLevel3 = document.createElement("div");
+			menuLevel3.classList.add("level", "active");
+			menuContainer.appendChild(menuLevel3);
 
-		const menuItemMonth = document.createElement("div");
-		menuItemMonth.classList.add("item");
-		if (menuMainJumpDateFocusIndex === 1) {
-			menuItemMonth.classList.add("active");
-		}
-		menuItemMonth.textContent = (menuMainJumpDateMonth + 1).toString();
-		menuLevel3.appendChild(menuItemMonth);
+			const menuItemMonth = document.createElement("div");
+			menuItemMonth.classList.add("item");
+			if (menuMainJumpDateFocusIndex === 1) {
+				menuItemMonth.classList.add("active");
+			}
+			menuItemMonth.textContent = (menuMainJumpDateMonth + 1).toString();
+			menuLevel3.appendChild(menuItemMonth);
 
-		const menuLevel4 = document.createElement("div");
-		menuLevel4.classList.add("level", "active");
-		menuContainer.appendChild(menuLevel4);
+			const menuLevel4 = document.createElement("div");
+			menuLevel4.classList.add("level", "active");
+			menuContainer.appendChild(menuLevel4);
 
-		const menuItemDay = document.createElement("div");
-		menuItemDay.classList.add("item");
-		if (menuMainJumpDateFocusIndex === 2) {
-			menuItemDay.classList.add("active");
-		}
-		menuItemDay.textContent = menuMainJumpDateDate.toString();
-		menuLevel4.appendChild(menuItemDay);
+			const menuItemDay = document.createElement("div");
+			menuItemDay.classList.add("item");
+			if (menuMainJumpDateFocusIndex === 2) {
+				menuItemDay.classList.add("active");
+			}
+			menuItemDay.textContent = menuMainJumpDateDate.toString();
+			menuLevel4.appendChild(menuItemDay);
+		});
 	};
 
 	/** @type {InputPlane} */
@@ -2027,35 +2161,41 @@ const main = async () => {
 	const menuSwitchTimeline = () => {
 		updateStatusMenuSwitchTimeline();
 
-		const options = findNodeNeighbors().intersection;
-		const existingMenuItems = menuContainer.querySelectorAll(".level");
-		existingMenuItems.forEach((_) => void menuContainer.removeChild(_));
+		const options = getNodeNeighbors().intersection;
+		/** @type {NodeListOf<HTMLDivElement>|undefined} */
+		let existingMenuItems;
+		DOM.read("menuSwitchTimeline", () => {
+			existingMenuItems = menuContainer.querySelectorAll(".level");
+		});
+		DOM.write("menuSwitchTimeline", () => {
+			existingMenuItems?.forEach((_) => void menuContainer.removeChild(_));
 
-		const styleHighlight = `g.event, g.edge { &:not(.${idFocusedTimeline}) { opacity: 0.1; transition: ease-in-out opacity 0.6s; } }`;
-		if (cssRuleHighlightActive !== undefined) {
-			stylesheet.deleteRule(cssRuleHighlightActive);
-		}
-		cssRuleHighlightActive = stylesheet.cssRules.length;
-		stylesheet.insertRule(styleHighlight, stylesheet.cssRules.length);
-
-		const menuLevel0 = document.createElement("div");
-		menuLevel0.classList.add("level", "active");
-		menuContainer.appendChild(menuLevel0);
-
-		for (const timeline of options) {
-			const menuItem = document.createElement("div");
-			menuItem.classList.add("item", timeline);
-			if (idFocusedTimeline === timeline) {
-				menuItem.classList.add("active");
+			const styleHighlight = `g.event, g.edge { &:not(.${idFocusedTimeline}) { opacity: 0.1; transition: ease-in-out opacity 0.6s; } }`;
+			if (cssRuleHighlightActive !== undefined) {
+				stylesheet.deleteRule(cssRuleHighlightActive);
 			}
-			menuItem.textContent = timelines.get(timeline)?.[4] ?? "???";
-			menuLevel0.appendChild(menuItem);
-		}
-		statusOptions.classList.add("visible");
-		statusOptionA.textContent = "Umsteigen";
-		statusButtonA.style.display = "inline-block";
-		statusOptionX.textContent = "Zurück";
-		statusButtonX.style.display = "inline-block";
+			cssRuleHighlightActive = stylesheet.cssRules.length;
+			stylesheet.insertRule(styleHighlight, stylesheet.cssRules.length);
+
+			const menuLevel0 = document.createElement("div");
+			menuLevel0.classList.add("level", "active");
+			menuContainer.appendChild(menuLevel0);
+
+			for (const timeline of options) {
+				const menuItem = document.createElement("div");
+				menuItem.classList.add("item", timeline);
+				if (idFocusedTimeline === timeline) {
+					menuItem.classList.add("active");
+				}
+				menuItem.textContent = timelines.get(timeline)?.[4] ?? "???";
+				menuLevel0.appendChild(menuItem);
+			}
+			statusOptions.classList.add("visible");
+			statusOptionA.textContent = "Umsteigen";
+			statusButtonA.style.display = "inline-block";
+			statusOptionX.textContent = "Zurück";
+			statusButtonX.style.display = "inline-block";
+		});
 	};
 	//#endregion
 
@@ -2078,8 +2218,6 @@ const main = async () => {
 		const delta = timestamp - previousTimestamp;
 		const deltaStarfield = timestamp - previousTimestampStarfield;
 
-		view.scope.x = window.scrollX;
-		view.scope.y = window.scrollY;
 		handleInputs(delta);
 		updateCamera();
 
@@ -2088,50 +2226,55 @@ const main = async () => {
 		if (!cameraIsIdle && !cameraIsDetached && 1000 < deltaStarfield) {
 			const sinceStart = Date.now() - startTime;
 
-			for (let z = 0; z < starPlanes.length; ++z) {
-				const planeSet = starPlanes[z];
+			DOM.write("updateStarfield", () => {
+				for (let z = 0; z < starPlanes.length; ++z) {
+					const planeSet = starPlanes[z];
 
-				const offset =
-					(z + 1) *
-					(lastKnownScrollPosition * speedScroll + sinceStart * speedTime);
+					const offset =
+						(z + 1) *
+						(lastKnownScrollPosition * speedScroll + sinceStart * speedTime);
 
-				const planeOffsets = [planeSet[0], planeSet[1]];
-				const planes = [planeSet[2], planeSet[3]];
+					const planeOffsets = [planeSet[0], planeSet[1]];
+					const planes = [planeSet[2], planeSet[3]];
 
-				planeOffsets[0] = offset % view.window.height;
-				planeOffsets[1] = (offset % view.window.height) - view.window.height;
+					planeOffsets[0] = offset % view.window.height;
+					planeOffsets[1] = (offset % view.window.height) - view.window.height;
 
-				planes[0].style.transition =
-					view.window.height / 2 < Math.abs(planeSet[0] - planeOffsets[0])
-						? "none"
-						: "ease-out all 0.9s";
-				planes[1].style.transition =
-					view.window.height / 2 < Math.abs(planeSet[1] - planeOffsets[1])
-						? "none"
-						: "ease-out all 0.9s";
-				planes[0].style.opacity =
-					view.window.height / 2 < Math.abs(planeSet[0] - planeOffsets[0])
-						? "0"
-						: "1";
-				planes[1].style.opacity =
-					view.window.height / 2 < Math.abs(planeSet[1] - planeOffsets[1])
-						? "0"
-						: "1";
+					planes[0].style.transition =
+						view.window.height / 2 < Math.abs(planeSet[0] - planeOffsets[0])
+							? "none"
+							: "ease-out all 0.9s";
+					planes[1].style.transition =
+						view.window.height / 2 < Math.abs(planeSet[1] - planeOffsets[1])
+							? "none"
+							: "ease-out all 0.9s";
+					planes[0].style.opacity =
+						view.window.height / 2 < Math.abs(planeSet[0] - planeOffsets[0])
+							? "0"
+							: "1";
+					planes[1].style.opacity =
+						view.window.height / 2 < Math.abs(planeSet[1] - planeOffsets[1])
+							? "0"
+							: "1";
 
-				planes[0].style.transform = `translateY(${-planeOffsets[0]}px)`;
-				planes[1].style.transform = `translateY(${-planeOffsets[1]}px)`;
+					planes[0].style.transform = `translateY(${-planeOffsets[0]}px)`;
+					planes[1].style.transform = `translateY(${-planeOffsets[1]}px)`;
 
-				planeSet[0] = planeOffsets[0];
-				planeSet[1] = planeOffsets[1];
-			}
-
-			previousTimestampStarfield = timestamp;
+					planeSet[0] = planeOffsets[0];
+					planeSet[1] = planeOffsets[1];
+				}
+				previousTimestampStarfield = timestamp;
+			});
 		}
 
 		if (mediaItemVisible) {
-			// Browser X-Y is reversed.
-			dialog.style.transform = `perspective(50vmin) rotateY(${mediaItemRotation.x}deg) rotateX(${mediaItemRotation.y}deg) translate3d(${mediaItemPosition.x}vmin, ${mediaItemPosition.y}vmin, ${mediaItemPosition.z}vmin)`;
+			DOM.write("updateMediaItem", () => {
+				// Browser X-Y is reversed.
+				dialog.style.transform = `perspective(50vmin) rotateY(${mediaItemRotation.x}deg) rotateX(${mediaItemRotation.y}deg) translate3d(${mediaItemPosition.x}vmin, ${mediaItemPosition.y}vmin, ${mediaItemPosition.z}vmin)`;
+			});
 		}
+
+		DOM.run();
 
 		window.requestAnimationFrame(present);
 		previousTimestamp = timestamp;
@@ -2139,29 +2282,6 @@ const main = async () => {
 	//#endregion
 
 	//#region Init
-	const view = {
-		window: {
-			width: 0,
-			height: 0,
-		},
-		bounds: {
-			width: 0,
-			height: 0,
-		},
-		scope: {
-			x: 0,
-			y: 0,
-			width: 0,
-			height: 0,
-		},
-		focus: {
-			x: 0,
-			y: 0,
-			width: 0,
-			height: 0,
-		},
-	};
-
 	const getRandomColor = () => {
 		const components =
 			starColorsRGB[Math.floor(Math.random() * starColorsRGB.length)];
@@ -2240,30 +2360,30 @@ const main = async () => {
 			navigateHome();
 		}
 
-		window.requestAnimationFrame(present);
 		window.setTimeout(() => {
 			// Ensure initial view is culled.
 			cull();
 
 			console.info("Program init finalized.");
 			document.body.classList.remove("loading");
+			window.requestAnimationFrame(present);
 
 			window.setTimeout(() => {
 				calendarContainer.classList.add("open");
 				console.info("Calendar shown.");
-			}, 8000);
+			}, 5000);
 
 			window.setTimeout(() => {
 				statusContainer.classList.add("open");
 				returnToNeutral();
 				console.info("Status shown.");
-			}, 9000);
+			}, 6000);
 
 			window.setTimeout(() => {
 				loader.style.display = "none";
 				console.info("Loader hidden.");
-			}, 15000);
-		}, 5000);
+			}, 10000);
+		});
 	});
 
 	console.info("Next-frame ignition requested.");

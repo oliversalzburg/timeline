@@ -237,7 +237,7 @@ const fillOthers = (timeline, graph) => {
 	/** @type {import("../lib/types.js").TimelineRecord} */
 	const conceptionRecord = [
 		roundDateToDay(Math.trunc(birth.valueOf() - 9 * MILLISECONDS.ONE_MONTH)),
-		{ title: `Geschätzte Zeugung\n${name}`, generated: true },
+		{ title: `Geschätzte Zeugung\n${name}`, generated: false },
 	];
 	/** @type {import("../lib/types.js").TimelineRecord} */
 	const birthRecord = [
