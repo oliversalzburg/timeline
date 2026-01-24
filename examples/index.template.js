@@ -1426,7 +1426,7 @@ const main = async () => {
 					SPEED_MEDIA_TRANSLATE;
 			}
 			if (INPUT_THRESHOLD < Math.abs(frame.axes[Inputs.AXIS_LEFT_Y])) {
-				mediaItemPosition.x -=
+				mediaItemPosition.y -=
 					frame.axes[Inputs.AXIS_LEFT_Y] *
 					(frame.delta / (1000 / 60)) *
 					SPEED_MEDIA_TRANSLATE;
@@ -1461,8 +1461,8 @@ const main = async () => {
 			menuContainer.classList.remove("open");
 			statusContainer.classList.add("open");
 			shouldersContainer.classList.add("visible");
-			updateStatus();
 		});
+		updateStatus();
 		return InputPlaneMedia;
 	};
 	//#endregion
@@ -2257,8 +2257,8 @@ const main = async () => {
 							? "0"
 							: "1";
 
-					planes[0].style.transform = `translateY(${-planeOffsets[0]}px)`;
-					planes[1].style.transform = `translateY(${-planeOffsets[1]}px)`;
+					planes[0].style.transform = `translateY(${-planeOffsets[0]}px) translateZ(0px)`;
+					planes[1].style.transform = `translateY(${-planeOffsets[1]}px) translateZ(0px)`;
 
 					planeSet[0] = planeOffsets[0];
 					planeSet[1] = planeOffsets[1];
@@ -2270,7 +2270,7 @@ const main = async () => {
 		if (mediaItemVisible) {
 			DOM.write("updateMediaItem", () => {
 				// Browser X-Y is reversed.
-				dialog.style.transform = `perspective(50vmin) rotateY(${mediaItemRotation.x}deg) rotateX(${mediaItemRotation.y}deg) translate3d(${mediaItemPosition.x}vmin, ${mediaItemPosition.y}vmin, ${mediaItemPosition.z}vmin)`;
+				dialog.style.transform = `perspective(50px) rotateY(${mediaItemRotation.x}deg) rotateX(${mediaItemRotation.y}deg) translate3d(${mediaItemPosition.x}px, ${mediaItemPosition.y}px, ${mediaItemPosition.z}px)`;
 			});
 		}
 
@@ -2331,7 +2331,7 @@ const main = async () => {
 					context.fill();
 				}
 
-				document.body.append(plane);
+				document.body.insertBefore(plane, svg);
 			}
 
 			stars *= 0.9;
