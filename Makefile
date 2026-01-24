@@ -162,19 +162,19 @@ $(IMAGES) &: contrib/prepare-emoji.js
 		"--assets=$(OUTPUT_BUILD)" \
 		"--target=$@.loose" > $@
 	@date +"%FT%T%z Universe SVG generated '$@'."
-$(OUTPUT)/universe.html : $(OUTPUT_BUILD)/universe.info $(wildcard examples/index.template.*) examples/build-site.js
+$(OUTPUT)/universe.html : $(OUTPUT_BUILD)/universe.info $(wildcard contrib/index.template.*) contrib/build-site.js
 	+@make $(OUTPUT_BUILD)/universe.svg
-	@node --enable-source-maps examples/build-site.js \
+	@node --enable-source-maps contrib/build-site.js \
 		"--build=$(OUTPUT_BUILD)" \
 		--format=zen \
 		--target=$@
 	@date +"%FT%T%z Universe HTML generated '$@'."
-	@cp examples/favicon.ico $(dir $@)
+	@cp contrib/favicon.ico $(dir $@)
 	@date +"%FT%T%z Synchronizing media..."
 	@rsync --archive $(DATA_ROOT)/media $(dir $@)
 	@date +"%FT%T%z Media synchronized. Golden image ready at '$(dir $@)'."
-%-demo-universe.html : %-demo-universe.info %-demo-universe.svg $(wildcard examples/index.template.*) examples/build-site.js
-	@node --enable-source-maps examples/build-site.js \
+%-demo-universe.html : %-demo-universe.info %-demo-universe.svg $(wildcard contrib/index.template.*) contrib/build-site.js
+	@node --enable-source-maps contrib/build-site.js \
 		--format=zen \
 		--target=$@
 	@date +"%FT%T%z DEMO Universe HTML generated '$@'."
@@ -189,13 +189,13 @@ $(OUTPUT)/universe.html : $(OUTPUT_BUILD)/universe.info $(wildcard examples/inde
 # Embed (emoji) prefixes as <IMG> elements in the label.
 # At time of implementation, this output did not render well
 # with cairo.
-%.idotus : %.dotus $(IMAGES)
-	@node --enable-source-maps examples/emojify.js \
+%.idotus : %.dotus $(IMAGES) contrib/emojify.js
+	@node --enable-source-maps contrib/emojify.js \
 		"--assets=$(OUTPUT_BUILD)" \
 		"--target=$<"
 	@date +"%FT%T%z Generated embedded iDOTus fragment '$@'."
-%.igvus : %.gvus $(IMAGES)
-	@node --enable-source-maps examples/emojify.js \
+%.igvus : %.gvus $(IMAGES) contrib/emojify.js
+	@node --enable-source-maps contrib/emojify.js \
 		"--assets=$(OUTPUT_BUILD)" \
 		"--target=$<"
 	@date +"%FT%T%z Generated embedded iGVus fragment '$@'."
@@ -286,7 +286,7 @@ validate-data: .venv validate-schema lib/tsconfig.source.tsbuildinfo
 	check-jsonschema \
 		--schemafile spec.schema.yml \
 		$(TIMELINES)
-	node --enable-source-maps examples/timelinelint.js \
+	node --enable-source-maps contrib/timelinelint.js \
 		"--root=$(DATA_ROOT)" \
 		$(TIMELINES)
 
