@@ -291,11 +291,11 @@ validate-data: .venv validate-schema lib/tsconfig.source.tsbuildinfo
 		$(TIMELINES)
 
 # Run available software tests.
-test: node_modules/.package-lock.json $(_LIBS_JS)
+test: lib/tsconfig.source.tsbuildinfo
 	TZ=UTC node --enable-source-maps --inspect \
 		node_modules/.bin/mocha --reporter-option maxDiffSize=16000 \
 		lib/*.test.js
-coverage: node_modules/.package-lock.json $(_LIBS_JS)
+coverage: lib/tsconfig.source.tsbuildinfo
 	NODE_OPTIONS=--enable-source-maps TZ=UTC npm exec -- \
 		c8 --reporter=html-spa \
 		mocha --reporter-option maxDiffSize=16000 \

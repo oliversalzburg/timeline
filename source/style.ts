@@ -43,7 +43,11 @@ export const StyleStatic: Style = {
 	style: ["dotted"],
 };
 export const StyleSheetStatic: Map<string, Style> = new Map([
+	["0", StyleStatic],
+	["1", StyleStatic],
 	["document", StyleStatic],
+	["history", StyleStatic],
+	["random", StyleStatic],
 	["test", StyleStatic],
 ]);
 
