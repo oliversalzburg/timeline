@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { readFileSync } from "node:fs";
+import { createWriteStream, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { mustExist } from "@oliversalzburg/js-utils/data/nil.js";
 
@@ -35,8 +35,18 @@ if (typeof args.target !== "string") {
 	process.exit(1);
 }
 
+const inputFiles = process.argv
+	.slice(2)
+	.filter((_) => !_.startsWith("--"))
+	.sort();
+
+if (inputFiles.length !== 1) {
+	process.stderr.write("Expected 1 unlabeled argument.\n");
+	process.exit(1);
+}
+
 const assets = args.assets;
-const svgInput = readFileSync(args.target, "utf8");
+const svgInput = readFileSync(inputFiles[0], "utf8");
 const imageNodes = svgInput.matchAll(
 	/^<image xlink:href="([^"]*)".* x="([^"]+)".* y="([^"]+)".*\/>/gm,
 );
@@ -76,4 +86,5 @@ const nestedContent = imageNodeReferences.replace(
 	`${images.join("\n")}\n</svg>`,
 );
 
-process.stdout.write(nestedContent);
+const output = createWriteStream(args.target, "utf8");
+output.write(`${nestedContent}\n`);

@@ -22,7 +22,7 @@ const Inputs = {
 	AXIS_RIGHT_Y: 3,
 };
 
-/** @type {import("source/types.js").UniverseResultMetadataNG} */
+/** @type {import("../lib/types.js").UniverseResultMetadataNG} */
 const DATA = [[], [], ["", "", ""]];
 
 const main = async () => {
@@ -347,7 +347,7 @@ const main = async () => {
 		/** @type {Set<string>} */ (new Set()),
 	);
 
-	/** @type {Map<string, import("source/types.js").TimelineMetadata>} */
+	/** @type {Map<string, import("../lib/types.js").TimelineMetadata>} */
 	const timelines = new Map(DATA[1].map((_) => [_[0], _]));
 	/** @type {Map<string, Array<{timestamp:number,id:string,title:string,contributors:Array<string>}>>} */
 	const timelineEvents = new Map();

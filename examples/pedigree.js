@@ -70,7 +70,7 @@ if (format === undefined) {
 }
 
 // Parse raw data with appropriate parser.
-/** @type {Map<string,import("source/types.js").TimelineDocument>} */
+/** @type {Map<string,import("../lib/types.js").TimelineDocument>} */
 const plainData = new Map(
 	rawData.map((data) => {
 		const timeline = parse(data);
@@ -79,7 +79,7 @@ const plainData = new Map(
 );
 
 // Load raw data to normalized model.
-/** @type {Map<string,import("source/types.js").TimelineAncestryRenderer>} */
+/** @type {Map<string,import("../lib/types.js").TimelineAncestryRenderer>} */
 const data = new Map(
 	plainData.entries().map(([id, data]) => [id, load(data, id)]),
 );
@@ -88,7 +88,7 @@ const seed = [...crypto.getRandomValues(new Uint32Array(10))]
 	.map((_) => _.toString(16))
 	.join("");
 
-/** @type {Array<import("source/types.js").TimelineAncestryRenderer>} */
+/** @type {Array<import("../lib/types.js").TimelineAncestryRenderer>} */
 const finalTimelines = [
 	...data
 		.entries()
@@ -117,7 +117,7 @@ const originIdentityId = mustExist(
 const graph = new Graph(finalTimelines, originIdentityId);
 
 // Generate stylesheet for entire universe.
-/** @type {import("source/types.js").RenderMode} */
+/** @type {import("../lib/types.js").RenderMode} */
 const theme = args.theme === "light" ? "light" : "dark";
 const styleSheet = new Styling(finalTimelines, theme).styles(
 	graph,

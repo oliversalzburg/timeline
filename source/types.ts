@@ -135,9 +135,9 @@ export type RenderResultMetadata = [
 	 */
 	Array<[string, Array<string>]>,
 	/**
-	 * Key-value pairs of timeline CSS class to metadata.
+	 * Timeline metadata.
 	 */
-	Array<[string, TimelineMetadata]>,
+	Array<TimelineMetadata>,
 	/**
 	 * Root identity name, ID of event relating to their birth, CSS class of their timeline.
 	 */

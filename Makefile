@@ -3,8 +3,8 @@
 OUTPUT ?= output
 OUTPUT_BUILD := $(OUTPUT)/build
 
-#_SOURCES := $(wildcard contrib/* examples/* source/*.ts source/*/*.ts)
 _SOURCES_TS := $(wildcard source/*.ts) $(wildcard source/*/*.ts)
+_OBJECTS := $(_SOURCES_TS) $(wildcard contrib/*) $(wildcard examples/*)
 _LIBS_JS := $(patsubst source/%,lib/%,$(patsubst %.ts,%.js,$(_SOURCES_TS)))
 _LIBS_JS_MAP := $(patsubst source/%,lib/%,$(patsubst %.ts,%.js.map,$(_SOURCES_TS)))
 _LIBS_D_TS := $(patsubst source/%,lib/%,$(patsubst %.ts,%.d.ts,$(_SOURCES_TS)))
@@ -155,19 +155,24 @@ $(IMAGES) &: contrib/prepare-emoji.js
 		"--origin=$<" \
 		"--target=$(patsubst %/universe-public.info,%/universe-public.gvus,$@)"
 	@date +"%FT%T%z DEMO Universe (Meta-)Information generated '$@'."
-%/universe.svg : $(SEGMENTS_ISVG)
-	node --enable-source-maps contrib/svgcat.js \
+
+%/universe.svg : $(SEGMENTS_ISVG) $(_OBJECTS)
+	@node --enable-source-maps contrib/svgcat.js \
 		"--target=$@.loose" $(SEGMENTS_ISVG)
-	node --enable-source-maps contrib/svgnest.js \
+	@node --enable-source-maps contrib/svgnest.js \
 		"--assets=$(OUTPUT_BUILD)" \
-		"--target=$@.loose" > $@
+		"--target=$@.bigradient" "$@.loose"
+	@node --enable-source-maps contrib/gradientify.js \
+		"--build=$(OUTPUT_BUILD)" \
+		"--target=$@" "$@.bigradient"
 	@date +"%FT%T%z Universe SVG generated '$@'."
-$(OUTPUT)/universe.html : $(OUTPUT_BUILD)/universe.info $(wildcard contrib/index.template.*) contrib/build-site.js
+
+$(OUTPUT)/universe.html : $(OUTPUT_BUILD)/universe.info $(_OBJECTS)
 	+@make $(OUTPUT_BUILD)/universe.svg
 	@node --enable-source-maps contrib/build-site.js \
 		"--build=$(OUTPUT_BUILD)" \
 		--format=zen \
-		--target=$@
+		"--target=$@"
 	@date +"%FT%T%z Universe HTML generated '$@'."
 	@cp contrib/favicon.ico $(dir $@)
 	@date +"%FT%T%z Synchronizing media..."

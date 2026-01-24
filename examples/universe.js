@@ -122,13 +122,13 @@ const hops = graphUniverse.calculateHopsFrom(originIdentityId, {
 const trimmedTimelines = finalTimelines.filter((_) => {
 	const born = isIdentityPerson(_)
 		? uncertainEventToDate(
-				/** @type {import("../source/types.js").TimelineAncestryRenderer} */ (_)
+				/** @type {import("../lib/types.js").TimelineAncestryRenderer} */ (_)
 					.meta.identity.born,
 			)?.valueOf()
 		: undefined;
 	const distance = isIdentityPerson(_)
 		? (hops.get(
-				/** @type {import("../source/types.js").TimelineAncestryRenderer} */ (_)
+				/** @type {import("../lib/types.js").TimelineAncestryRenderer} */ (_)
 					.meta.identity.id,
 			) ?? Number.POSITIVE_INFINITY)
 		: Number.POSITIVE_INFINITY;
@@ -153,7 +153,7 @@ process.stdout.write(
 );
 
 // Generate stylesheet for entire universe.
-/** @type {import("source/types.js").RenderMode} */
+/** @type {import("../lib/types.js").RenderMode} */
 const theme = args.theme === "light" ? "light" : "dark";
 const styleSheet = new Styling(trimmedTimelines, theme).styles(
 	graphTrimmed,

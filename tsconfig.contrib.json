@@ -27,5 +27,9 @@
 		"useDefineForClassFields": true
 	},
 	"include": ["contrib"],
-	"references": []
+	"references": [
+		{
+			"path": "tsconfig.source.json"
+		}
+	]
 }
