@@ -43,6 +43,10 @@ if (typeof args.origin !== "string") {
 	process.stderr.write("Missing --origin.\n");
 	process.exit(1);
 }
+if (!args.origin.endsWith("universe.yml")) {
+	process.stderr.write("Expected --origin to end in 'universe.yml'q.\n");
+	process.exit(1);
+}
 
 const targetPath = typeof args.target === "string" ? args.target : undefined;
 
@@ -155,9 +159,9 @@ if (format === "simple") {
 if (format === "report") {
 	const markdown = renderReport(finalTimelines, {
 		...renderOptions,
-		pedigreeChartPath: originId.replace(
-			/\.yml$/,
-			`${args.anonymize === true ? "-demo" : ""}-pedigree-light.svg`,
+		pedigreeChartPath: args.origin.replace(
+			/universe\.yml$/,
+			`${args.anonymize === true ? "demo-" : ""}pedigree-light.svg`,
 		),
 	});
 	targetStream.write(markdown[0].content);

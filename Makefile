@@ -1,4 +1,7 @@
-OUTPUT := output
+-include build.config.mk
+
+OUTPUT ?= output
+OUTPUT_BUILD := $(OUTPUT)/build
 
 #_SOURCES := $(wildcard contrib/* examples/* source/*.ts source/*/*.ts)
 _SOURCES_TS := $(wildcard source/*.ts source/*/*.ts)
@@ -8,7 +11,7 @@ _LIBS_D_TS := $(patsubst %.ts,%.d.ts,$(_SOURCES_TS))
 _LIBS_D_TS_MAP := $(patsubst %.ts,%.d.ts.map,$(_SOURCES_TS))
 
 _IMAGES := $(wildcard contrib/openmoji-svg-color/*.svg) $(wildcard contrib/wikimedia/*.svg)
-IMAGES := $(addprefix $(OUTPUT)/,$(notdir $(_IMAGES)))
+IMAGES := $(addprefix $(OUTPUT_BUILD)/,$(notdir $(_IMAGES)))
 
 DATA_ROOT ?= $(shell realpath ~/timelines)
 ifneq ("$(wildcard $(DATA_ROOT))","")
@@ -18,14 +21,15 @@ else
 	TIMELINES = $(shell find $(DATA_ROOT) -iname "*.yml")
 endif
 
-SEGMENTS := $(wildcard $(DATA_ROOT)/*.gvus $(DATA_ROOT)/*/*.gvus)
+SEGMENTS := $(wildcard $(OUTPUT_BUILD)/*.gvus)
+SEGMENTS_ISVG := $(patsubst %.gvus,%.isvgus,$(SEGMENTS))
 
 _SCOUR_FLAGS = --enable-viewboxing --enable-id-stripping --enable-comment-stripping --shorten-ids --indent=none
 ifneq ($(DEBUG),)
 	_SCOUR_FLAGS += --verbose
 endif
 
-DOT_FLAGS := -Gcenter=false -Gimagepath=$(OUTPUT) -Gmargin=0 -Gpad=0
+DOT_FLAGS := -Gcenter=false -Gimagepath=$(OUTPUT_BUILD) -Gmargin=0 -Gpad=0
 ifneq ($(DEBUG_DOT),)
 	DOT_FLAGS += -v5
 endif
@@ -54,16 +58,20 @@ endif
 
 .PHONY: default build clean docs git-hook pretty lint test coverage universe
 .INTERMEDIATE: $(IMAGES)
-.PRECIOUS: %.dotus %.idotus %.isvgus %.universe
+.PRECIOUS: %.dotus %.idotus %.isvgus
+
+default: $(OUTPUT)/pedigree.pdf $(OUTPUT)/universe.html
 
 lib/tsconfig.source.tsbuildinfo $(_LIBS_D_TS) $(_LIBS_D_TS_MAP) $(_LIBS_JS) $(_LIBS_JS_MAP) &: node_modules/.package-lock.json $(_SOURCES_TS)
 	@npm exec -- tsc --build tsconfig.json
+	@touch $@
 	@date +"%FT%T%z Library code rebuilt."
 
 $(IMAGES) &: contrib/prepare-emoji.js
-	@mkdir -p $(OUTPUT)
-	@node --enable-source-maps contrib/prepare-emoji.js --target=$(OUTPUT)
-	@cp contrib/wikimedia/* $(OUTPUT)/
+	@mkdir -p $(OUTPUT_BUILD)
+	@node --enable-source-maps contrib/prepare-emoji.js \
+		"--target=$(OUTPUT_BUILD)"
+	@cp contrib/wikimedia/* "$(OUTPUT_BUILD)"
 	@date +"%FT%T%z Vector image data prepared."
 
 %-demo.universe : %.yml $(TIMELINES) lib/tsconfig.source.tsbuildinfo $(_SOURCES_TS) examples/space-time-generator.js
@@ -73,11 +81,12 @@ $(IMAGES) &: contrib/prepare-emoji.js
 		--root=$(DATA_ROOT) \
 		--target=$@
 	@date +"%FT%T%z DEMO Universe generated '$@'."
-%.universe : %.yml $(TIMELINES) lib/tsconfig.source.tsbuildinfo $(_SOURCES_TS) examples/space-time-generator.js
+%/universe.yml : $(TIMELINES) lib/tsconfig.source.tsbuildinfo $(_SOURCES_TS) examples/space-time-generator.js
+	@mkdir -p $(OUTPUT_BUILD)
 	@node --enable-source-maps examples/space-time-generator.js \
-		--origin=$< \
-		--root=$(DATA_ROOT) \
-		--target=$@
+		"--origin=$(ORIGIN)" \
+		"--root=$(DATA_ROOT)" \
+		"--target=$@"
 	@date +"%FT%T%z Universe generated '$@'."
 
 %-analytics.md : %.universe %-pedigree-light.svg examples/pedigree.js
@@ -98,21 +107,21 @@ $(IMAGES) &: contrib/prepare-emoji.js
 		--target=$@ \
 		--theme=light
 	@date +"%FT%T%z DEMO Analytics exported '$@'."
-%.md : %.universe %-pedigree-light.svg examples/pedigree.js
+%/pedigree.md : %/universe.yml %/pedigree-light.svg examples/pedigree.js
 	@node --enable-source-maps examples/pedigree.js \
 		$(PEDIGREE_FLAGS) \
 		--format=report \
-		--origin=$< \
-		--target=$@ \
+		"--origin=$<" \
+		"--target=$@" \
 		--theme=light
 	@date +"%FT%T%z Report generated '$@'."
 
-%-pedigree-light.gv : %.universe examples/pedigree.js
+%/pedigree-light.gv : %/universe.yml examples/pedigree.js
 	@node --enable-source-maps examples/pedigree.js \
 		$(PEDIGREE_FLAGS) \
 		--format=simple \
-		--origin=$< \
-		--target=$@ \
+		"--origin=$<" \
+		"--target=$@" \
 		--theme=light
 	@date +"%FT%T%z Pedigree chart generated '$@'."
 # We intentionally don't pass --anonymize here, because we're already operating
@@ -125,11 +134,11 @@ $(IMAGES) &: contrib/prepare-emoji.js
 		--target=$@ \
 		--theme=light
 	@date +"%FT%T%z DEMO Pedigree chart generated '$@'."
-%-universe.info %-universe.meta &: %.universe examples/universe.js
+%/universe.info %/universe.meta &: %/universe.yml examples/universe.js
 	@node --enable-source-maps examples/universe.js \
 		$(UNIVERSE_FLAGS) \
 		--origin=$< \
-		--target=$(patsubst %-universe.info,%-universe.gvus,$@)
+		--target=$(patsubst %/universe.info,%/universe.gvus,$@)
 	@date +"%FT%T%z Universe (Meta-)Information generated '$@'."
 # We intentionally don't pass --anonymize here, because we're already operating
 # on the anonymized -demo.universe.
@@ -139,19 +148,24 @@ $(IMAGES) &: contrib/prepare-emoji.js
 		--origin=$< \
 		--target=$(patsubst %-demo-universe.info,%-demo-universe.gvus,$@)
 	@date +"%FT%T%z DEMO Universe (Meta-)Information generated '$@'."
-%-universe.svg : %-universe.info $(IMAGES) contrib/make.sh
-	+@contrib/make.sh $(patsubst %-universe.svg,%,$@)
+%/universe.svg : $(SEGMENTS_ISVG)
+	node --enable-source-maps contrib/svgcat.js \
+		"--target=$@.loose" $(SEGMENTS_ISVG)
+	node --enable-source-maps contrib/svgnest.js \
+		"--assets=$(OUTPUT_BUILD)" \
+		"--target=$@.loose" > $@
 	@date +"%FT%T%z Universe SVG generated '$@'."
-%-universe.html : %-universe.info %-universe.svg $(wildcard examples/index.template.*) examples/build-site.js
+$(OUTPUT)/universe.html : $(OUTPUT_BUILD)/universe.info $(wildcard examples/index.template.*) examples/build-site.js
+	+@make $(OUTPUT_BUILD)/universe.svg
 	@node --enable-source-maps examples/build-site.js \
+		"--build=$(OUTPUT_BUILD)" \
 		--format=zen \
 		--target=$@
 	@date +"%FT%T%z Universe HTML generated '$@'."
-	@cp $@ output/universe.html
-	@cp examples/favicon.ico output/favicon.ico
+	@cp examples/favicon.ico $(dir $@)
 	@date +"%FT%T%z Synchronizing media..."
-	@rsync --archive $(DATA_ROOT)/media output/
-	@date +"%FT%T%z Golden image ready at 'output/universe.html'."
+	@rsync --archive $(DATA_ROOT)/media $(dir $@)
+	@date +"%FT%T%z Golden image ready at '$(dir $@)'."
 %-demo-universe.html : %-demo-universe.info %-demo-universe.svg $(wildcard examples/index.template.*) examples/build-site.js
 	@node --enable-source-maps examples/build-site.js \
 		--format=zen \
@@ -170,13 +184,13 @@ $(IMAGES) &: contrib/prepare-emoji.js
 # with cairo.
 %.idotus : %.dotus $(IMAGES)
 	@node --enable-source-maps examples/emojify.js \
-		--assets=$(OUTPUT) \
-		--target=$<
+		"--assets=$(OUTPUT_BUILD)" \
+		"--target=$<"
 	@date +"%FT%T%z Generated embedded iDOTus fragment '$@'."
 %.igvus : %.gvus $(IMAGES)
 	@node --enable-source-maps examples/emojify.js \
-		--assets=$(OUTPUT) \
-		--target=$<
+		"--assets=$(OUTPUT_BUILD)" \
+		"--target=$<"
 	@date +"%FT%T%z Generated embedded iGVus fragment '$@'."
 
 %.svg : %.dot
@@ -203,12 +217,12 @@ $(IMAGES) &: contrib/prepare-emoji.js
 		--pdf-engine lualatex \
 		--output $(notdir $@) \
 		$(notdir $<)
-%.pdf : %.md %-pedigree-light.svg
-	cd $(dir $@); pandoc \
+$(OUTPUT)/pedigree.pdf : $(OUTPUT_BUILD)/pedigree.md $(OUTPUT_BUILD)/pedigree-light.svg
+	cd $(OUTPUT_BUILD); pandoc \
 		--from markdown \
 		--to pdf \
 		--pdf-engine lualatex \
-		--output $(notdir $@) \
+		"--output=$@" \
 		$(notdir $<)
 
 # Compress an SVG by applying lossy XML transformations.
@@ -224,7 +238,7 @@ lib/timeline.js: node_modules/.package-lock.json build.js | lib
 
 # Clean up all build artifacts.
 clean:
-	@rm --force --recursive _site coverage lib $(OUTPUT)
+	@rm --force --recursive _site coverage lib $(OUTPUT) output
 	@find -iname "callgrind.out.*" -delete
 	@find -iwholename "schemas/*.schema.json" -delete
 	@date +"%FT%T%z Cleaned."

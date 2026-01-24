@@ -33,6 +33,10 @@ const args = process.argv
 		/** @type {Record<string, boolean | string>} */ ({}),
 	);
 
+if (typeof args.build !== "string") {
+	process.stderr.write("Missing --build.\n");
+	process.exit(1);
+}
 if (typeof args.format !== "string") {
 	process.stderr.write("Missing --format.\n");
 	process.exit(1);
@@ -79,9 +83,9 @@ if (meta === undefined) {
 const settings = {
 	...meta,
 	output: args.target,
-	info: readFileSync(args.target.replace(/\.html$/, ".info"), "utf-8"),
-	meta: readFileSync(args.target.replace(/\.html$/, ".meta"), "utf-8"),
-	svg: readFileSync(args.target.replace(/\.html$/, meta.svgSource), "utf-8"),
+	info: readFileSync(join(args.build, "universe.info"), "utf-8"),
+	meta: readFileSync(join(args.build, "universe.meta"), "utf-8"),
+	svg: readFileSync(join(args.build, `universe${meta.svgSource}`), "utf-8"),
 };
 
 const css = templateCss
