@@ -4,11 +4,11 @@ OUTPUT ?= output
 OUTPUT_BUILD := $(OUTPUT)/build
 
 #_SOURCES := $(wildcard contrib/* examples/* source/*.ts source/*/*.ts)
-_SOURCES_TS := $(wildcard source/*.ts source/*/*.ts)
-_LIBS_JS := $(patsubst %.ts,%.js,$(_SOURCES_TS))
-_LIBS_JS_MAP := $(patsubst %.ts,%.js.map,$(_SOURCES_TS))
-_LIBS_D_TS := $(patsubst %.ts,%.d.ts,$(_SOURCES_TS))
-_LIBS_D_TS_MAP := $(patsubst %.ts,%.d.ts.map,$(_SOURCES_TS))
+_SOURCES_TS := $(wildcard source/*.ts) $(wildcard source/*/*.ts)
+_LIBS_JS := $(patsubst source/%,lib/%,$(patsubst %.ts,%.js,$(_SOURCES_TS)))
+_LIBS_JS_MAP := $(patsubst source/%,lib/%,$(patsubst %.ts,%.js.map,$(_SOURCES_TS)))
+_LIBS_D_TS := $(patsubst source/%,lib/%,$(patsubst %.ts,%.d.ts,$(_SOURCES_TS)))
+_LIBS_D_TS_MAP := $(patsubst source/%,lib/%,$(patsubst %.ts,%.d.ts.map,$(_SOURCES_TS)))
 
 _IMAGES := $(wildcard contrib/openmoji-svg-color/*.svg) $(wildcard contrib/wikimedia/*.svg)
 IMAGES := $(addprefix $(OUTPUT_BUILD)/,$(notdir $(_IMAGES)))
@@ -57,14 +57,21 @@ else
 endif
 
 .PHONY: default build clean docs git-hook pretty lint test coverage universe
-.INTERMEDIATE: $(IMAGES)
-.PRECIOUS: %.dotus %.idotus %.isvgus
 
-default: $(OUTPUT)/pedigree.pdf $(OUTPUT)/universe.html
+default: \
+	$(OUTPUT)/pedigree.pdf \
+	$(OUTPUT)/pedigree-analytics.pdf \
+	$(OUTPUT)/pedigree-public.pdf \
+	$(OUTPUT)/universe.html
 
-lib/tsconfig.source.tsbuildinfo $(_LIBS_D_TS) $(_LIBS_D_TS_MAP) $(_LIBS_JS) $(_LIBS_JS_MAP) &: node_modules/.package-lock.json $(_SOURCES_TS)
+lib/%.d.ts : lib/%.js
+lib/%.d.ts.map : lib/%.d.ts
+lib/%.js.map : lib/%.js
+lib/%.js &: source/%.ts
+	+@make lib/tsconfig.source.tsbuildinfo
+lib/tsconfig.source.tsbuildinfo : node_modules/.package-lock.json $(_SOURCES_TS)
 	@npm exec -- tsc --build tsconfig.json
-	@touch $@
+	@touch lib/tsconfig.source.tsbuildinfo
 	@date +"%FT%T%z Library code rebuilt."
 
 $(IMAGES) &: contrib/prepare-emoji.js
@@ -74,14 +81,14 @@ $(IMAGES) &: contrib/prepare-emoji.js
 	@cp contrib/wikimedia/* "$(OUTPUT_BUILD)"
 	@date +"%FT%T%z Vector image data prepared."
 
-%-demo.universe : %.yml $(TIMELINES) lib/tsconfig.source.tsbuildinfo $(_SOURCES_TS) examples/space-time-generator.js
+%/universe-public.yml : $(TIMELINES) lib/tsconfig.source.tsbuildinfo examples/space-time-generator.js
 	@node --enable-source-maps examples/space-time-generator.js \
 		--anonymize \
-		--origin=$< \
-		--root=$(DATA_ROOT) \
-		--target=$@
-	@date +"%FT%T%z DEMO Universe generated '$@'."
-%/universe.yml : $(TIMELINES) lib/tsconfig.source.tsbuildinfo $(_SOURCES_TS) examples/space-time-generator.js
+		"--origin=$(ORIGIN)" \
+		"--root=$(DATA_ROOT)" \
+		"--target=$@"
+	@date +"%FT%T%z PUBLIC Universe generated '$@'."
+%/universe.yml : $(TIMELINES) lib/tsconfig.source.tsbuildinfo examples/space-time-generator.js
 	@mkdir -p $(OUTPUT_BUILD)
 	@node --enable-source-maps examples/space-time-generator.js \
 		"--origin=$(ORIGIN)" \
@@ -89,24 +96,15 @@ $(IMAGES) &: contrib/prepare-emoji.js
 		"--target=$@"
 	@date +"%FT%T%z Universe generated '$@'."
 
-%-analytics.md : %.universe %-pedigree-light.svg examples/pedigree.js
-	@node --enable-source-maps examples/pedigree.js \
-		$(PEDIGREE_FLAGS) \
-		--analytics \
-		--format=report \
-		--origin=$< \
-		--target=$@ \
-		--theme=light
-	@date +"%FT%T%z Analytics exported '$@'."
-%-demo.md : %-demo.universe %-demo-pedigree-light.svg examples/pedigree.js
+%/pedigree-public.md : %/universe-public.yml %/pedigree-public-light.svg examples/pedigree.js
 	@node --enable-source-maps examples/pedigree.js \
 		$(PEDIGREE_FLAGS) \
 		--anonymize \
 		--format=report \
-		--origin=$< \
-		--target=$@ \
+		"--origin=$<" \
+		"--target=$@" \
 		--theme=light
-	@date +"%FT%T%z DEMO Analytics exported '$@'."
+	@date +"%FT%T%z PUBLIC Report generated '$@'."
 %/pedigree.md : %/universe.yml %/pedigree-light.svg examples/pedigree.js
 	@node --enable-source-maps examples/pedigree.js \
 		$(PEDIGREE_FLAGS) \
@@ -115,6 +113,15 @@ $(IMAGES) &: contrib/prepare-emoji.js
 		"--target=$@" \
 		--theme=light
 	@date +"%FT%T%z Report generated '$@'."
+%/pedigree-analytics.md : %/universe.yml %/pedigree-light.svg examples/pedigree.js
+	@node --enable-source-maps examples/pedigree.js \
+		$(PEDIGREE_FLAGS) \
+		--analytics \
+		--format=report \
+		"--origin=$<" \
+		"--target=$@" \
+		--theme=light
+	@date +"%FT%T%z ANALYTICS Report generated '$@'."
 
 %/pedigree-light.gv : %/universe.yml examples/pedigree.js
 	@node --enable-source-maps examples/pedigree.js \
@@ -125,28 +132,28 @@ $(IMAGES) &: contrib/prepare-emoji.js
 		--theme=light
 	@date +"%FT%T%z Pedigree chart generated '$@'."
 # We intentionally don't pass --anonymize here, because we're already operating
-# on the anonymized -demo.universe.
-%-demo-pedigree-light.gv : %-demo.universe examples/pedigree.js
+# on the anonymized universe.
+%/pedigree-public-light.gv : %/universe-public.yml examples/pedigree.js
 	@node --enable-source-maps examples/pedigree.js \
 		$(PEDIGREE_FLAGS) \
 		--format=simple \
-		--origin=$< \
-		--target=$@ \
+		"--origin=$<" \
+		"--target=$@" \
 		--theme=light
-	@date +"%FT%T%z DEMO Pedigree chart generated '$@'."
+	@date +"%FT%T%z PUBLIC Pedigree chart generated '$@'."
 %/universe.info %/universe.meta &: %/universe.yml examples/universe.js
 	@node --enable-source-maps examples/universe.js \
 		$(UNIVERSE_FLAGS) \
-		--origin=$< \
-		--target=$(patsubst %/universe.info,%/universe.gvus,$@)
+		"--origin=$<" \
+		"--target=$(patsubst %/universe.info,%/universe.gvus,$@)"
 	@date +"%FT%T%z Universe (Meta-)Information generated '$@'."
 # We intentionally don't pass --anonymize here, because we're already operating
 # on the anonymized -demo.universe.
-%-demo-universe.info : %-demo.universe examples/universe.js
+%/universe-public.info : %/universe-public.yml examples/universe.js
 	@node --enable-source-maps examples/universe.js \
 		$(UNIVERSE_FLAGS) \
-		--origin=$< \
-		--target=$(patsubst %-demo-universe.info,%-demo-universe.gvus,$@)
+		"--origin=$<" \
+		"--target=$(patsubst %/universe-public.info,%/universe-public.gvus,$@)"
 	@date +"%FT%T%z DEMO Universe (Meta-)Information generated '$@'."
 %/universe.svg : $(SEGMENTS_ISVG)
 	node --enable-source-maps contrib/svgcat.js \
@@ -165,7 +172,7 @@ $(OUTPUT)/universe.html : $(OUTPUT_BUILD)/universe.info $(wildcard examples/inde
 	@cp examples/favicon.ico $(dir $@)
 	@date +"%FT%T%z Synchronizing media..."
 	@rsync --archive $(DATA_ROOT)/media $(dir $@)
-	@date +"%FT%T%z Golden image ready at '$(dir $@)'."
+	@date +"%FT%T%z Media synchronized. Golden image ready at '$(dir $@)'."
 %-demo-universe.html : %-demo-universe.info %-demo-universe.svg $(wildcard examples/index.template.*) examples/build-site.js
 	@node --enable-source-maps examples/build-site.js \
 		--format=zen \
@@ -196,34 +203,37 @@ $(OUTPUT)/universe.html : $(OUTPUT_BUILD)/universe.info $(wildcard examples/inde
 %.svg : %.dot
 	@dot $(DOT_FLAGS) -Tsvg:cairo -o $@ $<
 	@date +"%FT%T%z Rendered DOT graph SVG (Cairo) image '$@'."
-#%.isvgus : %.idotus
-#	@dot $(DOT_FLAGS) -Tsvg -o $@ $<
-#	@date +"%FT%T%z Rendered DOT graph iSVGus image '$@'."
+%.isvgus : %.idotus
+	@dot $(DOT_FLAGS) -Tsvg -o $@ $<
+	@date +"%FT%T%z Rendered DOT graph iSVGus image '$@'."
 %.isvgus : %.igvus
 	@dot $(DOT_FLAGS) -Tsvg -o $@ $<
 	@date +"%FT%T%z Rendered DOT graph iSVGus image '$@'."
 
-%-analytics.pdf : %-analytics.md %-pedigree-light.svg
-	@cd $(dir $@); pandoc \
-		--from markdown \
-		--to pdf \
-		--pdf-engine lualatex \
-		--output $(notdir $@) \
-		$(notdir $<)
-%-demo.pdf : %-demo.md %-demo-pedigree-light.svg
-	cd $(dir $@); pandoc \
-		--from markdown \
-		--to pdf \
-		--pdf-engine lualatex \
-		--output $(notdir $@) \
-		$(notdir $<)
-$(OUTPUT)/pedigree.pdf : $(OUTPUT_BUILD)/pedigree.md $(OUTPUT_BUILD)/pedigree-light.svg
-	cd $(OUTPUT_BUILD); pandoc \
+$(OUTPUT)/pedigree-public.pdf : $(OUTPUT_BUILD)/pedigree-public.md $(OUTPUT_BUILD)/pedigree-public-light.svg
+	@cd $(OUTPUT_BUILD); pandoc \
 		--from markdown \
 		--to pdf \
 		--pdf-engine lualatex \
 		"--output=$@" \
 		$(notdir $<)
+	@date +"%FT%T%z Generated PUBLIC pedigree chart '$@'."
+$(OUTPUT)/pedigree.pdf : $(OUTPUT_BUILD)/pedigree.md $(OUTPUT_BUILD)/pedigree-light.svg
+	@cd $(OUTPUT_BUILD); pandoc \
+		--from markdown \
+		--to pdf \
+		--pdf-engine lualatex \
+		"--output=$@" \
+		$(notdir $<)
+	@date +"%FT%T%z Generated pedigree chart '$@'."
+$(OUTPUT)/pedigree-analytics.pdf : $(OUTPUT_BUILD)/pedigree-analytics.md $(OUTPUT_BUILD)/pedigree-light.svg
+	@cd $(OUTPUT_BUILD); pandoc \
+		--from markdown \
+		--to pdf \
+		--pdf-engine lualatex \
+		"--output=$@" \
+		$(notdir $<)
+	@date +"%FT%T%z Generated ANALYTICS pedigree chart '$@'."
 
 # Compress an SVG by applying lossy XML transformations.
 %.min.svg: %.svg
@@ -316,4 +326,4 @@ schema:
 		done
 
 serve: node_modules/.package-lock.json
-	npx http-server ./output --cors
+	npx http-server $(OUTPUT) --cors

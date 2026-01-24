@@ -759,10 +759,15 @@ export class Graph<
 						if ("motherOf" in relation) {
 							return { motherOf: getName(relation.motherOf) };
 						}
+						if ("adopted" in relation) {
+							return { adopted: getName(relation.adopted) };
+						}
 						if ("linkedTo" in relation) {
 							return undefined;
 						}
-						throw new InvalidOperationError("Unknown relation type.");
+						throw new InvalidOperationError(
+							`Unknown relation type with keys: ${Object.keys(relation).join(",")}`,
+						);
 					})
 					.filter((_) => _ !== undefined),
 			};

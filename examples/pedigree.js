@@ -43,8 +43,13 @@ if (typeof args.origin !== "string") {
 	process.stderr.write("Missing --origin.\n");
 	process.exit(1);
 }
-if (!args.origin.endsWith("universe.yml")) {
-	process.stderr.write("Expected --origin to end in 'universe.yml'q.\n");
+if (
+	!args.origin.endsWith("universe.yml") &&
+	!args.origin.endsWith("universe-public.yml")
+) {
+	process.stderr.write(
+		"Expected --origin to end in 'universe.yml' or 'universe-public.yml'.\n",
+	);
 	process.exit(1);
 }
 
@@ -159,10 +164,7 @@ if (format === "simple") {
 if (format === "report") {
 	const markdown = renderReport(finalTimelines, {
 		...renderOptions,
-		pedigreeChartPath: args.origin.replace(
-			/universe\.yml$/,
-			`${args.anonymize === true ? "demo-" : ""}pedigree-light.svg`,
-		),
+		pedigreeChartPath: `pedigree${args.anonymize === true ? "-public" : ""}-light.svg`,
 	});
 	targetStream.write(markdown[0].content);
 }
