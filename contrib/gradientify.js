@@ -121,6 +121,9 @@ for (const gradient of gradients) {
 		}
 		contributorClass = classSearch.exec(container);
 	}
+	if (colors.length < 2) {
+		throw new Error(`failed to extract at least 2 colors for '${id}'`);
+	}
 	targets.set(id, colors);
 }
 process.stdout.write("\n");

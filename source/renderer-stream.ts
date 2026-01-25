@@ -58,13 +58,8 @@ export const renderEventAsNode = <
 			options.styleSheet?.get(timeline.meta.id),
 			`missing style for '${timeline.meta.id}'`,
 		);
-		// If we know that the node will be filled, fall back to pen color
-		// in case the fill is transparent, to avoid ugly gradients.
-		const fill =
-			timelineStyle.fillcolor[3] === 0 && style.style.includes("filled")
-				? timelineStyle.pencolor
-				: timelineStyle.fillcolor;
 
+		const fill = timelineStyle.fillcolor;
 		// Ignore transparent fills.
 		if (fill[3] === 0) {
 			return fillColors;

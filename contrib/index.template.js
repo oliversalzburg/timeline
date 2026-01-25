@@ -451,13 +451,21 @@ const main = async () => {
 	let previousTimelineActive = idFocusedTimeline;
 
 	/**
-	 * @param {Date} date -
+	 * Try to focus an event on the focused timeline, which is closest to the
+	 * given date.
+	 *
+	 * @param {Date} date - The date to focus.
 	 */
 	const focusDate = (date) => {
 		const ids =
 			idFocusedTimeline !== undefined
-				? (contributors.get(idFocusedTimeline)?.values() ?? [])
+				? new Set(
+						(timelineEvents.get(idFocusedTimeline)?.values() ?? []).map(
+							(_) => _.id,
+						),
+					)
 				: idSet;
+		console.debug(idFocusedTimeline, ids);
 		let distance = Number.POSITIVE_INFINITY;
 		let best;
 		for (const id of ids) {
