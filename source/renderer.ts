@@ -436,9 +436,9 @@ export const render = <
 					}
 
 					fillColors.push(
-						timeline === leader || fill[3] === 0
+						timeline === leader
 							? fill
-							: matchLuminance(fill, getStyle(leader).fillcolor),
+							: matchLuminance(getStyle(leader).fillcolor, fill),
 					);
 					return fillColors;
 				}, new Array<RGBATuple | "transparent">());

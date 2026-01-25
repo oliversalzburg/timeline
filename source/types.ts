@@ -122,6 +122,8 @@ export type TimelineMetadata = [
 	string,
 	/** pencolor */
 	string,
+	/** fillcolor */
+	string,
 	/** type */
 	number,
 	/** identity id or id */

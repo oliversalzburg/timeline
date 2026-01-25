@@ -71,9 +71,7 @@ export const renderEventAsNode = <
 		}
 
 		fillColors.push(
-			timeline === leader || fill[3] === 0
-				? fill
-				: matchLuminance(fill, style.fillcolor),
+			timeline === leader ? fill : matchLuminance(style.fillcolor, fill),
 		);
 		return fillColors;
 	}, new Array<RGBATuple | "transparent">());
@@ -637,6 +635,7 @@ export const render = <
 				[
 					mustExist(classes.get(_.meta.id)),
 					rgbaToHexString(style.pencolor),
+					rgbaToHexString(style.fillcolor),
 					isIdentityPerson(_)
 						? 1
 						: isIdentityLocation(_)

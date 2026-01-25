@@ -632,9 +632,9 @@ const main = async () => {
 					? null
 					: eventIds[eventIndexOnTimeline + 1],
 			intersection: timelineIds.filter((_) =>
-				[1, 2].includes(timelines.get(_)?.[2] ?? 0),
+				[1, 2].includes(timelines.get(_)?.[3] ?? 0),
 			),
-			mediaItems: timelineIds.filter((_) => timelines.get(_)?.[2] === 3),
+			mediaItems: timelineIds.filter((_) => timelines.get(_)?.[3] === 3),
 		};
 	};
 	//#endregion
@@ -1296,7 +1296,7 @@ const main = async () => {
 			return false;
 		}
 
-		const mediaPath = timelines.get(timelineMediaIds[mediaIndex])?.[3] ?? "";
+		const mediaPath = timelines.get(timelineMediaIds[mediaIndex])?.[4] ?? "";
 		if (mediaPath === "") {
 			timelineMediaIdActive = undefined;
 			return false;
@@ -1492,14 +1492,14 @@ const main = async () => {
 				statusButtonX.style.display = "inline-block";
 			}
 
-			const timelineColor = timelines.get(idFocusedTimeline)?.[1];
+			const timelineColorPen = timelines.get(idFocusedTimeline)?.[1];
 
 			timelineMediaIds = newNeighbors.mediaItems;
 
-			const timelineIdentityName = timelines.get(idFocusedTimeline)?.[4];
+			const timelineIdentityName = timelines.get(idFocusedTimeline)?.[5];
 			const mediaIdentityName =
 				timelineMediaIdActive !== undefined
-					? timelines.get(timelineMediaIds[timelineMediaIdActive])?.[4]
+					? timelines.get(timelineMediaIds[timelineMediaIdActive])?.[5]
 					: undefined;
 			if (timelineIdentityName === undefined) {
 				console.error(
@@ -1514,8 +1514,8 @@ const main = async () => {
 				intro.textContent = `Reise auf Zeit-Gleis: ${timelineIdentityName}`;
 			}
 
-			intro.style.color = timelineColor ?? "";
-			statusText.style.textShadow = `2px 2px 3px ${timelineColor}`;
+			intro.style.color = timelineColorPen ?? "";
+			statusText.style.textShadow = `2px 2px 3px ${timelineColorPen}`;
 
 			shoulderLeft.style.visibility =
 				0 < newNeighbors.mediaItems.length &&
@@ -2187,7 +2187,7 @@ const main = async () => {
 				if (idFocusedTimeline === timeline) {
 					menuItem.classList.add("active");
 				}
-				menuItem.textContent = timelines.get(timeline)?.[4] ?? "???";
+				menuItem.textContent = timelines.get(timeline)?.[5] ?? "???";
 				menuLevel0.appendChild(menuItem);
 			}
 			statusOptions.classList.add("visible");

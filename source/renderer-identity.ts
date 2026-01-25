@@ -351,7 +351,7 @@ export const renderUniverse = (
 							fill === TRANSPARENT ||
 							leaderTimeline === undefined
 							? fill
-							: matchLuminance(fill, getStyle(leaderTimeline).fillcolor),
+							: matchLuminance(getStyle(leaderTimeline).fillcolor, fill),
 						opacity,
 					),
 				),

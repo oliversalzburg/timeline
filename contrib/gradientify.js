@@ -2,6 +2,11 @@
 
 import { createWriteStream, readFileSync } from "node:fs";
 import { join } from "node:path";
+import {
+	matchLuminance,
+	rgbaFromHexString,
+	rgbaToHexString,
+} from "../lib/palette.js";
 
 // Parse command line arguments.
 const args = process.argv
@@ -95,14 +100,24 @@ for (const gradient of gradients) {
 	if (contributorClass === null) {
 		throw new Error(`found no classes on '${container}'`);
 	}
+	/** @type {Array<string>} */
 	const colors = [];
 	while (contributorClass !== null) {
 		const meta = timelineMeta.get(contributorClass[0]);
 		if (meta === undefined) {
 			throw new Error(`unable to find metadata for '${contributorClass[0]}'`);
 		}
-		if (meta[1] !== "#00000000") {
-			colors.push(meta[1]);
+		if (meta[2] !== "#00000000") {
+			colors.push(
+				colors.length === 0
+					? meta[2]
+					: rgbaToHexString(
+							matchLuminance(
+								rgbaFromHexString(meta[2]),
+								rgbaFromHexString(colors[0]),
+							),
+						),
+			);
 		}
 		contributorClass = classSearch.exec(container);
 	}
