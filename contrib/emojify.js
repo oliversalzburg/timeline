@@ -57,7 +57,7 @@ if (!copyOnly) {
 	contentName = basename(args.target);
 }
 
-const PREFIXES = {
+export const PREFIXES = {
 	"\u2764\uFE0F\u200D\u{1F525}": {
 		emoji: "❤️‍🔥",
 		name: "heart on fire",
@@ -98,6 +98,11 @@ const PREFIXES = {
 		name: "flag: united states",
 		src: "1F1FA-1F1F8.svg",
 	},
+	"\u{1F30B}": {
+		emoji: "🌋",
+		name: "volcano",
+		src: "1F30B.svg",
+	},
 	"\u{1F30D}": {
 		emoji: "🌍",
 		name: "globe showing europe-africa",
@@ -107,6 +112,11 @@ const PREFIXES = {
 		emoji: "🎤",
 		name: "microphone",
 		src: "1F3A4.svg",
+	},
+	"\u{1F3AA}": {
+		emoji: "🎪",
+		name: "circus tent",
+		src: "1F3AA.svg",
 	},
 	"\u{1F3AC}": {
 		emoji: "🎬",
@@ -138,6 +148,11 @@ const PREFIXES = {
 		name: "sports medal",
 		src: "1F3C5.svg",
 	},
+	"\u{1F3C6}": {
+		emoji: "🏆",
+		name: "trophy",
+		src: "1F3C6.svg",
+	},
 	"\u{1F3D7}": {
 		emoji: "🏗",
 		name: "building construction",
@@ -168,15 +183,30 @@ const PREFIXES = {
 		name: "page with curl",
 		src: "1F4C3.svg",
 	},
+	"\u{1F4C9}": {
+		emoji: "📉",
+		name: "chart decreasing",
+		src: "1F4C9.svg",
+	},
 	"\u{1F4FA}": {
 		emoji: "📺",
 		name: "television",
 		src: "1F4FA.svg",
 	},
+	"\u{1F5E1}": {
+		emoji: "🗡",
+		name: "dagger",
+		src: "1F5E1.svg",
+	},
 	"\u{1F4FB}": {
 		emoji: "📻",
 		name: "radio",
 		src: "1F4FB.svg",
+	},
+	"\u{1F630}": {
+		emoji: "😰",
+		name: "anxious face with sweat",
+		src: "1F630.svg",
 	},
 	"\u{1F63A}": {
 		emoji: "😺",
@@ -198,6 +228,11 @@ const PREFIXES = {
 		name: "flying saucer",
 		src: "1F6F8.svg",
 	},
+	"\u{1F92F}": {
+		emoji: "🤯",
+		name: "exploding head",
+		src: "1F92F.svg",
+	},
 	"\u{1F94A}": {
 		emoji: "🥊",
 		name: "boxing glove",
@@ -207,6 +242,11 @@ const PREFIXES = {
 		emoji: "🧬",
 		name: "dna",
 		src: "1F9EC.svg",
+	},
+	"\u{1FA96}": {
+		emoji: "🪖",
+		name: "military helmet",
+		src: "1FA96.svg",
 	},
 	"\u{1FA99}": {
 		emoji: "🪙",
