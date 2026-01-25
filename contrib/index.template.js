@@ -328,6 +328,12 @@ const main = async () => {
 			width: 0,
 			height: 0,
 		},
+		position: {
+			x: 0,
+			y: 0,
+			width: 0,
+			height: 0,
+		},
 		focus: {
 			x: 0,
 			y: 0,
@@ -439,15 +445,22 @@ const main = async () => {
 	let lastKnownScrollPosition = 0;
 
 	//#region Focus Select
-	// The ID of the currently focused node.
-	/** @type {string | undefined} */
+	/**
+	 * The ID of the currently focused node.
+	 * @type {string | undefined}
+	 */
 	let idFocused;
+
 	/**
 	 * The ID of the timeline the focused node is part of.
 	 * @type {string | undefined}
 	 */
 	let idFocusedTimeline;
 
+	/**
+	 * Remember the ID of the focused timeline, for temporary changes.
+	 * @type {string | undefined}
+	 */
 	let previousTimelineActive = idFocusedTimeline;
 
 	/**
@@ -465,7 +478,6 @@ const main = async () => {
 						),
 					)
 				: idSet;
-		console.debug(idFocusedTimeline, ids);
 		let distance = Number.POSITIVE_INFINITY;
 		let best;
 		for (const id of ids) {
@@ -533,8 +545,6 @@ const main = async () => {
 			calendarText.textContent = `${titleParts[1]}\n${titleParts[2]}`;
 			document.title = titleParts[0];
 
-			statusText.textContent = event.title;
-
 			idFocused = id;
 			// If the newly focused node exists on the already focused timeline,
 			// don't attempt to switch focus. This could cause focus to switch
@@ -567,6 +577,7 @@ const main = async () => {
 			);
 		});
 
+		updateStatus();
 		requestFocusShift(id);
 	};
 
@@ -716,19 +727,20 @@ const main = async () => {
 		lastKnownScrollPosition = view.scope.y;
 
 		DOM.read("cameraMovementFinalize", () => {
-			view.scope.x = window.scrollX;
-			view.scope.y = window.scrollY;
+			view.position.x = window.scrollX;
+			view.position.y = window.scrollY;
+			view.scope.y = window.scrollY - view.window.height;
 		});
 
 		DOM.write("cameraMovementFinalize", () => {
 			if (!cameraIsDetached) {
-				targetElementX.style.left = `${view.scope.x}px`;
+				targetElementX.style.left = `${view.position.x}px`;
 				targetElementX.style.top = `${view.focus.y - 2}px`;
 				targetElementX.style.width = `${view.window.width / 2 - view.focus.width / 2 - 2}px`;
 				targetElementX.style.height = `${view.focus.height + 4}px`;
 
-				targetElementY.style.left = `${view.scope.x}px`;
-				targetElementY.style.top = `${view.scope.y}px`;
+				targetElementY.style.left = `${view.position.x}px`;
+				targetElementY.style.top = `${view.position.y}px`;
 				targetElementY.style.width = `${view.window.width}px`;
 				targetElementY.style.height = `${view.window.height / 2 - view.focus.height / 2 - 2}px`;
 
@@ -737,7 +749,7 @@ const main = async () => {
 				targetElementW.style.width = `${view.window.width / 2 - view.focus.width / 2 - 2}px`;
 				targetElementW.style.height = `${view.focus.height + 4}px`;
 
-				targetElementH.style.left = `${view.scope.x}px`;
+				targetElementH.style.left = `${view.position.x}px`;
 				targetElementH.style.top = `${view.focus.y + view.focus.height + 2}px`;
 				targetElementH.style.width = `${view.window.width}px`;
 				targetElementH.style.height = `${view.window.height / 2 - view.focus.height / 2 - 2}px`;
@@ -841,6 +853,15 @@ const main = async () => {
 				console.info(`User selected ${node.id}. Focusing...`);
 				focusNode(node.id);
 			}
+		});
+	};
+
+	/**
+	 * @param {MouseEvent} _event -
+	 */
+	const onMouseMove = function onMouseMove(_event) {
+		DOM.write("onClick", () => {
+			document.documentElement.style.cursor = "default";
 		});
 	};
 	//#endregion
@@ -1060,7 +1081,6 @@ const main = async () => {
 			calendarContainer.classList.add("open");
 			menuContainer.classList.remove("open");
 			statusContainer.classList.add("open");
-			shouldersContainer.classList.add("visible");
 		});
 		updateStatus();
 		return InputPlaneNeutral;
@@ -1078,7 +1098,6 @@ const main = async () => {
 			calendarContainer.classList.remove("open");
 			menuContainer.classList.add("open");
 			statusContainer.classList.add("open");
-			shouldersContainer.classList.remove("visible");
 		});
 		return plane;
 	};
@@ -1468,7 +1487,6 @@ const main = async () => {
 			calendarContainer.classList.add("open");
 			menuContainer.classList.remove("open");
 			statusContainer.classList.add("open");
-			shouldersContainer.classList.add("visible");
 		});
 		updateStatus();
 		return InputPlaneMedia;
@@ -1478,8 +1496,9 @@ const main = async () => {
 	const updateStatus = function updateStatus() {
 		DOM.write("updateStatus", () => {
 			statusOptions.classList.remove("visible");
-			shoulderLeft.style.visibility = "hidden";
-			shoulderRight.style.visibility = "hidden";
+			shouldersContainer.classList.remove("visible");
+			shoulderLeft.classList.remove("visible");
+			shoulderRight.classList.remove("visible");
 			statusButtonA.style.display = "none";
 			statusButtonB.style.display = "none";
 			statusButtonX.style.display = "none";
@@ -1490,6 +1509,12 @@ const main = async () => {
 			statusOptionY.textContent = "";
 
 			if (idFocused === undefined || idFocusedTimeline === undefined) {
+				return;
+			}
+
+			const event = eventsById.get(idFocused);
+			if (event === undefined) {
+				console.error(`Unable to look up event for ID '${idFocused}'.`);
 				return;
 			}
 
@@ -1520,27 +1545,35 @@ const main = async () => {
 				statusText.textContent = mediaIdentityName;
 			} else {
 				intro.textContent = `Reise auf Zeit-Gleis: ${timelineIdentityName}`;
+				statusText.textContent = event.title;
 			}
 
 			intro.style.color = timelineColorPen ?? "";
 			statusText.style.textShadow = `2px 2px 3px ${timelineColorPen}`;
 
-			shoulderLeft.style.visibility =
+			const hasShoulderLeft =
 				0 < newNeighbors.mediaItems.length &&
-				timelineMediaIdActive !== undefined
-					? "visible"
-					: "hidden";
-			shoulderLeft.textContent =
-				timelineMediaIdActive === 0 ? "Schließen" : "Zurück blättern";
+				timelineMediaIdActive !== undefined;
+			const hasShoulderRight = 0 < newNeighbors.mediaItems.length;
 
-			shoulderRight.style.visibility =
-				0 < newNeighbors.mediaItems.length ? "visible" : "hidden";
-			shoulderRight.textContent =
-				timelineMediaIdActive === undefined
-					? "Artefakte anzeigen"
-					: timelineMediaIdActive === timelineMediaIds.length - 1
-						? "Schließen"
-						: "Vorwärts blättern";
+			if (hasShoulderLeft) {
+				shoulderLeft.classList.add("visible");
+				shoulderLeft.textContent =
+					timelineMediaIdActive === 0 ? "Schließen" : "Zurück blättern";
+			}
+			if (hasShoulderRight) {
+				shoulderRight.classList.add("visible");
+				shoulderRight.textContent =
+					timelineMediaIdActive === undefined
+						? "Artefakte anzeigen"
+						: timelineMediaIdActive === timelineMediaIds.length - 1
+							? "Schließen"
+							: "Vorwärts blättern";
+			}
+
+			if (hasShoulderLeft || hasShoulderRight) {
+				shouldersContainer.classList.add("visible");
+			}
 		});
 	};
 
@@ -1603,8 +1636,8 @@ const main = async () => {
 	const updateStatusMenuSwitchTimeline = () => {
 		DOM.write("updateStatusMenuSwitchTimeline", () => {
 			statusOptions.classList.remove("visible");
-			shoulderLeft.style.visibility = "hidden";
-			shoulderRight.style.visibility = "hidden";
+			shoulderLeft.classList.remove("visible");
+			shoulderRight.classList.remove("visible");
 			statusButtonA.style.display = "none";
 			statusButtonB.style.display = "none";
 			statusButtonX.style.display = "none";
@@ -2300,14 +2333,28 @@ const main = async () => {
 	const initGraphics = () => {
 		console.info("Initializing graphics...");
 
+		// View window is the size of the visible area of the window.
+		// Not the size of the (larger) scrollable background plane.
 		view.window.width = document.documentElement.clientWidth;
 		view.window.height = document.documentElement.clientHeight;
+
+		// View bounds are the size of the SVG, which should be a huge DOM
+		// element, that defines the size of the background plane.
 		view.bounds.width = svg.scrollWidth;
 		view.bounds.height = svg.scrollHeight;
-		view.scope.x = window.scrollX;
-		view.scope.y = window.scrollY;
+
+		// View position is the segment of the SVG we're currently looking
+		// at. It's the exact window into the background plane that we see.
+		view.position.x = window.scrollX;
+		view.position.y = window.scrollY;
+		view.position.width = view.window.width;
+		view.position.height = view.window.height;
+
+		// View scope is larger than the position, and is used for culling operations.
+		view.scope.x = 0;
+		view.scope.y = window.scrollY - view.window.height;
 		view.scope.width = view.window.width;
-		view.scope.height = view.window.height;
+		view.scope.height = view.window.height * 3;
 
 		for (const [, , planeTop, planeBottom] of starPlanes) {
 			for (const plane of [planeTop, planeBottom]) {
@@ -2347,6 +2394,7 @@ const main = async () => {
 	};
 
 	document.addEventListener("click", onClick);
+	document.addEventListener("mousemove", onMouseMove);
 	document.addEventListener("keydown", onKeyDown);
 	document.addEventListener("keyup", onKeyUp);
 	window.addEventListener("popstate", onPopState);

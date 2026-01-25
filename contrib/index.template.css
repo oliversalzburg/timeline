@@ -277,23 +277,32 @@ body {
 		}
 
 		.shoulders {
-			transition: ease-in-out opacity 0.3s;
-
+			/* FONT_SIZE_READ */
 			display: flex;
 			flex-direction: row;
 			justify-content: space-between;
 			width: 100%;
 			opacity: 0;
+			height: 0;
+
+			transition:
+				ease-in-out opacity 0.5s,
+				ease-in-out height 0.5s;
 
 			&.visible {
 				opacity: 1;
+				height: calc(1.2em + 1vmin);
 			}
 
 			.shoulder {
 				padding: 0.5vmin 1vmin;
-				/* FONT_SIZE_READ */
 				background-color: rgb(42, 42, 42);
 				width: 10em;
+				opacity: 0;
+				transform: scale(0.9);
+				transition:
+					ease-in-out opacity 0.3s,
+					ease-in-out transform 0.2s;
 
 				&.left {
 					text-align: right;
@@ -317,6 +326,11 @@ body {
 						color: rgb(166, 166, 166);
 						margin-right: 1em;
 					}
+				}
+
+				&.visible {
+					opacity: 1;
+					transform: scale(1);
 				}
 			}
 		}
