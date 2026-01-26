@@ -1255,7 +1255,7 @@ const main = async () => {
 	/** @type {number | undefined} */
 	let timelineMediaIdActive;
 	let mediaItemRotation = { x: 0, y: 0 };
-	let mediaItemPosition = { x: 0, y: 0, z: 0 };
+	let mediaItemPosition = { x: 0, y: 10, z: 10 };
 	let mediaItemVisible = false;
 
 	/** @type {number | null} */
@@ -1296,7 +1296,7 @@ const main = async () => {
 
 	const mediaReset = () => {
 		mediaItemRotation = { x: 0, y: 0 };
-		mediaItemPosition = { x: 0, y: 3, z: 0 };
+		mediaItemPosition = { x: 0, y: 10, z: 10 };
 		DOM.write("mediaReset", () => {
 			dialog.style.transform = `perspective(50vmin) rotateY(${mediaItemRotation.x}deg) rotateX(${mediaItemRotation.y}deg) translate3d(${mediaItemPosition.x}vmin, ${mediaItemPosition.y}vmin, ${mediaItemPosition.z}vmin)`;
 			dialogImage.src = "";

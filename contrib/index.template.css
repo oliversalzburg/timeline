@@ -123,6 +123,7 @@ body {
 
 	/* Focus Highlight */
 	.target {
+		display: none;
 		opacity: 0;
 		position: absolute;
 		margin: 0;
