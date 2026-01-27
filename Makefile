@@ -83,6 +83,8 @@ $(IMAGES) &: contrib/prepare-emoji.js
 	@date +"%FT%T%z Vector image data prepared."
 
 %/universe-public.yml : $(TIMELINES) lib/tsconfig.source.tsbuildinfo examples/space-time-generator.js
+	@date +"%FT%T%z Generating PUBLIC universe..."
+	@mkdir -p $(OUTPUT_BUILD)
 	@node --enable-source-maps examples/space-time-generator.js \
 		--anonymize \
 		"--origin=$(ORIGIN)" \
@@ -90,6 +92,7 @@ $(IMAGES) &: contrib/prepare-emoji.js
 		"--target=$@"
 	@date +"%FT%T%z PUBLIC Universe generated '$@'."
 %/universe.yml : $(TIMELINES) lib/tsconfig.source.tsbuildinfo examples/space-time-generator.js
+	@date +"%FT%T%z Generating universe..."
 	@mkdir -p $(OUTPUT_BUILD)
 	@node --enable-source-maps examples/space-time-generator.js \
 		"--origin=$(ORIGIN)" \

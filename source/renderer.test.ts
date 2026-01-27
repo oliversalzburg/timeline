@@ -11,7 +11,7 @@ import {
 } from "./fixtures/documents.js";
 import { load } from "./loader.js";
 import { matchFontColorTo } from "./palette.js";
-import { render } from "./renderer.js";
+import { render } from "./renderer-stream.js";
 import { StyleSheetStatic } from "./style.js";
 import type { RGBTuple, TimelineDocument } from "./types.js";
 

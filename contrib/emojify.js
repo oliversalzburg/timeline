@@ -63,6 +63,11 @@ export const PREFIXES = {
 		name: "heart on fire",
 		src: "2764-FE0F-200D-1F525.svg",
 	},
+	"\u{1F469}\u200D\u{1F52C}": {
+		emoji: "👩‍🔬",
+		name: "woman scientist",
+		src: "1F469-200D-1F52C.svg",
+	},
 	"\u{1F1E9}\u{1F1EA}": {
 		emoji: "🇩🇪",
 		name: "flag: germany",
@@ -178,30 +183,70 @@ export const PREFIXES = {
 		name: "pill",
 		src: "1F48A.svg",
 	},
+	"\u{1F4A1}": {
+		emoji: "💡",
+		name: "light bulb",
+		src: "1F4A1.svg",
+	},
+	"\u{1F4BD}": {
+		emoji: "💽",
+		name: "computer disk",
+		src: "1F4BD.svg",
+	},
 	"\u{1F4C3}": {
 		emoji: "📃",
 		name: "page with curl",
 		src: "1F4C3.svg",
+	},
+	"\u{1F4C4}": {
+		emoji: "📄",
+		name: "page facing up",
+		src: "1F4C4.svg",
 	},
 	"\u{1F4C9}": {
 		emoji: "📉",
 		name: "chart decreasing",
 		src: "1F4C9.svg",
 	},
+	"\u{1F4DD}": {
+		emoji: "📝",
+		name: "memo",
+		src: "1F4DD.svg",
+	},
+	"\u{1F4F7}": {
+		emoji: "📷",
+		name: "camera",
+		src: "1F4F7.svg",
+	},
+	"\u{1F4F8}": {
+		emoji: "📸",
+		name: "camera with flash",
+		src: "1F4F8.svg",
+	},
 	"\u{1F4FA}": {
 		emoji: "📺",
 		name: "television",
 		src: "1F4FA.svg",
 	},
-	"\u{1F5E1}": {
-		emoji: "🗡",
-		name: "dagger",
-		src: "1F5E1.svg",
-	},
 	"\u{1F4FB}": {
 		emoji: "📻",
 		name: "radio",
 		src: "1F4FB.svg",
+	},
+	"\u{1F4FC}": {
+		emoji: "📼",
+		name: "videocasette",
+		src: "1F4FC.svg",
+	},
+	"\u{1F4FD}": {
+		emoji: "📽",
+		name: "film projector",
+		src: "1F4FD.svg",
+	},
+	"\u{1F5E1}": {
+		emoji: "🗡️",
+		name: "dagger",
+		src: "1F5E1.svg",
 	},
 	"\u{1F630}": {
 		emoji: "😰",
@@ -242,6 +287,11 @@ export const PREFIXES = {
 		emoji: "🧬",
 		name: "dna",
 		src: "1F9EC.svg",
+	},
+	"\u{1F9FE}": {
+		emoji: "🧾",
+		name: "receipt",
+		src: "1F9FE.svg",
 	},
 	"\u{1FA96}": {
 		emoji: "🪖",
@@ -328,16 +378,31 @@ const svgPrefixes = content.replaceAll(
 	/<(.*)\u{00A0}(.+)>,/gu,
 	/**
 	 * @param {string} substring -
-	 * @param {string|undefined} prefixes -
+	 * @param {string|undefined} prefixString -
 	 * @param {string|undefined} label -
 	 */
-	(substring, prefixes, label) => {
+	(substring, prefixString, label) => {
 		let imageString = "";
-		for (const [prefix, config] of Object.entries(PREFIXES)) {
-			while (prefixes?.includes(prefix)) {
+		if (prefixString === undefined) {
+			return substring;
+		}
+
+		const prefixes = prefixString.split("\u200B");
+		for (const prefix of prefixes) {
+			if (prefix in PREFIXES) {
+				// @ts-expect-error Would be nice if TS understood this.
+				const config = PREFIXES[prefix];
 				imageString += `<TD FIXEDSIZE="TRUE" WIDTH="24" HEIGHT="24"><IMG SRC="${config.src}"/></TD>`;
-				prefixes = prefixes.replace(prefix, "");
+				prefixString = prefixString.replace(prefix, "");
+				continue;
 			}
+			process.stderr.write(
+				`emojify: unregistered prefix: '${prefix}' (${Array.from(prefix)
+					.map((character) =>
+						character?.codePointAt(0)?.toString(16).toUpperCase(),
+					)
+					.map((hex) => `\\u{${hex}}`)})\n`,
+			);
 		}
 		if (imageString === "") {
 			return substring;

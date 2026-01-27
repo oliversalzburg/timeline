@@ -67,18 +67,6 @@ while (gradientNode !== null) {
 }
 process.stdout.write("\n");
 
-process.stdout.write("gradientify: Locating usages...");
-const usageSearch = /^<path fill="url\(#Z.+\/>/gm;
-let usageNode = usageSearch.exec(svgInput);
-/** @type {Array<string>} */
-const usages = [];
-while (usageNode !== null) {
-	usages.push(usageNode[0]);
-	process.stdout.write(".");
-	usageNode = usageSearch.exec(svgInput);
-}
-process.stdout.write("\n");
-
 process.stdout.write("gradientify: Locating classes...");
 /** @type {Map<string, Array<string>>} */
 const targets = new Map();

@@ -71,9 +71,12 @@ export const renderEventAsNode = <
 		return fillColors;
 	}, new Array<RGBATuple | "transparent">());
 	const fontcolor = style.fontcolor;
-	const prefixes = contributors
-		.values()
-		.reduce((_, timeline) => _ + (timeline.meta.prefix ?? ""), "");
+	const prefixes = [
+		...contributors
+			.values()
+			.filter((_) => typeof _.meta.prefix === "string")
+			.map((_) => _.meta.prefix),
+	].join("\u200B");
 	const dateString = options?.dateRenderer
 		? options.dateRenderer(timestamp)
 		: new Date(timestamp).toDateString();
