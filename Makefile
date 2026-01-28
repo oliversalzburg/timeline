@@ -32,6 +32,8 @@ endif
 DOT_FLAGS := -Gcenter=false -Gimagepath=$(OUTPUT_BUILD) -Gmargin=0 -Gpad=0
 ifneq ($(DEBUG_DOT),)
 	DOT_FLAGS += -v5
+else
+	DOT_FLAGS += -q
 endif
 
 ifneq ($(DEBUG)$(DEBUG_RENDERER),)
@@ -189,10 +191,10 @@ $(OUTPUT)/universe.html : $(OUTPUT_BUILD)/universe.info $(_OBJECTS)
 	@date +"%FT%T%z DEMO Universe HTML generated '$@'."
 
 %.dot : %.gv
-	@dot -Tcanon -o $@ $<
+	@dot $(DOT_FLAGS) -Tcanon -o $@ $<
 	@date +"%FT%T%z Normalized GraphViz DOT document '$@'."
 %.dotus : %.gvus
-	@dot -Tcanon -o $@ $<
+	@dot $(DOT_FLAGS) -Tcanon -o $@ $<
 	@date +"%FT%T%z Normalized GraphViz DOTus document '$@'."
 
 # Embed (emoji) prefixes as <IMG> elements in the label.

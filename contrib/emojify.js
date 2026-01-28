@@ -374,6 +374,8 @@ export const PREFIXES = {
 	},
 };
 
+const prefixConfigs = new Map(Object.entries(PREFIXES));
+
 const svgPrefixes = content.replaceAll(
 	/<(.*)\u{00A0}(.+)>,/gu,
 	/**
@@ -388,11 +390,10 @@ const svgPrefixes = content.replaceAll(
 		}
 
 		const prefixes = prefixString.split("\u200B");
+		const usages = new Map();
 		for (const prefix of prefixes) {
 			if (prefix in PREFIXES) {
-				// @ts-expect-error Would be nice if TS understood this.
-				const config = PREFIXES[prefix];
-				imageString += `<TD FIXEDSIZE="TRUE" WIDTH="24" HEIGHT="24"><IMG SRC="${config.src}"/></TD>`;
+				usages.set(prefix, (usages.get(prefix) ?? 0) + 1);
 				prefixString = prefixString.replace(prefix, "");
 				continue;
 			}
@@ -404,9 +405,17 @@ const svgPrefixes = content.replaceAll(
 					.map((hex) => `\\u{${hex}}`)})\n`,
 			);
 		}
-		if (imageString === "") {
+		if (usages.size === 0) {
 			return substring;
 		}
+		imageString = [
+			...usages
+				.entries()
+				.map(
+					([prefix, count]) =>
+						`<TD FIXEDSIZE="TRUE" WIDTH="24" HEIGHT="24" TOOLTIP="${count}"><IMG SRC="${prefixConfigs.get(prefix)?.src}"/></TD>`,
+				),
+		].join("");
 		const cells = [imageString, `<TD>${label}</TD>`];
 		const row = `<TR>${cells.join("")}</TR>`;
 		const table = `<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0" CELLSPACING="5">${row}</TABLE>`;

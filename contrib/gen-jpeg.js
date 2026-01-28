@@ -61,11 +61,7 @@ const inputFile = inputFiles[0];
 const exifRaw = readFileSync(inputFile, "utf-8");
 const exifArray = JSON.parse(exifRaw);
 for (const entry of exifArray) {
-	if (
-		entry.FileName.endsWith(".mp4") ||
-		entry.FileName.endsWith(".tmp.json") ||
-		entry.FileName.endsWith(".xmp")
-	) {
+	if (entry.FileName.endsWith(".tmp.json") || entry.FileName.endsWith(".xmp")) {
 		continue;
 	}
 	if (entry.DateTimeOriginal === undefined) {
@@ -77,6 +73,7 @@ for (const entry of exifArray) {
 }
 
 let successCount = 0;
+const allEntries = new Set();
 for (const entry of suspects) {
 	const bufferEntry = [
 		entry.FileName ? `FileName        : ${entry.FileName}` : null,
@@ -133,7 +130,11 @@ for (const entry of suspects) {
 		);
 		process.stderr.write(`   ${entry.SourceFile}\n`);
 		process.stderr.write(`${bufferEntry.map((_) => `   ${_}`).join("\n")}\n`);
-		continue;
+		if (entry.FileName.endsWith(".mp4")) {
+			process.stderr.write(
+				`   Assuming best date match as valid for video file.\n`,
+			);
+		}
 	}
 
 	const bestYear = best.substring(0, 4);
@@ -154,18 +155,22 @@ for (const entry of suspects) {
 	if (mediaIndex < 0) {
 		throw new Error(`couldn't find /media/ in path`);
 	}
+	const timelineEntry = `  ${dateToString(date)}: 📱`;
 	const yamlDocument = [
 		"---",
 		"prefix: 📸",
 		"identity:",
 		`  id: ${entry.SourceFile.substring(mediaIndex + 1)}`,
-		`  name: ${entry.FileName}`,
+		`  name: WhatsApp Bild ${entry.FileName}`,
 		"timeline:",
-		`  ${dateToString(date)}: 📷`,
+		timelineEntry,
 	];
+	allEntries.add(timelineEntry);
 	output.write(yamlDocument.join("\n"));
 	++successCount;
 }
 
-process.stdout.write(`${successCount} documents generated successfully.\n`);
-process.stdout.write("Done.\n");
+process.stdout.write([...allEntries.values()].sort().join("\n") + "\n");
+
+process.stderr.write(`${successCount} documents generated successfully.\n`);
+process.stderr.write("Done.\n");
