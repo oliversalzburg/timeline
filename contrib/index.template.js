@@ -466,8 +466,23 @@ const main = async function main() {
 				document.createElement("canvas"),
 			]),
 	);
+	/**
+	 * How much time is contributing to the speed of the starfield.
+	 *
+	 * @type {number}
+	 */
 	const speedTime = 0.0001;
+	/**
+	 * How much scroll position is contributing to the speed of the starfield.
+	 *
+	 * @type {number}
+	 */
 	const speedScroll = 0.001;
+	/**
+	 * The base colors of stars in the starfield.
+	 *
+	 * @type {Array<[number, number, number]>}
+	 */
 	const starColorsRGB = [
 		[255, 255, 255],
 		[255, 221, 193],
@@ -475,24 +490,31 @@ const main = async function main() {
 		[173, 216, 230],
 		[176, 224, 230],
 	];
+	/**
+	 * Point in time when the page was initialized.
+	 *
+	 * @type {number}
+	 */
 	const startTime = Date.now();
-	let lastKnownScrollPosition = 0;
 
 	//#region Focus Select
 	/**
 	 * The ID of the currently focused node.
+	 *
 	 * @type {string | undefined}
 	 */
 	let idFocused;
 
 	/**
 	 * The ID of the timeline the focused node is part of.
+	 *
 	 * @type {string | undefined}
 	 */
 	let idFocusedTimeline;
 
 	/**
 	 * Remember the ID of the focused timeline, for temporary changes.
+	 *
 	 * @type {string | undefined}
 	 */
 	let previousTimelineActive = idFocusedTimeline;
@@ -528,9 +550,11 @@ const main = async function main() {
 	};
 
 	/**
-	 * @param {string | undefined} id -
-	 * @param {string | undefined} onTimelineId -
-	 * @param {boolean | undefined} setState -
+	 * Focus the node with the given ID.
+	 *
+	 * @param {string | undefined} id - The ID of the node to focus.
+	 * @param {string | undefined} onTimelineId - The ID of the timeline the node is part of.
+	 * @param {boolean | undefined} setState - Should we update the URL?
 	 */
 	const focusNode = function focusNode(
 		id,
@@ -634,7 +658,7 @@ const main = async function main() {
 			throw new Error(`can't find event '${id}'`);
 		}
 
-		cameraIsDetached = false;
+		cameraIsAttached = true;
 		view.focus = {
 			x: event.bb.x,
 			y: event.bb.y,
@@ -694,15 +718,125 @@ const main = async function main() {
 			mediaItems: timelineIds.filter((_) => timelines.get(_)?.[3] === 3),
 		};
 	};
+
+	/**
+	 * Update the information on the bottom status bar.
+	 */
+	const updateStatus = function updateStatus() {
+		DOM.write("updateStatus", () => {
+			statusOptions.classList.remove("visible");
+			shouldersContainer.classList.remove("visible");
+			shoulderLeft.classList.remove("visible");
+			shoulderRight.classList.remove("visible");
+			statusButtonA.style.display = "none";
+			statusButtonB.style.display = "none";
+			statusButtonX.style.display = "none";
+			statusButtonY.style.display = "none";
+			statusOptionA.textContent = "";
+			statusOptionB.textContent = "";
+			statusOptionX.textContent = "";
+			statusOptionY.textContent = "";
+
+			if (idFocused === undefined || idFocusedTimeline === undefined) {
+				return;
+			}
+
+			const event = eventsById.get(idFocused);
+			if (event === undefined) {
+				console.error(`Unable to look up event for ID '${idFocused}'.`);
+				return;
+			}
+
+			const newNeighbors = getNodeNeighbors(idFocused, idFocusedTimeline);
+			if (1 < newNeighbors.intersection.length) {
+				statusOptions.classList.add("visible");
+				statusOptionX.textContent = "Umsteigen";
+				statusButtonX.style.display = "inline-block";
+			}
+
+			const timelineColorPen = timelines.get(idFocusedTimeline)?.[1];
+
+			timelineMediaIds = newNeighbors.mediaItems;
+
+			const timelineIdentityName = timelines.get(idFocusedTimeline)?.[5];
+			const mediaIdentityName =
+				timelineMediaIdActive !== undefined
+					? timelines.get(timelineMediaIds[timelineMediaIdActive])?.[5]
+					: undefined;
+			if (timelineIdentityName === undefined) {
+				console.error(
+					`Unable to look up identity for timeline ID '${idFocusedTimeline}'. Using fallback status.`,
+				);
+			}
+
+			if (mediaIdentityName !== undefined) {
+				intro.textContent = "Artefaktname:";
+				statusText.textContent = mediaIdentityName;
+			} else {
+				intro.textContent = `Reise auf Zeit-Gleis: ${timelineIdentityName}`;
+				statusText.textContent = event.title;
+			}
+
+			intro.style.color = timelineColorPen ?? "";
+			statusText.style.textShadow = `2px 2px 3px ${timelineColorPen}`;
+
+			const hasShoulderLeft =
+				0 < newNeighbors.mediaItems.length &&
+				timelineMediaIdActive !== undefined;
+			const hasShoulderRight = 0 < newNeighbors.mediaItems.length;
+
+			if (hasShoulderLeft) {
+				shoulderLeft.classList.add("visible");
+				shoulderLeft.textContent =
+					timelineMediaIdActive === 0 ? "Schließen" : "Zurück blättern";
+			}
+			if (hasShoulderRight) {
+				shoulderRight.classList.add("visible");
+				shoulderRight.textContent =
+					timelineMediaIdActive === undefined
+						? "Artefakte anzeigen"
+						: timelineMediaIdActive === timelineMediaIds.length - 1
+							? "Schließen"
+							: "Vorwärts blättern";
+			}
+
+			if (hasShoulderLeft || hasShoulderRight) {
+				shouldersContainer.classList.add("visible");
+			}
+		});
+	};
 	//#endregion
 
 	//#region Camera
+	/**
+	 * The position the camera is looking at.
+	 *
+	 * @type {{x: number, y: number}}
+	 */
 	let cameraFocus = { x: 0, y: 0 };
+	/**
+	 * Is the camera currently being moved?
+	 *
+	 * @type {boolean}
+	 */
 	let cameraIsIdle = false;
-	let cameraIsDetached = false;
-	/** @type {number | undefined} */
+	/**
+	 * Is the camera currently locked to a timeline?
+	 *
+	 * @type {boolean}
+	 */
+	let cameraIsAttached = true;
+	/**
+	 * Timeout for a callback to clean up camera locks.
+	 *
+	 * @type {number | undefined}
+	 */
 	let timeoutCameraUnlock;
-	const updateCamera = function updateCamera(_updateStatus = false) {
+
+	/**
+	 * Updates the view, moves the camera if needed.
+	 */
+	const updateCamera = function updateCamera() {
 		if (cameraIsIdle) {
 			//console.debug("Camera update requested while camera was idle.");
 			return true;
@@ -759,19 +893,20 @@ const main = async function main() {
 		return false;
 	};
 
+	/**
+	 * Finalize a camera movement, like after a scrollTo() operation.
+	 */
 	const cameraMovementFinalize = function cameraMovementFinalize() {
 		cameraIsIdle = false;
 		requestInstantFocusUpdate = false;
-		lastKnownScrollPosition = view.scope.y;
 
 		DOM.read("cameraMovementFinalize", () => {
 			view.position.x = window.scrollX;
 			view.position.y = window.scrollY;
 			view.scope.y = window.scrollY - view.window.height;
 		});
-
-		DOM.write("cameraMovementFinalize", () => {
-			if (!cameraIsDetached) {
+		if (cameraIsAttached) {
+			DOM.write("cameraMovementFinalize", () => {
 				targetElementX.style.left = `${view.position.x}px`;
 				targetElementX.style.top = `${view.focus.y - 2}px`;
 				targetElementX.style.width = `${view.window.width / 2 - view.focus.width / 2 - 2}px`;
@@ -796,10 +931,14 @@ const main = async function main() {
 				targetElementY.classList.add("visible");
 				targetElementW.classList.add("visible");
 				targetElementH.classList.add("visible");
-			}
-			cull();
-		});
+				cull();
+			});
+		}
 	};
+
+	/**
+	 * Finalize the camera movement resulting from the scroll.
+	 */
 	const onScrollEnd = function onScrollEnd() {
 		window.clearTimeout(timeoutCameraUnlock);
 		timeoutCameraUnlock = undefined;
@@ -1084,7 +1223,7 @@ const main = async function main() {
 		},
 		axes: (frame) => {
 			if (INPUT_THRESHOLD < Math.abs(frame.axes[Inputs.AXIS_LEFT_X])) {
-				cameraIsDetached = true;
+				cameraIsAttached = false;
 				requestInstantFocusUpdate = true;
 				view.focus.x +=
 					frame.axes[Inputs.AXIS_LEFT_X] *
@@ -1092,7 +1231,7 @@ const main = async function main() {
 					SPEED_FREE_FLIGHT;
 			}
 			if (INPUT_THRESHOLD < Math.abs(frame.axes[Inputs.AXIS_LEFT_Y])) {
-				cameraIsDetached = true;
+				cameraIsAttached = false;
 				requestInstantFocusUpdate = true;
 				view.focus.y +=
 					frame.axes[Inputs.AXIS_LEFT_Y] *
@@ -1531,90 +1670,6 @@ const main = async function main() {
 		return InputPlaneMedia;
 	};
 	//#endregion
-
-	const updateStatus = function updateStatus() {
-		DOM.write("updateStatus", () => {
-			statusOptions.classList.remove("visible");
-			shouldersContainer.classList.remove("visible");
-			shoulderLeft.classList.remove("visible");
-			shoulderRight.classList.remove("visible");
-			statusButtonA.style.display = "none";
-			statusButtonB.style.display = "none";
-			statusButtonX.style.display = "none";
-			statusButtonY.style.display = "none";
-			statusOptionA.textContent = "";
-			statusOptionB.textContent = "";
-			statusOptionX.textContent = "";
-			statusOptionY.textContent = "";
-
-			if (idFocused === undefined || idFocusedTimeline === undefined) {
-				return;
-			}
-
-			const event = eventsById.get(idFocused);
-			if (event === undefined) {
-				console.error(`Unable to look up event for ID '${idFocused}'.`);
-				return;
-			}
-
-			const newNeighbors = getNodeNeighbors(idFocused, idFocusedTimeline);
-			if (1 < newNeighbors.intersection.length) {
-				statusOptions.classList.add("visible");
-				statusOptionX.textContent = "Umsteigen";
-				statusButtonX.style.display = "inline-block";
-			}
-
-			const timelineColorPen = timelines.get(idFocusedTimeline)?.[1];
-
-			timelineMediaIds = newNeighbors.mediaItems;
-
-			const timelineIdentityName = timelines.get(idFocusedTimeline)?.[5];
-			const mediaIdentityName =
-				timelineMediaIdActive !== undefined
-					? timelines.get(timelineMediaIds[timelineMediaIdActive])?.[5]
-					: undefined;
-			if (timelineIdentityName === undefined) {
-				console.error(
-					`Unable to look up identity for timeline ID '${idFocusedTimeline}'. Using fallback status.`,
-				);
-			}
-
-			if (mediaIdentityName !== undefined) {
-				intro.textContent = "Artefaktname:";
-				statusText.textContent = mediaIdentityName;
-			} else {
-				intro.textContent = `Reise auf Zeit-Gleis: ${timelineIdentityName}`;
-				statusText.textContent = event.title;
-			}
-
-			intro.style.color = timelineColorPen ?? "";
-			statusText.style.textShadow = `2px 2px 3px ${timelineColorPen}`;
-
-			const hasShoulderLeft =
-				0 < newNeighbors.mediaItems.length &&
-				timelineMediaIdActive !== undefined;
-			const hasShoulderRight = 0 < newNeighbors.mediaItems.length;
-
-			if (hasShoulderLeft) {
-				shoulderLeft.classList.add("visible");
-				shoulderLeft.textContent =
-					timelineMediaIdActive === 0 ? "Schließen" : "Zurück blättern";
-			}
-			if (hasShoulderRight) {
-				shoulderRight.classList.add("visible");
-				shoulderRight.textContent =
-					timelineMediaIdActive === undefined
-						? "Artefakte anzeigen"
-						: timelineMediaIdActive === timelineMediaIds.length - 1
-							? "Schließen"
-							: "Vorwärts blättern";
-			}
-
-			if (hasShoulderLeft || hasShoulderRight) {
-				shouldersContainer.classList.add("visible");
-			}
-		});
-	};
 
 	//#region Main Menu
 	let menuMainFocusIndex = 0;
@@ -2303,7 +2358,7 @@ const main = async function main() {
 
 		// We don't want to update the starfield every frame, because it doesn't
 		// move much, but consumes a lot of fill rate.
-		if (!cameraIsIdle && !cameraIsDetached && 1000 < deltaStarfield) {
+		if (!cameraIsIdle && cameraIsAttached && 1000 < deltaStarfield) {
 			const sinceStart = Date.now() - startTime;
 
 			DOM.write("updateStarfield", () => {
@@ -2311,8 +2366,7 @@ const main = async function main() {
 					const planeSet = starPlanes[z];
 
 					const offset =
-						(z + 1) *
-						(lastKnownScrollPosition * speedScroll + sinceStart * speedTime);
+						(z + 1) * (view.scope.y * speedScroll + sinceStart * speedTime);
 
 					const planeOffsets = [planeSet[0], planeSet[1]];
 					const planes = [planeSet[2], planeSet[3]];
