@@ -166,11 +166,11 @@ for (const entry of suspects) {
 		timelineEntry,
 	];
 	allEntries.add(timelineEntry);
-	output.write(yamlDocument.join("\n"));
+	output.write(`${yamlDocument.join("\n")}\n`);
 	++successCount;
 }
 
-process.stdout.write([...allEntries.values()].sort().join("\n") + "\n");
+process.stdout.write(`${[...allEntries.values()].sort().join("\n")}\n`);
 
 process.stderr.write(`${successCount} documents generated successfully.\n`);
 process.stderr.write("Done.\n");
