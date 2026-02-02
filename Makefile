@@ -59,7 +59,7 @@ else
 endif
 
 .PHONY: default build clean docs git-hook pretty lint test coverage universe
-.PRECIOUS: %/universe.yml
+#.PRECIOUS: %/universe.yml
 
 default: \
 	$(OUTPUT)/pedigree.pdf \
@@ -183,6 +183,8 @@ $(OUTPUT)/universe.html : $(OUTPUT_BUILD)/universe.info $(_OBJECTS)
 	@cp contrib/favicon.ico $(dir $@)
 	@date +"%FT%T%z Synchronizing media..."
 	@rsync --archive $(DATA_ROOT)/media $(dir $@)
+#	@mkdir --parents $(OUTPUT)/.well-known/appspecific
+#	@echo "{\"workspace\":{\"root\":\"$(dir $@)\",\"uuid\":\"$(file < /proc/sys/kernel/random/uuid)\"}}" > "$(dir $@)/.well-known/appspecific/com.chrome.devtools.json"
 	@date +"%FT%T%z Media synchronized. Golden image ready at '$(dir $@)'."
 %-demo-universe.html : %-demo-universe.info %-demo-universe.svg $(wildcard contrib/index.template.*) contrib/build-site.js
 	@node --enable-source-maps contrib/build-site.js \
@@ -297,7 +299,7 @@ validate-data: .venv validate-schema lib/tsconfig.source.tsbuildinfo
 	check-jsonschema \
 		--schemafile spec.schema.yml \
 		$(TIMELINES)
-	node --enable-source-maps contrib/timelinelint.js \
+	node --enable-source-maps examples/timelinelint.js \
 		"--root=$(DATA_ROOT)" \
 		$(TIMELINES)
 

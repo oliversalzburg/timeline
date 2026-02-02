@@ -56,14 +56,19 @@ const main = async function main() {
 	if (dialog === null) {
 		throw new Error("Unable to find <dialog> element.");
 	}
+	/** @type {HTMLIFrameElement | null} */
+	const dialogIFrame = document.querySelector("dialog iframe");
+	if (dialogIFrame === null) {
+		throw new Error("Unable to find <dialog> element.");
+	}
 	/** @type {HTMLImageElement | null} */
 	const dialogImage = document.querySelector("dialog img");
 	if (dialogImage === null) {
 		throw new Error("Unable to find <dialog> element.");
 	}
-	/** @type {HTMLIFrameElement | null} */
-	const dialogIFrame = document.querySelector("dialog iframe");
-	if (dialogIFrame === null) {
+	/** @type {HTMLVideoElement | null} */
+	const dialogVideo = document.querySelector("dialog video");
+	if (dialogVideo === null) {
 		throw new Error("Unable to find <dialog> element.");
 	}
 
@@ -293,6 +298,8 @@ const main = async function main() {
 	sfxPrepareSample("transition_up", "/media/sfx/SND01_sine/transition_up.wav");
 
 	/**
+	 * Play the sound with the given ID.
+	 *
 	 * @param {string} id -
 	 */
 	const sfxPlay = async function sfxPlay(id) {
@@ -1472,19 +1479,27 @@ const main = async function main() {
 		iFrameResizeHandle = window.setTimeout(resizeIFrame, 100);
 	};
 	dialogIFrame.addEventListener("load", onIFrameLoad);
+	const onVideoLoad = function onVideoLoad() {
+		dialogVideo.play();
+	};
+	dialogVideo.addEventListener("canplaythrough", onVideoLoad);
 
 	const mediaReset = function mediaReset() {
 		mediaItemPosition = { x: 0, y: 10, z: 10 };
 		DOM.write("mediaReset", () => {
 			dialog.style.transform = `perspective(20px) translate3d(${mediaItemPosition.x}vmin, ${mediaItemPosition.y}vmin, ${mediaItemPosition.z}vmin)`;
-			dialogImage.src = "";
-			dialogImage.style.display = "none";
 			dialogIFrame.style.display = "none";
 			dialogIFrame.style.height = "150px";
 			dialogIFrame.style.width = "";
+			dialogImage.src = "";
+			dialogImage.style.display = "none";
+			dialogVideo.src = "";
+			dialogVideo.style.display = "none";
 		});
 	};
 	/**
+	 * Show the media item with the given index.
+	 *
 	 * @param {number} mediaIndex -
 	 */
 	const mediaShow = function mediaShow(mediaIndex) {
@@ -1520,6 +1535,9 @@ const main = async function main() {
 				dialogIFrame.style.display = "block";
 				dialogIFrame.style.height = "600mm";
 				dialogIFrame.style.width = "215mm";
+			} else if (mediaPath.endsWith(".mp4")) {
+				dialogVideo.src = mediaPath;
+				dialogVideo.style.display = "block";
 			} else {
 				dialogImage.src = mediaPath;
 				dialogImage.style.display = "block";

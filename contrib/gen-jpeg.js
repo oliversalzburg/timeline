@@ -124,17 +124,22 @@ for (const entry of suspects) {
 		continue;
 	}
 	const bestString = best.substring(0, 10).replaceAll(":", "");
-	if (!entry.FileName.includes(bestString)) {
+	if (
+		!entry.FileName.includes(bestString) &&
+		!entry.FileName.endsWith(".mp4")
+	) {
 		process.stderr.write(
 			`\n - file name does not include best date match: '${bestString}' -> '${entry.FileName}'\n`,
 		);
 		process.stderr.write(`   ${entry.SourceFile}\n`);
 		process.stderr.write(`${bufferEntry.map((_) => `   ${_}`).join("\n")}\n`);
+		/*
 		if (entry.FileName.endsWith(".mp4")) {
 			process.stderr.write(
 				`   Assuming best date match as valid for video file.\n`,
 			);
 		}
+		*/
 	}
 
 	const bestYear = best.substring(0, 4);
@@ -142,26 +147,36 @@ for (const entry of suspects) {
 	const bestDay = best.substring(8, 10);
 
 	const date = new Date(`${bestYear}-${bestMonth}-${bestDay}`);
+	const entryDate = dateToString(date);
 
+	const filePath = relative(dirname(inputFile), entry.SourceFile);
 	const documentPath = join(
-		args.target,
-		relative(dirname(inputFile), entry.SourceFile).replace(/\.[^.]+$/, ".yml"),
+		filePath
+			.replace(/\.[^.]+$/, ".yml")
+			.replace(/[^/]+\.yml$/, (substring) => `${entryDate}-${substring}`),
 	);
-	const documentDirectory = dirname(documentPath);
+	const documentPathAbsolute = join(
+		args.target,
+		bestYear,
+		bestMonth,
+		documentPath,
+	);
+	const documentDirectory = dirname(documentPathAbsolute);
 	mkdirSync(documentDirectory, { recursive: true });
-	const output = createWriteStream(documentPath, "utf8");
+	const output = createWriteStream(documentPathAbsolute, "utf8");
 
 	const mediaIndex = entry.SourceFile.indexOf("/media/");
 	if (mediaIndex < 0) {
 		throw new Error(`couldn't find /media/ in path`);
 	}
-	const timelineEntry = `  ${dateToString(date)}: 📱`;
+	const timelineEntry = `  ${entryDate}: 📱`;
+	const isVideo = entry.SourceFile.endsWith(".mp4");
 	const yamlDocument = [
 		"---",
 		"prefix: 📸",
 		"identity:",
 		`  id: ${entry.SourceFile.substring(mediaIndex + 1)}`,
-		`  name: WhatsApp Bild ${entry.FileName}`,
+		`  name: WhatsApp ${isVideo ? "Video" : "Bild"} ${filePath}`,
 		"timeline:",
 		timelineEntry,
 	];
