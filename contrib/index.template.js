@@ -278,24 +278,24 @@ const main = async function main() {
 		samples.set(id, data);
 	};
 
-	sfxPrepareSample("swipe1", "/media/sfx/SND01_sine/swipe_01.wav");
-	sfxPrepareSample("swipe2", "/media/sfx/SND01_sine/swipe_02.wav");
-	sfxPrepareSample("swipe3", "/media/sfx/SND01_sine/swipe_03.wav");
-	sfxPrepareSample("swipe4", "/media/sfx/SND01_sine/swipe_04.wav");
-	sfxPrepareSample("swipe5", "/media/sfx/SND01_sine/swipe_05.wav");
-	sfxPrepareSample("tap1", "/media/sfx/SND01_sine/tap_01.wav");
-	sfxPrepareSample("tap2", "/media/sfx/SND01_sine/tap_02.wav");
-	sfxPrepareSample("tap3", "/media/sfx/SND01_sine/tap_03.wav");
-	sfxPrepareSample("tap4", "/media/sfx/SND01_sine/tap_04.wav");
-	sfxPrepareSample("tap5", "/media/sfx/SND01_sine/tap_05.wav");
-	sfxPrepareSample("button", "/media/sfx/SND01_sine/button.wav");
-	sfxPrepareSample("disabled", "/media/sfx/SND01_sine/disabled.wav");
-	sfxPrepareSample("swipe", "/media/sfx/SND01_sine/swipe.wav");
+	sfxPrepareSample("swipe1", "media/sfx/SND01_sine/swipe_01.wav");
+	sfxPrepareSample("swipe2", "media/sfx/SND01_sine/swipe_02.wav");
+	sfxPrepareSample("swipe3", "media/sfx/SND01_sine/swipe_03.wav");
+	sfxPrepareSample("swipe4", "media/sfx/SND01_sine/swipe_04.wav");
+	sfxPrepareSample("swipe5", "media/sfx/SND01_sine/swipe_05.wav");
+	sfxPrepareSample("tap1", "media/sfx/SND01_sine/tap_01.wav");
+	sfxPrepareSample("tap2", "media/sfx/SND01_sine/tap_02.wav");
+	sfxPrepareSample("tap3", "media/sfx/SND01_sine/tap_03.wav");
+	sfxPrepareSample("tap4", "media/sfx/SND01_sine/tap_04.wav");
+	sfxPrepareSample("tap5", "media/sfx/SND01_sine/tap_05.wav");
+	sfxPrepareSample("button", "media/sfx/SND01_sine/button.wav");
+	sfxPrepareSample("disabled", "media/sfx/SND01_sine/disabled.wav");
+	sfxPrepareSample("swipe", "media/sfx/SND01_sine/swipe.wav");
 	sfxPrepareSample(
 		"transition_down",
-		"/media/sfx/SND01_sine/transition_down.wav",
+		"media/sfx/SND01_sine/transition_down.wav",
 	);
-	sfxPrepareSample("transition_up", "/media/sfx/SND01_sine/transition_up.wav");
+	sfxPrepareSample("transition_up", "media/sfx/SND01_sine/transition_up.wav");
 
 	/**
 	 * Play the sound with the given ID.
