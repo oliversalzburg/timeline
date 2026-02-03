@@ -118,7 +118,20 @@ process.stdout.write("\n");
 
 process.stdout.write("gradientify: Rebuilding...");
 let svgOutput = svgInput;
+const gradientMap = new Map();
 for (const [id, colors] of targets.entries()) {
+	if (!gradientMap.has(colors.join())) {
+		gradientMap.set(
+			colors.join(),
+			colors
+				.map(
+					(_, index) =>
+						`<stop offset="${index / (colors.length - 1)}" style="stop-color:${_};stop-opacity:1.;"/>`,
+				)
+				.join("\n"),
+		);
+	}
+
 	const gradientRegex = new RegExp(
 		`<linearGradient id="${id}.+</linearGradient>`,
 		"gs",
@@ -126,16 +139,12 @@ for (const [id, colors] of targets.entries()) {
 	svgOutput = svgOutput.replace(gradientRegex, (substring) =>
 		substring.replace(
 			/<stop.+?<\/linearGradient>/s,
-			colors
-				.map(
-					(_, index) =>
-						`<stop offset="${index / (colors.length - 1)}" style="stop-color:${_};stop-opacity:1.;"/>`,
-				)
-				.join("\n"),
+			gradientMap.get(colors.join()),
 		),
 	);
 	process.stdout.write(".");
 }
+process.stdout.write(`${gradientMap.size}/${targets.size}`);
 process.stdout.write("\n");
 
 const output = createWriteStream(args.target, "utf8");

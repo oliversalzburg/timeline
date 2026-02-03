@@ -2,6 +2,7 @@
 
 import { copyFileSync, readFileSync, writeFileSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
+import { FONT_SIZE_1000MM_V07_STUDY_PT } from "../lib/constants.js";
 
 // Parse command line arguments.
 const args = process.argv
@@ -35,9 +36,8 @@ let contentName = "";
 if (typeof args.target !== "string") {
 	process.stderr.write("Missing --target.\n");
 	process.exit(1);
-} else {
-	contentLocation = args.target;
 }
+contentLocation = args.target;
 
 if (!copyOnly) {
 	if (
@@ -385,7 +385,7 @@ const svgPrefixes = content.replaceAll(
 	 */
 	(substring, prefixString, label) => {
 		let imageString = "";
-		if (prefixString === undefined) {
+		if (prefixString === undefined || label === undefined) {
 			return substring;
 		}
 
@@ -411,14 +411,26 @@ const svgPrefixes = content.replaceAll(
 		imageString = [
 			...usages
 				.entries()
-				.map(
-					([prefix, count]) =>
-						`<TD FIXEDSIZE="TRUE" WIDTH="24" HEIGHT="24" TOOLTIP="${count}"><IMG SRC="${prefixConfigs.get(prefix)?.src}"/></TD>`,
+				.map(([prefix, count]) =>
+					[
+						`<TD FIXEDSIZE="TRUE" WIDTH="24" HEIGHT="24" TOOLTIP="${count}">`,
+						`<IMG SRC="${prefixConfigs.get(prefix)?.src}"/>`,
+						`</TD>`,
+					].join(""),
 				),
 		].join("");
-		const cells = [imageString, `<TD>${label}</TD>`];
-		const row = `<TR>${cells.join("")}</TR>`;
-		const table = `<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0" CELLSPACING="5">${row}</TABLE>`;
+		const labelParts = label.split("„");
+		if (labelParts.length === 1) {
+			const cells = [imageString, `<TD>${label}</TD>`];
+			const row = `<TR>${cells.join("")}</TR>`;
+			const table = `<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0" CELLSPACING="5">${row}</TABLE>`;
+			return `<${table}>;`;
+		}
+
+		const cellsHead = [imageString, `<TD>${labelParts[0]}</TD>`];
+		const rowHead = `<TR>${cellsHead.join("")}</TR>`;
+		const rowBody = `<TR><TD COLSPAN="${usages.size}"></TD><TD><FONT POINT-SIZE="${FONT_SIZE_1000MM_V07_STUDY_PT}">„${labelParts[1]}</FONT></TD></TR>`;
+		const table = `<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0" CELLSPACING="5">${rowHead}${rowBody}</TABLE>`;
 		return `<${table}>;`;
 	},
 );
