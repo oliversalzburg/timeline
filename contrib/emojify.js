@@ -3,7 +3,9 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
 import {
+	FONT_SCALE,
 	FONT_SIZE_700MM_V07_STUDY_PT,
+	FONT_SIZE_1000MM_V07_READ_PT,
 	FONT_SIZE_1000MM_V07_STUDY_PT,
 } from "../lib/constants.js";
 
@@ -51,26 +53,6 @@ const contentLocation = dirname(args.target);
 const contentName = basename(args.target);
 
 export const PREFIXES = {
-	"\u{1F3F4}\u{E0067}\u{E0062}\u{E0065}\u{E006E}\u{E0067}\u{E007F}": {
-		emoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿",
-		name: "flag: england",
-		src: "1F3F4-E0067-E0062-E0065-E006E-E0067-E007F.svg",
-	},
-	"\u{1F3F4}\u{E0067}\u{E0062}\u{E0073}\u{E0063}\u{E0074}\u{E007F}": {
-		emoji: "🏴󠁧󠁢󠁳󠁣󠁴󠁿",
-		name: "flag: scotland",
-		src: "1F3F4-E0067-E0062-E0065-E006E-E0067-E007F.svg",
-	},
-	"\u2764\uFE0F\u200D\u{1F525}": {
-		emoji: "❤️‍🔥",
-		name: "heart on fire",
-		src: "2764-FE0F-200D-1F525.svg",
-	},
-	"\u{1F469}\u200D\u{1F52C}": {
-		emoji: "👩‍🔬",
-		name: "woman scientist",
-		src: "1F469-200D-1F52C.svg",
-	},
 	"\u{1F1E6}\u{1F1F7}": {
 		emoji: "🇦🇷",
 		name: "flag: argentina",
@@ -111,6 +93,11 @@ export const PREFIXES = {
 		name: "flag: switzerland",
 		src: "1F1E8-1F1ED.svg",
 	},
+	"\u{1F1E8}\u{1F1F1}": {
+		emoji: "🇨🇱",
+		name: "flag: chile",
+		src: "1F1E8-1F1F1.svg",
+	},
 	"\u{1F1E8}\u{1F1F3}": {
 		emoji: "🇨🇳",
 		name: "flag: china",
@@ -131,6 +118,11 @@ export const PREFIXES = {
 		name: "flag: spain",
 		src: "1F1EA-1F1F8.svg",
 	},
+	"\u{1F1EA}\u{1F1FA}": {
+		emoji: "🇪🇺",
+		name: "flag: european union",
+		src: "1F1EA-1F1FA.svg",
+	},
 	"\u{1F1EB}\u{1F1F7}": {
 		emoji: "🇫🇷",
 		name: "flag: france",
@@ -146,10 +138,25 @@ export const PREFIXES = {
 		name: "flag: greece",
 		src: "1F1EC-1F1F7.svg",
 	},
+	"\u{1F1ED}\u{1F1F0}": {
+		emoji: "🇭🇰",
+		name: "flag: hong kong",
+		src: "1F1ED-1F1F0.svg",
+	},
 	"\u{1F1ED}\u{1F1FA}": {
 		emoji: "🇭🇺",
 		name: "flag: hungary",
 		src: "1F1ED-1F1FA.svg",
+	},
+	"\u{1F1EE}\u{1F1EA}": {
+		emoji: "🇮🇪",
+		name: "flag: india",
+		src: "1F1EE-1F1EA.svg",
+	},
+	"\u{1F1EE}\u{1F1F3}": {
+		emoji: "🇮🇳",
+		name: "flag: india",
+		src: "1F1EE-1F1F3.svg",
 	},
 	"\u{1F1EE}\u{1F1F7}": {
 		emoji: "🇮🇷",
@@ -186,6 +193,11 @@ export const PREFIXES = {
 		name: "flag: norway",
 		src: "1F1F3-1F1F4.svg",
 	},
+	"\u{1F1F3}\u{1F1FF}": {
+		emoji: "🇳🇿",
+		name: "flag: new zealand",
+		src: "1F1F3-1F1FF.svg",
+	},
 	"\u{1F1F5}\u{1F1F1}": {
 		emoji: "🇵🇱",
 		name: "flag: poland",
@@ -221,6 +233,11 @@ export const PREFIXES = {
 		name: "flag: sweden",
 		src: "1F1F8-1F1EA.svg",
 	},
+	"\u{1F1F9}\u{1F1FC}": {
+		emoji: "🇹🇼",
+		name: "flag: taiwan",
+		src: "1F1F9-1F1FC.svg",
+	},
 	"\u{1F1FA}\u{1F1E6}": {
 		emoji: "🇺🇦",
 		name: "flag: ukraine",
@@ -245,6 +262,11 @@ export const PREFIXES = {
 		emoji: "🌍",
 		name: "globe showing europe-africa",
 		src: "1F30D.svg",
+	},
+	"\u{1F310}": {
+		emoji: "🌐",
+		name: "globe with meridians",
+		src: "1F310.svg",
 	},
 	"\u{1F396}": {
 		emoji: "🎖",
@@ -306,6 +328,16 @@ export const PREFIXES = {
 		name: "stadium",
 		src: "1F3DF.svg",
 	},
+	"\u{1F3F4}\u{E0067}\u{E0062}\u{E0065}\u{E006E}\u{E0067}\u{E007F}": {
+		emoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿",
+		name: "flag: england",
+		src: "1F3F4-E0067-E0062-E0065-E006E-E0067-E007F.svg",
+	},
+	"\u{1F3F4}\u{E0067}\u{E0062}\u{E0073}\u{E0063}\u{E0074}\u{E007F}": {
+		emoji: "🏴󠁧󠁢󠁳󠁣󠁴󠁿",
+		name: "flag: scotland",
+		src: "1F3F4-E0067-E0062-E0065-E006E-E0067-E007F.svg",
+	},
 	"\u{1F427}": {
 		emoji: "🐧",
 		name: "penguin",
@@ -315,6 +347,31 @@ export const PREFIXES = {
 		emoji: "🐱",
 		name: "cat face",
 		src: "1F431.svg",
+	},
+	"\u{1F469}\u200D\u{1F52C}": {
+		emoji: "👩‍🔬",
+		name: "woman scientist",
+		src: "1F469-200D-1F52C.svg",
+	},
+	"\u{1F471}\u{1F3FB}": {
+		emoji: "👱🏻",
+		name: "person: light skin tone, blond hair",
+		src: "1F471-1F3FB.svg",
+	},
+	"\u{1F471}\u{1F3FC}\u200D\u2640\uFE0F": {
+		emoji: "👱🏼‍♀️",
+		name: "woman: medium-light skin tone, blond hair",
+		src: "1F471-1F3FC-200D-2640-FE0F.svg",
+	},
+	"\u{1F475}\u{1F3FC}": {
+		emoji: "👵🏼",
+		name: "old woman: medium-light skin tone",
+		src: "1F475-1F3FD.svg",
+	},
+	"\u{1F475}\u{1F3FD}": {
+		emoji: "👵🏽",
+		name: "old woman: medium skin tone",
+		src: "1F475-1F3FD.svg",
 	},
 	"\u{1F480}": {
 		emoji: "💀",
@@ -436,6 +493,36 @@ export const PREFIXES = {
 		name: "boxing glove",
 		src: "1F94A.svg",
 	},
+	"\u{1F9D4}\u{1F3FB}\u200D\u2642\uFE0F": {
+		emoji: "🧔🏻‍♂️",
+		name: "man: light skin tone, beard",
+		src: "1F9D4-1F3FB-200D-2642-FE0F.svg",
+	},
+	"\u{1F9D4}\u{1F3FC}\u200D\u2642\uFE0F": {
+		emoji: "🧔🏼‍♂️",
+		name: "man: medium-light skin tone, beard",
+		src: "1F9D4-1F3FC-200D-2642-FE0F.svg",
+	},
+	"\u{1F9D4}\u{1F3FD}\u200D\u2642\uFE0F": {
+		emoji: "🧔🏽‍♂️",
+		name: "man: medium skin tone, beard",
+		src: "1F9D4-1F3FD-200D-2642-FE0F.svg",
+	},
+	"\u{1F9D4}\u{1F3FE}\u200D\u2642\uFE0F": {
+		emoji: "🧔🏾‍♀️",
+		name: "man: medium-dark skin tone, beard",
+		src: "1F9D4-1F3FE-200D-2642-FE0F.svg",
+	},
+	"\u{1F9D4}\u{1F3FF}\u200D\u2642\uFE0F": {
+		emoji: "🧔🏿‍♂️",
+		name: "man: dark skin tone, beard",
+		src: "1F9D4-1F3FF-200D-2642-FE0F.svg",
+	},
+	"\u{1F9D4}\u200D\u2642\uFE0F": {
+		emoji: "🧔‍♂️",
+		name: "man: beard",
+		src: "1F9D4-200D-2642-FE0F.svg",
+	},
 	"\u{1F9EC}": {
 		emoji: "🧬",
 		name: "dna",
@@ -496,6 +583,11 @@ export const PREFIXES = {
 		name: "cross mark",
 		src: "274C.svg",
 	},
+	"\u2764\uFE0F\u200D\u{1F525}": {
+		emoji: "❤️‍🔥",
+		name: "heart on fire",
+		src: "2764-FE0F-200D-1F525.svg",
+	},
 	"atom-bomb": {
 		emoji: "",
 		name: "atom bomb",
@@ -553,7 +645,9 @@ export const TEMPLATES = {
 			 */
 			cellIcon: (icon, tooltip) =>
 				[
-					`<TD FIXEDSIZE="TRUE" WIDTH="24" HEIGHT="24" TOOLTIP="${tooltip}">`,
+					`<TD FIXEDSIZE="TRUE" WIDTH="${Math.floor(
+						FONT_SIZE_1000MM_V07_READ_PT * FONT_SCALE,
+					)}" HEIGHT="${Math.floor(FONT_SIZE_1000MM_V07_READ_PT * FONT_SCALE)}" TOOLTIP="${tooltip}">`,
 					`<IMG SRC="${prefixConfigs.get(icon)?.src}"/>`,
 					`</TD>`,
 				].join(""),
@@ -644,7 +738,9 @@ export const TEMPLATES = {
 			 */
 			cellIcon: (icon, tooltip) =>
 				[
-					`<TD FIXEDSIZE="TRUE" WIDTH="24" HEIGHT="24" TOOLTIP="${tooltip}">`,
+					`<TD FIXEDSIZE="TRUE" WIDTH="${Math.floor(
+						FONT_SIZE_1000MM_V07_READ_PT * FONT_SCALE,
+					)}" HEIGHT="${Math.floor(FONT_SIZE_1000MM_V07_READ_PT * FONT_SCALE)}" TOOLTIP="${tooltip}">`,
 					`<IMG SRC="${prefixConfigs.get(icon)?.src}"/>`,
 					`</TD>`,
 				].join(""),
@@ -725,9 +821,14 @@ const svgPrefixes = content.replaceAll(
 			process.stderr.write(
 				`emojify: unregistered prefix: '${prefix}' (${Array.from(prefix)
 					.map((character) =>
-						character?.codePointAt(0)?.toString(16).toUpperCase(),
+						character.codePointAt(0)?.toString(16).toUpperCase(),
 					)
-					.map((hex) => `\\u{${hex}}`)})\n`,
+					.map((hex) =>
+						hex !== undefined
+							? `\\u${hex.length < 5 ? `${hex}` : `{${hex}}`}`
+							: hex,
+					)
+					.join("")})\n`,
 			);
 		}
 		if (usages.size === 0) {
