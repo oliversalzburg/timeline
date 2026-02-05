@@ -51,6 +51,16 @@ const contentLocation = dirname(args.target);
 const contentName = basename(args.target);
 
 export const PREFIXES = {
+	"\u{1F3F4}\u{E0067}\u{E0062}\u{E0065}\u{E006E}\u{E0067}\u{E007F}": {
+		emoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿",
+		name: "flag: england",
+		src: "1F3F4-E0067-E0062-E0065-E006E-E0067-E007F.svg",
+	},
+	"\u{1F3F4}\u{E0067}\u{E0062}\u{E0073}\u{E0063}\u{E0074}\u{E007F}": {
+		emoji: "🏴󠁧󠁢󠁳󠁣󠁴󠁿",
+		name: "flag: scotland",
+		src: "1F3F4-E0067-E0062-E0065-E006E-E0067-E007F.svg",
+	},
 	"\u2764\uFE0F\u200D\u{1F525}": {
 		emoji: "❤️‍🔥",
 		name: "heart on fire",
@@ -61,20 +71,60 @@ export const PREFIXES = {
 		name: "woman scientist",
 		src: "1F469-200D-1F52C.svg",
 	},
+	"\u{1F1E6}\u{1F1F7}": {
+		emoji: "🇦🇷",
+		name: "flag: argentina",
+		src: "1F1E6-1F1F7.svg",
+	},
+	"\u{1F1E6}\u{1F1F9}": {
+		emoji: "🇦🇹",
+		name: "flag: austria",
+		src: "1F1E6-1F1F9.svg",
+	},
+	"\u{1F1E6}\u{1F1FA}": {
+		emoji: "🇦🇺",
+		name: "flag: australia",
+		src: "1F1E6-1F1FA.svg",
+	},
+	"\u{1F1E6}\u{1F1FF}": {
+		emoji: "🇦🇿",
+		name: "flag: azerbaijan",
+		src: "1F1E6-1F1FF.svg",
+	},
 	"\u{1F1E7}\u{1F1EA}": {
 		emoji: "🇧🇪",
 		name: "flag: belgium",
 		src: "1F1E7-1F1EA.svg",
+	},
+	"\u{1F1E7}\u{1F1F7}": {
+		emoji: "🇧🇷",
+		name: "flag: brazil",
+		src: "1F1E7-1F1F7.svg",
+	},
+	"\u{1F1E8}\u{1F1E6}": {
+		emoji: "🇨🇦",
+		name: "flag: canada",
+		src: "1F1E8-1F1E6.svg",
 	},
 	"\u{1F1E8}\u{1F1ED}": {
 		emoji: "🇨🇭",
 		name: "flag: switzerland",
 		src: "1F1E8-1F1ED.svg",
 	},
+	"\u{1F1E8}\u{1F1F3}": {
+		emoji: "🇨🇳",
+		name: "flag: china",
+		src: "1F1E8-1F1F3.svg",
+	},
 	"\u{1F1E9}\u{1F1EA}": {
 		emoji: "🇩🇪",
 		name: "flag: germany",
 		src: "1F1E9-1F1EA.svg",
+	},
+	"\u{1F1E9}\u{1F1F0}": {
+		emoji: "🇩🇰",
+		name: "flag: denmark",
+		src: "1F1E9-1F1F0.svg",
 	},
 	"\u{1F1EA}\u{1F1F8}": {
 		emoji: "🇪🇸",
@@ -91,6 +141,16 @@ export const PREFIXES = {
 		name: "flag: united kingdom",
 		src: "1F1EC-1F1E7.svg",
 	},
+	"\u{1F1EC}\u{1F1F7}": {
+		emoji: "🇬🇷",
+		name: "flag: greece",
+		src: "1F1EC-1F1F7.svg",
+	},
+	"\u{1F1ED}\u{1F1FA}": {
+		emoji: "🇭🇺",
+		name: "flag: hungary",
+		src: "1F1ED-1F1FA.svg",
+	},
 	"\u{1F1EE}\u{1F1F7}": {
 		emoji: "🇮🇷",
 		name: "flag: iran",
@@ -106,10 +166,45 @@ export const PREFIXES = {
 		name: "flag: japan",
 		src: "1F1EF-1F1F5.svg",
 	},
+	"\u{1F1F0}\u{1F1F7}": {
+		emoji: "🇰🇷",
+		name: "flag: south korea",
+		src: "1F1F0-1F1F7.svg",
+	},
 	"\u{1F1F2}\u{1F1FD}": {
 		emoji: "🇲🇽",
 		name: "flag: mexico",
 		src: "1F1F2-1F1FD.svg",
+	},
+	"\u{1F1F3}\u{1F1F1}": {
+		emoji: "🇳🇱",
+		name: "flag: netherlands",
+		src: "1F1F3-1F1F1.svg",
+	},
+	"\u{1F1F3}\u{1F1F4}": {
+		emoji: "🇳🇴",
+		name: "flag: norway",
+		src: "1F1F3-1F1F4.svg",
+	},
+	"\u{1F1F5}\u{1F1F1}": {
+		emoji: "🇵🇱",
+		name: "flag: poland",
+		src: "1F1F5-1F1F1.svg",
+	},
+	"\u{1F1F5}\u{1F1F9}": {
+		emoji: "🇵🇹",
+		name: "flag: portugal",
+		src: "1F1F5-1F1F9.svg",
+	},
+	"\u{1F1F6}\u{1F1E6}": {
+		emoji: "🇶🇦",
+		name: "flag: qatar",
+		src: "1F1F6-1F1E6.svg",
+	},
+	"\u{1F1F7}\u{1F1F4}": {
+		emoji: "🇷🇴",
+		name: "flag: romania",
+		src: "1F1F7-1F1F4.svg",
 	},
 	"\u{1F1F7}\u{1F1FA}": {
 		emoji: "🇷🇺",
@@ -121,10 +216,25 @@ export const PREFIXES = {
 		name: "flag: saudi arabia",
 		src: "1F1F8-1F1E6.svg",
 	},
+	"\u{1F1F8}\u{1F1EA}": {
+		emoji: "🇸🇪",
+		name: "flag: sweden",
+		src: "1F1F8-1F1EA.svg",
+	},
+	"\u{1F1FA}\u{1F1E6}": {
+		emoji: "🇺🇦",
+		name: "flag: ukraine",
+		src: "1F1FA-1F1E6.svg",
+	},
 	"\u{1F1FA}\u{1F1F8}": {
 		emoji: "🇺🇸",
 		name: "flag: united states",
 		src: "1F1FA-1F1F8.svg",
+	},
+	"\u{1F1FF}\u{1F1E6}": {
+		emoji: "🇿🇦",
+		name: "flag: south africa",
+		src: "1F1FF-1F1E6.svg",
 	},
 	"\u{1F30B}": {
 		emoji: "🌋",
