@@ -1166,7 +1166,7 @@ const main = async function main() {
 	const INPUT_THRESHOLD = 0.1;
 	const SPEED_FREE_FLIGHT = 5.0;
 	const SPEED_MEDIA_SCALE = 0.5;
-	const SPEED_MEDIA_TRANSLATE = 0.5;
+	const SPEED_MEDIA_TRANSLATE = 5.0;
 
 	//#region Input Plane Neutral
 	/**
@@ -1441,7 +1441,7 @@ const main = async function main() {
 	let timelineMediaIds;
 	/** @type {number | undefined} */
 	let timelineMediaIdActive;
-	let mediaItemPosition = { x: 0, y: 10, z: 10 };
+	let mediaItemPosition = { x: 0, y: 100, z: 10 };
 	let mediaItemVisible = false;
 
 	/** @type {number | null} */
@@ -1485,7 +1485,7 @@ const main = async function main() {
 	dialogVideo.addEventListener("canplaythrough", onVideoLoad);
 
 	const mediaReset = function mediaReset() {
-		mediaItemPosition = { x: 0, y: 10, z: 10 };
+		mediaItemPosition = { x: 0, y: 100, z: 10 };
 		DOM.write("mediaReset", () => {
 			dialog.style.transform = `perspective(20px) translate3d(${mediaItemPosition.x}vmin, ${mediaItemPosition.y}vmin, ${mediaItemPosition.z}vmin)`;
 			dialogIFrame.style.display = "none";
@@ -1670,7 +1670,7 @@ const main = async function main() {
 
 			mediaItemPosition.x = Math.max(Math.min(mediaItemPosition.x, 95), -95);
 			mediaItemPosition.y = Math.max(
-				Math.min(mediaItemPosition.y, 10),
+				Math.min(mediaItemPosition.y, 100),
 				-1_000_000,
 			);
 		},
@@ -2409,8 +2409,8 @@ const main = async function main() {
 							? "0"
 							: "1";
 
-					planes[0].style.transform = `translateY(${-planeOffsets[0]}px) translateZ(0px)`;
-					planes[1].style.transform = `translateY(${-planeOffsets[1]}px) translateZ(0px)`;
+					planes[0].style.transform = `translateY(${-planeOffsets[0]}px)`;
+					planes[1].style.transform = `translateY(${-planeOffsets[1]}px)`;
 
 					planeSet[0] = planeOffsets[0];
 					planeSet[1] = planeOffsets[1];

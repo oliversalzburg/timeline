@@ -301,6 +301,16 @@ export const PREFIXES = {
 		name: "rocket",
 		src: "1F680.svg",
 	},
+	"\u{1F6AB}": {
+		emoji: "🚫",
+		name: "prohibited",
+		src: "1F6AB.svg",
+	},
+	"\u{1F6D1}": {
+		emoji: "🛑",
+		name: "stop sign",
+		src: "1F6D1.svg",
+	},
 	"\u{1F6F8}": {
 		emoji: "🛸",
 		name: "flying saucer",
@@ -483,7 +493,7 @@ export const TEMPLATES = {
 			 * @param {Map<string, number>} prefixes -
 			 */
 			render: (label, prefixes) =>
-				`${instance.table([
+				instance.table([
 					instance.row([
 						...instance.emojiToColumns(prefixes),
 						instance.cellText(label.replace(/ \([0-9.]+\)$/, "")),
@@ -493,7 +503,7 @@ export const TEMPLATES = {
 							"TIMESTAMP_EXTRACTION_FAILED",
 						prefixes.size,
 					),
-				])}`,
+				]),
 		};
 		return instance;
 	},
@@ -553,6 +563,31 @@ export const TEMPLATES = {
 		};
 		return instance;
 	},
+	trailerStamped: () => {
+		const instance = {
+			...TEMPLATES.trailer(),
+			...TEMPLATES.stamped(),
+			/**
+			 * @param {string} labelBody -
+			 * @param {string} labelTrailer -
+			 * @param {Map<string, number>} prefixes -
+			 */
+			render: (labelBody, labelTrailer, prefixes) =>
+				instance.table([
+					instance.rowBody(instance.emojiToColumns(prefixes), labelBody),
+					instance.rowTrailer(
+						labelTrailer.replace(/ \([0-9.]+\)$/, ""),
+						prefixes.size,
+					),
+					instance.rowTimestamp(
+						labelTrailer.match(/ \(([0-9.]+)\)$/)?.[1] ??
+							"TIMESTAMP_EXTRACTION_FAILED",
+						prefixes.size,
+					),
+				]),
+		};
+		return instance;
+	},
 };
 
 const prefixConfigs = new Map(Object.entries(PREFIXES));
@@ -598,7 +633,10 @@ const svgPrefixes = content.replaceAll(
 			return `<${template.render(label, usages)}>`;
 		}
 		if (labelBlocks.length === 2) {
-			const template = TEMPLATES.trailer();
+			const template =
+				labelDateSuffix !== null
+					? TEMPLATES.trailerStamped()
+					: TEMPLATES.trailer();
 			return `<${template.render(labelBlocks[0], labelBlocks[1], usages)}>`;
 		}
 		throw new Error(`unexpected input with ${labelBlocks.length} blocks`);

@@ -12,7 +12,7 @@ import {
 	isIdentityPeriod,
 	isIdentityPerson,
 	isNotIdentityTimeline,
-	uncertainEventToDate,
+	uncertainEventToDateDeterministic,
 } from "../lib/genealogy.js";
 import { load } from "../lib/loader.js";
 import { render } from "../lib/renderer-stream.js";
@@ -121,7 +121,7 @@ const hops = graphUniverse.calculateHopsFrom(originIdentityId, {
 });
 const trimmedTimelines = finalTimelines.filter((_) => {
 	const born = isIdentityPerson(_)
-		? uncertainEventToDate(
+		? uncertainEventToDateDeterministic(
 				/** @type {import("../lib/types.js").TimelineAncestryRenderer} */ (_)
 					.meta.identity.born,
 			)?.valueOf()
@@ -246,7 +246,7 @@ const infoDebug = ["intentionally left blank"];
 
 const resolvedIdentitiy = graphTrimmed.resolveIdentity();
 const originBirthDate =
-	uncertainEventToDate(
+	uncertainEventToDateDeterministic(
 		resolvedIdentitiy?.born ?? resolvedIdentitiy?.established,
 	) ?? new Date();
 const metadata = /** @type {UniverseResultMetadataNG} */ ([

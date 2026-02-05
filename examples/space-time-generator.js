@@ -5,7 +5,11 @@ import { resolve } from "node:path";
 import { isNil, mustExist } from "@oliversalzburg/js-utils/data/nil.js";
 import { parse } from "yaml";
 import { MILLISECONDS } from "../lib/constants.js";
-import { Graph, uncertainEventToDate } from "../lib/genealogy.js";
+import {
+	Graph,
+	uncertainEventToDateArtistic,
+	uncertainEventToDateDeterministic,
+} from "../lib/genealogy.js";
 import { recurringYearly } from "../lib/generator.js";
 import { load } from "../lib/loader.js";
 import {
@@ -129,7 +133,7 @@ const fill = (timeline) => {
 
 	let birth;
 	if (timeline.meta.identity.born !== null) {
-		birth = uncertainEventToDate(timeline.meta.identity.born);
+		birth = uncertainEventToDateArtistic(timeline.meta.identity.born);
 	}
 
 	if (isNil(birth)) {
@@ -144,7 +148,7 @@ const fill = (timeline) => {
 	if (timeline.meta.identity.died === null) {
 		death = new Date(birth.valueOf() + MILLISECONDS.ONE_YEAR * 85);
 	} else {
-		death = uncertainEventToDate(timeline.meta.identity.died);
+		death = uncertainEventToDateArtistic(timeline.meta.identity.died);
 	}
 
 	const birthYear = birth.getFullYear();
@@ -168,7 +172,7 @@ const fill = (timeline) => {
 		let marriageBeforeDate;
 		let bestDate;
 		for (const marriage of marriages) {
-			const marriageDate = uncertainEventToDate(marriage);
+			const marriageDate = uncertainEventToDateDeterministic(marriage);
 			if (
 				marriageDate !== undefined &&
 				date.valueOf() < marriageDate.valueOf()
@@ -227,7 +231,7 @@ const fillOthers = (timeline, graph) => {
 
 	let birth;
 	if (timeline.meta.identity.born !== null) {
-		birth = uncertainEventToDate(timeline.meta.identity.born);
+		birth = uncertainEventToDateArtistic(timeline.meta.identity.born);
 	}
 
 	if (isNil(birth)) {

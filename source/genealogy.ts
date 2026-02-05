@@ -5,6 +5,7 @@ import {
 } from "@oliversalzburg/js-utils/data/nil.js";
 import {
 	Random,
+	random,
 	seedFromString,
 } from "@oliversalzburg/js-utils/data/random.js";
 import { InvalidOperationError } from "@oliversalzburg/js-utils/errors/InvalidOperationError.js";
@@ -33,7 +34,44 @@ export const parseStringAsDate = (input?: string, offset = 0) => {
 	return date;
 };
 
-export const uncertainEventToDate = (input?: Event | null) => {
+export const uncertainEventToDateArtistic = (input?: Event | null) => {
+	if (isNil(input)) {
+		return undefined;
+	}
+
+	if (input.date !== undefined) {
+		return parseStringAsDate(input.date);
+	}
+
+	const when = input.when;
+	if (when === undefined) {
+		return undefined;
+	}
+
+	const after = when.after;
+	const before = when.before;
+	if (after !== undefined && before !== undefined) {
+		const start = mustExist(
+			parseStringAsDate(after),
+			`invalid date '${after}'`,
+		);
+		const end = mustExist(
+			parseStringAsDate(before),
+			`invalid date '${before}'`,
+		);
+		const distance = end.valueOf() - start.valueOf();
+		return new Date(start.valueOf() + random.nextRange(0, distance));
+	}
+	if (after !== undefined) {
+		return mustExist(parseStringAsDate(after, 1), `invalid date '${after}'`);
+	}
+	if (before !== undefined) {
+		return mustExist(parseStringAsDate(before, -1), `invalid date '${before}'`);
+	}
+
+	return undefined;
+};
+export const uncertainEventToDateDeterministic = (input?: Event | null) => {
 	if (isNil(input)) {
 		return undefined;
 	}
@@ -75,7 +113,7 @@ export const uncertainEventToDateString = (
 	input?: Event | null,
 	dateRenderer?: RendererOptions["dateRenderer"],
 ) => {
-	const date = uncertainEventToDate(input);
+	const date = uncertainEventToDateDeterministic(input);
 	if (isNil(date)) {
 		return undefined;
 	}
@@ -240,7 +278,8 @@ export class Graph<
 		const aliases =
 			this.marriagesOf(id)
 				?.map(
-					(marriage) => [uncertainEventToDate(marriage), marriage.as] as const,
+					(marriage) =>
+						[uncertainEventToDateDeterministic(marriage), marriage.as] as const,
 				)
 				.filter(([, alias]) => alias !== undefined)
 				.sort(

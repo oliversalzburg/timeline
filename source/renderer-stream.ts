@@ -12,7 +12,7 @@ import {
 	isIdentityMedia,
 	isIdentityPeriod,
 	isIdentityPerson,
-	uncertainEventToDate,
+	uncertainEventToDateDeterministic,
 	uncertainEventToDateString,
 } from "./genealogy.js";
 import { matchLuminance, rgbaToHexString } from "./palette.js";
@@ -261,7 +261,6 @@ export const render = <
 		end: number;
 	}>();
 
-	// Generate styling information
 	const now = options?.now ?? Date.now();
 	const nowString = options.dateRenderer?.(now) ?? now.toString();
 	const origin: TTimelines =
@@ -277,7 +276,7 @@ export const render = <
 			: timelines[0];
 	const originTimestamp =
 		"identity" in origin.meta
-			? (uncertainEventToDate(
+			? (uncertainEventToDateDeterministic(
 					origin.meta.identity.born ?? origin.meta.identity.established,
 				)?.valueOf() ?? origin.records[0][0])
 			: now;

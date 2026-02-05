@@ -6,7 +6,7 @@ import { parse } from "yaml";
 import {
 	isIdentityMedia,
 	isIdentityPerson,
-	uncertainEventToDate,
+	uncertainEventToDateDeterministic,
 } from "../lib/genealogy.js";
 import { load } from "../lib/loader.js";
 
@@ -157,7 +157,7 @@ const lint = (job) => {
 			(relation) => "marriedTo" in relation,
 		) ?? [];
 	for (const marriage of marriages) {
-		const marriageDate = uncertainEventToDate(marriage);
+		const marriageDate = uncertainEventToDateDeterministic(marriage);
 		if (marriageDate === undefined) {
 			job.report.log(
 				`Marriage with '${marriage.marriedTo}' in identity is missing a date, and will cause issues with name changes of the identity.`,

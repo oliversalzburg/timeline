@@ -25,7 +25,7 @@ import {
 } from "./dot.js";
 import {
 	Graph,
-	uncertainEventToDate,
+	uncertainEventToDateDeterministic,
 	uncertainEventToDateString,
 	uncertainEventToLocationString,
 } from "./genealogy.js";
@@ -509,8 +509,10 @@ export const renderReport = (
 	const sortIdentitiesByBirthdate = (identities: Array<Identity>) =>
 		identities.toSorted(
 			(a, b) =>
-				(uncertainEventToDate(a.born)?.valueOf() ?? Number.NEGATIVE_INFINITY) -
-				(uncertainEventToDate(b.born)?.valueOf() ?? Number.NEGATIVE_INFINITY),
+				(uncertainEventToDateDeterministic(a.born)?.valueOf() ??
+					Number.NEGATIVE_INFINITY) -
+				(uncertainEventToDateDeterministic(b.born)?.valueOf() ??
+					Number.NEGATIVE_INFINITY),
 		);
 
 	const originIdentity = mustExist(graph.resolveIdentity(options.origin));
@@ -570,7 +572,7 @@ export const renderReport = (
 		let hasDeath = false;
 
 		const nameBirth = renderBirthnamePrefixMaybe(subject);
-		const _dateBirth = uncertainEventToDate(subject.born);
+		const _dateBirth = uncertainEventToDateDeterministic(subject.born);
 		const dateBirthString = uncertainEventToDateString(
 			subject.born,
 			options.dateRenderer,
@@ -601,7 +603,7 @@ export const renderReport = (
 
 		const marriages = graph.marriagesOf(subject.id);
 		for (const marriage of marriages) {
-			const dateMarriage = uncertainEventToDate(marriage);
+			const dateMarriage = uncertainEventToDateDeterministic(marriage);
 			const dateMarriageString = uncertainEventToDateString(
 				marriage,
 				options.dateRenderer,
@@ -629,7 +631,7 @@ export const renderReport = (
 		}
 
 		if (subject.died !== undefined) {
-			const _dateDied = uncertainEventToDate(subject.died);
+			const _dateDied = uncertainEventToDateDeterministic(subject.died);
 			const dateDiedString = uncertainEventToDateString(
 				subject.died,
 				options.dateRenderer,
