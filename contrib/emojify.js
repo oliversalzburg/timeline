@@ -1,8 +1,11 @@
 #!/usr/bin/env node
 
-import { copyFileSync, readFileSync, writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
-import { FONT_SIZE_1000MM_V07_STUDY_PT } from "../lib/constants.js";
+import {
+	FONT_SIZE_700MM_V07_STUDY_PT,
+	FONT_SIZE_1000MM_V07_STUDY_PT,
+} from "../lib/constants.js";
 
 // Parse command line arguments.
 const args = process.argv
@@ -26,36 +29,26 @@ const args = process.argv
 		/** @type {Record<string, boolean | string>} */ ({}),
 	);
 
-const assets = typeof args.assets === "string" ? args.assets : "output";
-const copyOnly = args["copy-only"] === true;
-
-let content = "";
-let contentLocation = "";
-let contentName = "";
-
 if (typeof args.target !== "string") {
 	process.stderr.write("Missing --target.\n");
 	process.exit(1);
 }
-contentLocation = args.target;
 
-if (!copyOnly) {
-	if (
-		!args.target.endsWith(".dot") &&
-		!args.target.endsWith(".dotus") &&
-		!args.target.endsWith(".gv") &&
-		!args.target.endsWith(".gvus")
-	) {
-		process.stdout.write(
-			`Invalid target document. File name is expected to end in '.dot', '.dotus', '.gv', '.gvus'.\nProvided: ${args.target}\n`,
-		);
-		process.exit(1);
-	}
-
-	content = readFileSync(args.target, "utf8");
-	contentLocation = dirname(args.target);
-	contentName = basename(args.target);
+if (
+	!args.target.endsWith(".dot") &&
+	!args.target.endsWith(".dotus") &&
+	!args.target.endsWith(".gv") &&
+	!args.target.endsWith(".gvus")
+) {
+	process.stdout.write(
+		`Invalid target document. File name is expected to end in '.dot', '.dotus', '.gv', '.gvus'.\nProvided: ${args.target}\n`,
+	);
+	process.exit(1);
 }
+
+const content = readFileSync(args.target, "utf8");
+const contentLocation = dirname(args.target);
+const contentName = basename(args.target);
 
 export const PREFIXES = {
 	"\u2764\uFE0F\u200D\u{1F525}": {
@@ -68,10 +61,25 @@ export const PREFIXES = {
 		name: "woman scientist",
 		src: "1F469-200D-1F52C.svg",
 	},
+	"\u{1F1E7}\u{1F1EA}": {
+		emoji: "🇧🇪",
+		name: "flag: belgium",
+		src: "1F1E7-1F1EA.svg",
+	},
+	"\u{1F1E8}\u{1F1ED}": {
+		emoji: "🇨🇭",
+		name: "flag: switzerland",
+		src: "1F1E8-1F1ED.svg",
+	},
 	"\u{1F1E9}\u{1F1EA}": {
 		emoji: "🇩🇪",
 		name: "flag: germany",
 		src: "1F1E9-1F1EA.svg",
+	},
+	"\u{1F1EA}\u{1F1F8}": {
+		emoji: "🇪🇸",
+		name: "flag: spain",
+		src: "1F1EA-1F1F8.svg",
 	},
 	"\u{1F1EB}\u{1F1F7}": {
 		emoji: "🇫🇷",
@@ -87,6 +95,21 @@ export const PREFIXES = {
 		emoji: "🇮🇷",
 		name: "flag: iran",
 		src: "1F1EE-1F1F7.svg",
+	},
+	"\u{1F1EE}\u{1F1F9}": {
+		emoji: "🇮🇹",
+		name: "flag: italy",
+		src: "1F1EE-1F1F9.svg",
+	},
+	"\u{1F1EF}\u{1F1F5}": {
+		emoji: "🇯🇵",
+		name: "flag: japan",
+		src: "1F1EF-1F1F5.svg",
+	},
+	"\u{1F1F2}\u{1F1FD}": {
+		emoji: "🇲🇽",
+		name: "flag: mexico",
+		src: "1F1F2-1F1FD.svg",
 	},
 	"\u{1F1F7}\u{1F1FA}": {
 		emoji: "🇷🇺",
@@ -112,6 +135,11 @@ export const PREFIXES = {
 		emoji: "🌍",
 		name: "globe showing europe-africa",
 		src: "1F30D.svg",
+	},
+	"\u{1F396}": {
+		emoji: "🎖",
+		name: "military medal",
+		src: "1F396.svg",
 	},
 	"\u{1F3A4}": {
 		emoji: "🎤",
@@ -162,6 +190,11 @@ export const PREFIXES = {
 		emoji: "🏗",
 		name: "building construction",
 		src: "1F3D7.svg",
+	},
+	"\u{1F3DF}": {
+		emoji: "🏟",
+		name: "stadium",
+		src: "1F3DF.svg",
 	},
 	"\u{1F427}": {
 		emoji: "🐧",
@@ -303,6 +336,11 @@ export const PREFIXES = {
 		name: "coin",
 		src: "1FA99.svg",
 	},
+	"\u2620": {
+		emoji: "☠",
+		name: "skull and crossbones",
+		src: "2620.svg",
+	},
 	"\u2622": {
 		emoji: "☢",
 		name: "radioactive",
@@ -351,6 +389,10 @@ export const PREFIXES = {
 		name: "german reich",
 		src: "flag-germany-1867-1918.svg",
 	},
+	hr3: {
+		name: "hr3",
+		src: "logo-hr3.svg",
+	},
 	nazi: {
 		name: "nazi germany",
 		src: "flag-germany-1935-1945.svg",
@@ -373,6 +415,145 @@ export const PREFIXES = {
 		src: "logo-u60311.svg",
 	},
 };
+export const TEMPLATES = {
+	standard: () => {
+		const instance = {
+			/**
+			 * @param {Array<string>} rows -
+			 */
+			table: (rows) =>
+				`<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0" CELLSPACING="5">${rows.join("")}</TABLE>`,
+			/**
+			 * @param {Array<string>} cells -
+			 */
+			row: (cells) => `<TR>${cells.join("")}</TR>`,
+			/**
+			 * @param {string} icon -
+			 * @param {string} tooltip -
+			 */
+			cellIcon: (icon, tooltip) =>
+				[
+					`<TD FIXEDSIZE="TRUE" WIDTH="24" HEIGHT="24" TOOLTIP="${tooltip}">`,
+					`<IMG SRC="${prefixConfigs.get(icon)?.src}"/>`,
+					`</TD>`,
+				].join(""),
+			/**
+			 * @param {string} label -
+			 */
+			cellText: (label) => `<TD>${label}</TD>`,
+			/**
+			 * @param {Map<string, number>} prefixes -
+			 */
+			emojiToColumns: (prefixes) => [
+				...prefixes
+					.entries()
+					.map(([prefix, count]) => instance.cellIcon(prefix, count.toFixed())),
+			],
+			/**
+			 * @param {string} label -
+			 * @param {Map<string, number>} prefixes -
+			 */
+			render: (label, prefixes) =>
+				`${instance.table([
+					instance.row([
+						...instance.emojiToColumns(prefixes),
+						instance.cellText(label),
+					]),
+				])}`,
+		};
+		return instance;
+	},
+	stamped: () => {
+		const instance = {
+			...TEMPLATES.standard(),
+			/**
+			 * @param {string} label -
+			 */
+			cellTextRight: (label) => `<TD ALIGN="RIGHT">${label}</TD>`,
+			/**
+			 * @param {string} timestamp -
+			 * @param {number} indent -
+			 */
+			rowTimestamp: (timestamp, indent = 1) =>
+				`<TR><TD COLSPAN="${indent}"></TD>${instance.cellTextRight(
+					`<FONT POINT-SIZE="${FONT_SIZE_700MM_V07_STUDY_PT}">${timestamp}</FONT>`,
+				)}</TR>`,
+			/**
+			 * @param {string} label -
+			 * @param {Map<string, number>} prefixes -
+			 */
+			render: (label, prefixes) =>
+				`${instance.table([
+					instance.row([
+						...instance.emojiToColumns(prefixes),
+						instance.cellText(label.replace(/ \([0-9.]+\)$/, "")),
+					]),
+					instance.rowTimestamp(
+						label.match(/ \(([0-9.]+)\)$/)?.[1] ??
+							"TIMESTAMP_EXTRACTION_FAILED",
+						prefixes.size,
+					),
+				])}`,
+		};
+		return instance;
+	},
+	trailer: () => {
+		const instance = {
+			/**
+			 * @param {Array<string>} rows -
+			 */
+			table: (rows) =>
+				`<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0" CELLSPACING="5">${rows.join("")}</TABLE>`,
+			/**
+			 * @param {Array<string>} iconCells -
+			 * @param {string} labelBody -
+			 */
+			rowBody: (iconCells, labelBody) =>
+				`<TR>${iconCells.join("")}${instance.cellText(labelBody)}</TR>`,
+			/**
+			 * @param {string} labelTrailer -
+			 * @param {number} indent -
+			 */
+			rowTrailer: (labelTrailer, indent = 1) =>
+				`<TR><TD COLSPAN="${indent}"></TD>${instance.cellText(
+					`<FONT POINT-SIZE="${FONT_SIZE_1000MM_V07_STUDY_PT}">${labelTrailer}</FONT>`,
+				)}</TR>`,
+			/**
+			 * @param {string} icon -
+			 * @param {string} tooltip -
+			 */
+			cellIcon: (icon, tooltip) =>
+				[
+					`<TD FIXEDSIZE="TRUE" WIDTH="24" HEIGHT="24" TOOLTIP="${tooltip}">`,
+					`<IMG SRC="${prefixConfigs.get(icon)?.src}"/>`,
+					`</TD>`,
+				].join(""),
+			/**
+			 * @param {string} label -
+			 */
+			cellText: (label) => `<TD>${label}</TD>`,
+			/**
+			 * @param {Map<string, number>} prefixes -
+			 */
+			emojiToColumns: (prefixes) => [
+				...prefixes
+					.entries()
+					.map(([prefix, count]) => instance.cellIcon(prefix, count.toFixed())),
+			],
+			/**
+			 * @param {string} labelBody -
+			 * @param {string} labelTrailer -
+			 * @param {Map<string, number>} prefixes -
+			 */
+			render: (labelBody, labelTrailer, prefixes) =>
+				instance.table([
+					instance.rowBody(instance.emojiToColumns(prefixes), labelBody),
+					instance.rowTrailer(labelTrailer, prefixes.size),
+				]),
+		};
+		return instance;
+	},
+};
 
 const prefixConfigs = new Map(Object.entries(PREFIXES));
 
@@ -380,11 +561,10 @@ const svgPrefixes = content.replaceAll(
 	/<(.*)\u{00A0}(.+)>,/gu,
 	/**
 	 * @param {string} substring -
-	 * @param {string|undefined} prefixString -
-	 * @param {string|undefined} label -
+	 * @param {string | undefined} prefixString -
+	 * @param {string | undefined} label -
 	 */
 	(substring, prefixString, label) => {
-		let imageString = "";
 		if (prefixString === undefined || label === undefined) {
 			return substring;
 		}
@@ -408,42 +588,22 @@ const svgPrefixes = content.replaceAll(
 		if (usages.size === 0) {
 			return substring;
 		}
-		imageString = [
-			...usages
-				.entries()
-				.map(([prefix, count]) =>
-					[
-						`<TD FIXEDSIZE="TRUE" WIDTH="24" HEIGHT="24" TOOLTIP="${count}">`,
-						`<IMG SRC="${prefixConfigs.get(prefix)?.src}"/>`,
-						`</TD>`,
-					].join(""),
-				),
-		].join("");
-		const labelParts = label.split("„");
-		if (labelParts.length === 1) {
-			const cells = [imageString, `<TD>${label}</TD>`];
-			const row = `<TR>${cells.join("")}</TR>`;
-			const table = `<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0" CELLSPACING="5">${row}</TABLE>`;
-			return `<${table}>;`;
+		const labelBlocks = label.split('<BR ALIGN="CENTER"/><BR ALIGN="CENTER"/>');
+		const labelDateSuffix = label.match(
+			/ \((?:\d\d\.)?(?:\d\d\.)?(?:\d\d\d\d)\)$/,
+		);
+		if (labelBlocks.length === 1) {
+			const template =
+				labelDateSuffix !== null ? TEMPLATES.stamped() : TEMPLATES.standard();
+			return `<${template.render(label, usages)}>`;
 		}
-
-		const cellsHead = [imageString, `<TD>${labelParts[0]}</TD>`];
-		const rowHead = `<TR>${cellsHead.join("")}</TR>`;
-		const rowBody = `<TR><TD COLSPAN="${usages.size}"></TD><TD><FONT POINT-SIZE="${FONT_SIZE_1000MM_V07_STUDY_PT}">„${labelParts[1]}</FONT></TD></TR>`;
-		const table = `<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0" CELLSPACING="5">${rowHead}${rowBody}</TABLE>`;
-		return `<${table}>;`;
+		if (labelBlocks.length === 2) {
+			const template = TEMPLATES.trailer();
+			return `<${template.render(labelBlocks[0], labelBlocks[1], usages)}>`;
+		}
+		throw new Error(`unexpected input with ${labelBlocks.length} blocks`);
 	},
 );
-
-for (const [_prefix, config] of Object.entries(PREFIXES)) {
-	if (copyOnly) {
-		copyFileSync(join(assets, config.src), join(contentLocation, config.src));
-	}
-}
-
-if (copyOnly) {
-	process.exit(0);
-}
 
 const filename = contentName
 	.replace(/\.dot$/, ".idot")

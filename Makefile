@@ -59,7 +59,7 @@ else
 endif
 
 .PHONY: default build clean docs git-hook pretty lint test coverage universe
-#.PRECIOUS: %/universe.yml
+.PRECIOUS: %/universe.yml %.dotus %.idotus
 
 default: \
 	$(OUTPUT)/pedigree.pdf \

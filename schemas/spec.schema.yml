@@ -386,6 +386,12 @@ properties:
     title: Private Document
     type: boolean
     default: true
+  sources:
+    title: Sources
+    type: array
+    items:
+      title: Source
+      type: string
   timeline:
     title: Timeline
     patternProperties:
