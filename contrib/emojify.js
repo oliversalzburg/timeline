@@ -7,6 +7,8 @@ import {
 	FONT_SIZE_700MM_V07_STUDY_PT,
 	FONT_SIZE_1000MM_V07_READ_PT,
 	FONT_SIZE_1000MM_V07_STUDY_PT,
+	LABEL_PREFIX_GROUP,
+	LABEL_TITLE_SEPARATOR,
 } from "../lib/constants.js";
 
 // Parse command line arguments.
@@ -348,6 +350,61 @@ export const PREFIXES = {
 		name: "cat face",
 		src: "1F431.svg",
 	},
+	"\u{1F466}": {
+		emoji: "👦",
+		name: "boy",
+		src: "1F466.svg",
+	},
+	"\u{1F467}": {
+		emoji: "👧",
+		name: "girl",
+		src: "1F467.svg",
+	},
+	"\u{1F468}\u200D\u{1F9B0}": {
+		emoji: "👨‍🦰",
+		name: "man: red hair",
+		src: "1F468-200D-1F9B0.svg",
+	},
+	"\u{1F468}\u200D\u{1F9B1}": {
+		emoji: "👨‍🦱",
+		name: "man: curly hair",
+		src: "1F468-200D-1F9B1.svg",
+	},
+	"\u{1F468}\u200D\u{1F9B2}": {
+		emoji: "👨‍🦲",
+		name: "man: bald",
+		src: "1F468-200D-1F9B2.svg",
+	},
+	"\u{1F468}\u200D\u{1F9B3}": {
+		emoji: "👨‍🦳",
+		name: "man: white hair",
+		src: "1F468-200D-1F9B3.svg",
+	},
+	"\u{1F468}": {
+		emoji: "👱",
+		name: "man",
+		src: "1F468.svg",
+	},
+	"\u{1F469}\u200D\u{1F9B0}": {
+		emoji: "👩‍🦰",
+		name: "woman: red hair",
+		src: "1F469-200D-1F9B0.svg",
+	},
+	"\u{1F469}\u200D\u{1F9B1}": {
+		emoji: "👩‍🦱",
+		name: "woman: curly hair",
+		src: "1F469-200D-1F9B1.svg",
+	},
+	"\u{1F469}\u200D\u{1F9B2}": {
+		emoji: "👩‍🦲",
+		name: "woman: bald",
+		src: "1F469-200D-1F9B2.svg",
+	},
+	"\u{1F469}\u200D\u{1F9B3}": {
+		emoji: "👩‍🦳",
+		name: "woman: white hair",
+		src: "1F469-200D-1F9B3.svg",
+	},
 	"\u{1F469}\u200D\u{1F52C}": {
 		emoji: "👩‍🔬",
 		name: "woman scientist",
@@ -362,6 +419,36 @@ export const PREFIXES = {
 		emoji: "👱🏼‍♀️",
 		name: "woman: medium-light skin tone, blond hair",
 		src: "1F471-1F3FC-200D-2640-FE0F.svg",
+	},
+	"\u{1F471}\u200D\u2640\uFE0F": {
+		emoji: "👱‍♀️",
+		name: "woman: blond hair",
+		src: "1F471-200D-2640-FE0F.svg",
+	},
+	"\u{1F471}\u200D\u2642\uFE0F": {
+		emoji: "👱‍♀️",
+		name: "man: blond hair",
+		src: "1F471-200D-2642-FE0F.svg",
+	},
+	"\u{1F471}": {
+		emoji: "👱",
+		name: "person: blond hair",
+		src: "1F471.svg",
+	},
+	"\u{1F474}": {
+		emoji: "👴",
+		name: "old man",
+		src: "1F474.svg",
+	},
+	"\u{1F475}": {
+		emoji: "👵",
+		name: "old woman",
+		src: "1F475.svg",
+	},
+	"\u{1F476}": {
+		emoji: "👶",
+		name: "baby",
+		src: "1F476.svg",
 	},
 	"\u{1F475}\u{1F3FC}": {
 		emoji: "👵🏼",
@@ -463,6 +550,36 @@ export const PREFIXES = {
 		name: "pouting cat",
 		src: "1F63E.svg",
 	},
+	"\u{1F64D}\u200D\u2640\uFE0F": {
+		emoji: "🙍‍♀️",
+		name: "woman frowning",
+		src: "1F64D-200D-u2640-FE0F.svg",
+	},
+	"\u{1F64D}\u200D\u2642\uFE0F": {
+		emoji: "🙍‍♂️",
+		name: "man frowning",
+		src: "1F64D-200D-u2642-FE0F.svg",
+	},
+	"\u{1F64D}": {
+		emoji: "🙍",
+		name: "person frowning",
+		src: "1F64D.svg",
+	},
+	"\u{1F64E}\u200D\u2640\uFE0F": {
+		emoji: "🙎‍♀️",
+		name: "woman pouting",
+		src: "1F64E-200D-u2640-FE0F.svg",
+	},
+	"\u{1F64E}\u200D\u2642\uFE0F": {
+		emoji: "🙎‍♂️",
+		name: "man pouting",
+		src: "1F64E-200D-u2642-FE0F.svg",
+	},
+	"\u{1F64E}": {
+		emoji: "🙎",
+		name: "person pouting",
+		src: "1F64E.svg",
+	},
 	"\u{1F680}": {
 		emoji: "🚀",
 		name: "rocket",
@@ -493,6 +610,41 @@ export const PREFIXES = {
 		name: "boxing glove",
 		src: "1F94A.svg",
 	},
+	"\u{1F9D1}\u200D\u{1F9B0}": {
+		emoji: "🧑‍🦰",
+		name: "person: red hair",
+		src: "1F9D1-200D-1F9B0.svg",
+	},
+	"\u{1F9D1}\u200D\u{1F9B1}": {
+		emoji: "🧑‍🦱",
+		name: "person: curly hair",
+		src: "1F9D1-200D-1F9B1.svg",
+	},
+	"\u{1F9D1}\u200D\u{1F9B2}": {
+		emoji: "🧑‍🦲",
+		name: "person: bald",
+		src: "1F9D1-200D-1F9B2.svg",
+	},
+	"\u{1F9D1}\u200D\u{1F9B3}": {
+		emoji: "🧑‍🦳",
+		name: "person: white hair",
+		src: "1F9D1-200D-1F9B3.svg",
+	},
+	"\u{1F9D1}": {
+		emoji: "🧑",
+		name: "person",
+		src: "1F9D1.svg",
+	},
+	"\u{1F9D2}": {
+		emoji: "🧒",
+		name: "child",
+		src: "1F9D2.svg",
+	},
+	"\u{1F9D3}": {
+		emoji: "🧓",
+		name: "older person",
+		src: "1F9D3.svg",
+	},
 	"\u{1F9D4}\u{1F3FB}\u200D\u2642\uFE0F": {
 		emoji: "🧔🏻‍♂️",
 		name: "man: light skin tone, beard",
@@ -518,10 +670,20 @@ export const PREFIXES = {
 		name: "man: dark skin tone, beard",
 		src: "1F9D4-1F3FF-200D-2642-FE0F.svg",
 	},
+	"\u{1F9D4}\u200D\u2640\uFE0F": {
+		emoji: "🧔‍♀️",
+		name: "woman: beard",
+		src: "1F9D4-200D-2640-FE0F.svg",
+	},
 	"\u{1F9D4}\u200D\u2642\uFE0F": {
 		emoji: "🧔‍♂️",
 		name: "man: beard",
 		src: "1F9D4-200D-2642-FE0F.svg",
+	},
+	"\u{1F9D4}": {
+		emoji: "🧔",
+		name: "person: beard",
+		src: "1F9D4.svg",
 	},
 	"\u{1F9EC}": {
 		emoji: "🧬",
@@ -635,10 +797,24 @@ export const TEMPLATES = {
 			 */
 			table: (rows) =>
 				`<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0" CELLSPACING="5">${rows.join("")}</TABLE>`,
+
 			/**
 			 * @param {Array<string>} cells -
 			 */
 			row: (cells) => `<TR>${cells.join("")}</TR>`,
+
+			/**
+			 * @param {Array<string>} iconCells -
+			 * @param {string} labelBody -
+			 */
+			rowBody: (iconCells, labelBody) =>
+				instance.row([...iconCells.join(""), instance.cellPlain(labelBody)]),
+
+			/**
+			 * @param {string} label -
+			 */
+			cellPlain: (label) => `<TD>${label}</TD>`,
+
 			/**
 			 * @param {string} icon -
 			 * @param {string} tooltip -
@@ -651,10 +827,12 @@ export const TEMPLATES = {
 					`<IMG SRC="${prefixConfigs.get(icon)?.src}"/>`,
 					`</TD>`,
 				].join(""),
+
 			/**
 			 * @param {string} label -
 			 */
-			cellText: (label) => `<TD>${label}</TD>`,
+			cellTextRight: (label) => `<TD ALIGN="RIGHT">${label}</TD>`,
+
 			/**
 			 * @param {Map<string, number>} prefixes -
 			 */
@@ -663,6 +841,7 @@ export const TEMPLATES = {
 					.entries()
 					.map(([prefix, count]) => instance.cellIcon(prefix, count.toFixed())),
 			],
+
 			/**
 			 * @param {string} label -
 			 * @param {Map<string, number>} prefixes -
@@ -671,7 +850,7 @@ export const TEMPLATES = {
 				`${instance.table([
 					instance.row([
 						...instance.emojiToColumns(prefixes),
-						instance.cellText(label),
+						instance.cellPlain(label),
 					]),
 				])}`,
 		};
@@ -681,10 +860,6 @@ export const TEMPLATES = {
 		const instance = {
 			...TEMPLATES.standard(),
 			/**
-			 * @param {string} label -
-			 */
-			cellTextRight: (label) => `<TD ALIGN="RIGHT">${label}</TD>`,
-			/**
 			 * @param {string} timestamp -
 			 * @param {number} indent -
 			 */
@@ -692,6 +867,7 @@ export const TEMPLATES = {
 				`<TR><TD COLSPAN="${indent}"></TD>${instance.cellTextRight(
 					`<FONT POINT-SIZE="${FONT_SIZE_700MM_V07_STUDY_PT}">${timestamp}</FONT>`,
 				)}</TR>`,
+
 			/**
 			 * @param {string} label -
 			 * @param {Map<string, number>} prefixes -
@@ -700,7 +876,7 @@ export const TEMPLATES = {
 				instance.table([
 					instance.row([
 						...instance.emojiToColumns(prefixes),
-						instance.cellText(label.replace(/ \([0-9.]+\)$/, "")),
+						instance.cellPlain(label.replace(/ \([0-9.]+\)$/, "")),
 					]),
 					instance.rowTimestamp(
 						label.match(/ \(([0-9.]+)\)$/)?.[1] ??
@@ -713,49 +889,16 @@ export const TEMPLATES = {
 	},
 	trailer: () => {
 		const instance = {
-			/**
-			 * @param {Array<string>} rows -
-			 */
-			table: (rows) =>
-				`<TABLE BORDER="0" CELLBORDER="0" CELLPADDING="0" CELLSPACING="5">${rows.join("")}</TABLE>`,
-			/**
-			 * @param {Array<string>} iconCells -
-			 * @param {string} labelBody -
-			 */
-			rowBody: (iconCells, labelBody) =>
-				`<TR>${iconCells.join("")}${instance.cellText(labelBody)}</TR>`,
+			...TEMPLATES.standard(),
 			/**
 			 * @param {string} labelTrailer -
 			 * @param {number} indent -
 			 */
 			rowTrailer: (labelTrailer, indent = 1) =>
-				`<TR><TD COLSPAN="${indent}"></TD>${instance.cellText(
+				`<TR><TD COLSPAN="${indent}"></TD>${instance.cellPlain(
 					`<FONT POINT-SIZE="${FONT_SIZE_1000MM_V07_STUDY_PT}">${labelTrailer}</FONT>`,
 				)}</TR>`,
-			/**
-			 * @param {string} icon -
-			 * @param {string} tooltip -
-			 */
-			cellIcon: (icon, tooltip) =>
-				[
-					`<TD FIXEDSIZE="TRUE" WIDTH="${Math.floor(
-						FONT_SIZE_1000MM_V07_READ_PT * FONT_SCALE,
-					)}" HEIGHT="${Math.floor(FONT_SIZE_1000MM_V07_READ_PT * FONT_SCALE)}" TOOLTIP="${tooltip}">`,
-					`<IMG SRC="${prefixConfigs.get(icon)?.src}"/>`,
-					`</TD>`,
-				].join(""),
-			/**
-			 * @param {string} label -
-			 */
-			cellText: (label) => `<TD>${label}</TD>`,
-			/**
-			 * @param {Map<string, number>} prefixes -
-			 */
-			emojiToColumns: (prefixes) => [
-				...prefixes
-					.entries()
-					.map(([prefix, count]) => instance.cellIcon(prefix, count.toFixed())),
-			],
+
 			/**
 			 * @param {string} labelBody -
 			 * @param {string} labelTrailer -
@@ -794,6 +937,112 @@ export const TEMPLATES = {
 		};
 		return instance;
 	},
+	title: () => {
+		const instance = {
+			...TEMPLATES.standard(),
+			/**
+			 * @param {string} labelTitle -
+			 * @param {number} columns -
+			 */
+			cellTitle: (labelTitle, columns = 1) =>
+				`<TD ALIGN="LEFT" BGCOLOR="#000000FF" COLOR="#FFFFFFFF" COLSPAN="${columns}">${labelTitle}</TD>`,
+
+			/**
+			 * @param {string} labelTitle -
+			 * @param {number} columns -
+			 */
+			rowTitle: (labelTitle, columns = 1) =>
+				instance.row([
+					instance.cellTitle(
+						`<FONT POINT-SIZE="${FONT_SIZE_700MM_V07_STUDY_PT}">${labelTitle}</FONT>`,
+						columns,
+					),
+				]),
+
+			/**
+			 * @param {string} labelBody -
+			 * @param {string} labelTitle -
+			 * @param {Map<string, number>} prefixes -
+			 */
+			render: (labelBody, labelTitle, prefixes) =>
+				instance.table([
+					instance.rowTitle(labelTitle, prefixes.size + 1),
+					instance.rowBody(instance.emojiToColumns(prefixes), labelBody),
+				]),
+		};
+		return instance;
+	},
+	titleStamped: () => {
+		const instance = {
+			...TEMPLATES.title(),
+			...TEMPLATES.stamped(),
+			/**
+			 * @param {string} labelBody -
+			 * @param {string} labelTitle -
+			 * @param {Map<string, number>} prefixes -
+			 */
+			render: (labelBody, labelTitle, prefixes) =>
+				instance.table([
+					instance.rowTitle(labelTitle, prefixes.size + 1),
+					instance.rowBody(
+						instance.emojiToColumns(prefixes),
+						labelBody.replace(/ \([0-9.]+\)$/, ""),
+					),
+					instance.rowTimestamp(
+						labelBody.match(/ \(([0-9.]+)\)$/)?.[1] ??
+							"TIMESTAMP_EXTRACTION_FAILED",
+						prefixes.size,
+					),
+				]),
+		};
+		return instance;
+	},
+	titleTrailer: () => {
+		const instance = {
+			...TEMPLATES.title(),
+			...TEMPLATES.trailer(),
+			/**
+			 * @param {string} labelBody -
+			 * @param {string} labelTitle -
+			 * @param {string} labelTrailer -
+			 * @param {Map<string, number>} prefixes -
+			 */
+			render: (labelBody, labelTitle, labelTrailer, prefixes) =>
+				instance.table([
+					instance.rowTitle(labelTitle, prefixes.size + 1),
+					instance.rowBody(instance.emojiToColumns(prefixes), labelBody),
+					instance.rowTrailer(labelTrailer, prefixes.size),
+				]),
+		};
+		return instance;
+	},
+	titleTrailerStamped: () => {
+		const instance = {
+			...TEMPLATES.title(),
+			...TEMPLATES.trailerStamped(),
+			/**
+			 * @param {string} labelBody -
+			 * @param {string} labelTitle -
+			 * @param {string} labelTrailer -
+			 * @param {Map<string, number>} prefixes -
+			 */
+			render: (labelBody, labelTitle, labelTrailer, prefixes) =>
+				instance.table([
+					instance.rowTitle(labelTitle, prefixes.size + 1),
+					instance.rowBody(instance.emojiToColumns(prefixes), labelBody),
+					instance.rowTrailer(
+						labelTrailer.replace(/ \([0-9.]+\)$/, ""),
+						prefixes.size,
+					),
+					instance.rowTimestamp(
+						labelTrailer.match(/ \(([0-9.]+)\)$/)?.[1] ??
+							"TIMESTAMP_EXTRACTION_FAILED",
+						prefixes.size,
+					),
+				]),
+		};
+		return instance;
+	},
 };
 
 const prefixConfigs = new Map(Object.entries(PREFIXES));
@@ -810,7 +1059,7 @@ const svgPrefixes = content.replaceAll(
 			return substring;
 		}
 
-		const prefixes = prefixString.split("\u200B");
+		const prefixes = prefixString.split(LABEL_PREFIX_GROUP);
 		const usages = new Map();
 		for (const prefix of prefixes) {
 			if (prefix in PREFIXES) {
@@ -834,21 +1083,49 @@ const svgPrefixes = content.replaceAll(
 		if (usages.size === 0) {
 			return substring;
 		}
+
 		const labelBlocks = label.split('<BR ALIGN="CENTER"/><BR ALIGN="CENTER"/>');
+		const labelHasTitle = labelBlocks[0].includes(LABEL_TITLE_SEPARATOR);
+		const labelTitle = labelHasTitle
+			? labelBlocks[0].split(LABEL_TITLE_SEPARATOR)[0]
+			: undefined;
+		const labelBody = labelHasTitle
+			? labelBlocks[0]
+					.split(LABEL_TITLE_SEPARATOR)[1]
+					.replace(/^<BR ALIGN="CENTER"\/>/, "")
+			: labelBlocks[0];
+		const labelTrailer = labelBlocks.length === 2 ? labelBlocks[1] : undefined;
 		const labelDateSuffix = label.match(
 			/ \((?:\d\d\.)?(?:\d\d\.)?(?:\d\d\d\d)\)$/,
 		);
-		if (labelBlocks.length === 1) {
+
+		if (
+			labelTitle !== undefined &&
+			labelBody !== undefined &&
+			labelTrailer !== undefined
+		) {
 			const template =
-				labelDateSuffix !== null ? TEMPLATES.stamped() : TEMPLATES.standard();
-			return `<${template.render(label, usages)}>`;
+				labelDateSuffix !== null
+					? TEMPLATES.titleTrailerStamped()
+					: TEMPLATES.titleTrailer();
+			return `<${template.render(labelBody, labelTitle, labelTrailer, usages)}>`;
 		}
-		if (labelBlocks.length === 2) {
+		if (labelTitle !== undefined && labelBody !== undefined) {
+			const template =
+				labelDateSuffix !== null ? TEMPLATES.titleStamped() : TEMPLATES.title();
+			return `<${template.render(labelBody, labelTitle, usages)}>`;
+		}
+		if (labelTrailer !== undefined) {
 			const template =
 				labelDateSuffix !== null
 					? TEMPLATES.trailerStamped()
 					: TEMPLATES.trailer();
-			return `<${template.render(labelBlocks[0], labelBlocks[1], usages)}>`;
+			return `<${template.render(labelBody, labelTrailer, usages)}>`;
+		}
+		if (labelBody !== undefined) {
+			const template =
+				labelDateSuffix !== null ? TEMPLATES.stamped() : TEMPLATES.standard();
+			return `<${template.render(labelBody, usages)}>`;
 		}
 		throw new Error(`unexpected input with ${labelBlocks.length} blocks`);
 	},

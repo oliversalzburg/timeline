@@ -8,6 +8,7 @@ import {
 	FONT_SIZE_700MM_V07_BROWSE_PT,
 	FONT_SIZE_700MM_V07_READ_PT,
 	FONT_SIZE_700MM_V07_STUDY_PT,
+	LABEL_PREFIX_SEPARATOR,
 	TRANSPARENT,
 	UNICODE_DIED,
 	UNICODE_MARRIED,
@@ -371,7 +372,7 @@ export const renderUniverse = (
 			.values()
 			.reduce((_, timeline) => _ + (timeline?.meta.prefix ?? ""), "");
 
-		const label = `${0 < prefixes.length ? `${prefixes}\u00A0` : ""}${makeHtmlString(
+		const label = `${0 < prefixes.length ? `${prefixes}${LABEL_PREFIX_SEPARATOR}` : ""}${makeHtmlString(
 			`${title}`,
 		)}`;
 

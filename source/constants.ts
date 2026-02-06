@@ -8,6 +8,13 @@ export const MILLISECONDS = {
 	ONE_MONTH: (1000 * 60 * 60 * 24 * 7 * 52.25) / 12,
 };
 
+// Non-breaking space
+export const LABEL_PREFIX_SEPARATOR = "\u00A0";
+// Zero-width space
+export const LABEL_PREFIX_GROUP = "\u200B";
+// Zero-width no-break space
+export const LABEL_TITLE_SEPARATOR = "\uFEFF";
+
 export const FONT_NAME = "Carlito";
 // Carlito's cap to middle length scale.
 export const FONT_SCALE = 1.36;

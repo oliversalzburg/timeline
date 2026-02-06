@@ -1,6 +1,12 @@
 import { mustExist } from "@oliversalzburg/js-utils/data/nil.js";
 import { hashCyrb53 } from "@oliversalzburg/js-utils/data/string.js";
-import { FONT_NAME, FONT_SIZE_1000MM_V07_READ_PT } from "./constants.js";
+import {
+	FONT_NAME,
+	FONT_SIZE_1000MM_V07_READ_PT,
+	LABEL_PREFIX_GROUP,
+	LABEL_PREFIX_SEPARATOR,
+	LABEL_TITLE_SEPARATOR,
+} from "./constants.js";
 import {
 	dot,
 	type EdgeProperties,
@@ -76,13 +82,20 @@ export const renderEventAsNode = <
 			.values()
 			.filter((_) => typeof _.meta.prefix === "string")
 			.map((_) => _.meta.prefix),
-	].join("\u200B");
+	].join(LABEL_PREFIX_GROUP);
 	const dateString = options?.dateRenderer
-		? options.dateRenderer(timestamp)
+		? options.dateRenderer(timestamp) 
 		: new Date(timestamp).toDateString();
-	const label = `${0 < prefixes.length ? `${prefixes}\u00A0` : ""}${makeHtmlString(
-		`${title}`,
-	)}`;
+	const label =
+		"identity" in leader.meta &&
+		leader.meta.identity !== undefined &&
+		title.startsWith(leader.meta.identity.id)
+			? `${0 < prefixes.length ? `${prefixes}${LABEL_PREFIX_SEPARATOR}` : ""}${makeHtmlString(
+					`${title.replace(leader.meta.identity.id, `${leader.meta.identity.id}${LABEL_TITLE_SEPARATOR}`)}`,
+				)}`
+			: `${0 < prefixes.length ? `${prefixes}${LABEL_PREFIX_SEPARATOR}` : ""}${makeHtmlString(
+					`${title}`,
+				)}`;
 	const timePassedSinceOrigin = timestamp - origin.timestamp;
 	const timePassedSinceThen = options.now - timestamp;
 	const tooltip = [
