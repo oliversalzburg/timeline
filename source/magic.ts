@@ -41,7 +41,7 @@ export function trimUniverse<
 		allowParentHop: !originIsLocation,
 	});
 
-	const trimmedTimelines = timelines.filter((_) => {
+	const timelinesRetained = timelines.filter((_) => {
 		const born = isIdentityPerson(_)
 			? uncertainEventToDateDeterministic(
 					(_ as TimelineAncestryRenderer).meta.identity.born,
@@ -66,20 +66,31 @@ export function trimUniverse<
 					: true))
 		);
 	});
-	const timelinesPersonsRetained = trimmedTimelines.filter((timeline) =>
+	const timelinesTrimmed = timelines.filter(
+		(_) => !timelinesRetained.includes(_),
+	);
+	const timelinesRetainedPersons = timelinesRetained.filter((timeline) =>
 		isIdentityPerson(timeline),
 	) as Array<TimelineAncestryRenderer>;
-	const timelinesSolidRetained = trimmedTimelines.filter(
+	const timelinesRetainedSolid = timelinesRetained.filter(
 		(_) => isIdentityLocation(_) || isIdentityPeriod(_) || isIdentityPerson(_),
 	);
-	const graphTrimmed = new IdentityGraph(trimmedTimelines, originIdentityId);
+	const timelinesRetainedNonSolid = timelinesRetained.filter(
+		(_) =>
+			!isIdentityLocation(_) && !isIdentityPeriod(_) && !isIdentityPerson(_),
+	);
+	const graphTrimmed = new IdentityGraph(timelinesRetained, originIdentityId);
 	return {
 		graph: graphTrimmed,
 		hops,
-		timelines: trimmedTimelines,
-		solids: timelinesSolidRetained,
+		timelinesTrimmed,
+		timelinesRetained: timelinesRetained,
+		solidsRetained: timelinesRetainedSolid,
+		nonSolidsRetained: timelinesRetainedNonSolid,
+		persons: timelinesPersons,
 		personsCount: timelinesPersons.length,
-		personsRetainedCount: timelinesPersonsRetained.length,
+		personsRetained: timelinesRetainedPersons,
+		personsRetainedCount: timelinesRetainedPersons.length,
 	};
 }
 

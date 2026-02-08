@@ -7,6 +7,7 @@ import {
 	calculateWeights,
 	hopsToWeights,
 	load,
+	report,
 	trimUniverse,
 } from "../lib/index.js";
 
@@ -85,13 +86,14 @@ const weights = calculateWeights(
 	hopsToWeights(trim.solidsRetained, trim.hops),
 	mustExist(timelines.find((_) => _.meta.id === originTimelineId)),
 );
-process.stderr.write(
-	`weigh: Generated ${weights.length} weight frames for ${trim.solidsRetained.length} solids.\n`,
+const reportString = report(
+	trim.solidsRetained,
+	trim.nonSolidsRetained,
+	trim.timelinesTrimmed,
+	trim.hops,
+	hopsToWeights(trim.solidsRetained, trim.hops),
+	weights,
+	mustExist(timelines.find((_) => _.meta.id === originTimelineId)),
 );
 const output = createWriteStream(targetPath);
-for (const frame of weights) {
-	output.write(`${JSON.stringify(frame)}\n`);
-}
-process.stderr.write(
-	`weigh: Written ${weights.length} weight frames to target.\n`,
-);
+output.write(`${reportString}\n`);

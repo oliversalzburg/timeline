@@ -65,7 +65,8 @@ default: \
 	$(OUTPUT)/pedigree.pdf \
 	$(OUTPUT)/pedigree-analytics.pdf \
 	$(OUTPUT)/pedigree-public.pdf \
-	$(OUTPUT)/universe.html
+	$(OUTPUT)/universe.html \
+	$(OUTPUT)/universe.report
 
 lib/%.d.ts : lib/%.js
 lib/%.d.ts.map : lib/%.d.ts
@@ -114,6 +115,14 @@ $(IMAGES) &: contrib/prepare-emoji.js
 		"--origin=$<" \
 		"--target=$@"
 	@date +"%FT%T%z Generated weights '$@'."
+$(OUTPUT)/universe.report : $(OUTPUT_BUILD)/universe.report
+	@cp $< $@
+%/universe.report : %/universe.yml examples/report.js
+	@node --enable-source-maps examples/report.js \
+		$(UNIVERSE_FLAGS) \
+		"--origin=$<" \
+		"--target=$@"
+	@date +"%FT%T%z Generated report '$@'."
 
 %/pedigree-public.md : %/universe-public.yml %/pedigree-public-light.svg examples/pedigree.js
 	@node --enable-source-maps examples/pedigree.js \

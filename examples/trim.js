@@ -78,7 +78,7 @@ const trim = trimUniverse(
 );
 
 process.stderr.write(
-	`trim: Universe consists of ${timelines.length} timelines. The universe is trimmed to ${trim.timelines.length} total timelines. ${trim.personsRetainedCount} out of ${trim.personsCount} persons have been retained.\n`,
+	`trim: Universe consists of ${timelines.length} timelines. The universe is trimmed to ${trim.timelinesRetained.length} total timelines. ${trim.personsRetainedCount} out of ${trim.personsCount} persons have been retained.\n`,
 );
 
 let max = Number.NEGATIVE_INFINITY;
@@ -87,7 +87,7 @@ const output = createWriteStream(targetPath);
 for (const [id, hops] of [...trim.hops.entries()].sort(
 	([, a], [, b]) => a - b,
 )) {
-	const retained = trim.timelines.find(
+	const retained = trim.timelinesRetained.find(
 		(_) => /** @type {TimelineAncestryRenderer} */ (_).meta.identity?.id === id,
 	);
 	output.write(`${retained ? "" : "X"}${hops}\t${id}\n`);

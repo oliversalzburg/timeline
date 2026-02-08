@@ -115,13 +115,13 @@ const trim = trimUniverse(
 );
 
 process.stdout.write(
-	`Universe consists of ${timelines.length} timelines. The universe is trimmed to ${trim.timelines.length} total timelines. ${trim.personsRetainedCount} out of ${trim.personsCount} persons have been retained.\n`,
+	`Universe consists of ${timelines.length} timelines. The universe is trimmed to ${trim.timelinesRetained.length} total timelines. ${trim.personsRetainedCount} out of ${trim.personsCount} persons have been retained.\n`,
 );
 
 // Generate stylesheet.
 /** @type {RenderMode} */
 const theme = args.theme === "light" ? "light" : "dark";
-const styleSheet = new Styling(trim.timelines, theme).styles(
+const styleSheet = new Styling(trim.timelinesRetained, theme).styles(
 	trim.graph,
 	trim.hops,
 	maxHops,
@@ -142,7 +142,7 @@ const renderOptions = {
 	styleSheet,
 	theme,
 };
-const dotGraph = render(trim.timelines, renderOptions, trim.hops);
+const dotGraph = render(trim.timelinesRetained, renderOptions, trim.hops);
 
 // Calculate universe metrics.
 const metrics = new Map(
@@ -164,7 +164,7 @@ const globalLatest = metrics
 			previous < current.timeLatest ? current.timeLatest : previous,
 		0,
 	);
-const finalEntryCount = trim.timelines.reduce(
+const finalEntryCount = trim.timelinesRetained.reduce(
 	(previous, timeline) => previous + timeline.records.length,
 	0,
 );
@@ -188,7 +188,7 @@ const info = [
 	`${dIso} universal coordinated time (${NOW})`,
 	`Device self-identified as "${hostname()}" being operated by "${userInfo().username}".`,
 	`Universe has ${finalEntryCount} individual entries from ${data.size} timeline documents.`,
-	`The document window contains entries from ${trim.timelines.length} timeline documents.`,
+	`The document window contains entries from ${trim.timelinesRetained.length} timeline documents.`,
 	`Universe Horizon`,
 	`${dStart} - ${dEnd}`,
 	`Exported Document Window`,
