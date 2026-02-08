@@ -83,9 +83,39 @@ export function trimUniverse<
 	};
 }
 
+export function hopsToWeights<
+	TTimeline extends Timeline & { meta: { identity?: Identity } },
+>(timelines: Array<TTimeline>, hops: Map<string, number>) {
+	let rangeMax = Number.NEGATIVE_INFINITY;
+	for (const timeline of timelines) {
+		const distance =
+			hops.get(
+				mustExist(
+					timeline.meta.identity?.id,
+					`timeline has no identity: '${timeline.meta.id}'`,
+				),
+			) ?? Number.NEGATIVE_INFINITY;
+		if (rangeMax < distance) {
+			rangeMax = distance;
+		}
+	}
+	const weights = new Array<number>();
+	for (const timeline of timelines) {
+		const distance =
+			hops.get(
+				mustExist(
+					timeline.meta.identity?.id,
+					`timeline has no identity: '${timeline.meta.id}'`,
+				),
+			) ?? Number.NEGATIVE_INFINITY;
+		weights.push(Number.isFinite(distance) ? rangeMax - distance : 0);
+	}
+	return weights;
+}
+
 export function calculateWeights<
 	TTimeline extends Timeline & { meta: { identity?: Identity } },
->(timelines: Array<TTimeline>, origin: TTimeline) {
+>(timelines: Array<TTimeline>, baseline: Array<number>, origin: TTimeline) {
 	const frames = buildFrames(timelines);
 	const renderPlan = [...frames.entries()].sort(([a], [b]) => a - b);
 	const weightCache = new Array<Array<number>>();
@@ -104,7 +134,7 @@ export function calculateWeights<
 				++timelineIndex
 			) {
 				weightFrame[timelineIndex] += contributors.has(timelines[timelineIndex])
-					? 1
+					? baseline[timelineIndex]
 					: 0;
 			}
 		}

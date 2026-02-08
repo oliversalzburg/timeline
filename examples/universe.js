@@ -8,6 +8,7 @@ import {
 	analyze,
 	load,
 	render,
+	renderDateDDMMYYYY_de_DE,
 	Styling,
 	trimUniverse,
 	uncertainEventToDateDeterministic,
@@ -44,16 +45,6 @@ if (typeof args.origin !== "string") {
 	process.stderr.write("Missing --origin.\n");
 	process.exit(1);
 }
-
-const rawData = readFileSync(args.origin, "utf-8").split("\n---\n");
-const originTimelineId = parse(rawData[0]).id;
-if (typeof originTimelineId !== "string") {
-	process.stdout.write(
-		`Unable to parse id of origin document '${args.origin}'.\n`,
-	);
-	process.exit(1);
-}
-
 const targetPath = typeof args.target === "string" ? args.target : undefined;
 if (targetPath === undefined) {
 	process.stdout.write("No --target filename provided.\n");
@@ -72,7 +63,39 @@ if (args.segment === true && !targetPath.endsWith(".gvus")) {
 	process.exit(1);
 }
 
+const maxHops =
+	typeof args["max-identity-distance"] === "string"
+		? Number(args["max-identity-distance"])
+		: Number.POSITIVE_INFINITY;
+const minIdentityBorn =
+	typeof args["min-identity-born"] === "string"
+		? new Date(args["min-identity-born"]).valueOf()
+		: undefined;
+const skipBefore =
+	typeof args["skip-before"] === "string"
+		? new Date(args["skip-before"]).valueOf()
+		: undefined;
+const skipAfter =
+	typeof args["skip-after"] === "string"
+		? new Date(args["skip-after"]).valueOf()
+		: undefined;
+const segment =
+	typeof args.segment === "string"
+		? Number(args.segment) !== 0
+			? Number(args.segment)
+			: undefined
+		: undefined;
+
 // Load timeline data.
+const rawData = readFileSync(args.origin, "utf-8").split("\n---\n");
+const originTimelineId = parse(rawData[0]).id;
+if (typeof originTimelineId !== "string") {
+	process.stdout.write(
+		`Unable to parse id of origin document '${args.origin}'.\n`,
+	);
+	process.exit(1);
+}
+
 /** @type {Map<string, TimelineAncestryRenderer | TimelineReferenceRenderer>} */
 const data = new Map(
 	rawData.map((data) => {
@@ -82,29 +105,20 @@ const data = new Map(
 );
 
 /** @type {Array<TimelineAncestryRenderer | TimelineReferenceRenderer>} */
-const finalTimelines = [...data.entries().map(([_, timeline]) => timeline)];
-
-const maxHops =
-	typeof args["max-identity-distance"] === "string"
-		? Number(args["max-identity-distance"])
-		: Number.POSITIVE_INFINITY;
-const minIdentityBorn =
-	typeof args["min-identity-born"] === "string"
-		? new Date(args["min-identity-born"]).valueOf()
-		: undefined;
+const timelines = [...data.entries().map(([_, timeline]) => timeline)];
 
 const trim = trimUniverse(
-	finalTimelines,
-	mustExist(finalTimelines.find((_) => _.meta.id === originTimelineId)),
+	timelines,
+	mustExist(timelines.find((_) => _.meta.id === originTimelineId)),
 	maxHops,
 	minIdentityBorn,
 );
 
 process.stdout.write(
-	`Universe consists of ${finalTimelines.length} timelines. The universe is trimmed to ${trim.timelines.length} total timelines. ${trim.personsRetainedCount} out of ${trim.personsCount} persons have been retained.\n`,
+	`Universe consists of ${timelines.length} timelines. The universe is trimmed to ${trim.timelines.length} total timelines. ${trim.personsRetainedCount} out of ${trim.personsCount} persons have been retained.\n`,
 );
 
-// Generate stylesheet for entire universe.
+// Generate stylesheet.
 /** @type {RenderMode} */
 const theme = args.theme === "light" ? "light" : "dark";
 const styleSheet = new Styling(trim.timelines, theme).styles(
@@ -117,28 +131,14 @@ const styleSheet = new Styling(trim.timelines, theme).styles(
 /** @type {RendererOptions} */
 const renderOptions = {
 	debug: Boolean(args.debug),
-	dateRenderer: (/** @type {number} */ date) => {
-		const _ = new Date(date);
-		return `${["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"][_.getDay()]}, ${_.getDate().toFixed(0).padStart(2, "0")}.${(_.getMonth() + 1).toFixed(0).padStart(2, "0")}.${_.getFullYear()}`;
-	},
+	dateRenderer: renderDateDDMMYYYY_de_DE,
 	now: NOW,
 	origin: originTimelineId,
 	rendererAnalytics: args.analytics === true ? "enabled" : "disabled",
 	rendererAnonymization: args.anonymize === true ? "enabled" : "disabled",
-	segment:
-		typeof args.segment === "string"
-			? Number(args.segment) !== 0
-				? Number(args.segment)
-				: undefined
-			: undefined,
-	skipBefore:
-		typeof args["skip-before"] === "string"
-			? new Date(args["skip-before"]).valueOf()
-			: undefined,
-	skipAfter:
-		typeof args["skip-after"] === "string"
-			? new Date(args["skip-after"]).valueOf()
-			: undefined,
+	segment,
+	skipBefore,
+	skipAfter,
 	styleSheet,
 	theme,
 };

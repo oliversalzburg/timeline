@@ -101,8 +101,16 @@ $(IMAGES) &: contrib/prepare-emoji.js
 		"--root=$(DATA_ROOT)" \
 		"--target=$@"
 	@date +"%FT%T%z Universe generated '$@'."
-%/universe.weights : %/universe.yml
+
+%/universe.trim : %/universe.yml examples/trim.js
+	@node --enable-source-maps examples/trim.js \
+		$(UNIVERSE_FLAGS) \
+		"--origin=$<" \
+		"--target=$@"
+	@date +"%FT%T%z Generated trim '$@'."
+%/universe.weights : %/universe.yml examples/weigh.js
 	@node --enable-source-maps examples/weigh.js \
+		$(UNIVERSE_FLAGS) \
 		"--origin=$<" \
 		"--target=$@"
 	@date +"%FT%T%z Generated weights '$@'."

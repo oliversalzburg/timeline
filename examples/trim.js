@@ -3,12 +3,7 @@
 import { createWriteStream, readFileSync } from "node:fs";
 import { mustExist } from "@oliversalzburg/js-utils/data/nil.js";
 import { parse } from "yaml";
-import {
-	calculateWeights,
-	hopsToWeights,
-	load,
-	trimUniverse,
-} from "../lib/index.js";
+import { load, trimUniverse } from "../lib/index.js";
 
 /** @import { TimelineAncestryRenderer, TimelineReferenceRenderer } from "../lib/types.js" */
 
@@ -63,6 +58,7 @@ if (typeof originTimelineId !== "string") {
 	process.exit(1);
 }
 
+// Load timeline data.
 /** @type {Map<string, TimelineAncestryRenderer | TimelineReferenceRenderer>} */
 const data = new Map(
 	rawData.map((data) => {
@@ -80,18 +76,29 @@ const trim = trimUniverse(
 	maxHops,
 	minIdentityBorn,
 );
-const weights = calculateWeights(
-	trim.solids,
-	hopsToWeights(trim.solids, trim.hops),
-	mustExist(timelines.find((_) => _.meta.id === originTimelineId)),
-);
+
 process.stderr.write(
-	`weigh: Generated ${weights.length} weight frames for ${trim.solids.length} solids.\n`,
+	`trim: Universe consists of ${timelines.length} timelines. The universe is trimmed to ${trim.timelines.length} total timelines. ${trim.personsRetainedCount} out of ${trim.personsCount} persons have been retained.\n`,
 );
+
+let max = Number.NEGATIVE_INFINITY;
+let maxRetained = Number.NEGATIVE_INFINITY;
 const output = createWriteStream(targetPath);
-for (const frame of weights) {
-	output.write(`${JSON.stringify(frame)}\n`);
+for (const [id, hops] of [...trim.hops.entries()].sort(
+	([, a], [, b]) => a - b,
+)) {
+	const retained = trim.timelines.find(
+		(_) => /** @type {TimelineAncestryRenderer} */ (_).meta.identity?.id === id,
+	);
+	output.write(`${retained ? "" : "X"}${hops}\t${id}\n`);
+	if (Number.isFinite(hops)) {
+		max = Math.max(max, hops);
+	}
+	if (Number.isFinite(hops) && retained) {
+		maxRetained = Math.max(maxRetained, hops);
+	}
 }
+
 process.stderr.write(
-	`weigh: Written ${weights.length} weight frames to target.\n`,
+	`trim: Deepest global branch is ${max} hops long. Deepest retainer at hop ${maxRetained}.\n`,
 );

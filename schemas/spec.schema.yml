@@ -160,12 +160,32 @@ definitions:
         items:
           anyOf:
             - title: Link
+              description: |-
+                Links help to retain important identities during graph trimming.
+
+                When identities have no (known) blood relationship, they are assumed to be realistically
+                related in the 15th to 30th degree due to pedigree collapse. For simplicity, we value
+                them as +Infinity instead.
+
+                The most common, and most useful link type is probably `sibling`.
               type: object
               required:
                 - linkedTo
               properties:
                 linkedTo:
                   type: string
+                like:
+                  type: string
+                  enum:
+                    - ego
+                    - parent
+                    - sibling
+                    - child
+                    - grandparent
+                    - grandchild
+                    - cousin
+                    - cousinX2
+                    - cousinX3
             - title: Marriage
               type: object
               required:

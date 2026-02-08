@@ -48,6 +48,11 @@ export const renderMilliseconds = (ms: number): string => {
 		: `${counts[1]} Tag${counts[1] !== 1 ? "e" : ""}`;
 };
 
+export const renderDateDDMMYYYY_de_DE = (date: number) => {
+	const _ = new Date(date);
+	return `${["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"][_.getDay()]}, ${_.getDate().toFixed(0).padStart(2, "0")}.${(_.getMonth() + 1).toFixed(0).padStart(2, "0")}.${_.getFullYear()}`;
+};
+
 /**
  * Determine the rank of a timeline.
  * NOT to be confused with ranks in a dot graph.
