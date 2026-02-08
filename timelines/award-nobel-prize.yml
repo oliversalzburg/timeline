@@ -4,7 +4,7 @@ prefix: 🏅
 private: false
 rank: 1
 sources:
-  - 2025-07-11: https://en.wikipedia.org/wiki/List_of_Nobel_laureates_in_Physiology_or_Medicine
+  - https://en.wikipedia.org/wiki/List_of_Nobel_laureates_in_Physiology_or_Medicine
 timeline:
   1930-12-10:
     - title: |-
