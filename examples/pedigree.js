@@ -4,14 +4,16 @@ import { createWriteStream, readFileSync } from "node:fs";
 import { mustExist } from "@oliversalzburg/js-utils/data/nil.js";
 import { parse } from "yaml";
 import {
-	Graph,
+	anonymize,
+	IdentityGraph,
 	isIdentityLocation,
 	isIdentityPerson,
-} from "../lib/genealogy.js";
-import { load } from "../lib/loader.js";
-import { anonymize, sort, uniquify } from "../lib/operator.js";
+	load,
+	Styling,
+	sort,
+	uniquify,
+} from "../lib/index.js";
 import { renderReport, renderSimple } from "../lib/renderer-identity.js";
-import { Styling } from "../lib/style.js";
 
 /** @import {RendererOptions} from "../lib/renderer.js" */
 
@@ -114,7 +116,7 @@ const originIdentityId = mustExist(
 	data.get(originId)?.meta.identity?.id,
 	`Empty or invalid identity for origin ID '${originId}'`,
 );
-const graph = new Graph(finalTimelines, originIdentityId);
+const graph = new IdentityGraph(finalTimelines, originIdentityId);
 
 // Generate stylesheet for entire universe.
 /** @type {import("../lib/types.js").RenderMode} */

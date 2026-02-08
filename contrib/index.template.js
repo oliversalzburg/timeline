@@ -22,7 +22,7 @@ const Inputs = {
 	AXIS_RIGHT_Y: 3,
 };
 
-/** @type {import("../lib/types.js").UniverseResultMetadataNG} */
+/** @type {import("../lib/types.js").UniverseResultMetadata} */
 const DATA = [[], [], ["", "", ""]];
 
 const main = async function main() {

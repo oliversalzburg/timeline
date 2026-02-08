@@ -25,7 +25,7 @@ import {
 	type RankDir,
 } from "./dot.js";
 import {
-	Graph,
+	IdentityGraph,
 	uncertainEventToDateDeterministic,
 	uncertainEventToDateString,
 	uncertainEventToLocationString,
@@ -46,7 +46,7 @@ export const renderSimple = (
 ) => {
 	const depth = 4;
 
-	const graph = new Graph(timelines, options.origin);
+	const graph = new IdentityGraph(timelines, options.origin);
 	const hops =
 		options.origin !== undefined
 			? graph.calculateHopsFrom(options.origin, {
@@ -222,7 +222,7 @@ export const renderUniverse = (
 ) => {
 	const depth = 100;
 
-	const graph = new Graph(timelines, options.origin);
+	const graph = new IdentityGraph(timelines, options.origin);
 	const hops =
 		options.origin !== undefined
 			? graph.calculateHopsFrom(options.origin, {
@@ -497,7 +497,7 @@ export const renderReport = (
 	timelines: Array<TimelineAncestryRenderer>,
 	options: RendererOptions & { pedigreeChartPath?: string },
 ) => {
-	const graph = new Graph(timelines, options.origin);
+	const graph = new IdentityGraph(timelines, options.origin);
 	const hops =
 		options.origin !== undefined
 			? graph.calculateHopsFrom(options.origin, {

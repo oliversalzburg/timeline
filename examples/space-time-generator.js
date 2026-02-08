@@ -4,25 +4,23 @@ import { createWriteStream, readdirSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { isNil, mustExist } from "@oliversalzburg/js-utils/data/nil.js";
 import { parse } from "yaml";
-import { MILLISECONDS } from "../lib/constants.js";
-import {
-	Graph,
-	uncertainEventToDateArtistic,
-	uncertainEventToDateDeterministic,
-} from "../lib/genealogy.js";
-import { recurringYearly } from "../lib/generator.js";
-import { load } from "../lib/loader.js";
 import {
 	anonymize,
 	deduplicateRecords,
+	IdentityGraph,
+	load,
+	MILLISECONDS,
 	map,
 	mergeDuringPeriod,
+	recurringYearly,
 	roundDateToDay,
+	serialize,
 	sort,
 	sortRecords,
+	uncertainEventToDateArtistic,
+	uncertainEventToDateDeterministic,
 	uniquifyRecords,
-} from "../lib/operator.js";
-import { serialize } from "../lib/serializer.js";
+} from "../lib/index.js";
 
 // Parse command line arguments.
 const args = process.argv
@@ -100,7 +98,7 @@ if (originTimeline === undefined) {
 }
 
 if (args.anonymize) {
-	const graph = new Graph(
+	const graph = new IdentityGraph(
 		[originTimeline, ...allTimelines],
 		"invalid",
 	).anonymize(seed);
@@ -218,7 +216,7 @@ const fill = (timeline) => {
 };
 /**
  * @param timeline {TimelineAncestryRenderer | TimelineReferenceRenderer} -
- * @param graph {Graph<TimelineAncestryRenderer | TimelineReferenceRenderer>}
+ * @param graph {IdentityGraph<TimelineAncestryRenderer | TimelineReferenceRenderer>}
  */
 const fillOthers = (timeline, graph) => {
 	if ("identity" in timeline.meta === false) {
@@ -289,7 +287,7 @@ const finalTimelines = filledTimelines.map((_) =>
 	),
 );
 
-const graph = new Graph(finalTimelines, "invalid");
+const graph = new IdentityGraph(finalTimelines, "invalid");
 graph.timelines.forEach((_) => {
 	fillOthers(_, graph);
 });

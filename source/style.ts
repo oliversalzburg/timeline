@@ -3,7 +3,7 @@ import { hslPalette } from "@oliversalzburg/js-utils/graphics/palette.js";
 import { TRANSPARENT } from "./constants.js";
 import type { EdgeStyle, NodeStyle, Shape } from "./dot.js";
 import {
-	type Graph,
+	type IdentityGraph,
 	isIdentityLocation,
 	isIdentityMedia,
 	isIdentityPeriod,
@@ -128,7 +128,7 @@ export class Styling<
 	}
 
 	styles(
-		identityGraph: Graph<TTimeline>,
+		identityGraph: IdentityGraph<TTimeline>,
 		hops: Map<string, number>,
 		hopsMax?: number,
 	): Map<string, Style> {

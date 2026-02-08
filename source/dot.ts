@@ -314,12 +314,7 @@ const makePropertyString = (
 				}
 				return `${key}=<${_}>`;
 			}
-			if (
-				_?.toString().includes(" ") ||
-				_?.toString().includes("#") ||
-				_?.toString().includes("-") ||
-				_?.toString().includes(",")
-			) {
+			if (_?.toString().match(/[ #:/,-]/)) {
 				return `${key}="${_}"`;
 			}
 			return `${key}=${_}`;

@@ -4,22 +4,17 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { hostname, userInfo } from "node:os";
 import { mustExist } from "@oliversalzburg/js-utils/data/nil.js";
 import { parse } from "yaml";
-import { analyze } from "../lib/analyzer.js";
 import {
-	Graph,
-	isIdentityLocation,
-	isIdentityMedia,
-	isIdentityPeriod,
-	isIdentityPerson,
-	isNotIdentityTimeline,
+	analyze,
+	load,
+	render,
+	Styling,
+	trimUniverse,
 	uncertainEventToDateDeterministic,
-} from "../lib/genealogy.js";
-import { load } from "../lib/loader.js";
-import { render } from "../lib/renderer-stream.js";
-import { Styling } from "../lib/style.js";
+} from "../lib/index.js";
 
 /** @import {RendererOptions} from "../lib/renderer.js" */
-/** @import {RenderResultMetadata, UniverseResultMetadataNG, TimelineAncestryRenderer, TimelineReferenceRenderer } from "../lib/types.js" */
+/** @import {UniverseResultMetadata, TimelineAncestryRenderer, TimelineReferenceRenderer, RenderMode } from "../lib/types.js" */
 
 const NOW = Date.now();
 
@@ -89,16 +84,6 @@ const data = new Map(
 /** @type {Array<TimelineAncestryRenderer | TimelineReferenceRenderer>} */
 const finalTimelines = [...data.entries().map(([_, timeline]) => timeline)];
 
-const timelinesPersons = /** @type {Array<TimelineAncestryRenderer>} */ (
-	finalTimelines.filter(
-		(timeline) => isIdentityPerson(timeline) || isIdentityLocation(timeline),
-	)
-);
-const originIdentityId = mustExist(
-	timelinesPersons.find((_) => _.meta.id === originTimelineId),
-	`Unable to determine identity from origin timeline '${originTimelineId}'.`,
-).meta.identity.id;
-
 const maxHops =
 	typeof args["max-identity-distance"] === "string"
 		? Number(args["max-identity-distance"])
@@ -107,57 +92,24 @@ const minIdentityBorn =
 	typeof args["min-identity-born"] === "string"
 		? new Date(args["min-identity-born"]).valueOf()
 		: undefined;
-const graphUniverse = new Graph(timelinesPersons, originIdentityId);
-const originIsLocation = isIdentityLocation(
-	graphUniverse.timelineOf(originIdentityId),
-);
-const hops = graphUniverse.calculateHopsFrom(originIdentityId, {
-	allowChildHop: !originIsLocation,
-	allowEventHop: originIsLocation,
-	allowLinkHop: true,
-	allowLocationHop: originIsLocation,
-	allowMarriageHop: false,
-	allowParentHop: !originIsLocation,
-});
-const trimmedTimelines = finalTimelines.filter((_) => {
-	const born = isIdentityPerson(_)
-		? uncertainEventToDateDeterministic(
-				/** @type {import("../lib/types.js").TimelineAncestryRenderer} */ (_)
-					.meta.identity.born,
-			)?.valueOf()
-		: undefined;
-	const distance = isIdentityPerson(_)
-		? (hops.get(
-				/** @type {import("../lib/types.js").TimelineAncestryRenderer} */ (_)
-					.meta.identity.id,
-			) ?? Number.POSITIVE_INFINITY)
-		: Number.POSITIVE_INFINITY;
 
-	return (
-		isNotIdentityTimeline(_) ||
-		isIdentityLocation(_) ||
-		isIdentityPeriod(_) ||
-		isIdentityMedia(_) ||
-		(isIdentityPerson(_) &&
-			Number.isFinite(distance) &&
-			distance <= maxHops &&
-			(minIdentityBorn !== undefined && born !== undefined
-				? minIdentityBorn <= born
-				: true))
-	);
-});
-const graphTrimmed = new Graph(trimmedTimelines, originIdentityId);
+const trim = trimUniverse(
+	finalTimelines,
+	mustExist(finalTimelines.find((_) => _.meta.id === originTimelineId)),
+	maxHops,
+	minIdentityBorn,
+);
 
 process.stdout.write(
-	`Universe consists of ${finalTimelines.length} timelines, with ${timelinesPersons.length} identifying a person. The universe is trimmed to ${trimmedTimelines.length} total timelines.\n`,
+	`Universe consists of ${finalTimelines.length} timelines. The universe is trimmed to ${trim.timelines.length} total timelines. ${trim.personsRetainedCount} out of ${trim.personsCount} persons have been retained.\n`,
 );
 
 // Generate stylesheet for entire universe.
-/** @type {import("../lib/types.js").RenderMode} */
+/** @type {RenderMode} */
 const theme = args.theme === "light" ? "light" : "dark";
-const styleSheet = new Styling(trimmedTimelines, theme).styles(
-	graphTrimmed,
-	hops,
+const styleSheet = new Styling(trim.timelines, theme).styles(
+	trim.graph,
+	trim.hops,
 	maxHops,
 );
 
@@ -170,7 +122,7 @@ const renderOptions = {
 		return `${["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"][_.getDay()]}, ${_.getDate().toFixed(0).padStart(2, "0")}.${(_.getMonth() + 1).toFixed(0).padStart(2, "0")}.${_.getFullYear()}`;
 	},
 	now: NOW,
-	origin: originIdentityId,
+	origin: originTimelineId,
 	rendererAnalytics: args.analytics === true ? "enabled" : "disabled",
 	rendererAnonymization: args.anonymize === true ? "enabled" : "disabled",
 	segment:
@@ -190,7 +142,7 @@ const renderOptions = {
 	styleSheet,
 	theme,
 };
-const dotGraph = render(trimmedTimelines, renderOptions, hops);
+const dotGraph = render(trim.timelines, renderOptions, trim.hops);
 
 // Calculate universe metrics.
 const metrics = new Map(
@@ -212,7 +164,7 @@ const globalLatest = metrics
 			previous < current.timeLatest ? current.timeLatest : previous,
 		0,
 	);
-const finalEntryCount = trimmedTimelines.reduce(
+const finalEntryCount = trim.timelines.reduce(
 	(previous, timeline) => previous + timeline.records.length,
 	0,
 );
@@ -236,7 +188,7 @@ const info = [
 	`${dIso} universal coordinated time (${NOW})`,
 	`Device self-identified as "${hostname()}" being operated by "${userInfo().username}".`,
 	`Universe has ${finalEntryCount} individual entries from ${data.size} timeline documents.`,
-	`The document window contains entries from ${trimmedTimelines.length} timeline documents.`,
+	`The document window contains entries from ${trim.timelines.length} timeline documents.`,
 	`Universe Horizon`,
 	`${dStart} - ${dEnd}`,
 	`Exported Document Window`,
@@ -244,12 +196,12 @@ const info = [
 ];
 const infoDebug = ["intentionally left blank"];
 
-const resolvedIdentitiy = graphTrimmed.resolveIdentity();
+const resolvedIdentitiy = trim.graph.resolveIdentity();
 const originBirthDate =
 	uncertainEventToDateDeterministic(
 		resolvedIdentitiy?.born ?? resolvedIdentitiy?.established,
 	) ?? new Date();
-const metadata = /** @type {UniverseResultMetadataNG} */ ([
+const metadata = /** @type {UniverseResultMetadata} */ ([
 	[
 		...dotGraph.events.entries().flatMap(([timestamp, eventTitles]) =>
 			eventTitles.values().map(
@@ -271,8 +223,8 @@ const metadata = /** @type {UniverseResultMetadataNG} */ ([
 	],
 	[...dotGraph.timelines.entries().map(([_timeline, metadata]) => metadata)],
 	[
-		mustExist(graphTrimmed.resolveIdentity()).name ??
-			mustExist(graphTrimmed.resolveIdentity()).id,
+		mustExist(trim.graph.resolveIdentity()).name ??
+			mustExist(trim.graph.resolveIdentity()).id,
 		`Z${originBirthDate.getFullYear().toFixed().padStart(4, "0")}-${(originBirthDate.getMonth() + 1).toFixed().padStart(2, "0")}-${originBirthDate.getDate().toFixed().padStart(2, "0")}-0`,
 		dotGraph.origin[0],
 	],

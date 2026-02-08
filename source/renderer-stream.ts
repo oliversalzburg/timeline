@@ -22,10 +22,15 @@ import {
 	uncertainEventToDateString,
 } from "./genealogy.js";
 import { matchLuminance, rgbaToHexString } from "./palette.js";
-import { type RendererOptions, rank, renderMilliseconds } from "./renderer.js";
+import {
+	buildFrames,
+	type RendererOptions,
+	rank,
+	renderMilliseconds,
+} from "./renderer.js";
 import { STYLE_TRANSFER_MARKER, type Style } from "./style.js";
 import type {
-	RendererResultMetadataNG,
+	RendererResultMetadata,
 	RGBATuple,
 	TimelineAncestryRenderer,
 	TimelineEntry,
@@ -84,7 +89,7 @@ export const renderEventAsNode = <
 			.map((_) => _.meta.prefix),
 	].join(LABEL_PREFIX_GROUP);
 	const dateString = options?.dateRenderer
-		? options.dateRenderer(timestamp) 
+		? options.dateRenderer(timestamp)
 		: new Date(timestamp).toDateString();
 	const label =
 		"identity" in leader.meta &&
@@ -241,7 +246,7 @@ export const render = <
 	timelines: Array<TTimelines>,
 	options: RendererOptions,
 	hops?: Map<string, number> | undefined,
-): RendererResultMetadataNG<TTimelines> => {
+): RendererResultMetadata<TTimelines> => {
 	const dotGraph = (d = dot()) => {
 		const fontsize = FONT_SIZE_1000MM_V07_READ_PT;
 		d.raw("digraph {");
@@ -320,36 +325,12 @@ export const render = <
 		idMesh.set(timeline, new Array<string>());
 	}
 
+	// Segment universe into frames
+	const frames = buildFrames(timelines);
+
 	// Metadata to collect during rendering process
 	const allEventsInGraph = new Map<number, Set<[string, string]>>();
 	const allEventContributors = new Map<string, Set<TTimelines>>();
-
-	// Segment universe into frames
-	type Frame = {
-		readonly events: Map<string, Set<TTimelines>>;
-		readonly records: Map<TTimelines, Array<TimelineEntry>>;
-		readonly timelines: Set<TTimelines>;
-	};
-	const frames = new Map<number, Frame>();
-	for (const timeline of timelines) {
-		for (const [timestamp, entry] of timeline.records) {
-			const frame: Frame = frames.get(timestamp) ?? {
-				events: new Map<string, Set<TTimelines>>(),
-				records: new Map<TTimelines, Array<TimelineEntry>>(),
-				timelines: new Set<TTimelines>(),
-			};
-			const events = frame.events.get(entry.title) ?? new Set<TTimelines>();
-			events.add(timeline);
-			frame.events.set(entry.title, events);
-
-			const records = frame.records.get(timeline) ?? new Array<TimelineEntry>();
-			records.push(entry);
-			frame.records.set(timeline, records);
-
-			frame.timelines.add(timeline);
-			frames.set(timestamp, frame);
-		}
-	}
 
 	// Render frames
 	const renderPlan = [...frames.entries()].sort(([a], [b]) => a - b);
@@ -497,7 +478,18 @@ export const render = <
 				leader,
 			);
 			const id = `Z${date.getFullYear().toFixed().padStart(4, "0")}-${(date.getMonth() + 1).toFixed().padStart(2, "0")}-${date.getDate().toFixed().padStart(2, "0")}-${eventIndex++}`;
-			d.node(eventTitle, { ...nodeProperties, id });
+			d.node(eventTitle, {
+				...nodeProperties,
+				id,
+				comment: [
+					...eventTimelines
+						.values()
+						.map(
+							(_) =>
+								`${_.meta.id ?? classes.get(_.meta.id)}:${ranks.get(_.meta.id)}`,
+						),
+				].join(", "),
+			});
 			mustExist(allEventsInGraph.get(timestamp)).add([id, eventTitle]);
 			allEventContributors.set(eventTitle, eventTimelines);
 

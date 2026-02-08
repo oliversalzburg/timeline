@@ -4,6 +4,7 @@ import type { Style } from "./style.js";
 import type {
 	RenderMode,
 	TimelineAncestryRenderer,
+	TimelineEntry,
 	TimelineReferenceRenderer,
 } from "./types.js";
 
@@ -12,6 +13,11 @@ export interface RendererOptions {
 	styleSheet: Map<string, Style>;
 	debug?: boolean;
 	now: number;
+	/**
+	 * The ID of the timeline that serves as the origin for the rendering.
+	 * This is NOT the ID of the _identity_ of the timeline, but the ID of the
+	 * timeline itself.
+	 */
 	origin: string;
 	segment?: number | undefined;
 	skipAfter?: number | undefined;
@@ -100,12 +106,44 @@ export interface RenderPlanSegment<
 	weights: Map<TTimelines, number>;
 }
 
-export interface RendererResultMetadata<
+export interface Frame<
 	TTimelines extends TimelineReferenceRenderer | TimelineAncestryRenderer =
 		| TimelineReferenceRenderer
 		| TimelineAncestryRenderer,
 > {
-	timelineClasses: Map<TTimelines, string>;
-	timelineIds: Map<TTimelines, Array<string>>;
-	graph: Array<{ graph: string; start: number; end: number }>;
+	readonly events: Map<string, Set<TTimelines>>;
+	readonly records: Map<TTimelines, Array<TimelineEntry>>;
+	readonly timelines: Set<TTimelines>;
+}
+
+/**
+ * Segment a universe into frames.
+ */
+export function buildFrames<
+	TTimelines extends TimelineReferenceRenderer | TimelineAncestryRenderer =
+		| TimelineReferenceRenderer
+		| TimelineAncestryRenderer,
+>(timelines: Array<TTimelines>) {
+	const frames = new Map<number, Frame<TTimelines>>();
+	for (const timeline of timelines) {
+		for (const [timestamp, entry] of timeline.records) {
+			const frame: Frame<TTimelines> = frames.get(timestamp) ?? {
+				events: new Map<string, Set<TTimelines>>(),
+				records: new Map<TTimelines, Array<TimelineEntry>>(),
+				timelines: new Set<TTimelines>(),
+			};
+			const events = frame.events.get(entry.title) ?? new Set<TTimelines>();
+			events.add(timeline);
+			frame.events.set(entry.title, events);
+
+			const records = frame.records.get(timeline) ?? new Array<TimelineEntry>();
+			records.push(entry);
+			frame.records.set(timeline, records);
+
+			frame.timelines.add(timeline);
+			frames.set(timestamp, frame);
+		}
+	}
+
+	return frames;
 }

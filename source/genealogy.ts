@@ -150,7 +150,7 @@ export const uncertainEventToDateString = (
 
 export const uncertainEventToLocationString = (
 	input?: Event | null,
-	graph?: Graph<TimelineAncestryRenderer>,
+	graph?: IdentityGraph<TimelineAncestryRenderer>,
 ) => {
 	if (isNil(input)) {
 		return undefined;
@@ -185,6 +185,26 @@ export const isNotIdentityTimeline = (timeline?: Timeline): boolean => {
 		return true;
 	}
 	return !("identity" in timeline.meta);
+};
+export const isIdentityPlain = (identity?: Identity | Timeline): boolean => {
+	if (isNil(identity)) {
+		return false;
+	}
+	if ("meta" in identity) {
+		if ("identity" in identity.meta) {
+			const realIdentity = identity.meta.identity as Identity;
+			return isIdentityPlain(realIdentity);
+		}
+		return false;
+	}
+	return (
+		"id" in identity &&
+		identity.id !== undefined &&
+		!isIdentityLocation(identity) &&
+		!isIdentityMedia(identity) &&
+		!isIdentityPeriod(identity) &&
+		!isIdentityPerson(identity)
+	);
 };
 export const isIdentityPerson = (identity?: Identity | Timeline): boolean => {
 	if (isNil(identity)) {
@@ -245,7 +265,7 @@ export const isIdentityMedia = (identity?: Identity | Timeline): boolean => {
 	);
 };
 
-export class Graph<
+export class IdentityGraph<
 	TTimeline extends Timeline & { meta: { identity?: Identity } },
 > {
 	constructor(
@@ -751,7 +771,7 @@ export class Graph<
 					}
 				: timeline,
 		);
-		return new Graph(newTimelines, this.origin);
+		return new IdentityGraph(newTimelines, this.origin);
 	}
 
 	anonymize(seed: string) {
@@ -819,6 +839,6 @@ export class Graph<
 				},
 			});
 		}
-		return new Graph(result, getName(this.origin));
+		return new IdentityGraph(result, getName(this.origin));
 	}
 }

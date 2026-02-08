@@ -149,7 +149,7 @@ export type RenderResultMetadata = [
 	 */
 	Array<[number, number]>,
 ];
-export interface RendererResultMetadataNG<
+export interface RendererResultMetadata<
 	TTimelines extends TimelineReferenceRenderer | TimelineAncestryRenderer =
 		| TimelineReferenceRenderer
 		| TimelineAncestryRenderer,
@@ -160,7 +160,7 @@ export interface RendererResultMetadataNG<
 	origin: TimelineMetadata;
 	graph: Array<{ graph: string; start: number; end: number }>;
 }
-export type UniverseResultMetadataNG = [
+export type UniverseResultMetadata = [
 	/**
 	 * Key-value pairs of all global events IDs, and their title.
 	 * And Ordered list of events contributors.

@@ -11,14 +11,17 @@ definitions:
     properties:
       title:
         title: Title
+        description: Description of this event.
         type: string
       notes:
         title: Notes
+        description: Additional notes that are not used anywhere.
         type: string
     required:
       - title
   identity: &identity
     title: Identity
+    description: The identity that is associated with this timeline.
     type: object
     additionalProperties: false
     required:
@@ -26,15 +29,19 @@ definitions:
     properties: &identity_properties
       id:
         title: ID
+        description: Globally unique ID of this identity.
         type: string
       name:
         title: Name
+        description: Display name to use instead of the `id`.
         type: string
       aliases:
         title: Aliases
+        description: Alternative names of this identity.
         type: array
         items:
           title: Alias
+          description: An alternative name of this identity.
           type: string
       urls:
         title: URLs
@@ -43,6 +50,7 @@ definitions:
           type: string
       notes:
         title: Notes
+        description: You can take any notes here. The value is not used.
         type: string
   position: &position
     title: Location Information
@@ -67,6 +75,7 @@ definitions:
         type: string
   person:
     title: Person
+    description: Usually a human being, but can be anything that was born.
     type: object
     additionalProperties: true
     required:
@@ -76,6 +85,7 @@ definitions:
       !!merge <<: *identity_properties
       born:
         title: Birth Information
+        description: Details about the birth of this identity.
         type:
           - object
           - "null"
@@ -84,21 +94,33 @@ definitions:
           !!merge <<: *position_properties
           date:
             title: Exact Day of Birth
+            description: |-
+              The precise calendar day on which this identity was born.
+
+              The format of this value should match the format of the timestamps in the timeline.
             type: string
           sexus:
             title: Sexus of Person
+            description: Which terminology is used to refer to this identity in gender-based roles?
             enum:
               - Femininum
               - Maskulinum
           when:
             title: Uncertain Date of Birth
+            description: Rough description of the period during which this person was born.
             type: object
             properties:
               after:
+                title: Earliest Date
+                description: The format of this value should match the format of the timestamps in the timeline.
                 type: string
               before:
+                title: Latest Date
+                description: The format of this value should match the format of the timestamps in the timeline.
                 type: string
               showAs:
+                title: Display Value
+                description: Use this value as the birth date for display purposes.
                 type: string
       died:
         title: Death Information
@@ -113,13 +135,20 @@ definitions:
             type: string
           when:
             title: Uncertain Date of Death
+            description: Rough description of the period during which this person has died.
             type: object
             properties:
               after:
+                title: Earliest Date
+                description: The format of this value should match the format of the timestamps in the timeline.
                 type: string
               before:
+                title: Latest Date
+                description: The format of this value should match the format of the timestamps in the timeline.
                 type: string
               showAs:
+                title: Display Value
+                description: Use this value as the death date for display purposes.
                 type: string
           inMilitaryService:
             type:

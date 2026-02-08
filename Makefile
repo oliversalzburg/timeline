@@ -101,6 +101,11 @@ $(IMAGES) &: contrib/prepare-emoji.js
 		"--root=$(DATA_ROOT)" \
 		"--target=$@"
 	@date +"%FT%T%z Universe generated '$@'."
+%/universe.weights : %/universe.yml
+	@node --enable-source-maps examples/weigh.js \
+		"--origin=$<" \
+		"--target=$@"
+	@date +"%FT%T%z Generated weights '$@'."
 
 %/pedigree-public.md : %/universe-public.yml %/pedigree-public-light.svg examples/pedigree.js
 	@node --enable-source-maps examples/pedigree.js \
