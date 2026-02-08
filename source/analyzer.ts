@@ -53,7 +53,8 @@ export function report<
 	timelinesTrimmed: Array<TTimeline>,
 	hops: Map<string, number>,
 	baseline: Array<number>,
-	weights: Array<Array<number>>,
+	endWeights: Map<TTimeline, number>,
+	probes: Array<[number, Map<TTimeline, number> | undefined]>,
 	_origin: TTimeline,
 ) {
 	const buffer = new Array<string>();
@@ -71,7 +72,10 @@ export function report<
 				`CSS Class: ${`t${hashCyrb53(timeline.meta.id)}`}`,
 				`Identity Hops: ${hops.get(timeline.meta.identity?.id ?? "") ?? "undefined (treated as +Infinity), retained"}`,
 				`Base Weight: ${baseline[timelineIndex] ?? "<ERROR WEIGHT NOT FOUND>"}`,
-				`End Weight: ${weights[weights.length - 1][timelineIndex] ?? "<ERROR WEIGHT NOT FOUND>"}`,
+				`End Weight: ${endWeights.get(timeline) ?? "<ERROR WEIGHT NOT FOUND>"}`,
+				...probes.map(
+					([timestamp, _]) => `Probe Weight[${timestamp}]: ${_?.get(timeline)}`,
+				),
 			].join("\n"),
 		);
 	}
@@ -83,7 +87,12 @@ export function report<
 				`Timeline Identity ID: ${timeline.meta.identity?.id ?? "<has no identity>"}`,
 				`CSS Class: ${`t${hashCyrb53(timeline.meta.id)}`}`,
 				`Identity Hops: ${hops.get(timeline.meta.identity?.id ?? "") ?? "undefined (treated as +Infinity)"}`,
-				"Base Weight: <was trimmed from graph>",
+				"Base Weight: none, was trimmed from graph",
+				"End Weight: none, was trimmed from graph",
+				...probes.map(
+					([timestamp, _]) =>
+						`Probe Weight[${timestamp}]: none, was trimmed from graph`,
+				),
 			].join("\n"),
 		);
 	}
@@ -95,7 +104,11 @@ export function report<
 				`Timeline Identity ID: ${timeline.meta.identity?.id ?? "<has no identity>"}`,
 				`CSS Class: ${`t${hashCyrb53(timeline.meta.id)}`}`,
 				`Identity Hops: ${hops.get(timeline.meta.identity?.id ?? "") ?? "undefined (treated as +Infinity), retained"}`,
-				`Base Weight: <weightless>`,
+				"Base Weight: <weightless>",
+				"End Weight: <weightless>",
+				...probes.map(
+					([timestamp, _]) => `Probe Weight[${timestamp}]: ${_?.get(timeline)}`,
+				),
 			].join("\n"),
 		);
 	}

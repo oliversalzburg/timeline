@@ -100,56 +100,48 @@ export function hopsToWeights<
 	let rangeMax = Number.NEGATIVE_INFINITY;
 	for (const timeline of timelines) {
 		const distance =
-			hops.get(
-				mustExist(
-					timeline.meta.identity?.id,
-					`timeline has no identity: '${timeline.meta.id}'`,
-				),
-			) ?? Number.NEGATIVE_INFINITY;
-		if (rangeMax < distance) {
+			hops.get(timeline.meta.identity?.id ?? "") ?? Number.POSITIVE_INFINITY;
+		if (Number.isFinite(distance) && rangeMax < distance) {
 			rangeMax = distance;
 		}
 	}
 	const weights = new Array<number>();
 	for (const timeline of timelines) {
 		const distance =
-			hops.get(
-				mustExist(
-					timeline.meta.identity?.id,
-					`timeline has no identity: '${timeline.meta.id}'`,
-				),
-			) ?? Number.NEGATIVE_INFINITY;
-		weights.push(Number.isFinite(distance) ? rangeMax - distance + 1 : 0);
+			hops.get(timeline.meta.identity?.id ?? "") ?? Number.NEGATIVE_INFINITY;
+		weights.push(Number.isFinite(distance) ? rangeMax - distance + 1 : 1);
 	}
 	return weights;
 }
 
-export function calculateWeights<
+export function* weightedFrames<
 	TTimeline extends Timeline & { meta: { identity?: Identity } },
 >(timelines: Array<TTimeline>, baseline: Array<number>, origin: TTimeline) {
 	const frames = buildFrames(timelines);
 	const renderPlan = [...frames.entries()].sort(([a], [b]) => a - b);
-	const weightCache = new Array<Array<number>>();
-	for (const [_timestamp, frame] of renderPlan) {
-		const weightFrame =
-			0 < weightCache.length
-				? [...weightCache[weightCache.length - 1]]
-				: new Array<number>(timelines.length).fill(0, 0, timelines.length);
-		for (const [_title, contributors] of frame.events) {
-			if (!contributors.has(origin)) {
-				continue;
-			}
-			for (
-				let timelineIndex = 0;
-				timelineIndex < timelines.length;
-				++timelineIndex
-			) {
-				weightFrame[timelineIndex] += contributors.has(timelines[timelineIndex])
-					? baseline[timelineIndex]
-					: 0;
-			}
+	let weightCache: Map<TTimeline, number> | undefined;
+	for (let planIndex = 0; planIndex < renderPlan.length; ++planIndex) {
+		const [timestamp, frame] = renderPlan[planIndex];
+		const frameWeights = new Map<TTimeline, number>();
+		for (
+			let timelineIndex = 0;
+			timelineIndex < timelines.length;
+			++timelineIndex
+		) {
+			const timeline = timelines[timelineIndex];
+			frameWeights.set(
+				timeline,
+				(weightCache !== undefined ? mustExist(weightCache.get(timeline)) : 0) +
+					(frame.events
+						.entries()
+						.find(
+							([_title, contributors]) =>
+								contributors.has(timeline) && contributors.has(origin),
+						)?.length ?? 0) *
+						baseline[timelineIndex],
+			);
 		}
-		weightCache.push(weightFrame);
+		yield { content: frame, timestamp, weights: frameWeights };
+		weightCache = frameWeights;
 	}
-	return weightCache;
 }

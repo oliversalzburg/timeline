@@ -57,6 +57,9 @@ ifneq ($(SEGMENT),)
 else
 	UNIVERSE_FLAGS += --segment=300
 endif
+ifneq ($(PROBE),)
+	REPORT_FLAGS += --probe=2003-03-31T00:00:00.000Z --probe=$(PROBE)
+endif
 
 .PHONY: default build clean docs git-hook pretty lint test coverage universe
 .PRECIOUS: %/universe.yml %.dotus %.idotus
@@ -118,8 +121,9 @@ $(IMAGES) &: contrib/prepare-emoji.js
 $(OUTPUT)/universe.report : $(OUTPUT_BUILD)/universe.report
 	@cp $< $@
 %/universe.report : %/universe.yml examples/report.js
-	@node --enable-source-maps examples/report.js \
+	node --enable-source-maps examples/report.js \
 		$(UNIVERSE_FLAGS) \
+		$(REPORT_FLAGS) \
 		"--origin=$<" \
 		"--target=$@"
 	@date +"%FT%T%z Generated report '$@'."
