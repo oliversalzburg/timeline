@@ -119,7 +119,7 @@ export function hopsToWeights<
 					`timeline has no identity: '${timeline.meta.id}'`,
 				),
 			) ?? Number.NEGATIVE_INFINITY;
-		weights.push(Number.isFinite(distance) ? rangeMax - distance : 0);
+		weights.push(Number.isFinite(distance) ? rangeMax - distance + 1 : 0);
 	}
 	return weights;
 }

@@ -69,7 +69,7 @@ export function report<
 				`Timeline ID: ${timeline.meta.id}`,
 				`Timeline Identity ID: ${timeline.meta.identity?.id ?? "<has no identity>"}`,
 				`CSS Class: ${`t${hashCyrb53(timeline.meta.id)}`}`,
-				`Identity Hops: ${hops.get(timeline.meta.identity?.id ?? "") ?? "undefined (treated as +Infinity)"}`,
+				`Identity Hops: ${hops.get(timeline.meta.identity?.id ?? "") ?? "undefined (treated as +Infinity), retained"}`,
 				`Base Weight: ${baseline[timelineIndex] ?? "<ERROR WEIGHT NOT FOUND>"}`,
 				`End Weight: ${weights[weights.length - 1][timelineIndex] ?? "<ERROR WEIGHT NOT FOUND>"}`,
 			].join("\n"),
@@ -82,7 +82,8 @@ export function report<
 				`Timeline ID: ${timeline.meta.id}`,
 				`Timeline Identity ID: ${timeline.meta.identity?.id ?? "<has no identity>"}`,
 				`CSS Class: ${`t${hashCyrb53(timeline.meta.id)}`}`,
-				`Identity Hops: ${hops.get(timeline.meta.identity?.id ?? "") ?? "undefined (treated as +Infinity)"} <was trimmed from graph>`,
+				`Identity Hops: ${hops.get(timeline.meta.identity?.id ?? "") ?? "undefined (treated as +Infinity)"}`,
+				"Base Weight: <was trimmed from graph>",
 			].join("\n"),
 		);
 	}
@@ -93,7 +94,7 @@ export function report<
 				`Timeline ID: ${timeline.meta.id}`,
 				`Timeline Identity ID: ${timeline.meta.identity?.id ?? "<has no identity>"}`,
 				`CSS Class: ${`t${hashCyrb53(timeline.meta.id)}`}`,
-				`Identity Hops: ${hops.get(timeline.meta.identity?.id ?? "") ?? "undefined (treated as +Infinity)"}`,
+				`Identity Hops: ${hops.get(timeline.meta.identity?.id ?? "") ?? "undefined (treated as +Infinity), retained"}`,
 				`Base Weight: <weightless>`,
 			].join("\n"),
 		);
