@@ -57,12 +57,21 @@ export function report<
 	probes: Array<[number, Map<TTimeline, number> | undefined]>,
 	_origin: TTimeline,
 	locations: Array<Identity>,
+	periods: Array<Identity>,
 ) {
 	const buffer = new Array<string>();
 	buffer.push(
 		[
+			"---",
 			"Root Identity Location Associations:",
 			...locations.map((_) => _.id),
+		].join("\n"),
+	);
+	buffer.push(
+		[
+			"---",
+			"Root Identity Period Associations:",
+			...periods.map((_) => _.id),
 		].join("\n"),
 	);
 	for (

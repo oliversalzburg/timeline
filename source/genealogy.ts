@@ -617,6 +617,29 @@ export class IdentityGraph<
 		return found;
 	}
 
+	periods(id = this.origin): Array<Identity> | undefined {
+		const rootIdentity = this.resolveIdentity(id);
+		if (rootIdentity === undefined) {
+			return undefined;
+		}
+
+		const periodTimelines = this.timelines.filter((_) =>
+			isIdentityPeriod(_),
+		) as Array<TimelineAncestryRenderer>;
+		const periodIdentities = periodTimelines.map((_) => _.meta.identity);
+		const found = [];
+		for (const period of periodIdentities) {
+			const shared = intersect(
+				mustExist(this.timelineOf(rootIdentity.id)),
+				mustExist(this.timelineOf(period.id)),
+			);
+			if (0 < shared.length) {
+				found.push(period);
+			}
+		}
+		return found;
+	}
+
 	calculateHopsFrom(
 		id = this.origin,
 		options: Partial<{

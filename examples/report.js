@@ -139,6 +139,7 @@ const reportString = report(
 	frameWeights,
 	origin,
 	trim.graph.locations(origin.meta.identity.id),
+	trim.graph.periods(origin.meta.identity.id),
 );
 const output = createWriteStream(targetPath);
 output.write(`${reportString}\n`);
