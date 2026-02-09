@@ -455,7 +455,7 @@ export class IdentityGraph<
 		);
 	}
 
-	recursiveContainersOf(id = this.origin, maxDepth = 100) {
+	recursiveContainersOf(id = this.origin, maxDepth = 100): Array<Identity> {
 		if (maxDepth === 0) {
 			return [];
 		}
@@ -466,7 +466,9 @@ export class IdentityGraph<
 		}
 
 		return containers.concat(
-			containers.flatMap((container) => this.containersOf(container.id)),
+			containers.flatMap((container) =>
+				this.recursiveContainersOf(container.id),
+			),
 		);
 	}
 
