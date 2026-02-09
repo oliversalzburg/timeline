@@ -452,7 +452,10 @@ export const render = <
 
 		allEventsInGraph.set(timestamp, new Set<[string, string]>());
 		d.raw("{");
-		d.graphSpec({ comment: `Frame for ${date.toISOString()}`, rank: "same" });
+		d.graphSpec({
+			comment: `Frame for ${date.valueOf()} (${date.toISOString()})`,
+			rank: "same",
+		});
 		for (const [eventTitle, eventTimelines] of frame.content.events) {
 			frameCache.frameTrailer ??= eventTitle;
 
@@ -484,7 +487,7 @@ export const render = <
 						.values()
 						.map(
 							(_) =>
-								`${_.meta.id ?? classes.get(_.meta.id)}:${ranks.get(_.meta.id)}`,
+								`${_.meta.id ?? classes.get(_.meta.id)}:${frame.weights.get(_)}`,
 						),
 				].join(", "),
 			});

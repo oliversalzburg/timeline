@@ -9,6 +9,7 @@ import {
 	seedFromString,
 } from "@oliversalzburg/js-utils/data/random.js";
 import { InvalidOperationError } from "@oliversalzburg/js-utils/errors/InvalidOperationError.js";
+import { intersect } from "./operator.js";
 import type { RendererOptions } from "./renderer.js";
 import type {
 	Event,
@@ -597,12 +598,17 @@ export class IdentityGraph<
 				}
 			}
 
-			for (const [_timestamp, record] of this.timelineOf(id)?.records ?? []) {
-				if (record.title.includes(location.id)) {
-					found.push(location);
-					if (!quant) {
-						break;
-					}
+			const shared = intersect(
+				mustExist(this.timelineOf(id)),
+				mustExist(this.timelineOf(location.id)),
+			);
+			if (0 < shared.length) {
+				found.push(location);
+				for (const parent of this.recursiveContainersOf(location.id)) {
+					found.push(parent);
+				}
+				if (!quant) {
+					break;
 				}
 			}
 		}

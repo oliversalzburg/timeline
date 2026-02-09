@@ -56,8 +56,15 @@ export function report<
 	endWeights: Map<TTimeline, number>,
 	probes: Array<[number, Map<TTimeline, number> | undefined]>,
 	_origin: TTimeline,
+	locations: Array<Identity>,
 ) {
 	const buffer = new Array<string>();
+	buffer.push(
+		[
+			"Root Identity Location Associations:",
+			...locations.map((_) => _.id),
+		].join("\n"),
+	);
 	for (
 		let timelineIndex = 0;
 		timelineIndex < timelines.length;

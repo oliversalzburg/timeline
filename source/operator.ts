@@ -28,6 +28,51 @@ export const map = (
 	};
 };
 
+export const intersect = (
+	left: Timeline,
+	right: Timeline,
+): Array<TimelineRecord> => {
+	if (left.records.length === 0 || right.records.length === 0) {
+		return [];
+	}
+
+	const intersection = new Array<TimelineRecord>();
+	let indexLeft = 0;
+	let indexRight = 0;
+	for (;;) {
+		let recordLeft = left.records[indexLeft];
+		let recordRight = right.records[indexRight];
+		while (indexLeft < left.records.length && recordLeft[0] < recordRight[0]) {
+			++indexLeft;
+			recordLeft = left.records[indexLeft];
+		}
+		while (
+			indexRight < right.records.length &&
+			recordRight[0] < recordLeft[0]
+		) {
+			++indexRight;
+			recordRight = right.records[indexRight];
+		}
+		if (
+			indexLeft < left.records.length &&
+			indexRight < right.records.length &&
+			recordLeft[0] === recordRight[0] &&
+			recordLeft[1].title === recordRight[1].title
+		) {
+			intersection.push(recordLeft);
+		}
+		++indexLeft;
+		++indexRight;
+		if (
+			left.records.length <= indexLeft ||
+			right.records.length <= indexRight
+		) {
+			break;
+		}
+	}
+	return intersection;
+};
+
 export const deduplicateRecords = (
 	records: Array<TimelineRecord>,
 ): Array<TimelineRecord> => {

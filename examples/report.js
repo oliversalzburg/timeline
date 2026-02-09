@@ -125,6 +125,9 @@ process.stderr.write(`report: Calculating baseline weights...\n`);
 const baseline = hopsToWeights(trim.solidsRetained, trim.hops);
 
 process.stderr.write(`report: Generating report...\n`);
+const origin = /** @type {TimelineAncestryRenderer} */ (
+	mustExist(timelines.find((_) => _.meta.id === originTimelineId))
+);
 const reportString = report(
 	trim.solidsRetained,
 	trim.nonSolidsRetained,
@@ -134,7 +137,8 @@ const reportString = report(
 	mustExist(lastFrameWeights),
 	// @ts-expect-error YUNO tuple
 	frameWeights,
-	mustExist(timelines.find((_) => _.meta.id === originTimelineId)),
+	origin,
+	trim.graph.locations(origin.meta.identity.id),
 );
 const output = createWriteStream(targetPath);
 output.write(`${reportString}\n`);
