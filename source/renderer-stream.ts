@@ -21,13 +21,9 @@ import {
 	uncertainEventToDateDeterministic,
 	uncertainEventToDateString,
 } from "./genealogy.js";
+import type { WeightedFrame, WeightedFramesGenerator } from "./index.js";
 import { matchLuminance, rgbaToHexString } from "./palette.js";
-import {
-	buildFrames,
-	type RendererOptions,
-	rank,
-	renderMilliseconds,
-} from "./renderer.js";
+import { type RendererOptions, rank, renderMilliseconds } from "./renderer.js";
 import { STYLE_TRANSFER_MARKER, type Style } from "./style.js";
 import type {
 	RendererResultMetadata,
@@ -245,6 +241,7 @@ export const render = <
 >(
 	timelines: Array<TTimelines>,
 	options: RendererOptions,
+	frames: WeightedFramesGenerator<TTimelines>,
 	hops?: Map<string, number> | undefined,
 ): RendererResultMetadata<TTimelines> => {
 	const dotGraph = (d = dot()) => {
@@ -325,15 +322,11 @@ export const render = <
 		idMesh.set(timeline, new Array<string>());
 	}
 
-	// Segment universe into frames
-	const frames = buildFrames(timelines);
-
 	// Metadata to collect during rendering process
 	const allEventsInGraph = new Map<number, Set<[string, string]>>();
 	const allEventContributors = new Map<string, Set<TTimelines>>();
 
 	// Render frames
-	const renderPlan = [...frames.entries()].sort(([a], [b]) => a - b);
 	const frameCache: {
 		frameTrailer: string | undefined;
 		pendingConnect: Map<TTimelines, TimelineEntry>;
@@ -344,14 +337,19 @@ export const render = <
 		previousFrameTrailer: undefined,
 	};
 
-	let segmentStart = renderPlan[0][0];
+	let segmentStart: number | undefined;
 	let segmentLength = 0;
 
 	// Event index for events on the same date.
 	let eventIndex = 0;
 	let previousDateString = "";
+	let previousFrame: WeightedFrame<TTimelines> | undefined;
 
-	for (const [timestamp, frame] of renderPlan) {
+	for (const frame of frames) {
+		const timestamp = frame.timestamp;
+		if (segmentStart === undefined) {
+			segmentStart = timestamp;
+		}
 		// Graph Segmenting
 		if (options.segment !== undefined && options.segment < segmentLength) {
 			if (0 < frameCache.pendingConnect.size) {
@@ -455,7 +453,7 @@ export const render = <
 		allEventsInGraph.set(timestamp, new Set<[string, string]>());
 		d.raw("{");
 		d.graphSpec({ comment: `Frame for ${date.toISOString()}`, rank: "same" });
-		for (const [eventTitle, eventTimelines] of frame.events) {
+		for (const [eventTitle, eventTimelines] of frame.content.events) {
 			frameCache.frameTrailer ??= eventTitle;
 
 			const leader = [...eventTimelines.values()].sort(
@@ -500,7 +498,7 @@ export const render = <
 
 		const linksIn = new Set<string>();
 		const linksOut = new Set<string>();
-		for (const [timeline, timelineFrameRecords] of frame.records) {
+		for (const [timeline, timelineFrameRecords] of frame.content.records) {
 			const style = mustExist(
 				options.styleSheet?.get(timeline.meta.id),
 				`missing style for '${timeline.meta.id}'`,
@@ -540,7 +538,7 @@ export const render = <
 		}
 
 		let previousEventTitle: string | undefined;
-		for (const [eventTitle] of frame.events) {
+		for (const [eventTitle] of frame.content.events) {
 			if (
 				previousEventTitle !== undefined &&
 				previousEventTitle !== eventTitle &&
@@ -563,9 +561,9 @@ export const render = <
 
 		// Inter-Frame
 		for (const pending of frameCache.pendingConnect.keys()) {
-			if (frame.timelines.has(pending)) {
+			if (frame.content.timelines.has(pending)) {
 				const entryPending = mustExist(frameCache.pendingConnect.get(pending));
-				const entryFrame = mustExist(frame.records.get(pending)?.[0]);
+				const entryFrame = mustExist(frame.content.records.get(pending)?.[0]);
 				d.link(entryPending.title, entryFrame.title, {
 					...renderLinkLinked(
 						mustExist(classes.get(pending.meta.id)),
@@ -592,7 +590,7 @@ export const render = <
 		}
 
 		// Update frame cache
-		for (const [timeline, entries] of frame.records) {
+		for (const [timeline, entries] of frame.content.records) {
 			const style = mustExist(
 				options.styleSheet?.get(timeline.meta.id),
 				`missing style for '${timeline.meta.id}'`,
@@ -616,17 +614,18 @@ export const render = <
 				frameCache.pendingConnect.set(timeline, entries[entries.length - 1]);
 			}
 		}
-		frameCache.previousFrameTrailer = [...frame.events.keys()][0];
+		frameCache.previousFrameTrailer = [...frame.content.events.keys()][0];
 		frameCache.frameTrailer = undefined;
 
 		previousDateString = dateString;
+		previousFrame = frame;
 	}
 
 	d.raw("}");
 	graphSegments.push({
 		graph: d.toString(),
-		start: segmentStart,
-		end: renderPlan[renderPlan.length - 1][0],
+		start: mustExist(segmentStart),
+		end: mustExist(previousFrame).timestamp,
 	});
 
 	const timelineMetaMap = new Map(

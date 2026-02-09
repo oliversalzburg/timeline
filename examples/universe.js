@@ -6,12 +6,14 @@ import { mustExist } from "@oliversalzburg/js-utils/data/nil.js";
 import { parse } from "yaml";
 import {
 	analyze,
+	hopsToWeights,
 	load,
 	render,
 	renderDateDDMMYYYY_de_DE,
 	Styling,
 	trimUniverse,
 	uncertainEventToDateDeterministic,
+	weightedFrames,
 } from "../lib/index.js";
 
 /** @import {RendererOptions} from "../lib/renderer.js" */
@@ -142,7 +144,15 @@ const renderOptions = {
 	styleSheet,
 	theme,
 };
-const dotGraph = render(trim.timelinesRetained, renderOptions, trim.hops);
+const dotGraph = render(
+	trim.timelinesRetained,
+	renderOptions,
+	weightedFrames(
+		trim.timelinesRetained,
+		hopsToWeights(trim.timelinesRetained, trim.hops),
+		mustExist(timelines.find((_) => _.meta.id === originTimelineId)),
+	),
+);
 
 // Calculate universe metrics.
 const metrics = new Map(

@@ -9,7 +9,7 @@ import {
 	isNotIdentityTimeline,
 	uncertainEventToDateDeterministic,
 } from "./index.js";
-import { buildFrames } from "./renderer.js";
+import { buildFrames, type Frame } from "./renderer.js";
 import type { Identity, Timeline, TimelineAncestryRenderer } from "./types.js";
 
 export function trimUniverse<
@@ -114,9 +114,23 @@ export function hopsToWeights<
 	return weights;
 }
 
+export type WeightedFrame<
+	TTimeline extends Timeline & { meta: { identity?: Identity } },
+> = {
+	content: Frame<TTimeline>;
+	timestamp: number;
+	weights: Map<TTimeline, number>;
+};
+export type WeightedFramesGenerator<
+	TTimeline extends Timeline & { meta: { identity?: Identity } },
+> = Generator<WeightedFrame<TTimeline>>;
 export function* weightedFrames<
 	TTimeline extends Timeline & { meta: { identity?: Identity } },
->(timelines: Array<TTimeline>, baseline: Array<number>, origin: TTimeline) {
+>(
+	timelines: Array<TTimeline>,
+	baseline: Array<number>,
+	origin: TTimeline,
+): WeightedFramesGenerator<TTimeline> {
 	const frames = buildFrames(timelines);
 	const renderPlan = [...frames.entries()].sort(([a], [b]) => a - b);
 	let weightCache: Map<TTimeline, number> | undefined;
