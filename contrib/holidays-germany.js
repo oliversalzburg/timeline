@@ -1,5 +1,6 @@
 #!/bin/env node
 
+import { stringify } from "yaml";
 import { MILLISECONDS, TRANSPARENT } from "../lib/constants.js";
 import { serialize } from "../lib/serializer.js";
 
@@ -494,5 +495,5 @@ const timeline = {
 		),
 };
 
-const serialized = serialize(timeline, timeline.meta);
+const serialized = stringify(serialize(timeline, timeline.meta));
 process.stdout.write(`${serialized}\n`);

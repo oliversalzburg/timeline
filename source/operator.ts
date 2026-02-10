@@ -42,11 +42,16 @@ export const intersect = (
 	for (;;) {
 		let recordLeft = left.records[indexLeft];
 		let recordRight = right.records[indexRight];
-		while (indexLeft < left.records.length && recordLeft[0] < recordRight[0]) {
+		while (
+			indexLeft < left.records.length &&
+			indexRight < right.records.length &&
+			recordLeft[0] < recordRight[0]
+		) {
 			++indexLeft;
 			recordLeft = left.records[indexLeft];
 		}
 		while (
+			indexLeft < left.records.length &&
 			indexRight < right.records.length &&
 			recordRight[0] < recordLeft[0]
 		) {
@@ -242,6 +247,24 @@ export const mergeDuringPeriod = (
 			sortRecords(guest.records.concat(period)),
 		);
 	}
+};
+
+export const mergeIntoDuringPeriod = (
+	start: number,
+	end: number,
+	host: Timeline,
+	guests: Array<Timeline>,
+): void => {
+	const period = new Array<TimelineRecord>();
+	for (const guest of guests) {
+		for (const [timestamp, entry] of guest.records) {
+			if (timestamp < start || end < timestamp) {
+				continue;
+			}
+			period.push([timestamp, entry]);
+		}
+	}
+	host.records = deduplicateRecords(sortRecords(host.records.concat(period)));
 };
 
 export const roundDateToDay = (date: number): number =>

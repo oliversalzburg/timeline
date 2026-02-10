@@ -1,5 +1,13 @@
 import { mustExist } from "@oliversalzburg/js-utils/data/nil.js";
 import { hashCyrb53 } from "@oliversalzburg/js-utils/data/string.js";
+import {
+	type IdentityGraph,
+	isIdentityLocation,
+	isIdentityMedia,
+	isIdentityPeriod,
+	isIdentityPerson,
+	isIdentityPlain,
+} from "./genealogy.js";
 import type {
 	Identity,
 	Timeline,
@@ -55,25 +63,25 @@ export function report<
 	baseline: Array<number>,
 	endWeights: Map<TTimeline, number>,
 	probes: Array<[number, Map<TTimeline, number> | undefined]>,
-	_origin: TTimeline,
-	locations: Array<Identity>,
-	periods: Array<Identity>,
+	graph: IdentityGraph<TTimeline>,
 ) {
+	const identifyIdentity = (identity: Identity | undefined) => {
+		switch (true) {
+			case isIdentityLocation(identity):
+				return "Location";
+			case isIdentityMedia(identity):
+				return "Media";
+			case isIdentityPeriod(identity):
+				return "Period";
+			case isIdentityPerson(identity):
+				return "Person";
+			case isIdentityPlain(identity):
+				return "Plain";
+			default:
+				return "Not an identity";
+		}
+	};
 	const buffer = new Array<string>();
-	buffer.push(
-		[
-			"---",
-			"Root Identity Location Associations:",
-			...locations.map((_) => _.id),
-		].join("\n"),
-	);
-	buffer.push(
-		[
-			"---",
-			"Root Identity Period Associations:",
-			...periods.map((_) => _.id),
-		].join("\n"),
-	);
 	for (
 		let timelineIndex = 0;
 		timelineIndex < timelines.length;
@@ -85,6 +93,7 @@ export function report<
 				"---",
 				`Timeline ID: ${timeline.meta.id}`,
 				`Timeline Identity ID: ${timeline.meta.identity?.id ?? "<has no identity>"}`,
+				`Timeline Identity Type: ${identifyIdentity(timeline.meta.identity)}`,
 				`CSS Class: ${`t${hashCyrb53(timeline.meta.id)}`}`,
 				`Identity Hops: ${hops.get(timeline.meta.identity?.id ?? "") ?? "undefined (treated as +Infinity), retained"}`,
 				`Base Weight: ${baseline[timelineIndex] ?? "<ERROR WEIGHT NOT FOUND>"}`,
@@ -92,6 +101,16 @@ export function report<
 				...probes.map(
 					([timestamp, _]) => `Probe Weight[${timestamp}]: ${_?.get(timeline)}`,
 				),
+				"Locations:",
+				graph
+					.locations(timeline.meta.identity?.id)
+					?.map((_) => `- ${_.id}`)
+					.join("\n"),
+				"Periods:",
+				graph
+					.periods(timeline.meta.identity?.id)
+					?.map((_) => `- ${_.id}`)
+					.join("\n"),
 			].join("\n"),
 		);
 	}
@@ -101,6 +120,7 @@ export function report<
 				"---",
 				`Timeline ID: ${timeline.meta.id}`,
 				`Timeline Identity ID: ${timeline.meta.identity?.id ?? "<has no identity>"}`,
+				`Timeline Identity Type: ${identifyIdentity(timeline.meta.identity)}`,
 				`CSS Class: ${`t${hashCyrb53(timeline.meta.id)}`}`,
 				`Identity Hops: ${hops.get(timeline.meta.identity?.id ?? "") ?? "undefined (treated as +Infinity)"}`,
 				"Base Weight: none, was trimmed from graph",
@@ -109,6 +129,16 @@ export function report<
 					([timestamp, _]) =>
 						`Probe Weight[${timestamp}]: none, was trimmed from graph`,
 				),
+				"Locations:",
+				graph
+					.locations(timeline.meta.identity?.id)
+					?.map((_) => `- ${_.id}`)
+					.join("\n"),
+				"Periods:",
+				graph
+					.periods(timeline.meta.identity?.id)
+					?.map((_) => `- ${_.id}`)
+					.join("\n"),
 			].join("\n"),
 		);
 	}
@@ -118,6 +148,7 @@ export function report<
 				"---",
 				`Timeline ID: ${timeline.meta.id}`,
 				`Timeline Identity ID: ${timeline.meta.identity?.id ?? "<has no identity>"}`,
+				`Timeline Identity Type: ${identifyIdentity(timeline.meta.identity)}`,
 				`CSS Class: ${`t${hashCyrb53(timeline.meta.id)}`}`,
 				`Identity Hops: ${hops.get(timeline.meta.identity?.id ?? "") ?? "undefined (treated as +Infinity), retained"}`,
 				"Base Weight: <weightless>",
@@ -125,6 +156,16 @@ export function report<
 				...probes.map(
 					([timestamp, _]) => `Probe Weight[${timestamp}]: ${_?.get(timeline)}`,
 				),
+				"Locations:",
+				graph
+					.locations(timeline.meta.identity?.id)
+					?.map((_) => `- ${_.id}`)
+					.join("\n"),
+				"Periods:",
+				graph
+					.periods(timeline.meta.identity?.id)
+					?.map((_) => `- ${_.id}`)
+					.join("\n"),
 			].join("\n"),
 		);
 	}

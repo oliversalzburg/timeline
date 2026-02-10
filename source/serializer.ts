@@ -1,4 +1,3 @@
-import { stringify } from "yaml";
 import type {
 	MetaSectionAncestryRenderer,
 	MetaSectionReferenceRenderer,
@@ -59,5 +58,5 @@ export const serialize = (
 		delete document.id;
 	}
 
-	return stringify(document);
+	return document;
 };

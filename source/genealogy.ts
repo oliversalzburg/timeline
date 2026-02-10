@@ -592,6 +592,18 @@ export class IdentityGraph<
 					continue;
 				}
 			}
+			if (rootIdentity.started?.in === location.id) {
+				found.push(location);
+				if (!quant) {
+					continue;
+				}
+			}
+			if (rootIdentity.ended?.in === location.id) {
+				found.push(location);
+				if (!quant) {
+					continue;
+				}
+			}
 
 			if (rootMarriages.some((_) => _.in === location.id)) {
 				found.push(location);
@@ -623,8 +635,9 @@ export class IdentityGraph<
 			return undefined;
 		}
 
-		const periodTimelines = this.timelines.filter((_) =>
-			isIdentityPeriod(_),
+		// Plain identities behave like unbounded periods.
+		const periodTimelines = this.timelines.filter(
+			(_) => isIdentityPeriod(_) || isIdentityPlain(_),
 		) as Array<TimelineAncestryRenderer>;
 		const periodIdentities = periodTimelines.map((_) => _.meta.identity);
 		const found = [];

@@ -3,7 +3,7 @@
 import { createWriteStream, readdirSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { isNil, mustExist } from "@oliversalzburg/js-utils/data/nil.js";
-import { parse } from "yaml";
+import { parse, stringify } from "yaml";
 import {
 	anonymize,
 	deduplicateRecords,
@@ -305,7 +305,7 @@ targetStream.on("error", () => {
 });
 
 targetStream.write(
-	`---\n${finalTimelines.map((_) => serialize(_, _.meta, true)).join("\n---\n")}`,
+	`---\n${finalTimelines.map((_) => stringify(serialize(_, _.meta, true))).join("\n---\n")}`,
 );
 
 if (targetStream !== process.stdout) {

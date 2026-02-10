@@ -1,5 +1,6 @@
 import { expect } from "chai";
 import { describe, it } from "mocha";
+import { stringify } from "yaml";
 import {
 	snapshotHasRegression,
 	snapshotIdentity,
@@ -28,7 +29,11 @@ describe("Serializer", () => {
 			],
 		};
 		const document = serialize(timeline, timeline.meta);
-		expect(snapshotHasRegression(snapshotIdentity(this, ".yml"), document)).to
-			.be.false;
+		expect(
+			snapshotHasRegression(
+				snapshotIdentity(this, ".yml"),
+				stringify(document),
+			),
+		).to.be.false;
 	});
 });

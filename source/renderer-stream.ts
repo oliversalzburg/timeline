@@ -306,7 +306,7 @@ export const render = <
 	const classes = new Map<string, string>(
 		timelines.map((_) => [_.meta.id, `t${hashCyrb53(_.meta.id)}`]),
 	);
-	const ranks = new Map<string, number>(
+	const _ranks = new Map<string, number>(
 		timelines.map((_) => [
 			_.meta.id,
 			rank(
@@ -461,7 +461,7 @@ export const render = <
 
 			const leader = [...eventTimelines.values()].sort(
 				(a, b) =>
-					mustExist(ranks.get(b.meta.id)) - mustExist(ranks.get(a.meta.id)),
+					mustExist(frame.weights.get(b)) - mustExist(frame.weights.get(a)),
 			)[0];
 			const nodeProperties = renderEventAsNode(
 				options,
@@ -489,7 +489,7 @@ export const render = <
 							(_) =>
 								`${_.meta.id ?? classes.get(_.meta.id)}:${frame.weights.get(_)}`,
 						),
-				].join(", "),
+				].join("|"),
 			});
 			mustExist(allEventsInGraph.get(timestamp)).add([id, eventTitle]);
 			allEventContributors.set(eventTitle, eventTimelines);
