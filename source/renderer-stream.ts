@@ -87,12 +87,18 @@ export const renderEventAsNode = <
 	const dateString = options?.dateRenderer
 		? options.dateRenderer(timestamp)
 		: new Date(timestamp).toDateString();
+	const titleContributor: TimelineAncestryRenderer | undefined = contributors
+		.values()
+		.find(
+			(_) =>
+				"identity" in _.meta &&
+				_.meta.identity !== undefined &&
+				title.startsWith(_.meta.identity.id),
+		) as TimelineAncestryRenderer | undefined;
 	const label =
-		"identity" in leader.meta &&
-		leader.meta.identity !== undefined &&
-		title.startsWith(leader.meta.identity.id)
+		titleContributor !== undefined
 			? `${0 < prefixes.length ? `${prefixes}${LABEL_PREFIX_SEPARATOR}` : ""}${makeHtmlString(
-					`${title.replace(leader.meta.identity.id, `${leader.meta.identity.id}${LABEL_TITLE_SEPARATOR}`)}`,
+					`${title.replace(titleContributor.meta.identity.id, `${titleContributor.meta.identity.id}${LABEL_TITLE_SEPARATOR}`)}`,
 				)}`
 			: `${0 < prefixes.length ? `${prefixes}${LABEL_PREFIX_SEPARATOR}` : ""}${makeHtmlString(
 					`${title}`,
@@ -485,6 +491,7 @@ export const render = <
 				comment: [
 					...eventTimelines
 						.values()
+						.filter((_) => !isIdentityMedia(_))
 						.map(
 							(_) =>
 								`${_.meta.id ?? classes.get(_.meta.id)}:${frame.weights.get(_)}`,

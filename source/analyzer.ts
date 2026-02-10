@@ -102,15 +102,19 @@ export function report<
 					([timestamp, _]) => `Probe Weight[${timestamp}]: ${_?.get(timeline)}`,
 				),
 				"Locations:",
-				graph
-					.locations(timeline.meta.identity?.id)
-					?.map((_) => `- ${_.id}`)
-					.join("\n"),
+				timeline.meta.identity === undefined
+					? "none, requires identity"
+					: graph
+							.locations(timeline.meta.identity?.id)
+							?.map((_) => `- ${_.id}`)
+							.join("\n"),
 				"Periods:",
-				graph
-					.periods(timeline.meta.identity?.id)
-					?.map((_) => `- ${_.id}`)
-					.join("\n"),
+				timeline.meta.identity === undefined
+					? "none, requires identity"
+					: graph
+							.periods(timeline.meta.identity?.id)
+							?.map((_) => `- ${_.id}`)
+							.join("\n"),
 			].join("\n"),
 		);
 	}
@@ -130,15 +134,21 @@ export function report<
 						`Probe Weight[${timestamp}]: none, was trimmed from graph`,
 				),
 				"Locations:",
-				graph
-					.locations(timeline.meta.identity?.id)
-					?.map((_) => `- ${_.id}`)
-					.join("\n"),
+				timeline.meta.identity === undefined ||
+				isIdentityMedia(timeline.meta.identity)
+					? "none, requires non-media identity"
+					: graph
+							.locations(timeline.meta.identity?.id)
+							?.map((_) => `- ${_.id}`)
+							.join("\n"),
 				"Periods:",
-				graph
-					.periods(timeline.meta.identity?.id)
-					?.map((_) => `- ${_.id}`)
-					.join("\n"),
+				timeline.meta.identity === undefined ||
+				isIdentityMedia(timeline.meta.identity)
+					? "none, requires non-media identity"
+					: graph
+							.periods(timeline.meta.identity?.id)
+							?.map((_) => `- ${_.id}`)
+							.join("\n"),
 			].join("\n"),
 		);
 	}
@@ -157,15 +167,21 @@ export function report<
 					([timestamp, _]) => `Probe Weight[${timestamp}]: ${_?.get(timeline)}`,
 				),
 				"Locations:",
-				graph
-					.locations(timeline.meta.identity?.id)
-					?.map((_) => `- ${_.id}`)
-					.join("\n"),
+				timeline.meta.identity === undefined ||
+				isIdentityMedia(timeline.meta.identity)
+					? "none, requires non-media identity"
+					: graph
+							.locations(timeline.meta.identity?.id)
+							?.map((_) => `- ${_.id}`)
+							.join("\n"),
 				"Periods:",
-				graph
-					.periods(timeline.meta.identity?.id)
-					?.map((_) => `- ${_.id}`)
-					.join("\n"),
+				timeline.meta.identity === undefined ||
+				isIdentityMedia(timeline.meta.identity)
+					? "none, requires non-media identity"
+					: graph
+							.periods(timeline.meta.identity?.id)
+							?.map((_) => `- ${_.id}`)
+							.join("\n"),
 			].join("\n"),
 		);
 	}
