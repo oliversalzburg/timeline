@@ -7,11 +7,12 @@ import {
 	hopsToWeights,
 	load,
 	report,
+	Styling,
 	trimUniverse,
 	weightedFrames,
 } from "../lib/index.js";
 
-/** @import { TimelineAncestryRenderer, TimelineReferenceRenderer } from "../lib/types.js" */
+/** @import { TimelineAncestryRenderer, TimelineReferenceRenderer, RenderMode } from "../lib/types.js" */
 
 // Parse command line arguments.
 const args = process.argv
@@ -124,6 +125,15 @@ for (const frame of weightedFrames(
 process.stderr.write(`report: Calculating baseline weights...\n`);
 const baseline = hopsToWeights(trim.solidsRetained, trim.hops);
 
+// Generate stylesheet.
+/** @type {RenderMode} */
+const theme = args.theme === "light" ? "light" : "dark";
+const styleSheet = new Styling(trim.timelinesRetained, theme).styles(
+	trim.graph,
+	trim.hops,
+	maxHops,
+);
+
 process.stderr.write(`report: Generating report...\n`);
 const reportString = report(
 	trim.solidsRetained,
@@ -135,6 +145,7 @@ const reportString = report(
 	// @ts-expect-error YUNO tuple
 	frameWeights,
 	trim.graph,
+	styleSheet,
 );
 const output = createWriteStream(targetPath);
 output.write(`${reportString}\n`);

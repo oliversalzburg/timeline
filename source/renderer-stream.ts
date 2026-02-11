@@ -16,7 +16,6 @@ import {
 import {
 	isIdentityLocation,
 	isIdentityMedia,
-	isIdentityPeriod,
 	isIdentityPerson,
 	uncertainEventToDateDeterministic,
 	uncertainEventToDateString,
@@ -44,7 +43,7 @@ export const renderEventAsNode = <
 	origin: Origin,
 	timestamp: number,
 	title: string,
-	contributors: Set<TTimelines>,
+	contributors: Array<TTimelines>,
 	leader: TTimelines,
 ) => {
 	const style = mustExist(
@@ -57,7 +56,7 @@ export const renderEventAsNode = <
 	const classList = ["event", ...contributorClasses];
 	const color = style.pencolor;
 	const fillcolors = contributors.values().reduce((fillColors, timeline) => {
-		if (isIdentityMedia(timeline) || isIdentityPeriod(timeline)) {
+		if (isIdentityMedia(timeline)) {
 			return fillColors;
 		}
 
@@ -465,10 +464,10 @@ export const render = <
 		for (const [eventTitle, eventTimelines] of frame.content.events) {
 			frameCache.frameTrailer ??= eventTitle;
 
-			const leader = [...eventTimelines.values()].sort(
+			const contributors = [...eventTimelines.values()].sort(
 				(a, b) =>
 					mustExist(frame.weights.get(b)) - mustExist(frame.weights.get(a)),
-			)[0];
+			);
 			const nodeProperties = renderEventAsNode(
 				options,
 				classes,
@@ -481,8 +480,8 @@ export const render = <
 				},
 				timestamp,
 				eventTitle,
-				eventTimelines,
-				leader,
+				contributors,
+				contributors[0],
 			);
 			const id = `Z${date.getFullYear().toFixed().padStart(4, "0")}-${(date.getMonth() + 1).toFixed().padStart(2, "0")}-${date.getDate().toFixed().padStart(2, "0")}-${eventIndex++}`;
 			d.node(eventTitle, {

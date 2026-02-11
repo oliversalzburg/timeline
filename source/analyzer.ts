@@ -8,6 +8,7 @@ import {
 	isIdentityPerson,
 	isIdentityPlain,
 } from "./genealogy.js";
+import type { Style } from "./style.js";
 import type {
 	Identity,
 	Timeline,
@@ -64,6 +65,7 @@ export function report<
 	endWeights: Map<TTimeline, number>,
 	probes: Array<[number, Map<TTimeline, number> | undefined]>,
 	graph: IdentityGraph<TTimeline>,
+	styleSheet: Map<string, Style>,
 ) {
 	const identifyIdentity = (identity: Identity | undefined) => {
 		switch (true) {
@@ -95,6 +97,8 @@ export function report<
 				`Timeline Identity ID: ${timeline.meta.identity?.id ?? "<has no identity>"}`,
 				`Timeline Identity Type: ${identifyIdentity(timeline.meta.identity)}`,
 				`CSS Class: ${`t${hashCyrb53(timeline.meta.id)}`}`,
+				`Pen Color: ${styleSheet.get(timeline.meta.id)?.pencolor}`,
+				`Fill Color: ${styleSheet.get(timeline.meta.id)?.fillcolor}`,
 				`Identity Hops: ${hops.get(timeline.meta.identity?.id ?? "") ?? "undefined (treated as +Infinity), retained"}`,
 				`Base Weight: ${baseline[timelineIndex] ?? "<ERROR WEIGHT NOT FOUND>"}`,
 				`End Weight: ${endWeights.get(timeline) ?? "<ERROR WEIGHT NOT FOUND>"}`,
@@ -126,6 +130,8 @@ export function report<
 				`Timeline Identity ID: ${timeline.meta.identity?.id ?? "<has no identity>"}`,
 				`Timeline Identity Type: ${identifyIdentity(timeline.meta.identity)}`,
 				`CSS Class: ${`t${hashCyrb53(timeline.meta.id)}`}`,
+				`Pen Color: ${styleSheet.get(timeline.meta.id)?.pencolor}`,
+				`Fill Color: ${styleSheet.get(timeline.meta.id)?.fillcolor}`,
 				`Identity Hops: ${hops.get(timeline.meta.identity?.id ?? "") ?? "undefined (treated as +Infinity)"}`,
 				"Base Weight: none, was trimmed from graph",
 				"End Weight: none, was trimmed from graph",
@@ -160,6 +166,8 @@ export function report<
 				`Timeline Identity ID: ${timeline.meta.identity?.id ?? "<has no identity>"}`,
 				`Timeline Identity Type: ${identifyIdentity(timeline.meta.identity)}`,
 				`CSS Class: ${`t${hashCyrb53(timeline.meta.id)}`}`,
+				`Pen Color: ${styleSheet.get(timeline.meta.id)?.pencolor}`,
+				`Fill Color: ${styleSheet.get(timeline.meta.id)?.fillcolor}`,
 				`Identity Hops: ${hops.get(timeline.meta.identity?.id ?? "") ?? "undefined (treated as +Infinity), retained"}`,
 				"Base Weight: <weightless>",
 				"End Weight: <weightless>",
