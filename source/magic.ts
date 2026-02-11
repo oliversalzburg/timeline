@@ -119,7 +119,7 @@ export type WeightedFrame<
 > = {
 	content: Frame<TTimeline>;
 	timestamp: number;
-	weights: Map<TTimeline, number>;
+	weights: Map<TTimeline, [number, number]>;
 };
 export type WeightedFramesGenerator<
 	TTimeline extends Timeline & { meta: { identity?: Identity } },
@@ -133,19 +133,20 @@ export function* weightedFrames<
 ): WeightedFramesGenerator<TTimeline> {
 	const frames = buildFrames(timelines);
 	const renderPlan = [...frames.entries()].sort(([a], [b]) => a - b);
-	let weightCache: Map<TTimeline, number> | undefined;
+	let weightCache: Map<TTimeline, [number, number]> | undefined;
 	for (let planIndex = 0; planIndex < renderPlan.length; ++planIndex) {
 		const [timestamp, frame] = renderPlan[planIndex];
-		const frameWeights = new Map<TTimeline, number>();
+		const frameWeights = new Map<TTimeline, [number, number]>();
 		for (
 			let timelineIndex = 0;
 			timelineIndex < timelines.length;
 			++timelineIndex
 		) {
 			const timeline = timelines[timelineIndex];
-			frameWeights.set(
-				timeline,
-				(weightCache !== undefined ? mustExist(weightCache.get(timeline)) : 0) +
+			frameWeights.set(timeline, [
+				(weightCache !== undefined
+					? mustExist(weightCache.get(timeline)?.[0])
+					: 0) +
 					(frame.events
 						.entries()
 						.find(
@@ -153,7 +154,8 @@ export function* weightedFrames<
 								contributors.has(timeline) && contributors.has(origin),
 						)?.length ?? 0) *
 						baseline[timelineIndex],
-			);
+				baseline[timelineIndex],
+			]);
 		}
 		yield { content: frame, timestamp, weights: frameWeights };
 		weightCache = frameWeights;

@@ -123,11 +123,8 @@ process.stdout.write(
 // Generate stylesheet.
 /** @type {RenderMode} */
 const theme = args.theme === "light" ? "light" : "dark";
-const styleSheet = new Styling(trim.timelinesRetained, theme).styles(
-	trim.graph,
-	trim.hops,
-	maxHops,
-);
+const style = new Styling(trim.timelinesRetained, theme);
+const styleSheet = style.styles(trim.graph, trim.hops, maxHops);
 
 // Generate GraphViz graph.
 /** @type {RendererOptions} */

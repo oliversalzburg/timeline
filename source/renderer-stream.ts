@@ -23,7 +23,11 @@ import {
 import type { WeightedFrame, WeightedFramesGenerator } from "./index.js";
 import { matchLuminance, rgbaToHexString } from "./palette.js";
 import { type RendererOptions, rank, renderMilliseconds } from "./renderer.js";
-import { STYLE_TRANSFER_MARKER, type Style } from "./style.js";
+import {
+	STYLE_TRANSFER_MARKER,
+	STYLE_UNBOUND_MEDIA,
+	type Style,
+} from "./style.js";
 import type {
 	RendererResultMetadata,
 	RGBATuple,
@@ -44,45 +48,60 @@ export const renderEventAsNode = <
 	timestamp: number,
 	title: string,
 	contributors: Array<TTimelines>,
-	leader: TTimelines,
+	weights: Map<TTimelines, [number, number]>,
 ) => {
-	const style = mustExist(
-		options.styleSheet?.get(leader.meta.id),
-		`missing style for '${leader.meta.id}'`,
-	);
+	const byWeights = (a: TTimelines, b: TTimelines) => {
+		const aWeights = mustExist(weights.get(a));
+		const bWeights = mustExist(weights.get(b));
+		if (aWeights[0] === bWeights[0]) {
+			return bWeights[1] - aWeights[1];
+		}
+		return bWeights[0] - aWeights[0];
+	};
+	const styleContributors = [
+		...contributors.values().filter((_) => !isIdentityMedia(_)),
+	];
+	const leader = styleContributors.sort(byWeights)[0];
+	const styleLeader =
+		leader !== undefined
+			? mustExist(
+					options.styleSheet?.get(leader.meta.id),
+					`missing style for '${leader.meta.id}'`,
+				)
+			: STYLE_UNBOUND_MEDIA;
 	const contributorClasses = [
-		...contributors.values().map((_) => classes.get(_.meta.id)),
+		...styleContributors.values().map((_) => classes.get(_.meta.id)),
 	];
 	const classList = ["event", ...contributorClasses];
-	const color = style.pencolor;
-	const fillcolors = contributors.values().reduce((fillColors, timeline) => {
-		if (isIdentityMedia(timeline)) {
+	const color = styleLeader.pencolor;
+	const fillcolors = styleContributors
+		.values()
+		.reduce((fillColors, timeline) => {
+			const timelineStyle = mustExist(
+				options.styleSheet?.get(timeline.meta.id),
+				`missing style for '${timeline.meta.id}'`,
+			);
+
+			const fill = timelineStyle.fillcolor;
+			// Ignore transparent fills.
+			if (fill[3] === 0) {
+				return fillColors;
+			}
+
+			fillColors.push(
+				timeline === leader
+					? fill
+					: matchLuminance(styleLeader.fillcolor, fill),
+			);
 			return fillColors;
-		}
-
-		const timelineStyle = mustExist(
-			options.styleSheet?.get(timeline.meta.id),
-			`missing style for '${timeline.meta.id}'`,
-		);
-
-		const fill = timelineStyle.fillcolor;
-		// Ignore transparent fills.
-		if (fill[3] === 0) {
-			return fillColors;
-		}
-
-		fillColors.push(
-			timeline === leader ? fill : matchLuminance(style.fillcolor, fill),
-		);
-		return fillColors;
-	}, new Array<RGBATuple | "transparent">());
-	const fontcolor = style.fontcolor;
+		}, new Array<RGBATuple | "transparent">());
+	const fontcolor = styleLeader.fontcolor;
 	const prefixes = [
-		...contributors
-			.values()
-			.filter((_) => typeof _.meta.prefix === "string")
-			.map((_) => _.meta.prefix),
-	].join(LABEL_PREFIX_GROUP);
+		...contributors.values().filter((_) => typeof _.meta.prefix === "string"),
+	]
+		.sort(byWeights)
+		.map((_) => _.meta.prefix)
+		.join(LABEL_PREFIX_GROUP);
 	const dateString = options?.dateRenderer
 		? options.dateRenderer(timestamp)
 		: new Date(timestamp).toDateString();
@@ -116,16 +135,16 @@ export const renderEventAsNode = <
 	const nodeProperties: Partial<NodeProperties> = {
 		class: classList.join(" "),
 		color: rgbaToHexString(color),
-		fillcolor: style.style.includes("filled")
+		fillcolor: styleLeader.style.includes("filled")
 			? fillcolors.length === 1
 				? rgbaToHexString(fillcolors[0])
 				: `${rgbaToHexString(fillcolors[0])}:${rgbaToHexString(fillcolors[1])}`
 			: undefined,
 		fontcolor: rgbaToHexString(fontcolor),
 		label,
-		penwidth: style.penwidth,
-		shape: style.shape,
-		style: style.style.join(","),
+		penwidth: styleLeader.penwidth,
+		shape: styleLeader.shape,
+		style: styleLeader.style.join(","),
 		tooltip,
 	};
 
@@ -464,10 +483,6 @@ export const render = <
 		for (const [eventTitle, eventTimelines] of frame.content.events) {
 			frameCache.frameTrailer ??= eventTitle;
 
-			const contributors = [...eventTimelines.values()].sort(
-				(a, b) =>
-					mustExist(frame.weights.get(b)) - mustExist(frame.weights.get(a)),
-			);
 			const nodeProperties = renderEventAsNode(
 				options,
 				classes,
@@ -480,8 +495,8 @@ export const render = <
 				},
 				timestamp,
 				eventTitle,
-				contributors,
-				contributors[0],
+				[...eventTimelines.values()],
+				frame.weights,
 			);
 			const id = `Z${date.getFullYear().toFixed().padStart(4, "0")}-${(date.getMonth() + 1).toFixed().padStart(2, "0")}-${date.getDate().toFixed().padStart(2, "0")}-${eventIndex++}`;
 			d.node(eventTitle, {

@@ -128,11 +128,8 @@ const baseline = hopsToWeights(trim.solidsRetained, trim.hops);
 // Generate stylesheet.
 /** @type {RenderMode} */
 const theme = args.theme === "light" ? "light" : "dark";
-const styleSheet = new Styling(trim.timelinesRetained, theme).styles(
-	trim.graph,
-	trim.hops,
-	maxHops,
-);
+const style = new Styling(trim.timelinesRetained, theme);
+const styleSheet = style.styles(trim.graph, trim.hops, maxHops);
 
 process.stderr.write(`report: Generating report...\n`);
 const reportString = report(
@@ -146,6 +143,7 @@ const reportString = report(
 	frameWeights,
 	trim.graph,
 	styleSheet,
+	style.palette(),
 );
 const output = createWriteStream(targetPath);
 output.write(`${reportString}\n`);

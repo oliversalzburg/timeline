@@ -8,7 +8,7 @@ import {
 	isIdentityPerson,
 	isIdentityPlain,
 } from "./genealogy.js";
-import type { Style } from "./style.js";
+import type { PaletteFactory, Style } from "./style.js";
 import type {
 	Identity,
 	Timeline,
@@ -55,17 +55,20 @@ export const analyze = (timeline: Array<TimelineRecord>): TimelineMetrics => {
 };
 
 export function report<
-	TTimeline extends Timeline & { meta: { identity?: Identity } },
+	TTimeline extends Timeline & {
+		meta: { color?: string; identity?: Identity };
+	},
 >(
 	timelines: Array<TTimeline>,
 	timelinesAdditional: Array<TTimeline>,
 	timelinesTrimmed: Array<TTimeline>,
 	hops: Map<string, number>,
 	baseline: Array<number>,
-	endWeights: Map<TTimeline, number>,
+	endWeights: Map<TTimeline, [number, number]>,
 	probes: Array<[number, Map<TTimeline, number> | undefined]>,
 	graph: IdentityGraph<TTimeline>,
 	styleSheet: Map<string, Style>,
+	paletteFactory: PaletteFactory<TTimeline>,
 ) {
 	const identifyIdentity = (identity: Identity | undefined) => {
 		switch (true) {
@@ -83,7 +86,18 @@ export function report<
 				return "Not an identity";
 		}
 	};
+	const palette = paletteFactory.reduce();
 	const buffer = new Array<string>();
+	for (const slot of paletteFactory.slots) {
+		buffer.push(
+			[
+				"---",
+				`Color: ${slot.color}`,
+				"Timelines:",
+				...slot.timelines.map((_) => `- ${_.meta.id} (color: ${_.meta.color})`),
+			].join("\n"),
+		);
+	}
 	for (
 		let timelineIndex = 0;
 		timelineIndex < timelines.length;
@@ -97,6 +111,8 @@ export function report<
 				`Timeline Identity ID: ${timeline.meta.identity?.id ?? "<has no identity>"}`,
 				`Timeline Identity Type: ${identifyIdentity(timeline.meta.identity)}`,
 				`CSS Class: ${`t${hashCyrb53(timeline.meta.id)}`}`,
+				`Original Color: ${timeline.meta.color}`,
+				`Palette Entry: ${palette.get(timeline)} (generated ${paletteFactory.demand} colors)`,
 				`Pen Color: ${styleSheet.get(timeline.meta.id)?.pencolor}`,
 				`Fill Color: ${styleSheet.get(timeline.meta.id)?.fillcolor}`,
 				`Identity Hops: ${hops.get(timeline.meta.identity?.id ?? "") ?? "undefined (treated as +Infinity), retained"}`,
@@ -130,6 +146,8 @@ export function report<
 				`Timeline Identity ID: ${timeline.meta.identity?.id ?? "<has no identity>"}`,
 				`Timeline Identity Type: ${identifyIdentity(timeline.meta.identity)}`,
 				`CSS Class: ${`t${hashCyrb53(timeline.meta.id)}`}`,
+				`Original Color: ${timeline.meta.color}`,
+				`Palette Entry: ${palette.get(timeline)} (generated ${paletteFactory.demand} colors)`,
 				`Pen Color: ${styleSheet.get(timeline.meta.id)?.pencolor}`,
 				`Fill Color: ${styleSheet.get(timeline.meta.id)?.fillcolor}`,
 				`Identity Hops: ${hops.get(timeline.meta.identity?.id ?? "") ?? "undefined (treated as +Infinity)"}`,
@@ -166,6 +184,8 @@ export function report<
 				`Timeline Identity ID: ${timeline.meta.identity?.id ?? "<has no identity>"}`,
 				`Timeline Identity Type: ${identifyIdentity(timeline.meta.identity)}`,
 				`CSS Class: ${`t${hashCyrb53(timeline.meta.id)}`}`,
+				`Original Color: ${timeline.meta.color}`,
+				`Palette Entry: ${palette.get(timeline)} (generated ${paletteFactory.demand} colors)`,
 				`Pen Color: ${styleSheet.get(timeline.meta.id)?.pencolor}`,
 				`Fill Color: ${styleSheet.get(timeline.meta.id)?.fillcolor}`,
 				`Identity Hops: ${hops.get(timeline.meta.identity?.id ?? "") ?? "undefined (treated as +Infinity), retained"}`,

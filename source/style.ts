@@ -60,7 +60,25 @@ export const STYLE_TRANSFER_MARKER: Style = {
 	shape: "rect",
 	style: ["solid"],
 };
+export const STYLE_UNBOUND_MEDIA: Style = {
+	fillcolor: [0, 0, 0, 0],
+	link: "invis",
+	penwidth: 1,
+	fontcolor: [255, 0, 0, 0],
+	pencolor: [255, 0, 0, 0],
+	shape: "rect",
+	style: [],
+};
 
+export interface PaletteFactory<
+	TTimeline extends Timeline & {
+		meta: MetaSectionAncestryRenderer | MetaSectionReferenceRenderer;
+	},
+> {
+	demand: number;
+	reduce: () => Map<TTimeline, RGBATuple>;
+	slots: Array<{ color: string; timelines: Array<TTimeline> }>;
+}
 export class Styling<
 	TTimeline extends Timeline & {
 		meta: MetaSectionAncestryRenderer | MetaSectionReferenceRenderer;
@@ -71,7 +89,7 @@ export class Styling<
 		public readonly theme: RenderMode,
 	) {}
 
-	palette() {
+	palette(): PaletteFactory<TTimeline> {
 		const slots = new Array<{ color: string; timelines: Array<TTimeline> }>();
 		const add = (color: string, timeline: TTimeline) => {
 			let slot = slots.find((_) => _.color === color);
@@ -120,11 +138,17 @@ export class Styling<
 			const color = mustExist(flexibleColors.pop());
 			slot.color = rgbaToString([...color, 255]);
 		}
-		return new Map<TTimeline, RGBATuple>(
-			slots.flatMap((slot) =>
-				slot.timelines.map((_) => [_, rgbaFromString(slot.color)]),
-			),
-		);
+		return {
+			reduce: () => {
+				return new Map<TTimeline, RGBATuple>(
+					slots.flatMap((slot) =>
+						slot.timelines.map((_) => [_, rgbaFromString(slot.color)]),
+					),
+				);
+			},
+			demand,
+			slots,
+		};
 	}
 
 	styles(
@@ -132,7 +156,7 @@ export class Styling<
 		hops: Map<string, number>,
 		hopsMax?: number,
 	): Map<string, Style> {
-		const palette = this.palette();
+		const palette = this.palette().reduce();
 		const styleSheet = new Map<string, Style>();
 
 		const originTimeline = mustExist(

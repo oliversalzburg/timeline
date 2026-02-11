@@ -35,7 +35,10 @@ export const parseStringAsDate = (input?: string, offset = 0) => {
 	return date;
 };
 
-export const uncertainEventToDateArtistic = (input?: Event | null) => {
+export const uncertainEventToDateArtistic = (
+	input?: Event | null,
+	rng = random,
+) => {
 	if (isNil(input)) {
 		return undefined;
 	}
@@ -61,7 +64,7 @@ export const uncertainEventToDateArtistic = (input?: Event | null) => {
 			`invalid date '${before}'`,
 		);
 		const distance = end.valueOf() - start.valueOf();
-		return new Date(start.valueOf() + random.nextRange(0, distance));
+		return new Date(start.valueOf() + rng.nextRange(0, distance));
 	}
 	if (after !== undefined) {
 		return mustExist(parseStringAsDate(after, 1), `invalid date '${after}'`);
