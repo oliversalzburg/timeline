@@ -64,8 +64,8 @@ export const STYLE_UNBOUND_MEDIA: Style = {
 	fillcolor: [0, 0, 0, 0],
 	link: "invis",
 	penwidth: 1,
-	fontcolor: [255, 0, 0, 0],
-	pencolor: [255, 0, 0, 0],
+	fontcolor: [255, 0, 0, 255],
+	pencolor: [255, 0, 0, 255],
 	shape: "rect",
 	style: [],
 };
@@ -100,7 +100,9 @@ export class Styling<
 			slot.timelines.push(timeline);
 		};
 
-		for (const timeline of this.timelines) {
+		for (const timeline of this.timelines.toSorted((a, b) =>
+			a.meta.id.localeCompare(b.meta.id),
+		)) {
 			if (typeof timeline.meta.color === "string") {
 				add(timeline.meta.color, timeline);
 				continue;

@@ -88,6 +88,9 @@ export function report<
 	};
 	const palette = paletteFactory.reduce();
 	const buffer = new Array<string>();
+	buffer.push(
+		`Generated palette with ${paletteFactory.demand} dynamic colors:`,
+	);
 	for (const slot of paletteFactory.slots) {
 		buffer.push(
 			[
