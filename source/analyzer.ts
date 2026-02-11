@@ -94,7 +94,9 @@ export function report<
 				"---",
 				`Color: ${slot.color}`,
 				"Timelines:",
-				...slot.timelines.map((_) => `- ${_.meta.id} (color: ${_.meta.color})`),
+				...(slot.timelines.length < 100
+					? slot.timelines.map((_) => `- ${_.meta.id} (color: ${_.meta.color})`)
+					: [`<${slot.timelines.length} entries omitted from report>`]),
 			].join("\n"),
 		);
 	}
@@ -112,7 +114,7 @@ export function report<
 				`Timeline Identity Type: ${identifyIdentity(timeline.meta.identity)}`,
 				`CSS Class: ${`t${hashCyrb53(timeline.meta.id)}`}`,
 				`Original Color: ${timeline.meta.color}`,
-				`Palette Entry: ${palette.get(timeline)} (generated ${paletteFactory.demand} colors)`,
+				`Palette Entry: ${palette.get(timeline)}`,
 				`Pen Color: ${styleSheet.get(timeline.meta.id)?.pencolor}`,
 				`Fill Color: ${styleSheet.get(timeline.meta.id)?.fillcolor}`,
 				`Identity Hops: ${hops.get(timeline.meta.identity?.id ?? "") ?? "undefined (treated as +Infinity), retained"}`,
@@ -147,7 +149,7 @@ export function report<
 				`Timeline Identity Type: ${identifyIdentity(timeline.meta.identity)}`,
 				`CSS Class: ${`t${hashCyrb53(timeline.meta.id)}`}`,
 				`Original Color: ${timeline.meta.color}`,
-				`Palette Entry: ${palette.get(timeline)} (generated ${paletteFactory.demand} colors)`,
+				`Palette Entry: ${palette.get(timeline)}`,
 				`Pen Color: ${styleSheet.get(timeline.meta.id)?.pencolor}`,
 				`Fill Color: ${styleSheet.get(timeline.meta.id)?.fillcolor}`,
 				`Identity Hops: ${hops.get(timeline.meta.identity?.id ?? "") ?? "undefined (treated as +Infinity)"}`,
@@ -185,7 +187,7 @@ export function report<
 				`Timeline Identity Type: ${identifyIdentity(timeline.meta.identity)}`,
 				`CSS Class: ${`t${hashCyrb53(timeline.meta.id)}`}`,
 				`Original Color: ${timeline.meta.color}`,
-				`Palette Entry: ${palette.get(timeline)} (generated ${paletteFactory.demand} colors)`,
+				`Palette Entry: ${palette.get(timeline)}`,
 				`Pen Color: ${styleSheet.get(timeline.meta.id)?.pencolor}`,
 				`Fill Color: ${styleSheet.get(timeline.meta.id)?.fillcolor}`,
 				`Identity Hops: ${hops.get(timeline.meta.identity?.id ?? "") ?? "undefined (treated as +Infinity), retained"}`,
