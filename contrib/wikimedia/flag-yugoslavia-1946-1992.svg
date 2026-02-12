@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   id="flag-germany-1867-1918.svg"
+   width="72"
+   height="72"
+   viewBox="0 0 72 72"
+   version="1.1"
+   sodipodi:docname="flag-yugoslavia-1946-1992.svg"
+   inkscape:version="1.4.2 (ebf0e940d0, 2025-05-08)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1" />
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#505050"
+     bordercolor="#ffffff"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="1"
+     inkscape:deskcolor="#505050"
+     inkscape:zoom="12.763889"
+     inkscape:cx="55.821545"
+     inkscape:cy="82.184984"
+     inkscape:window-width="2160"
+     inkscape:window-height="3803"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="flag-germany-1867-1918.svg" />
+  <path
+     fill="#003893"
+     d="M 4.9509995,21.090473 H 67.127401 V 52.178674 H 4.9509995 Z"
+     id="path1"
+     style="stroke-width:0.0621764" />
+  <path
+     fill="#ffffff"
+     d="M 4.9509995,31.453226 H 67.127401 V 52.178674 H 4.9509995 Z"
+     id="path2"
+     style="stroke-width:0.0621764" />
+  <g
+     fill="#de0000"
+     id="g4"
+     transform="matrix(0.0621764,0,0,0.0621764,4.9509995,21.090473)">
+    <path
+       d="M 0,333.333 H 1000 V 500 H 0 Z"
+       id="path3" />
+    <path
+       fill-rule="evenodd"
+       stroke="#fcd115"
+       stroke-width="8.89"
+       d="m 500,97.716 34.193,105.222 110.638,0.005 -89.506,65.035 34.185,105.225 -89.51,-65.03 -89.511,65.029 34.185,-105.225 -89.506,-65.035 110.638,-0.005 z"
+       id="path4" />
+  </g>
+</svg>

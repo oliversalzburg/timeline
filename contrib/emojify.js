@@ -784,9 +784,17 @@ export const PREFIXES = {
 		name: "transmission",
 		src: "E0A1.svg",
 	},
+	"soviet-union": {
+		name: "soviet union",
+		src: "flag-soviet-union.svg",
+	},
 	u60311: {
 		name: "u60311",
 		src: "logo-u60311.svg",
+	},
+	yugoslavia: {
+		name: "yugoslavia",
+		src: "flag-yugoslavia-1946-1992.svg",
 	},
 };
 export const TEMPLATES = {

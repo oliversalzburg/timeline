@@ -273,6 +273,15 @@ $(OUTPUT)/pedigree-analytics.pdf : $(OUTPUT_BUILD)/pedigree-analytics.md $(OUTPU
 		"--output=$@" \
 		$(notdir $<)
 	@date +"%FT%T%z Generated ANALYTICS pedigree chart '$@'."
+docs/grundlagen.pdf : docs/grundlagen/grundlagen.md docs/grundlagen/eisvogel.latex
+	@pandoc \
+		--from markdown \
+		--to pdf \
+		--pdf-engine lualatex \
+		--template docs/grundlagen/eisvogel.latex \
+		"--output=$@" \
+		$<
+	@date +"%FT%T%z Generated documentation '$@'."
 
 # Compress an SVG by applying lossy XML transformations.
 %.min.svg: %.svg

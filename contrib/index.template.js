@@ -268,13 +268,22 @@ const main = async function main() {
 	//#region SFX
 	const audioContext = new window.AudioContext();
 	const samples = new Map();
+	const samplesLoading = new Map();
 	/**
 	 * @param {string} id -
 	 * @param {string} url -
 	 */
 	const sfxPrepareSample = async function sfxPrepareSample(id, url) {
-		const raw = await fetch(url);
-		const data = await audioContext.decodeAudioData(await raw.arrayBuffer());
+		console.debug(`Preparing sample '${id}' from '${url}'...`);
+		const load = async () => {
+			const raw = await fetch(url);
+			const data = await audioContext.decodeAudioData(await raw.arrayBuffer());
+			return data;
+		};
+		const dataRequest = load();
+		samplesLoading.set(url, dataRequest);
+		const data = await dataRequest;
+		console.debug(`Sample '${id}' is ready.`);
 		samples.set(id, data);
 	};
 
@@ -297,18 +306,33 @@ const main = async function main() {
 	);
 	sfxPrepareSample("transition_up", "media/sfx/SND01_sine/transition_up.wav");
 
+	sfxPrepareSample(
+		"dreh_die_zeit_zurück",
+		"media/audio/dreh-die-zeit-zurück.mp3",
+	);
+	sfxPrepareSample(
+		"liebing_nature_one",
+		"media/audio/Chris_Liebing_-_Live_@_Nature_One_2014_(Germany)_-_02-08-2014.mp3",
+	);
+
 	/**
 	 * Play the sound with the given ID.
 	 *
 	 * @param {string} id -
 	 */
 	const sfxPlay = async function sfxPlay(id) {
+		if (!samples.has(id)) {
+			console.warn(`Trying to play unprepared sample '${id}'!`);
+			return;
+		}
+		console.debug(`Requesting to play '${id}'.`);
 		await audioContext.resume();
-		const sfxButton = audioContext.createBufferSource();
-		sfxButton.buffer = samples.get(id);
-		sfxButton.connect(audioContext.destination);
-		sfxButton.loop = false;
-		sfxButton.start();
+		const sfxBuffer = audioContext.createBufferSource();
+		sfxBuffer.buffer = samples.get(id);
+		sfxBuffer.connect(audioContext.destination);
+		sfxBuffer.loop = false;
+		console.debug(`Playing '${id}'...`);
+		sfxBuffer.start();
 	};
 	const sfxPlaySwipe = function sfxPlaySwipe() {
 		const index = Math.round(1 + Math.random() * 4);
@@ -2532,24 +2556,31 @@ const main = async function main() {
 			cull();
 
 			console.info("Program init finalized.");
-			document.body.classList.remove("loading");
-			window.requestAnimationFrame(present);
+			Promise.all(samplesLoading.values().toArray()).then(() => {
+				sfxPlay("liebing_nature_one");
+				window.setTimeout(() => {
+					sfxPlay("dreh_die_zeit_zurück");
+				}, 21000);
 
-			window.setTimeout(() => {
-				calendarContainer.classList.add("open");
-				console.info("Calendar shown.");
-			}, 5000);
+				document.body.classList.remove("loading");
+				window.requestAnimationFrame(present);
 
-			window.setTimeout(() => {
-				statusContainer.classList.add("open");
-				returnToNeutral();
-				console.info("Status shown.");
-			}, 6000);
+				window.setTimeout(() => {
+					calendarContainer.classList.add("open");
+					console.info("Calendar shown.");
+				}, 5000);
 
-			window.setTimeout(() => {
-				loader.style.display = "none";
-				console.info("Loader hidden.");
-			}, 10000);
+				window.setTimeout(() => {
+					statusContainer.classList.add("open");
+					returnToNeutral();
+					console.info("Status shown.");
+				}, 6000);
+
+				window.setTimeout(() => {
+					loader.style.display = "none";
+					console.info("Loader hidden.");
+				}, 10000);
+			});
 		});
 	};
 	window.setTimeout(init);
