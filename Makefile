@@ -220,7 +220,7 @@ $(OUTPUT)/universe.html : $(OUTPUT_BUILD)/universe.info $(_OBJECTS)
 	@date +"%FT%T%z Normalized GraphViz DOT document '$@'."
 %.dotus : %.gvus
 	@dot $(DOT_FLAGS) -Tcanon -o $@ $<
-	@date +"%FT%T%z Normalized GraphViz DOTus document '$@'."
+	@date +"%FT%T%z Normalized GraphViz DOTus segment '$@'."
 
 # Embed (emoji) prefixes as <IMG> elements in the label.
 # At time of implementation, this output did not render well
@@ -229,22 +229,22 @@ $(OUTPUT)/universe.html : $(OUTPUT_BUILD)/universe.info $(_OBJECTS)
 	@node --enable-source-maps contrib/emojify.js \
 		"--assets=$(OUTPUT_BUILD)" \
 		"--target=$<"
-	@date +"%FT%T%z Generated embedded iDOTus fragment '$@'."
+	@date +"%FT%T%z Generated embedded iDOTus segment '$@'."
 %.igvus : %.gvus $(IMAGES) contrib/emojify.js
 	@node --enable-source-maps contrib/emojify.js \
 		"--assets=$(OUTPUT_BUILD)" \
 		"--target=$<"
-	@date +"%FT%T%z Generated embedded iGVus fragment '$@'."
+	@date +"%FT%T%z Generated embedded iGVus segment '$@'."
 
 %.svg : %.dot
 	@dot $(DOT_FLAGS) -Tsvg:cairo -o $@ $<
 	@date +"%FT%T%z Rendered DOT graph SVG (Cairo) image '$@'."
 %.ibgus : %.idotus
 	@dot $(DOT_FLAGS) -Tsvg -o $@ $<
-	@date +"%FT%T%z Rendered DOT graph iSVGus image '$@'."
+	@date +"%FT%T%z Rendered DOT graph SVG image '$@'."
 %.ibgus : %.igvus
 	@dot $(DOT_FLAGS) -Tsvg -o $@ $<
-	@date +"%FT%T%z Rendered DOT graph iSVGus image '$@'."
+	@date +"%FT%T%z Rendered DOT graph SVG image '$@'."
 
 %.isvgus : %.ibgus
 	@node --enable-source-maps contrib/gradientify.js \

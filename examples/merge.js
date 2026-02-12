@@ -62,4 +62,4 @@ const raw = stringify(plain);
 
 const output =
 	targetPath === "-" ? process.stdout : createWriteStream(targetPath);
-output.write(`---\n${raw}\n`);
+output.write(`---\n${raw}`);

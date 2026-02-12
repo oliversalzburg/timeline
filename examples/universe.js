@@ -6,6 +6,7 @@ import { mustExist } from "@oliversalzburg/js-utils/data/nil.js";
 import { parse } from "yaml";
 import {
 	analyze,
+	fastForward,
 	hopsToWeights,
 	load,
 	render,
@@ -141,6 +142,13 @@ const renderOptions = {
 	styleSheet,
 	theme,
 };
+const endWeights = fastForward(
+	weightedFrames(
+		trim.timelinesRetained,
+		hopsToWeights(trim.timelinesRetained, trim.hops),
+		mustExist(timelines.find((_) => _.meta.id === originTimelineId)),
+	),
+);
 const dotGraph = render(
 	trim.timelinesRetained,
 	renderOptions,
@@ -148,6 +156,7 @@ const dotGraph = render(
 		trim.timelinesRetained,
 		hopsToWeights(trim.timelinesRetained, trim.hops),
 		mustExist(timelines.find((_) => _.meta.id === originTimelineId)),
+		endWeights,
 	),
 );
 

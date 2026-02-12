@@ -48,12 +48,15 @@ export const renderEventAsNode = <
 	timestamp: number,
 	title: string,
 	contributors: Array<TTimelines>,
-	weights: Map<TTimelines, [number, number]>,
+	weights: Map<TTimelines, [number, number, number | undefined]>,
 ) => {
 	const byWeights = (a: TTimelines, b: TTimelines) => {
 		const aWeights = mustExist(weights.get(a));
 		const bWeights = mustExist(weights.get(b));
 		if (aWeights[0] === bWeights[0]) {
+			if (aWeights[1] === bWeights[1]) {
+				return (bWeights[2] ?? 0) - (aWeights[2] ?? 0);
+			}
 			return bWeights[1] - aWeights[1];
 		}
 		return bWeights[0] - aWeights[0];

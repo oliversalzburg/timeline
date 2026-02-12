@@ -64,7 +64,7 @@ export function report<
 	timelinesTrimmed: Array<TTimeline>,
 	hops: Map<string, number>,
 	baseline: Array<number>,
-	endWeights: Map<TTimeline, [number, number]>,
+	endWeights: Map<TTimeline, [number, number, number | undefined]>,
 	probes: Array<[number, Map<TTimeline, number> | undefined]>,
 	graph: IdentityGraph<TTimeline>,
 	styleSheet: Map<string, Style>,

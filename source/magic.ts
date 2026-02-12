@@ -119,7 +119,7 @@ export type WeightedFrame<
 > = {
 	content: Frame<TTimeline>;
 	timestamp: number;
-	weights: Map<TTimeline, [number, number]>;
+	weights: Map<TTimeline, [number, number, number | undefined]>;
 };
 export type WeightedFramesGenerator<
 	TTimeline extends Timeline & { meta: { identity?: Identity } },
@@ -130,13 +130,19 @@ export function* weightedFrames<
 	timelines: Array<TTimeline>,
 	baseline: Array<number>,
 	origin: TTimeline,
+	endWeights?: Map<TTimeline, [number, number, number | undefined]>,
 ): WeightedFramesGenerator<TTimeline> {
 	const frames = buildFrames(timelines);
 	const renderPlan = [...frames.entries()].sort(([a], [b]) => a - b);
-	let weightCache: Map<TTimeline, [number, number]> | undefined;
+	let weightCache:
+		| Map<TTimeline, [number, number, number | undefined]>
+		| undefined;
 	for (let planIndex = 0; planIndex < renderPlan.length; ++planIndex) {
 		const [timestamp, frame] = renderPlan[planIndex];
-		const frameWeights = new Map<TTimeline, [number, number]>();
+		const frameWeights = new Map<
+			TTimeline,
+			[number, number, number | undefined]
+		>();
 		for (
 			let timelineIndex = 0;
 			timelineIndex < timelines.length;
@@ -155,9 +161,25 @@ export function* weightedFrames<
 						)?.length ?? 0) *
 						baseline[timelineIndex],
 				baseline[timelineIndex],
+				endWeights?.get(timeline)?.[0],
 			]);
 		}
 		yield { content: frame, timestamp, weights: frameWeights };
 		weightCache = frameWeights;
 	}
+	return weightCache;
+}
+
+export function fastForward<
+	TTimeline extends Timeline & { meta: { identity?: Identity } },
+>(
+	generator: WeightedFramesGenerator<TTimeline>,
+): Map<TTimeline, [number, number, number | undefined]> | undefined {
+	let lastWeights:
+		| Map<TTimeline, [number, number, number | undefined]>
+		| undefined;
+	for (const frame of generator) {
+		lastWeights = frame.weights;
+	}
+	return lastWeights;
 }

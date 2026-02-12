@@ -99,16 +99,17 @@ const trim = trimUniverse(
 );
 
 process.stderr.write(
-	`report: Scanning universe for ${probes?.length ?? 0} probes...\n`,
+	`report: Fast-forwarding universe with ${timelines.length} weights, and scanning for ${probes?.length ?? 0} probes...\n`,
 );
 const frameWeights = [];
 let lastFrameWeights;
 const needles = new Set(probes);
-for (const frame of weightedFrames(
+const generator = weightedFrames(
 	timelines,
 	hopsToWeights(timelines, trim.hops),
 	mustExist(timelines.find((_) => _.meta.id === originTimelineId)),
-)) {
+);
+for (const frame of generator) {
 	if (0 < needles.size && needles.has(frame.timestamp)) {
 		frameWeights.push([frame.timestamp, frame.weights]);
 		needles.delete(frame.timestamp);
@@ -119,6 +120,7 @@ for (const frame of weightedFrames(
 			process.stderr.write(`report: Scanning for end...\n`);
 		}
 	}
+
 	lastFrameWeights = frame.weights;
 }
 
