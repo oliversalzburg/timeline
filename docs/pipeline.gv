@@ -1,0 +1,86 @@
+digraph pipeline {
+	graph[rankdir=TB];
+
+	korpus [label="Korpus" shape=cylinder];
+	emoji [label="*.svg" shape=rect style=rounded];
+	stg [label="Space-Time-Generator" shape=oval];
+	universe [label="universe.yml" shape=circle];
+
+	reporter [label="report.js" shape=oval];
+	renderer [label="universe.js" shape=oval];
+	canon [label="dot -Tcanon" shape=oval];
+	emojify [label="emojify.js" shape=oval];
+	dot [label="dot -Tsvg" shape=oval];
+	svgcat [label="svgcat.js" shape=oval];
+	svgnest [label="svgnest.js" shape=oval];
+	gradientify [label="gradientify.js" shape=oval];
+	buildsite [label="build-site.js" shape=oval];
+	
+	gvus [label="universe.*.gvus" shape=rect style=rounded];
+	dotus [label="universe.*.dotus" shape=rect style=rounded];
+	igvus [label="universe.*.igvus" shape=rect style="rounded,dashed"];
+	idotus [label="universe.*.idotus" shape=rect style=rounded];
+	ibgus [label="universe.*.ibgus" shape=rect style=rounded];
+	isvgus [label="universe.*.isvgus" shape=rect style=rounded];
+
+	bgus [label="universe.*.bgus" shape=rect style="rounded,dashed"];
+	svgus [label="universe.*.svgus" shape=rect style="rounded,dashed"];
+
+	loose [label="universe.svg.loose" shape=rect];
+
+	svg [label="universe.svg" shape=rect];
+	meta [label="universe.meta" shape=rect];
+	info [label="universe.info" shape=rect];
+	html [label="universe.html" shape=rect];
+	report [label="universe.report" shape=rect];
+	indexjs [label="index.js" shape=rect];
+	indexcss [label="index.css" shape=rect];
+	indexhtml [label="index.html" shape=rect];
+
+	korpus -> stg -> universe;
+
+	universe -> renderer;
+	universe -> reporter -> report;
+
+	renderer -> meta;
+	renderer -> info;
+	renderer -> gvus [label="generate segments"];
+
+	gvus -> canon;
+	canon -> dotus [label="canonicalize"];
+
+	gvus -> dot [style=dashed];
+	
+	dotus -> emojify;
+	emojify -> idotus [label="increase fidelity"];
+
+	gvus -> emojify -> igvus [style=dashed];
+	igvus -> dot [style=dashed];
+	
+	idotus -> dot;
+	dot -> ibgus [label="render SVG"];
+
+	dotus -> dot [style=dashed];
+	dot -> svgus [style=dashed];
+	dot -> bgus [style=dashed];
+	bgus -> gradientify -> svgus [style=dashed];
+	
+	ibgus -> gradientify;
+	gradientify -> isvgus [label="expand gradients"];
+
+	svgus -> svgcat [style=dashed];
+	isvgus -> svgcat;
+	svgcat -> loose [label="concatenate segments"];
+
+	emoji -> svgnest;
+	loose -> svgnest;
+	svgnest -> svg [label="embed externals"];
+
+	indexjs -> buildsite;
+	indexcss -> buildsite;
+	indexhtml -> buildsite;
+	svg -> buildsite;
+	info -> buildsite;
+	meta -> buildsite;
+	buildsite -> html [label="produce single document"];
+}

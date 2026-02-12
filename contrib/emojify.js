@@ -595,11 +595,6 @@ export const PREFIXES = {
 		name: "old woman",
 		src: "1F475.svg",
 	},
-	"\u{1F476}": {
-		emoji: "👶",
-		name: "baby",
-		src: "1F476.svg",
-	},
 	"\u{1F475}\u{1F3FC}": {
 		emoji: "👵🏼",
 		name: "old woman: medium-light skin tone",
@@ -609,6 +604,11 @@ export const PREFIXES = {
 		emoji: "👵🏽",
 		name: "old woman: medium skin tone",
 		src: "1F475-1F3FD.svg",
+	},
+	"\u{1F476}": {
+		emoji: "👶",
+		name: "baby",
+		src: "1F476.svg",
 	},
 	"\u{1F480}": {
 		emoji: "💀",

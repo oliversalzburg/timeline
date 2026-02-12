@@ -193,10 +193,7 @@ $(OUTPUT)/universe.report : $(OUTPUT_BUILD)/universe.report
 		"--target=$@.loose" $(SEGMENTS_ISVG)
 	@node --enable-source-maps contrib/svgnest.js \
 		"--assets=$(OUTPUT_BUILD)" \
-		"--target=$@.bigradient" "$@.loose"
-	@node --enable-source-maps contrib/gradientify.js \
-		"--build=$(OUTPUT_BUILD)" \
-		"--target=$@" "$@.bigradient"
+		"--target=$@" "$@.loose"
 	@date +"%FT%T%z Universe SVG generated '$@'."
 
 $(OUTPUT)/universe.html : $(OUTPUT_BUILD)/universe.info $(_OBJECTS)
@@ -242,12 +239,18 @@ $(OUTPUT)/universe.html : $(OUTPUT_BUILD)/universe.info $(_OBJECTS)
 %.svg : %.dot
 	@dot $(DOT_FLAGS) -Tsvg:cairo -o $@ $<
 	@date +"%FT%T%z Rendered DOT graph SVG (Cairo) image '$@'."
-%.isvgus : %.idotus
+%.ibgus : %.idotus
 	@dot $(DOT_FLAGS) -Tsvg -o $@ $<
 	@date +"%FT%T%z Rendered DOT graph iSVGus image '$@'."
-%.isvgus : %.igvus
+%.ibgus : %.igvus
 	@dot $(DOT_FLAGS) -Tsvg -o $@ $<
 	@date +"%FT%T%z Rendered DOT graph iSVGus image '$@'."
+
+%.isvgus : %.ibgus
+	@node --enable-source-maps contrib/gradientify.js \
+		"--build=$(OUTPUT_BUILD)" \
+		"--target=$@" $< >/dev/null
+	@date +"%FT%T%z Upgraded SVG gradient fills '$@'."
 
 $(OUTPUT)/pedigree-public.pdf : $(OUTPUT_BUILD)/pedigree-public.md $(OUTPUT_BUILD)/pedigree-public-light.svg
 	@cd $(OUTPUT_BUILD); pandoc \
