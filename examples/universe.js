@@ -142,13 +142,15 @@ const renderOptions = {
 	styleSheet,
 	theme,
 };
+process.stdout.write(`universe: Calculating weights...\n`);
 const endWeights = fastForward(
 	weightedFrames(
-		trim.timelinesRetained,
-		hopsToWeights(trim.timelinesRetained, trim.hops),
+		trim.solidsRetained,
+		hopsToWeights(trim.solidsRetained, trim.hops),
 		mustExist(timelines.find((_) => _.meta.id === originTimelineId)),
 	),
 );
+process.stdout.write(`universe: Rendering...\n`);
 const dotGraph = render(
 	trim.timelinesRetained,
 	renderOptions,

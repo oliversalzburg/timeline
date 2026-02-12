@@ -73,11 +73,18 @@ export function trimUniverse<
 		isIdentityPerson(timeline),
 	) as Array<TimelineAncestryRenderer>;
 	const timelinesRetainedSolid = timelinesRetained.filter(
-		(_) => isIdentityLocation(_) || isIdentityPeriod(_) || isIdentityPerson(_),
+		(_) =>
+			isIdentityLocation(_) ||
+			isIdentityPeriod(_) ||
+			isIdentityPerson(_) ||
+			isIdentityPlain(_),
 	);
 	const timelinesRetainedNonSolid = timelinesRetained.filter(
 		(_) =>
-			!isIdentityLocation(_) && !isIdentityPeriod(_) && !isIdentityPerson(_),
+			!isIdentityLocation(_) &&
+			!isIdentityPeriod(_) &&
+			!isIdentityPerson(_) &&
+			!isIdentityPlain(_),
 	);
 	const graphTrimmed = new IdentityGraph(timelinesRetained, originIdentityId);
 	return {
@@ -167,7 +174,6 @@ export function* weightedFrames<
 		yield { content: frame, timestamp, weights: frameWeights };
 		weightCache = frameWeights;
 	}
-	return weightCache;
 }
 
 export function fastForward<
