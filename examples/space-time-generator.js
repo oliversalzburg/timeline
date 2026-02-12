@@ -209,7 +209,7 @@ const fill = (timeline) => {
 	if (death !== undefined) {
 		document.records.push([
 			death.valueOf(),
-			{ title: `☠️ ${nameAtDate(death)} verstorben`, generated: false },
+			{ title: `✝ ${nameAtDate(death)} verstorben`, generated: false },
 		]);
 	}
 	return sort(document);

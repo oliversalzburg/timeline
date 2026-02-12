@@ -350,30 +350,180 @@ export const PREFIXES = {
 		name: "cat face",
 		src: "1F431.svg",
 	},
+	"\u{1F466}\u{1F3FB}": {
+		emoji: "👦🏻",
+		name: "boy: light skin tone",
+		src: "1F466-1F3FB.svg",
+	},
+	"\u{1F466}\u{1F3FC}": {
+		emoji: "👦🏼",
+		name: "boy: medium-light skin tone",
+		src: "1F466-1F3FC.svg",
+	},
+	"\u{1F466}\u{1F3FD}": {
+		emoji: "👦🏽",
+		name: "boy: medium skin tone",
+		src: "1F466-1F3FD.svg",
+	},
+	"\u{1F466}\u{1F3FE}": {
+		emoji: "👦🏾",
+		name: "boy: medium-dark skin tone",
+		src: "1F466-1F3FE.svg",
+	},
+	"\u{1F466}\u{1F3FF}": {
+		emoji: "👦🏿",
+		name: "boy: dark skin tone",
+		src: "1F466-1F3FF.svg",
+	},
 	"\u{1F466}": {
 		emoji: "👦",
 		name: "boy",
 		src: "1F466.svg",
+	},
+	"\u{1F467}\u{1F3FB}": {
+		emoji: "👧🏻",
+		name: "girl: light skin tone",
+		src: "1F467-1F3FB.svg",
+	},
+	"\u{1F467}\u{1F3FC}": {
+		emoji: "👧🏼",
+		name: "girl: medium-light skin tone",
+		src: "1F467-1F3FC.svg",
+	},
+	"\u{1F467}\u{1F3FD}": {
+		emoji: "👧🏽",
+		name: "girl: medium skin tone",
+		src: "1F467-1F3FD.svg",
+	},
+	"\u{1F467}\u{1F3FE}": {
+		emoji: "👧🏾",
+		name: "girl: medium-dark skin tone",
+		src: "1F467-1F3FE.svg",
+	},
+	"\u{1F467}\u{1F3FF}": {
+		emoji: "👧🏿",
+		name: "girl: dark skin tone",
+		src: "1F467-1F3FF.svg",
 	},
 	"\u{1F467}": {
 		emoji: "👧",
 		name: "girl",
 		src: "1F467.svg",
 	},
+	"\u{1F468}\u{1F3FB}\u200D\u{1F9B0}": {
+		emoji: "👨🏻‍🦰",
+		name: "man: light skin tone, red hair",
+		src: "1F468-1F3FB-200D-1F9B0.svg",
+	},
+	"\u{1F468}\u{1F3FC}\u200D\u{1F9B0}": {
+		emoji: "👨🏼‍🦰",
+		name: "man: medium-light skin tone, red hair",
+		src: "1F468-1F3FC-200D-1F9B0.svg",
+	},
+	"\u{1F468}\u{1F3FD}\u200D\u{1F9B0}": {
+		emoji: "👨🏽‍🦰",
+		name: "man: medium skin tone, red hair",
+		src: "1F468-1F3FD-200D-1F9B0.svg",
+	},
+	"\u{1F468}\u{1F3FE}\u200D\u{1F9B0}": {
+		emoji: "👨🏾‍🦰",
+		name: "man: medium-dark skin tone, red hair",
+		src: "1F468-1F3FE-200D-1F9B0.svg",
+	},
+	"\u{1F468}\u{1F3FF}\u200D\u{1F9B0}": {
+		emoji: "👨🏿‍🦰",
+		name: "man: dark skin tone, red hair",
+		src: "1F468-1F3FF-200D-1F9B0.svg",
+	},
 	"\u{1F468}\u200D\u{1F9B0}": {
 		emoji: "👨‍🦰",
 		name: "man: red hair",
 		src: "1F468-200D-1F9B0.svg",
+	},
+	"\u{1F468}\u{1F3FB}\u200D\u{1F9B1}": {
+		emoji: "👨🏻‍🦱",
+		name: "man: light skin tone, curly hair",
+		src: "1F468-1F3FB-200D-1F9B1.svg",
+	},
+	"\u{1F468}\u{1F3FC}\u200D\u{1F9B1}": {
+		emoji: "👨🏼‍🦱",
+		name: "man: medium-light skin tone, curly hair",
+		src: "1F468-1F3FC-200D-1F9B1.svg",
+	},
+	"\u{1F468}\u{1F3FD}\u200D\u{1F9B1}": {
+		emoji: "👨🏽‍🦱",
+		name: "man: medium skin tone, curly hair",
+		src: "1F468-1F3FD-200D-1F9B1.svg",
+	},
+	"\u{1F468}\u{1F3FE}\u200D\u{1F9B1}": {
+		emoji: "👨🏾‍🦱",
+		name: "man: medium-dark skin tone, curly hair",
+		src: "1F468-1F3FE-200D-1F9B1.svg",
+	},
+	"\u{1F468}\u{1F3FF}\u200D\u{1F9B1}": {
+		emoji: "👨🏿‍🦱",
+		name: "man: dark skin tone, curly hair",
+		src: "1F468-1F3FF-200D-1F9B1.svg",
 	},
 	"\u{1F468}\u200D\u{1F9B1}": {
 		emoji: "👨‍🦱",
 		name: "man: curly hair",
 		src: "1F468-200D-1F9B1.svg",
 	},
+	"\u{1F468}\u{1F3FB}\u200D\u{1F9B2}": {
+		emoji: "👨🏻‍🦲",
+		name: "man: light skin tone, bald",
+		src: "1F468-1F3FB-200D-1F9B2.svg",
+	},
+	"\u{1F468}\u{1F3FC}\u200D\u{1F9B2}": {
+		emoji: "👨🏼‍🦲",
+		name: "man: medium-light skin tone, bald",
+		src: "1F468-1F3FC-200D-1F9B2.svg",
+	},
+	"\u{1F468}\u{1F3FD}\u200D\u{1F9B2}": {
+		emoji: "👨🏽‍🦲",
+		name: "man: medium skin tone, bald",
+		src: "1F468-1F3FD-200D-1F9B2.svg",
+	},
+	"\u{1F468}\u{1F3FE}\u200D\u{1F9B2}": {
+		emoji: "👨🏾‍🦲",
+		name: "man: medium-dark skin tone, bald",
+		src: "1F468-1F3FE-200D-1F9B2.svg",
+	},
+	"\u{1F468}\u{1F3FF}\u200D\u{1F9B2}": {
+		emoji: "👨🏿‍🦲",
+		name: "man: dark skin tone, bald",
+		src: "1F468-1F3FF-200D-1F9B2.svg",
+	},
 	"\u{1F468}\u200D\u{1F9B2}": {
 		emoji: "👨‍🦲",
 		name: "man: bald",
 		src: "1F468-200D-1F9B2.svg",
+	},
+	"\u{1F468}\u{1F3FB}\u200D\u{1F9B3}": {
+		emoji: "👨🏻‍🦳",
+		name: "man: light skin tone, white hair",
+		src: "1F468-1F3FB-200D-1F9B3.svg",
+	},
+	"\u{1F468}\u{1F3FC}\u200D\u{1F9B3}": {
+		emoji: "👨🏼‍🦳",
+		name: "man: medium-light skin tone, white hair",
+		src: "1F468-1F3FC-200D-1F9B3.svg",
+	},
+	"\u{1F468}\u{1F3FD}\u200D\u{1F9B3}": {
+		emoji: "👨🏽‍🦳",
+		name: "man: medium skin tone, white hair",
+		src: "1F468-1F3FD-200D-1F9B3.svg",
+	},
+	"\u{1F468}\u{1F3FE}\u200D\u{1F9B3}": {
+		emoji: "👨🏾‍🦳",
+		name: "man: medium-dark skin tone, white hair",
+		src: "1F468-1F3FE-200D-1F9B3.svg",
+	},
+	"\u{1F468}\u{1F3FF}\u200D\u{1F9B3}": {
+		emoji: "👨🏿‍🦳",
+		name: "man: dark skin tone, white hair",
+		src: "1F468-1F3FF-200D-1F9B3.svg",
 	},
 	"\u{1F468}\u200D\u{1F9B3}": {
 		emoji: "👨‍🦳",
@@ -630,15 +780,90 @@ export const PREFIXES = {
 		name: "person: white hair",
 		src: "1F9D1-200D-1F9B3.svg",
 	},
+	"\u{1F9D1}\u{1F3FB}": {
+		emoji: "🧑🏻",
+		name: "person: light skin tone",
+		src: "1F9D1-1F3FB.svg",
+	},
+	"\u{1F9D1}\u{1F3FC}": {
+		emoji: "🧑🏼",
+		name: "person: medium-light skin tone",
+		src: "1F9D1-1F3FC.svg",
+	},
+	"\u{1F9D1}\u{1F3FD}": {
+		emoji: "🧑🏽",
+		name: "person: medium skin tone",
+		src: "1F9D1-1F3FD.svg",
+	},
+	"\u{1F9D1}\u{1F3FE}": {
+		emoji: "🧑🏾",
+		name: "person: medium-dark skin tone",
+		src: "1F9D1-1F3FE.svg",
+	},
+	"\u{1F9D1}\u{1F3FF}": {
+		emoji: "🧑🏿",
+		name: "person: dark skin tone",
+		src: "1F9D1-1F3FF.svg",
+	},
 	"\u{1F9D1}": {
 		emoji: "🧑",
 		name: "person",
 		src: "1F9D1.svg",
 	},
+	"\u{1F9D2}\u{1F3FB}": {
+		emoji: "🧒🏻",
+		name: "child: light skin tone",
+		src: "1F9D2-1F3FB.svg",
+	},
+	"\u{1F9D2}\u{1F3FC}": {
+		emoji: "🧒🏼",
+		name: "child: medium-light skin tone",
+		src: "1F9D2-1F3FC.svg",
+	},
+	"\u{1F9D2}\u{1F3FD}": {
+		emoji: "🧒🏽",
+		name: "child: medium skin tone",
+		src: "1F9D2-1F3FD.svg",
+	},
+	"\u{1F9D2}\u{1F3FE}": {
+		emoji: "🧒🏾",
+		name: "child: medium-dark skin tone",
+		src: "1F9D2-1F3FE.svg",
+	},
+	"\u{1F9D2}\u{1F3FF}": {
+		emoji: "🧒🏿",
+		name: "child: dark skin tone",
+		src: "1F9D2-1F3FF.svg",
+	},
 	"\u{1F9D2}": {
 		emoji: "🧒",
 		name: "child",
 		src: "1F9D2.svg",
+	},
+	"\u{1F9D3}\u{1F3FB}": {
+		emoji: "🧓🏻",
+		name: "older person: light skin tone",
+		src: "1F9D3-1F3FB.svg",
+	},
+	"\u{1F9D3}\u{1F3FC}": {
+		emoji: "🧓🏼",
+		name: "older person: medium-light skin tone",
+		src: "1F9D3-1F3FC.svg",
+	},
+	"\u{1F9D3}\u{1F3FD}": {
+		emoji: "🧓🏽",
+		name: "older person: medium skin tone",
+		src: "1F9D3-1F3FD.svg",
+	},
+	"\u{1F9D3}\u{1F3FE}": {
+		emoji: "🧓🏾",
+		name: "older person: medium-dark skin tone",
+		src: "1F9D3-1F3FE.svg",
+	},
+	"\u{1F9D3}\u{1F3FF}": {
+		emoji: "🧓🏿",
+		name: "older person: dark skin tone",
+		src: "1F9D3-1F3FF.svg",
 	},
 	"\u{1F9D3}": {
 		emoji: "🧓",
