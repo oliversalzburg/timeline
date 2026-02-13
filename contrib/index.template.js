@@ -1141,6 +1141,9 @@ const main = async function main() {
 		focusNode(neighbors.up);
 		return true;
 	};
+	/**
+	 * Focus the origin node.
+	 */
 	const navigateHome = function navigateHome() {
 		focusNode(DATA[2][1], DATA[2][2]);
 	};
@@ -1150,6 +1153,9 @@ const main = async function main() {
 		}
 		focusNode(idFocused);
 	};
+	/**
+	 * Focus the first event on the current timeline.
+	 */
 	const navigateStart = function navigateStart() {
 		if (idFocusedTimeline === undefined) {
 			return;
@@ -1162,6 +1168,9 @@ const main = async function main() {
 
 		focusNode(events[0].id, idFocusedTimeline);
 	};
+	/**
+	 * Focus the last event on the current timeline.
+	 */
 	const navigateEnd = function navigateEnd() {
 		if (idFocusedTimeline === undefined) {
 			return;
@@ -1232,12 +1241,14 @@ const main = async function main() {
 			},
 			[Inputs.BUTTON_X]: () => {
 				previousTimelineActive = idFocusedTimeline;
-				menuSwitchTimeline();
+				menuMainSwitchTimeline();
 				sfxPlaySwipe();
 				return {
 					name: "return",
 					released: {
-						[Inputs.BUTTON_X]: returnToMenuPlane(InputPlaneMenuSwitchTimeline),
+						[Inputs.BUTTON_X]: returnToMenuPlane(
+							InputPlaneMainMenuSwitchTimeline,
+						),
 					},
 				};
 			},
@@ -1722,7 +1733,7 @@ const main = async function main() {
 		DOM.read("menuMain", () => {
 			existingMenuItems = menuContainer.querySelectorAll(".level");
 		});
-		DOM.write("menuMeain", () => {
+		DOM.write("menuMain", () => {
 			existingMenuItems?.forEach((_) => void menuContainer.removeChild(_));
 
 			const menuLevel0 = document.createElement("div");
@@ -1792,6 +1803,7 @@ const main = async function main() {
 			},
 			[Inputs.BUTTON_RIGHT]: () => {
 				if (menuMainFocusIndex === 0) {
+					menuMainJumpFocusIndex = 0;
 					menuMainJump();
 					sfxPlaySwipe();
 					return {
@@ -1801,16 +1813,69 @@ const main = async function main() {
 						},
 					};
 				}
+				if (menuMainFocusIndex === 1) {
+					_menuMainSwitchTimelineFocusIndex = 0;
+					menuMainSwitchTimeline();
+					sfxPlaySwipe();
+					return {
+						name: "return",
+						released: {
+							[Inputs.BUTTON_RIGHT]: returnToMenuPlane(
+								InputPlaneMainMenuSwitchTimeline,
+							),
+						},
+					};
+				}
+				if (menuMainFocusIndex === 2) {
+					menuMainArtifactsFocusIndex = 0;
+					menuMainArtifacts();
+					sfxPlaySwipe();
+					return {
+						name: "return",
+						released: {
+							[Inputs.BUTTON_RIGHT]: returnToMenuPlane(
+								InputPlaneMenuMainArtifacts,
+							),
+						},
+					};
+				}
 			},
 			[Inputs.BUTTON_A]: () => {
-				menuMainJump();
-				sfxPlaySwipe();
-				return {
-					name: "return",
-					released: {
-						[Inputs.BUTTON_A]: returnToMenuPlane(InputPlaneMenuMainJump),
-					},
-				};
+				if (menuMainFocusIndex === 0) {
+					menuMainJumpFocusIndex = 0;
+					menuMainJump();
+					sfxPlaySwipe();
+					return {
+						name: "return",
+						released: {
+							[Inputs.BUTTON_A]: returnToMenuPlane(InputPlaneMenuMainJump),
+						},
+					};
+				}
+				if (menuMainFocusIndex === 1) {
+					_menuMainSwitchTimelineFocusIndex = 0;
+					menuMainSwitchTimeline();
+					sfxPlaySwipe();
+					return {
+						name: "return",
+						released: {
+							[Inputs.BUTTON_A]: returnToMenuPlane(
+								InputPlaneMainMenuSwitchTimeline,
+							),
+						},
+					};
+				}
+				if (menuMainFocusIndex === 2) {
+					menuMainArtifactsFocusIndex = 0;
+					menuMainArtifacts();
+					sfxPlaySwipe();
+					return {
+						name: "return",
+						released: {
+							[Inputs.BUTTON_A]: returnToMenuPlane(InputPlaneMenuMainArtifacts),
+						},
+					};
+				}
 			},
 			[Inputs.BUTTON_START]: () => {
 				sfxPlay("transition_down");
@@ -1836,29 +1901,37 @@ const main = async function main() {
 			}
 			menuContainer.appendChild(menuLevel1);
 
-			const menuItemJump = document.createElement("div");
-			menuItemJump.classList.add("item");
+			const menuItemDate = document.createElement("div");
+			menuItemDate.classList.add("item");
 			if (menuMainJumpFocusIndex === 0) {
-				menuItemJump.classList.add("active");
+				menuItemDate.classList.add("active");
 			}
-			menuItemJump.textContent = "zu Datum";
-			menuLevel1.appendChild(menuItemJump);
+			menuItemDate.textContent = "zu Datum";
+			menuLevel1.appendChild(menuItemDate);
 
-			const menuItemSwitch = document.createElement("div");
-			menuItemSwitch.classList.add("item");
+			const menuItemStart = document.createElement("div");
+			menuItemStart.classList.add("item");
 			if (menuMainJumpFocusIndex === 1) {
-				menuItemSwitch.classList.add("active");
+				menuItemStart.classList.add("active");
 			}
-			menuItemSwitch.textContent = "an Anfang";
-			menuLevel1.appendChild(menuItemSwitch);
+			menuItemStart.textContent = "an Anfang";
+			menuLevel1.appendChild(menuItemStart);
 
-			const menuItemArtifacts = document.createElement("div");
-			menuItemArtifacts.classList.add("item");
+			const menuItemEnd = document.createElement("div");
+			menuItemEnd.classList.add("item");
 			if (menuMainJumpFocusIndex === 2) {
-				menuItemArtifacts.classList.add("active");
+				menuItemEnd.classList.add("active");
 			}
-			menuItemArtifacts.textContent = "an Ende";
-			menuLevel1.appendChild(menuItemArtifacts);
+			menuItemEnd.textContent = "an Ende";
+			menuLevel1.appendChild(menuItemEnd);
+
+			const menuItemOrigin = document.createElement("div");
+			menuItemOrigin.classList.add("item");
+			if (menuMainJumpFocusIndex === 3) {
+				menuItemOrigin.classList.add("active");
+			}
+			menuItemOrigin.textContent = "zum Ursprung";
+			menuLevel1.appendChild(menuItemOrigin);
 		});
 	};
 
@@ -1868,7 +1941,7 @@ const main = async function main() {
 		pressed: {
 			[Inputs.BUTTON_UP]: () => {
 				menuMainJumpFocusIndex = Math.min(
-					2,
+					3,
 					Math.max(0, menuMainJumpFocusIndex - 1),
 				);
 				menuMainJump();
@@ -1882,7 +1955,7 @@ const main = async function main() {
 			},
 			[Inputs.BUTTON_DOWN]: () => {
 				menuMainJumpFocusIndex = Math.min(
-					2,
+					3,
 					Math.max(0, menuMainJumpFocusIndex + 1),
 				);
 				menuMainJump();
@@ -1942,6 +2015,13 @@ const main = async function main() {
 						};
 					case 2:
 						navigateEnd();
+						sfxPlay("transition_down");
+						return {
+							name: "return",
+							released: { [Inputs.BUTTON_A]: returnToNeutral },
+						};
+					case 3:
+						navigateHome();
 						sfxPlay("transition_down");
 						return {
 							name: "return",
@@ -2258,62 +2338,6 @@ const main = async function main() {
 	//#endregion
 
 	//#region Switch Timeline
-	/** @type {InputPlane} */
-	const InputPlaneMenuSwitchTimeline = {
-		name: "menuSwitchTimeline",
-		pressed: {
-			[Inputs.BUTTON_UP]: () => {
-				if (idFocusedTimeline === undefined || idFocused === undefined) {
-					return undefined;
-				}
-				const neighbors = getNodeNeighbors();
-				const activeIndex = neighbors.intersection.indexOf(idFocusedTimeline);
-				focusNode(idFocused, neighbors.intersection[activeIndex - 1]);
-				sfxPlayTap();
-				menuSwitchTimeline();
-				return {
-					name: "return",
-					released: {
-						[Inputs.BUTTON_UP]: returnToMenuPlane(InputPlaneMenuSwitchTimeline),
-					},
-				};
-			},
-			[Inputs.BUTTON_DOWN]: () => {
-				if (idFocusedTimeline === undefined || idFocused === undefined) {
-					return undefined;
-				}
-				const neighbors = getNodeNeighbors();
-				const activeIndex = neighbors.intersection.indexOf(idFocusedTimeline);
-				focusNode(idFocused, neighbors.intersection[activeIndex + 1]);
-				sfxPlayTap();
-				menuSwitchTimeline();
-				return {
-					name: "return",
-					released: {
-						[Inputs.BUTTON_DOWN]: returnToMenuPlane(
-							InputPlaneMenuSwitchTimeline,
-						),
-					},
-				};
-			},
-			[Inputs.BUTTON_A]: () => {
-				sfxPlaySwipe();
-				sfxPlay("button");
-				return {
-					name: "return",
-					released: { [Inputs.BUTTON_A]: returnToNeutral },
-				};
-			},
-			[Inputs.BUTTON_X]: () => {
-				focusNode(idFocused, previousTimelineActive);
-				sfxPlaySwipe();
-				return {
-					name: "return",
-					released: { [Inputs.BUTTON_X]: returnToNeutral },
-				};
-			},
-		},
-	};
 	const updateStatusMenuSwitchTimeline =
 		function updateStatusMenuSwitchTimeline() {
 			DOM.write("updateStatusMenuSwitchTimeline", () => {
@@ -2335,16 +2359,21 @@ const main = async function main() {
 
 	/** @type {number | undefined} */
 	let cssRuleHighlightActive;
-	const menuSwitchTimeline = function menuSwitchTimeline() {
+	let _menuMainSwitchTimelineFocusIndex = 0;
+	const menuMainSwitchTimeline = function menuMainSwitchTimeline(
+		isActive = true,
+	) {
 		updateStatusMenuSwitchTimeline();
+		menuMain(false);
 
 		const options = getNodeNeighbors().intersection;
 		/** @type {NodeListOf<HTMLDivElement>|undefined} */
-		let existingMenuItems;
-		DOM.read("menuSwitchTimeline", () => {
-			existingMenuItems = menuContainer.querySelectorAll(".level");
+		let _existingMenuItems;
+		DOM.read("menuMainSwitchTimeline", () => {
+			_existingMenuItems = menuContainer.querySelectorAll(".level");
 		});
-		DOM.write("menuSwitchTimeline", () => {
+		DOM.write("menuMainSwitchTimeline", () => {
+			/*
 			existingMenuItems?.forEach((_) => void menuContainer.removeChild(_));
 
 			const styleHighlight = `g.event, g.edge { &:not(.${idFocusedTimeline}) { opacity: 0.1; transition: ease-in-out opacity 0.6s; } }`;
@@ -2353,19 +2382,27 @@ const main = async function main() {
 			}
 			cssRuleHighlightActive = stylesheet.cssRules.length;
 			stylesheet.insertRule(styleHighlight, stylesheet.cssRules.length);
+			*/
 
-			const menuLevel0 = document.createElement("div");
-			menuLevel0.classList.add("level", "active");
-			menuContainer.appendChild(menuLevel0);
+			const menuLevel1 = document.createElement("div");
+			menuLevel1.classList.add("level");
+			if (isActive) {
+				menuLevel1.classList.add("active");
+			}
+			menuContainer.appendChild(menuLevel1);
 
-			for (const timeline of options) {
+			for (const timelineId of options) {
+				const timeline = timelines.get(timelineId);
+				if (timeline === undefined) {
+					throw new Error(`can't find timeline '${timelineId}'`);
+				}
 				const menuItem = document.createElement("div");
-				menuItem.classList.add("item", timeline);
-				if (idFocusedTimeline === timeline) {
+				menuItem.classList.add("item", timelineId);
+				if (idFocusedTimeline === timelineId) {
 					menuItem.classList.add("active");
 				}
-				menuItem.textContent = timelines.get(timeline)?.[5] ?? "???";
-				menuLevel0.appendChild(menuItem);
+				menuItem.textContent = timeline[5] ?? timeline[4] ?? "???";
+				menuLevel1.appendChild(menuItem);
 			}
 			statusOptions.classList.add("visible");
 			statusOptionA.textContent = "Umsteigen";
@@ -2373,6 +2410,166 @@ const main = async function main() {
 			statusOptionX.textContent = "Zurück";
 			statusButtonX.style.display = "inline-block";
 		});
+	};
+
+	/** @type {InputPlane} */
+	const InputPlaneMainMenuSwitchTimeline = {
+		name: "menuSwitchTimeline",
+		pressed: {
+			[Inputs.BUTTON_UP]: () => {
+				if (idFocusedTimeline === undefined || idFocused === undefined) {
+					return undefined;
+				}
+				const neighbors = getNodeNeighbors();
+				const activeIndex = neighbors.intersection.indexOf(idFocusedTimeline);
+				focusNode(idFocused, neighbors.intersection[activeIndex - 1]);
+				sfxPlayTap();
+				menuMainSwitchTimeline();
+				return {
+					name: "return",
+					released: {
+						[Inputs.BUTTON_UP]: returnToMenuPlane(
+							InputPlaneMainMenuSwitchTimeline,
+						),
+					},
+				};
+			},
+			[Inputs.BUTTON_DOWN]: () => {
+				if (idFocusedTimeline === undefined || idFocused === undefined) {
+					return undefined;
+				}
+				const neighbors = getNodeNeighbors();
+				const activeIndex = neighbors.intersection.indexOf(idFocusedTimeline);
+				focusNode(idFocused, neighbors.intersection[activeIndex + 1]);
+				sfxPlayTap();
+				menuMainSwitchTimeline();
+				return {
+					name: "return",
+					released: {
+						[Inputs.BUTTON_DOWN]: returnToMenuPlane(
+							InputPlaneMainMenuSwitchTimeline,
+						),
+					},
+				};
+			},
+			[Inputs.BUTTON_LEFT]: () => {
+				menuMain();
+				sfxPlayTap();
+				return {
+					name: "return",
+					released: {
+						[Inputs.BUTTON_LEFT]: returnToMenuPlane(InputPlaneMenuMain),
+					},
+				};
+			},
+			[Inputs.BUTTON_A]: () => {
+				sfxPlaySwipe();
+				sfxPlay("button");
+				return {
+					name: "return",
+					released: { [Inputs.BUTTON_A]: returnToNeutral },
+				};
+			},
+			[Inputs.BUTTON_X]: () => {
+				focusNode(idFocused, previousTimelineActive);
+				sfxPlaySwipe();
+				return {
+					name: "return",
+					released: { [Inputs.BUTTON_X]: returnToNeutral },
+				};
+			},
+		},
+	};
+	//#endregion
+
+	//#region Artifact Menu
+	let menuMainArtifactsFocusIndex = 0;
+	const menuMainArtifacts = function menuMainArtifacts(isActive = true) {
+		menuMain(false);
+
+		DOM.write("menuMainArtifacts", () => {
+			const menuLevel1 = document.createElement("div");
+			menuLevel1.classList.add("level");
+			if (isActive) {
+				menuLevel1.classList.add("active");
+			}
+			menuContainer.appendChild(menuLevel1);
+
+			const artifacts = timelineMediaIds ?? [];
+			for (const [index, artifactId] of artifacts.entries()) {
+				const artifact = timelines.get(artifactId);
+				if (artifact === undefined) {
+					throw new Error(`can't find artifact '${artifactId}'`);
+				}
+				const menuItem = document.createElement("div");
+				menuItem.classList.add("item");
+				if (menuMainArtifactsFocusIndex === index) {
+					menuItem.classList.add("active");
+				}
+				menuItem.textContent = artifact[5] ?? artifact[4];
+				menuLevel1.appendChild(menuItem);
+			}
+		});
+	};
+
+	/** @type {InputPlane} */
+	const InputPlaneMenuMainArtifacts = {
+		name: "menuMainArtifacts",
+		pressed: {
+			[Inputs.BUTTON_UP]: () => {
+				menuMainArtifactsFocusIndex = Math.min(
+					3,
+					Math.max(0, menuMainArtifactsFocusIndex - 1),
+				);
+				menuMainArtifacts();
+				sfxPlayTap();
+				return {
+					name: "return",
+					released: {
+						[Inputs.BUTTON_UP]: returnToMenuPlane(InputPlaneMenuMainArtifacts),
+					},
+				};
+			},
+			[Inputs.BUTTON_DOWN]: () => {
+				menuMainArtifactsFocusIndex = Math.min(
+					3,
+					Math.max(0, menuMainArtifactsFocusIndex + 1),
+				);
+				menuMainArtifacts();
+				sfxPlayTap();
+				return {
+					name: "return",
+					released: {
+						[Inputs.BUTTON_DOWN]: returnToMenuPlane(
+							InputPlaneMenuMainArtifacts,
+						),
+					},
+				};
+			},
+			[Inputs.BUTTON_LEFT]: () => {
+				menuMain();
+				sfxPlayTap();
+				return {
+					name: "return",
+					released: {
+						[Inputs.BUTTON_LEFT]: returnToMenuPlane(InputPlaneMenuMain),
+					},
+				};
+			},
+			[Inputs.BUTTON_RIGHT]: () => {
+				return undefined;
+			},
+			[Inputs.BUTTON_A]: () => {
+				return undefined;
+			},
+			[Inputs.BUTTON_START]: () => {
+				sfxPlay("transition_down");
+				return {
+					name: "return",
+					released: { [Inputs.BUTTON_START]: returnToNeutral },
+				};
+			},
+		},
 	};
 	//#endregion
 

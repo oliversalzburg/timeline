@@ -124,6 +124,7 @@ body {
 
 	/* Focus Highlight */
 	.target {
+		/* needs to be reworked */
 		display: none;
 		opacity: 0;
 		position: absolute;
