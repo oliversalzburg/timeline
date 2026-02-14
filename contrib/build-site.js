@@ -91,7 +91,7 @@ const settings = {
 const css = templateCss
 	.replaceAll(
 		"/* FONT_SIZE_ROOT */",
-		`font-size: ${FONT_SIZE_1000MM_V07_STUDY_MM * FONT_SCALE}mm;`,
+		`font-size: ${Math.round(FONT_SIZE_1000MM_V07_STUDY_MM * FONT_SCALE * 10) / 10}mm;`,
 	)
 	.replaceAll(
 		"/* FONT_FAMILY_ROOT */",
@@ -99,15 +99,15 @@ const css = templateCss
 	)
 	.replaceAll(
 		"/* FONT_SIZE_BROWSE */",
-		`font-size: ${FONT_SIZE_1000MM_V07_BROWSE_PT * FONT_SCALE}pt;`,
+		`font-size: ${Math.round(FONT_SIZE_1000MM_V07_BROWSE_PT * FONT_SCALE * 10) / 10}pt;`,
 	)
 	.replaceAll(
 		"/* FONT_SIZE_READ */",
-		`font-size: ${FONT_SIZE_1000MM_V07_READ_PT * FONT_SCALE}pt;`,
+		`font-size: ${Math.round(FONT_SIZE_1000MM_V07_READ_PT * FONT_SCALE * 10) / 10}pt;`,
 	)
 	.replaceAll(
 		"/* FONT_SIZE_STUDY */",
-		`font-size: ${FONT_SIZE_1000MM_V07_STUDY_PT * FONT_SCALE}pt;`,
+		`font-size: ${Math.round(FONT_SIZE_1000MM_V07_STUDY_PT * FONT_SCALE * 10) / 10}pt;`,
 	);
 
 const js = templateJs.replace(

@@ -1725,9 +1725,22 @@ const main = async function main() {
 	//#endregion
 
 	//#region Main Menu
+	/**
+	 * @param {HTMLElement} menu -
+	 * @param {number} indent -
+	 */
+	const offsetMenu = function offsetMenu(menu, indent) {
+		for (let level = 0; level < indent; ++level) {
+			const menuItem = document.createElement("div");
+			menuItem.classList.add("item", "offset");
+			menuItem.innerHTML = "&nbsp;";
+			menu.appendChild(menuItem);
+		}
+	};
 	let menuMainFocusIndex = 0;
 	const menuMain = function menuMain(isActive = true) {
 		updateStatusMenuSwitchTimeline();
+
 		/** @type {NodeListOf<HTMLDivElement>|undefined} */
 		let existingMenuItems;
 		DOM.read("menuMain", () => {
@@ -1947,6 +1960,12 @@ const main = async function main() {
 			menuItemOrigin.textContent = "zum Ursprung";
 			menuLevel1.appendChild(menuItemOrigin);
 		});
+
+		if (isActive) {
+			if (menuMainJumpFocusIndex === 0) {
+				menuMainJumpDate(false);
+			}
+		}
 	};
 
 	/** @type {InputPlane} */
@@ -2060,7 +2079,10 @@ const main = async function main() {
 	let menuMainJumpDateMonth = 11;
 	let menuMainJumpDateDate = 25;
 	const menuMainJumpDate = function menuMainJumpDate(isActive = true) {
-		menuMainJump(false);
+		if (isActive) {
+			menuMain(false);
+			menuMainJump(false);
+		}
 
 		DOM.write("menuMainJumpDate", () => {
 			const menuLevel2 = document.createElement("div");
@@ -2405,6 +2427,7 @@ const main = async function main() {
 			if (isActive) {
 				menuLevel1.classList.add("active");
 			}
+			offsetMenu(menuLevel1, 1);
 			menuContainer.appendChild(menuLevel1);
 
 			for (const timelineId of options) {
@@ -2511,6 +2534,7 @@ const main = async function main() {
 			if (isActive) {
 				menuLevel1.classList.add("active");
 			}
+			offsetMenu(menuLevel1, 2);
 			menuContainer.appendChild(menuLevel1);
 
 			const artifacts = timelineMediaIds ?? [];
@@ -2773,9 +2797,9 @@ const main = async function main() {
 			console.info("Program init finalized.");
 			Promise.all(samplesLoading.values().toArray()).then(() => {
 				//sfxPlay("liebing_nature_one");
-				window.setTimeout(() => {
-					sfxPlay("dreh_die_zeit_zurück");
-				}, 21000);
+				//window.setTimeout(() => {
+				//	sfxPlay("dreh_die_zeit_zurück");
+				//}, 21000);
 
 				document.body.classList.remove("loading");
 				window.requestAnimationFrame(present);
