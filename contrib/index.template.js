@@ -1773,6 +1773,18 @@ const main = async function main() {
 			statusOptionX.textContent = "Zurück";
 			statusButtonX.style.display = "inline-block";
 		});
+
+		if (isActive) {
+			if (menuMainFocusIndex === 0) {
+				menuMainJump(false);
+			}
+			if (menuMainFocusIndex === 1) {
+				menuMainSwitchTimeline(false);
+			}
+			if (menuMainFocusIndex === 2) {
+				menuMainArtifacts(false);
+			}
+		}
 	};
 
 	/** @type {InputPlane} */
@@ -1891,7 +1903,9 @@ const main = async function main() {
 	//#region Jump Menu
 	let menuMainJumpFocusIndex = 0;
 	const menuMainJump = function menuMainJump(isActive = true) {
-		menuMain(false);
+		if (isActive) {
+			menuMain(false);
+		}
 
 		DOM.write("menuMainJump", () => {
 			const menuLevel1 = document.createElement("div");
@@ -2364,7 +2378,9 @@ const main = async function main() {
 		isActive = true,
 	) {
 		updateStatusMenuSwitchTimeline();
-		menuMain(false);
+		if (isActive) {
+			menuMain(false);
+		}
 
 		const options = getNodeNeighbors().intersection;
 		/** @type {NodeListOf<HTMLDivElement>|undefined} */
@@ -2485,7 +2501,9 @@ const main = async function main() {
 	//#region Artifact Menu
 	let menuMainArtifactsFocusIndex = 0;
 	const menuMainArtifacts = function menuMainArtifacts(isActive = true) {
-		menuMain(false);
+		if (isActive) {
+			menuMain(false);
+		}
 
 		DOM.write("menuMainArtifacts", () => {
 			const menuLevel1 = document.createElement("div");
