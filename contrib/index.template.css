@@ -133,19 +133,68 @@ body {
 		width: 5cm;
 		top: calc(50vh - 2.5cm);
 		height: 5cm;
-		border: 2mm solid rgb(0 255 0 / 0.6);
+		border: 2mm dotted rgb(0 255 0 / 0.2);
 		border-radius: 50%;
+
+		opacity: 0;
+		transition: opacity ease-in-out 3s;
+		&.visible {
+			transition: opacity normal 0s;
+			opacity: 1;
+		}
+
+		.inner {
+			position: fixed;
+			margin: 0;
+			padding: 0;
+			box-sizing: border-box;
+			left: calc(50vw - 1.5cm);
+			width: 3cm;
+			top: calc(50vh - 1.5cm);
+			height: 3cm;
+			border: 1.5mm dashed rgb(0 255 0 / 0.4);
+			border-radius: 50%;
+
+			.inner {
+				position: fixed;
+				margin: 0;
+				padding: 0;
+				box-sizing: border-box;
+				left: calc(50vw - 0.25cm);
+				width: 0.5cm;
+				top: calc(50vh - 0.25cm);
+				height: 0.5cm;
+				border: 1mm solid rgb(0 255 0 / 0.6);
+				border-radius: 50%;
+			}
+		}
 	}
 	#target-focus {
 		position: absolute;
 		margin: 0;
 		padding: 0;
-		box-sizing: border-box;
-		background: rgb(0 255 0 / 0.6);
+		box-sizing: content-box;
+		background: repeating-linear-gradient(
+			45deg,
+			rgba(255, 0, 255, 0),
+			rgba(255, 0, 255, 0) 2mm,
+			rgba(255, 0, 255, 0.5) 2mm,
+			rgba(255, 0, 255, 0.5) 4mm
+		);
 		pointer-events: none;
 		z-index: 2;
 		transform: translateZ(0px);
-		transition: all ease-out 1s;
+		transition:
+			top ease-in-out 2s,
+			left ease-in-out 2s,
+			width ease-in-out 2s,
+			height ease-in-out 2s,
+			opacity ease-out 3s;
+
+		opacity: 0;
+		&.visible {
+			opacity: 1;
+		}
 	}
 
 	/* Media Viewer */

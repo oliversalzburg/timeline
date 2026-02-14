@@ -89,9 +89,14 @@ const main = async function main() {
 	}
 
 	/** @type {HTMLDivElement | null} */
+	const targetElement = document.querySelector("#target");
+	if (targetElement === null) {
+		throw new Error("Unable to find #target element.");
+	}
+	/** @type {HTMLDivElement | null} */
 	const targetElementFocus = document.querySelector("#target-focus");
 	if (targetElementFocus === null) {
-		throw new Error("Unable to find #target element.");
+		throw new Error("Unable to find #target-focus element.");
 	}
 
 	/** @type {HTMLDivElement | null} */
@@ -585,7 +590,7 @@ const main = async function main() {
 
 		const anchor = `#${id}`;
 		const event = eventsById.get(id);
-		/** @type {string|undefined} */
+		/** @type {string | undefined} */
 		let nodeTitle;
 		DOM.read("focusNode", () => {
 			/** @type {HTMLElement | null} */
@@ -659,6 +664,7 @@ const main = async function main() {
 
 		updateStatus();
 		if (shiftFocus) {
+			cameraIsAttached = true;
 			requestFocusShift(id);
 		}
 	};
@@ -678,14 +684,44 @@ const main = async function main() {
 			throw new Error(`can't find event '${id}'`);
 		}
 
-		cameraIsAttached = true;
 		view.focus = {
 			x: event.bb.x,
 			y: event.bb.y,
 			width: event.bb.w,
 			height: event.bb.h,
 		};
-		console.debug("New focus box requested", view.focus);
+		//console.debug("New focus box requested", view.focus);
+	};
+
+	/**
+	 * Timeout for a callback to lock the camera onto the node in focus.
+	 *
+	 * @type {number | undefined}
+	 */
+	let timeoutCameraLock;
+
+	const focusHitTest = function focusHitTest() {
+		if (timeoutCameraLock !== undefined) {
+			window.clearTimeout(timeoutCameraLock);
+			timeoutCameraLock = undefined;
+		}
+		timeoutCameraLock = window.setTimeout(() => {
+			if (!cameraIsAttached && previousVisibleNodes !== undefined) {
+				for (const node of previousVisibleNodes) {
+					if (
+						node.bb.x < cameraFocus.x &&
+						cameraFocus.x < node.bb.x + node.bb.w &&
+						node.bb.y < cameraFocus.y &&
+						cameraFocus.y < node.bb.y + node.bb.h
+					) {
+						if (node.id !== idFocused) {
+							focusNode(node.id);
+							break;
+						}
+					}
+				}
+			}
+		}, 1000);
 	};
 
 	/**
@@ -879,23 +915,7 @@ const main = async function main() {
 			height: view.window.height,
 		};
 
-		console.debug("Camera doesn't match focus. Adjusting scope...", newScope);
-
-		if (!cameraIsAttached && previousVisibleNodes !== undefined) {
-			for (const node of previousVisibleNodes) {
-				if (
-					node.bb.x < newFocus.x &&
-					newFocus.x < node.bb.x + node.bb.w &&
-					node.bb.y < newFocus.y &&
-					newFocus.y < node.bb.y + node.bb.h
-				) {
-					console.info("hit", node.title);
-					if (node.id !== idFocused) {
-						focusNode(node.id, undefined, undefined, false);
-					}
-				}
-			}
-		}
+		//console.debug("Camera doesn't match focus. Adjusting scope...", newScope);
 
 		DOM.write("updateCamera", () => {
 			cameraFocus = newFocus;
@@ -903,16 +923,19 @@ const main = async function main() {
 				document.documentElement.scrollLeft = newScope.x;
 				document.documentElement.scrollTop = newScope.y;
 
+				targetElement.classList.add("visible");
+
 				if (idFocused !== undefined) {
 					const event = eventsById.get(idFocused);
 					if (event === undefined) {
 						console.error(`Unable to look up event for ID '${idFocused}'.`);
 						return;
 					}
-					targetElementFocus.style.left = `${event.bb.x}px`;
-					targetElementFocus.style.top = `${event.bb.y}px`;
-					targetElementFocus.style.width = `${event.bb.w}px`;
-					targetElementFocus.style.height = `${event.bb.h}px`;
+					targetElementFocus.classList.add("visible");
+					targetElementFocus.style.left = `calc(${event.bb.x}px - 4mm)`;
+					targetElementFocus.style.top = `calc(${event.bb.y}px - 4mm)`;
+					targetElementFocus.style.width = `calc(${event.bb.w}px + 8mm)`;
+					targetElementFocus.style.height = `calc(${event.bb.h}px + 8mm)`;
 				}
 			}
 		});
@@ -947,6 +970,19 @@ const main = async function main() {
 		});
 		if (cameraIsAttached) {
 			DOM.write("cameraMovementFinalize", () => {
+				if (idFocused !== undefined) {
+					const event = eventsById.get(idFocused);
+					if (event === undefined) {
+						console.error(`Unable to look up event for ID '${idFocused}'.`);
+						return;
+					}
+					targetElement.classList.remove("visible");
+					targetElementFocus.style.left = `${event.bb.x}px`;
+					targetElementFocus.style.top = `${event.bb.y}px`;
+					targetElementFocus.style.width = `${event.bb.w}px`;
+					targetElementFocus.style.height = `${event.bb.h}px`;
+				}
+
 				cull();
 			});
 		}
@@ -961,7 +997,7 @@ const main = async function main() {
 		window.clearTimeout(timeoutCameraUnlock);
 		timeoutCameraUnlock = undefined;
 		cameraMovementFinalize();
-		console.debug("Camera updated", view);
+		//console.debug("Camera updated", view);
 	};
 
 	let previousFirstVisibleNodeIndex = 0;
@@ -1258,6 +1294,7 @@ const main = async function main() {
 			},
 		},
 		axes: (frame) => {
+			let changed = false;
 			if (INPUT_THRESHOLD < Math.abs(frame.axes[Inputs.AXIS_LEFT_X])) {
 				cameraIsAttached = false;
 				requestInstantFocusUpdate = true;
@@ -1265,6 +1302,7 @@ const main = async function main() {
 					frame.axes[Inputs.AXIS_LEFT_X] *
 					(frame.delta / (1000 / 60)) *
 					SPEED_FREE_FLIGHT;
+				changed = true;
 			}
 			if (INPUT_THRESHOLD < Math.abs(frame.axes[Inputs.AXIS_LEFT_Y])) {
 				cameraIsAttached = false;
@@ -1273,10 +1311,15 @@ const main = async function main() {
 					frame.axes[Inputs.AXIS_LEFT_Y] *
 					(frame.delta / (1000 / 60)) *
 					SPEED_FREE_FLIGHT;
+				changed = true;
 			}
 
-			view.focus.x = Math.max(Math.min(view.focus.x, view.bounds.width), 0);
-			view.focus.y = Math.max(Math.min(view.focus.y, view.bounds.height), 0);
+			if (changed) {
+				view.focus.x = Math.max(Math.min(view.focus.x, view.bounds.width), 0);
+				view.focus.y = Math.max(Math.min(view.focus.y, view.bounds.height), 0);
+
+				focusHitTest();
+			}
 		},
 	};
 
