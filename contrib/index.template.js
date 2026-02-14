@@ -977,10 +977,11 @@ const main = async function main() {
 						return;
 					}
 					targetElement.classList.remove("visible");
-					targetElementFocus.style.left = `${event.bb.x}px`;
-					targetElementFocus.style.top = `${event.bb.y}px`;
-					targetElementFocus.style.width = `${event.bb.w}px`;
-					targetElementFocus.style.height = `${event.bb.h}px`;
+					targetElementFocus.classList.add("visible");
+					targetElementFocus.style.left = `calc(${event.bb.x}px - 4mm)`;
+					targetElementFocus.style.top = `calc(${event.bb.y}px - 4mm)`;
+					targetElementFocus.style.width = `calc(${event.bb.w}px + 8mm)`;
+					targetElementFocus.style.height = `calc(${event.bb.h}px + 8mm)`;
 				}
 
 				cull();

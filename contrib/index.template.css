@@ -173,7 +173,8 @@ body {
 		position: absolute;
 		margin: 0;
 		padding: 0;
-		box-sizing: content-box;
+		box-sizing: border-box;
+		/*
 		background: repeating-linear-gradient(
 			45deg,
 			rgba(255, 0, 255, 0),
@@ -181,15 +182,18 @@ body {
 			rgba(255, 0, 255, 0.5) 2mm,
 			rgba(255, 0, 255, 0.5) 4mm
 		);
+		*/
+		border: 2mm solid white;
+		border-radius: 2mm;
 		pointer-events: none;
 		z-index: 2;
 		transform: translateZ(0px);
 		transition:
-			top ease-in-out 2s,
-			left ease-in-out 2s,
-			width ease-in-out 2s,
-			height ease-in-out 2s,
-			opacity ease-out 3s;
+			top ease-out 0.1s,
+			left ease-in-out 0.5s,
+			width ease-in-out 0.5s,
+			height ease-in-out 0.5s,
+			opacity normal 0s;
 
 		opacity: 0;
 		&.visible {
@@ -493,7 +497,7 @@ body {
 
 		display: flex;
 		flex-direction: row;
-		align-items: center;
+		align-items: start;
 		justify-content: center;
 
 		position: fixed;
@@ -511,7 +515,7 @@ body {
 		user-select: none;
 		pointer-events: none;
 		opacity: 0;
-		mix-blend-mode: add;
+		/*mix-blend-mode: overlay;*/
 
 		animation: scanlines infinite 1s linear;
 		background:
@@ -536,9 +540,9 @@ body {
 		}
 		pre {
 			animation: pulse 18s infinite;
-			text-align: center;
-			font-size: 1.5em;
-			line-height: 1.5em;
+			text-align: left;
+			font-size: 17mm;
+			line-height: 19mm;
 			white-space: pre-line;
 			background: repeating-linear-gradient(180deg, white, black 1lh);
 			background-clip: text;
@@ -548,6 +552,14 @@ body {
 				-6px 0 0.2vmin rgb(0 0 255 / 0.2);
 			color: rgb(0 0 0 / 0);
 			z-index: 1;
+
+			/*
+			mask:
+				linear-gradient(#000 0 0) padding-box,
+				linear-gradient(#000 0 0) content-box;
+			mask-composite: exclude;
+			transition: mask linear 15s;
+			*/
 		}
 	}
 
