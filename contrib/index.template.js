@@ -89,23 +89,8 @@ const main = async function main() {
 	}
 
 	/** @type {HTMLDivElement | null} */
-	const targetElementX = document.querySelector("#target-x");
-	if (targetElementX === null) {
-		throw new Error("Unable to find #target element.");
-	}
-	/** @type {HTMLDivElement | null} */
-	const targetElementY = document.querySelector("#target-y");
-	if (targetElementY === null) {
-		throw new Error("Unable to find #target element.");
-	}
-	/** @type {HTMLDivElement | null} */
-	const targetElementW = document.querySelector("#target-w");
-	if (targetElementW === null) {
-		throw new Error("Unable to find #target element.");
-	}
-	/** @type {HTMLDivElement | null} */
-	const targetElementH = document.querySelector("#target-h");
-	if (targetElementH === null) {
+	const targetElementFocus = document.querySelector("#target-focus");
+	if (targetElementFocus === null) {
 		throw new Error("Unable to find #target element.");
 	}
 
@@ -586,11 +571,13 @@ const main = async function main() {
 	 * @param {string | undefined} id - The ID of the node to focus.
 	 * @param {string | undefined} onTimelineId - The ID of the timeline the node is part of.
 	 * @param {boolean | undefined} setState - Should we update the URL?
+	 * @param {boolean | undefined} shiftFocus - Should we move the camera?
 	 */
 	const focusNode = function focusNode(
 		id,
 		onTimelineId = undefined,
 		setState = true,
+		shiftFocus = true,
 	) {
 		if (!id) {
 			return;
@@ -671,7 +658,9 @@ const main = async function main() {
 		});
 
 		updateStatus();
-		requestFocusShift(id);
+		if (shiftFocus) {
+			requestFocusShift(id);
+		}
 	};
 
 	/**
@@ -892,16 +881,39 @@ const main = async function main() {
 
 		console.debug("Camera doesn't match focus. Adjusting scope...", newScope);
 
-		DOM.write("updateCamera", () => {
-			targetElementX.classList.remove("visible");
-			targetElementY.classList.remove("visible");
-			targetElementW.classList.remove("visible");
-			targetElementH.classList.remove("visible");
+		if (!cameraIsAttached && previousVisibleNodes !== undefined) {
+			for (const node of previousVisibleNodes) {
+				if (
+					node.bb.x < newFocus.x &&
+					newFocus.x < node.bb.x + node.bb.w &&
+					node.bb.y < newFocus.y &&
+					newFocus.y < node.bb.y + node.bb.h
+				) {
+					console.info("hit", node.title);
+					if (node.id !== idFocused) {
+						focusNode(node.id, undefined, undefined, false);
+					}
+				}
+			}
+		}
 
+		DOM.write("updateCamera", () => {
 			cameraFocus = newFocus;
 			if (requestInstantFocusUpdate) {
 				document.documentElement.scrollLeft = newScope.x;
 				document.documentElement.scrollTop = newScope.y;
+
+				if (idFocused !== undefined) {
+					const event = eventsById.get(idFocused);
+					if (event === undefined) {
+						console.error(`Unable to look up event for ID '${idFocused}'.`);
+						return;
+					}
+					targetElementFocus.style.left = `${event.bb.x}px`;
+					targetElementFocus.style.top = `${event.bb.y}px`;
+					targetElementFocus.style.width = `${event.bb.w}px`;
+					targetElementFocus.style.height = `${event.bb.h}px`;
+				}
 			}
 		});
 
@@ -928,9 +940,6 @@ const main = async function main() {
 	 * Finalize a camera movement, like after a scrollTo() operation.
 	 */
 	const cameraMovementFinalize = function cameraMovementFinalize() {
-		cameraIsIdle = false;
-		requestInstantFocusUpdate = false;
-
 		DOM.read("cameraMovementFinalize", () => {
 			view.position.x = window.scrollX;
 			view.position.y = window.scrollY;
@@ -938,33 +947,11 @@ const main = async function main() {
 		});
 		if (cameraIsAttached) {
 			DOM.write("cameraMovementFinalize", () => {
-				targetElementX.style.left = `${view.position.x}px`;
-				targetElementX.style.top = `${view.focus.y - 2}px`;
-				targetElementX.style.width = `${view.window.width / 2 - view.focus.width / 2 - 2}px`;
-				targetElementX.style.height = `${view.focus.height + 4}px`;
-
-				targetElementY.style.left = `${view.position.x}px`;
-				targetElementY.style.top = `${view.position.y}px`;
-				targetElementY.style.width = `${view.window.width}px`;
-				targetElementY.style.height = `${view.window.height / 2 - view.focus.height / 2 - 2}px`;
-
-				targetElementW.style.left = `${view.focus.x + view.focus.width + 2}px`;
-				targetElementW.style.top = `${view.focus.y - 2}px`;
-				targetElementW.style.width = `${view.window.width / 2 - view.focus.width / 2 - 2}px`;
-				targetElementW.style.height = `${view.focus.height + 4}px`;
-
-				targetElementH.style.left = `${view.position.x}px`;
-				targetElementH.style.top = `${view.focus.y + view.focus.height + 2}px`;
-				targetElementH.style.width = `${view.window.width}px`;
-				targetElementH.style.height = `${view.window.height / 2 - view.focus.height / 2 - 2}px`;
-
-				targetElementX.classList.add("visible");
-				targetElementY.classList.add("visible");
-				targetElementW.classList.add("visible");
-				targetElementH.classList.add("visible");
 				cull();
 			});
 		}
+		cameraIsIdle = false;
+		requestInstantFocusUpdate = false;
 	};
 
 	/**
@@ -980,7 +967,14 @@ const main = async function main() {
 	let previousFirstVisibleNodeIndex = 0;
 	/** @type {Set<{element: SVGElement, bb: { x: number, y: number, w: number, h: number } }>} */
 	let previousVisibleEdges = new Set(timelineEdges);
-	/** @type {Set<{element: SVGElement, bb: { x: number, y: number, w: number, h: number } }>} */
+	/**
+	 * @type {Set<{
+	 * 	bb: { x: number, y: number, w: number, h: number }
+	 * 	element: SVGElement,
+	 * 	id: string,
+	 * 	title: string,
+	 * }>}
+	 */
 	let previousVisibleNodes = new Set(events);
 	const cull = function cull() {
 		const visibleEdges = [];
@@ -1737,11 +1731,12 @@ const main = async function main() {
 			menu.appendChild(menuItem);
 		}
 	};
+
 	let menuMainFocusIndex = 0;
 	const menuMain = function menuMain(isActive = true) {
 		updateStatusMenuSwitchTimeline();
 
-		/** @type {NodeListOf<HTMLDivElement>|undefined} */
+		/** @type {NodeListOf<HTMLDivElement> | undefined} */
 		let existingMenuItems;
 		DOM.read("menuMain", () => {
 			existingMenuItems = menuContainer.querySelectorAll(".level");
@@ -2080,6 +2075,7 @@ const main = async function main() {
 	let menuMainJumpDateDate = 25;
 	const menuMainJumpDate = function menuMainJumpDate(isActive = true) {
 		if (isActive) {
+			menuMainFocusIndex = 0;
 			menuMain(false);
 			menuMainJump(false);
 		}
@@ -2401,6 +2397,7 @@ const main = async function main() {
 	) {
 		updateStatusMenuSwitchTimeline();
 		if (isActive) {
+			menuMainFocusIndex = 1;
 			menuMain(false);
 		}
 
@@ -2525,6 +2522,7 @@ const main = async function main() {
 	let menuMainArtifactsFocusIndex = 0;
 	const menuMainArtifacts = function menuMainArtifacts(isActive = true) {
 		if (isActive) {
+			menuMainFocusIndex = 2;
 			menuMain(false);
 		}
 
