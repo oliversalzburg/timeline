@@ -592,6 +592,10 @@ const main = async function main() {
 		const event = eventsById.get(id);
 		/** @type {string | undefined} */
 		let nodeTitle;
+		/** @type {HTMLDivElement} */
+		let previousDay;
+		/** @type {NodeListOf<HTMLDivElement>} */
+		let previousDays;
 		DOM.read("focusNode", () => {
 			/** @type {HTMLElement | null} */
 			const node = document.querySelector(anchor);
@@ -608,6 +612,11 @@ const main = async function main() {
 				);
 				return;
 			}
+
+			previousDay = /** @type {HTMLDivElement} */ (
+				calendarContainer.cloneNode(true)
+			);
+			previousDays = document.querySelectorAll(".calendar.previous");
 		});
 
 		DOM.write("focusNode", () => {
@@ -624,6 +633,15 @@ const main = async function main() {
 				);
 				return;
 			}
+
+			for (const day of previousDays) {
+				day.remove();
+			}
+			document.body.append(previousDay);
+			previousDay.id = "";
+			previousDay.classList.add("previous", "pending");
+			previousDay.style.transition = "transform ease-in-out 2s";
+			previousDay.style.zIndex = "5";
 
 			const titleParts = nodeTitle.split("\n");
 			calendarDate.textContent = titleParts[0];
@@ -963,10 +981,13 @@ const main = async function main() {
 	 * Finalize a camera movement, like after a scrollTo() operation.
 	 */
 	const cameraMovementFinalize = function cameraMovementFinalize() {
+		/** @type {NodeListOf<HTMLDivElement>}*/
+		let pendingDays;
 		DOM.read("cameraMovementFinalize", () => {
 			view.position.x = window.scrollX;
 			view.position.y = window.scrollY;
 			view.scope.y = window.scrollY - view.window.height;
+			pendingDays = document.querySelectorAll(".calendar.previous.pending");
 		});
 		if (cameraIsAttached) {
 			DOM.write("cameraMovementFinalize", () => {
@@ -982,6 +1003,12 @@ const main = async function main() {
 					targetFocusElement.style.top = `calc(${event.bb.y}px - 4mm)`;
 					targetFocusElement.style.width = `calc(${event.bb.w}px + 8mm)`;
 					targetFocusElement.style.height = `calc(${event.bb.h}px + 8mm)`;
+				}
+
+				for (const day of pendingDays) {
+					day.style.opacity = "0";
+					day.style.transform = "perspective(50vh) rotateX(90deg)";
+					day.classList.remove("pending");
 				}
 
 				cull();
