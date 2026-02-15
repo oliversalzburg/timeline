@@ -94,8 +94,8 @@ const main = async function main() {
 		throw new Error("Unable to find #target element.");
 	}
 	/** @type {HTMLDivElement | null} */
-	const targetElementFocus = document.querySelector("#target-focus");
-	if (targetElementFocus === null) {
+	const targetFocusElement = document.querySelector("#target-focus");
+	if (targetFocusElement === null) {
 		throw new Error("Unable to find #target-focus element.");
 	}
 
@@ -931,11 +931,11 @@ const main = async function main() {
 						console.error(`Unable to look up event for ID '${idFocused}'.`);
 						return;
 					}
-					targetElementFocus.classList.add("visible");
-					targetElementFocus.style.left = `calc(${event.bb.x}px - 4mm)`;
-					targetElementFocus.style.top = `calc(${event.bb.y}px - 4mm)`;
-					targetElementFocus.style.width = `calc(${event.bb.w}px + 8mm)`;
-					targetElementFocus.style.height = `calc(${event.bb.h}px + 8mm)`;
+					targetFocusElement.classList.add("visible");
+					targetFocusElement.style.left = `calc(${event.bb.x}px - 4mm)`;
+					targetFocusElement.style.top = `calc(${event.bb.y}px - 4mm)`;
+					targetFocusElement.style.width = `calc(${event.bb.w}px + 8mm)`;
+					targetFocusElement.style.height = `calc(${event.bb.h}px + 8mm)`;
 				}
 			}
 		});
@@ -977,11 +977,11 @@ const main = async function main() {
 						return;
 					}
 					targetElement.classList.remove("visible");
-					targetElementFocus.classList.add("visible");
-					targetElementFocus.style.left = `calc(${event.bb.x}px - 4mm)`;
-					targetElementFocus.style.top = `calc(${event.bb.y}px - 4mm)`;
-					targetElementFocus.style.width = `calc(${event.bb.w}px + 8mm)`;
-					targetElementFocus.style.height = `calc(${event.bb.h}px + 8mm)`;
+					targetFocusElement.classList.add("visible");
+					targetFocusElement.style.left = `calc(${event.bb.x}px - 4mm)`;
+					targetFocusElement.style.top = `calc(${event.bb.y}px - 4mm)`;
+					targetFocusElement.style.width = `calc(${event.bb.w}px + 8mm)`;
+					targetFocusElement.style.height = `calc(${event.bb.h}px + 8mm)`;
 				}
 
 				cull();
@@ -2446,22 +2446,18 @@ const main = async function main() {
 		}
 
 		const options = getNodeNeighbors().intersection;
-		/** @type {NodeListOf<HTMLDivElement>|undefined} */
-		let _existingMenuItems;
-		DOM.read("menuMainSwitchTimeline", () => {
-			_existingMenuItems = menuContainer.querySelectorAll(".level");
-		});
 		DOM.write("menuMainSwitchTimeline", () => {
-			/*
-			existingMenuItems?.forEach((_) => void menuContainer.removeChild(_));
-
-			const styleHighlight = `g.event, g.edge { &:not(.${idFocusedTimeline}) { opacity: 0.1; transition: ease-in-out opacity 0.6s; } }`;
-			if (cssRuleHighlightActive !== undefined) {
-				stylesheet.deleteRule(cssRuleHighlightActive);
+			if (isActive) {
+				const styleHighlight = `g.event.${idFocusedTimeline}, g.edge.${idFocusedTimeline} {
+				filter: drop-shadow(0 0 6px rgb(255, 255, 255)) drop-shadow(0 0 15px rgba(255, 255, 255, 0.5));
+			}`;
+				if (cssRuleHighlightActive !== undefined) {
+					stylesheet.deleteRule(cssRuleHighlightActive);
+				}
+				cssRuleHighlightActive = stylesheet.cssRules.length;
+				stylesheet.insertRule(styleHighlight, stylesheet.cssRules.length);
+				targetFocusElement.classList.remove("visible");
 			}
-			cssRuleHighlightActive = stylesheet.cssRules.length;
-			stylesheet.insertRule(styleHighlight, stylesheet.cssRules.length);
-			*/
 
 			const menuLevel1 = document.createElement("div");
 			menuLevel1.classList.add("level");

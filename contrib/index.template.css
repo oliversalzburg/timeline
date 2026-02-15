@@ -543,8 +543,13 @@ body {
 			text-align: left;
 			font-size: 17mm;
 			line-height: 19mm;
+			padding: 0 10mm;
 			white-space: pre-line;
-			background: repeating-linear-gradient(180deg, white, black 1lh);
+			background: repeating-linear-gradient(
+				180deg,
+				rgb(255, 255, 255),
+				rgb(113, 113, 113) 1lh
+			);
 			background-clip: text;
 			text-shadow:
 				-2px -1px 0.2vmin rgb(255 0 0 / 0.2),
@@ -552,6 +557,17 @@ body {
 				-6px 0 0.2vmin rgb(0 0 255 / 0.2);
 			color: rgb(0 0 0 / 0);
 			z-index: 1;
+
+			small {
+				font-size: 8mm;
+				line-height: 15mm;
+				background: repeating-linear-gradient(
+					180deg,
+					rgb(255, 255, 255),
+					rgb(113, 113, 113) 1lh
+				);
+				background-clip: text;
+			}
 
 			/*
 			mask:
