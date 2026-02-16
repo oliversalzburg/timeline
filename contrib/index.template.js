@@ -106,6 +106,12 @@ const main = async function main() {
 	}
 
 	/** @type {HTMLDivElement | null} */
+	const artifactsContainer = document.querySelector("#artifacts");
+	if (artifactsContainer === null) {
+		throw new Error("Unable to find #artifacts element.");
+	}
+
+	/** @type {HTMLDivElement | null} */
 	const statusContainer = document.querySelector("#status");
 	if (statusContainer === null) {
 		throw new Error("Unable to find #status element.");
@@ -640,7 +646,8 @@ const main = async function main() {
 			document.body.append(previousDay);
 			previousDay.id = "";
 			previousDay.classList.add("previous", "pending");
-			previousDay.style.transition = "transform ease-in-out 2s";
+			previousDay.style.transition =
+				"transform ease-in-out 2s, opacity linear 2s";
 			previousDay.style.zIndex = "5";
 
 			const titleParts = nodeTitle.split("\n");
@@ -797,6 +804,13 @@ const main = async function main() {
 	 * Update the information on the bottom status bar.
 	 */
 	const updateStatus = function updateStatus() {
+		/** @type {NodeListOf<HTMLImageElement> | undefined} */
+		let existingArtifacts;
+		DOM.read("updateStatus", () => {
+			existingArtifacts = /** @type {NodeListOf<HTMLImageElement>} */ (
+				document.querySelectorAll("#artifacts .artifact")
+			);
+		});
 		DOM.write("updateStatus", () => {
 			statusOptions.classList.remove("visible");
 			shouldersContainer.classList.remove("visible");
@@ -810,6 +824,12 @@ const main = async function main() {
 			statusOptionB.textContent = "";
 			statusOptionX.textContent = "";
 			statusOptionY.textContent = "";
+
+			if (existingArtifacts !== undefined) {
+				for (const artifact of existingArtifacts) {
+					artifact.remove();
+				}
+			}
 
 			if (idFocused === undefined || idFocusedTimeline === undefined) {
 				return;
@@ -831,6 +851,21 @@ const main = async function main() {
 			const timelineColorPen = timelines.get(idFocusedTimeline)?.[1];
 
 			timelineMediaIds = newNeighbors.mediaItems;
+			for (const mediaItemId of newNeighbors.mediaItems) {
+				const mediaItem = timelines.get(mediaItemId);
+				if (mediaItem === undefined) {
+					console.error(`failed to find '${mediaItemId}'`);
+					continue;
+				}
+				const artifact = /** @type {HTMLImageElement} */ (
+					document.createElement("img")
+				);
+				artifact.classList.add("artifact");
+				artifact.src = mediaItem[4];
+				artifact.style.width = "2cm";
+				artifact.style.height = "2cm";
+				artifactsContainer.appendChild(artifact);
+			}
 
 			const timelineIdentityName = timelines.get(idFocusedTimeline)?.[5];
 			const mediaIdentityName =
@@ -1365,6 +1400,7 @@ const main = async function main() {
 			calendarContainer.classList.add("open");
 			menuContainer.classList.remove("open");
 			statusContainer.classList.add("open");
+			targetFocusElement.classList.add("visible");
 		});
 		updateStatus();
 		return InputPlaneNeutral;
@@ -1742,37 +1778,29 @@ const main = async function main() {
 			},
 		},
 		axes: (frame) => {
-			if (INPUT_THRESHOLD < Math.abs(frame.axes[Inputs.AXIS_LEFT_X])) {
-				mediaItemPosition.x -=
-					frame.axes[Inputs.AXIS_LEFT_X] *
-					(frame.delta / (1000 / 60)) *
-					SPEED_MEDIA_TRANSLATE;
-			}
-			if (INPUT_THRESHOLD < Math.abs(frame.axes[Inputs.AXIS_LEFT_Y])) {
-				mediaItemPosition.y -=
-					frame.axes[Inputs.AXIS_LEFT_Y] *
-					(frame.delta / (1000 / 60)) *
-					SPEED_MEDIA_TRANSLATE;
-			}
-
+			let changed = false;
 			if (INPUT_THRESHOLD < Math.abs(frame.axes[Inputs.AXIS_RIGHT_X])) {
 				mediaItemPosition.x -=
 					frame.axes[Inputs.AXIS_RIGHT_X] *
 					(frame.delta / (1000 / 60)) *
 					SPEED_MEDIA_TRANSLATE;
+				changed = true;
 			}
 			if (INPUT_THRESHOLD < Math.abs(frame.axes[Inputs.AXIS_RIGHT_Y])) {
 				mediaItemPosition.y -=
 					frame.axes[Inputs.AXIS_RIGHT_Y] *
 					(frame.delta / (1000 / 60)) *
 					SPEED_MEDIA_TRANSLATE;
+				changed = true;
 			}
 
-			mediaItemPosition.x = Math.max(Math.min(mediaItemPosition.x, 95), -95);
-			mediaItemPosition.y = Math.max(
-				Math.min(mediaItemPosition.y, 100),
-				-1_000_000,
-			);
+			if (changed) {
+				mediaItemPosition.x = Math.max(Math.min(mediaItemPosition.x, 95), -95);
+				mediaItemPosition.y = Math.max(
+					Math.min(mediaItemPosition.y, 100),
+					-1_000_000,
+				);
+			}
 		},
 	};
 
