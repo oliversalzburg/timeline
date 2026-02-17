@@ -1,0 +1,5 @@
+-	`SND01_sine`
+	Retrieve from https://github.com/snd-lib/snd-lib
+
+-	`openmoji-svg-color`
+	Retrieve from https://github.com/hfg-gmuend/openmoji

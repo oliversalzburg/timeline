@@ -89,13 +89,13 @@ for (const data of rawData) {
 
 		const isMediaItem =
 			id.startsWith("media/") &&
-			(fileExtension === "jpg" ||
+			(id.startsWith("media/sfx") ||
+				fileExtension === "jpg" ||
 				fileExtension === "jpeg" ||
 				fileExtension === "mp3" ||
 				fileExtension === "mp4" ||
 				fileExtension === "png");
 		if (!isMediaItem) {
-			//process.stderr.write(`X ${timeline.meta.identity.id}\n`);
 			continue;
 		}
 		++mediaItemCount;
@@ -103,8 +103,10 @@ for (const data of rawData) {
 		const pathTarget = join(target, timeline.meta.identity.id);
 		mkdirSync(dirname(pathTarget), { recursive: true });
 		try {
-			//process.stderr.write(`${pathSource} -> ${pathTarget}\n`);
 			copyFileSync(pathSource, pathTarget, constants.COPYFILE_FICLONE);
+			if (fileExtension === "jpeg") {
+				process.stderr.write(`Consider renaming ${pathSource} to '.jpg'!\n`);
+			}
 		} catch (fault) {
 			if (
 				fault !== undefined &&

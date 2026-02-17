@@ -302,15 +302,6 @@ const main = async function main() {
 	);
 	sfxPrepareSample("transition_up", "media/sfx/SND01_sine/transition_up.wav");
 
-	sfxPrepareSample(
-		"dreh_die_zeit_zurück",
-		"media/audio/dreh-die-zeit-zurück.mp3",
-	);
-	//sfxPrepareSample(
-	//	"liebing_nature_one",
-	//	"media/audio/Chris_Liebing_-_Live_@_Nature_One_2014_(Germany)_-_02-08-2014.mp3",
-	//);
-
 	/**
 	 * Play the sound with the given ID.
 	 *
@@ -2889,11 +2880,6 @@ const main = async function main() {
 
 			console.info("Program init finalized.");
 			Promise.all(samplesLoading.values().toArray()).then(() => {
-				//sfxPlay("liebing_nature_one");
-				//window.setTimeout(() => {
-				//	sfxPlay("dreh_die_zeit_zurück");
-				//}, 21000);
-
 				document.body.classList.remove("loading");
 				window.requestAnimationFrame(present);
 

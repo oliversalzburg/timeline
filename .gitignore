@@ -1,6 +1,7 @@
 _site/
 contrib/fonts/
 contrib/openmoji-svg-color/
+contrib/SND01_sine/
 coverage/
 identities/
 lib/

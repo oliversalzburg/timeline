@@ -209,6 +209,8 @@ $(OUTPUT)/universe.html : $(OUTPUT_BUILD)/universe.info $(_OBJECTS)
 		"--root=$(DATA_ROOT)" \
 		"--universe=$(OUTPUT_BUILD)/universe.yml" \
 		"--target=$(dir $@)"
+	@mkdir --parents $(OUTPUT)/media/sfx
+	@cp --recursive contrib/SND01_sine $(OUTPUT)/media/sfx/SND01_sine
 	@date +"%FT%T%z Media synchronized. Golden image ready at '$(dir $@)'."
 %-demo-universe.html : %-demo-universe.info %-demo-universe.svg $(wildcard contrib/index.template.*) contrib/build-site.js
 	@node --enable-source-maps contrib/build-site.js \
