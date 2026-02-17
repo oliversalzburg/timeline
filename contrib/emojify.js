@@ -420,6 +420,36 @@ export const PREFIXES = {
 		name: "man",
 		src: "1F468.svg",
 	},
+	"\u{1F468}\u{1F3FB}": {
+		emoji: "👨🏻",
+		name: "man: light skin tone",
+		src: "1F468-1F3FB.svg",
+	},
+	"\u{1F468}\u{1F3FC}": {
+		emoji: "👨🏼",
+		name: "man: medium-light skin tone",
+		src: "1F468-1F3FC.svg",
+	},
+	"\u{1F468}\u{1F3FD}": {
+		emoji: "👨🏽",
+		name: "man: medium skin tone",
+		src: "1F468-1F3FD.svg",
+	},
+	"\u{1F468}\u{1F3FE}": {
+		emoji: "👨🏾",
+		name: "man: medium-dark skin tone",
+		src: "1F468-1F3FE.svg",
+	},
+	"\u{1F468}\u{1F3FF}": {
+		emoji: "👨🏿",
+		name: "man: dark skin tone",
+		src: "1F468-1F3FF.svg",
+	},
+	"\u{1F468}\u200D\u{1F9B0}": {
+		emoji: "👨‍🦰",
+		name: "man: red hair",
+		src: "1F468-200D-1F9B0.svg",
+	},
 	"\u{1F468}\u{1F3FB}\u200D\u{1F9B0}": {
 		emoji: "👨🏻‍🦰",
 		name: "man: light skin tone, red hair",
@@ -445,10 +475,10 @@ export const PREFIXES = {
 		name: "man: dark skin tone, red hair",
 		src: "1F468-1F3FF-200D-1F9B0.svg",
 	},
-	"\u{1F468}\u200D\u{1F9B0}": {
-		emoji: "👨‍🦰",
-		name: "man: red hair",
-		src: "1F468-200D-1F9B0.svg",
+	"\u{1F468}\u200D\u{1F9B1}": {
+		emoji: "👨‍🦱",
+		name: "man: curly hair",
+		src: "1F468-200D-1F9B1.svg",
 	},
 	"\u{1F468}\u{1F3FB}\u200D\u{1F9B1}": {
 		emoji: "👨🏻‍🦱",
@@ -475,10 +505,10 @@ export const PREFIXES = {
 		name: "man: dark skin tone, curly hair",
 		src: "1F468-1F3FF-200D-1F9B1.svg",
 	},
-	"\u{1F468}\u200D\u{1F9B1}": {
-		emoji: "👨‍🦱",
-		name: "man: curly hair",
-		src: "1F468-200D-1F9B1.svg",
+	"\u{1F468}\u200D\u{1F9B2}": {
+		emoji: "👨‍🦲",
+		name: "man: bald",
+		src: "1F468-200D-1F9B2.svg",
 	},
 	"\u{1F468}\u{1F3FB}\u200D\u{1F9B2}": {
 		emoji: "👨🏻‍🦲",
@@ -505,10 +535,10 @@ export const PREFIXES = {
 		name: "man: dark skin tone, bald",
 		src: "1F468-1F3FF-200D-1F9B2.svg",
 	},
-	"\u{1F468}\u200D\u{1F9B2}": {
-		emoji: "👨‍🦲",
-		name: "man: bald",
-		src: "1F468-200D-1F9B2.svg",
+	"\u{1F468}\u200D\u{1F9B3}": {
+		emoji: "👨‍🦳",
+		name: "man: white hair",
+		src: "1F468-200D-1F9B3.svg",
 	},
 	"\u{1F468}\u{1F3FB}\u200D\u{1F9B3}": {
 		emoji: "👨🏻‍🦳",
@@ -535,15 +565,40 @@ export const PREFIXES = {
 		name: "man: dark skin tone, white hair",
 		src: "1F468-1F3FF-200D-1F9B3.svg",
 	},
-	"\u{1F468}\u200D\u{1F9B3}": {
-		emoji: "👨‍🦳",
-		name: "man: white hair",
-		src: "1F468-200D-1F9B3.svg",
-	},
 	"\u{1F469}": {
 		emoji: "👩",
 		name: "woman",
 		src: "1F469.svg",
+	},
+	"\u{1F469}\u{1F3FB}": {
+		emoji: "👩🏻",
+		name: "woman: light skin tone",
+		src: "1F469-1F3FB.svg",
+	},
+	"\u{1F469}\u{1F3FC}": {
+		emoji: "👩🏼",
+		name: "woman: medium-light skin tone",
+		src: "1F469-1F3FC.svg",
+	},
+	"\u{1F469}\u{1F3FD}": {
+		emoji: "👩🏽",
+		name: "woman: medium skin tone",
+		src: "1F469-1F3FD.svg",
+	},
+	"\u{1F469}\u{1F3FE}": {
+		emoji: "👩🏾",
+		name: "woman: medium-dark skin tone",
+		src: "1F469-1F3FE.svg",
+	},
+	"\u{1F469}\u{1F3FF}": {
+		emoji: "👩🏿",
+		name: "woman: dark skin tone",
+		src: "1F469-1F3FF.svg",
+	},
+	"\u{1F469}\u200D\u{1F9B0}": {
+		emoji: "👩‍🦰",
+		name: "woman: red hair",
+		src: "1F469-200D-1F9B0.svg",
 	},
 	"\u{1F469}\u{1F3FB}\u200D\u{1F9B0}": {
 		emoji: "👩🏻‍🦰",
@@ -570,25 +625,95 @@ export const PREFIXES = {
 		name: "woman: dark skin tone, red hair",
 		src: "1F469-1F3FF-200D-1F9B0.svg",
 	},
-	"\u{1F469}\u200D\u{1F9B0}": {
-		emoji: "👩‍🦰",
-		name: "woman: red hair",
-		src: "1F469-200D-1F9B0.svg",
-	},
 	"\u{1F469}\u200D\u{1F9B1}": {
 		emoji: "👩‍🦱",
 		name: "woman: curly hair",
 		src: "1F469-200D-1F9B1.svg",
+	},
+	"\u{1F469}\u{1F3FB}\u200D\u{1F9B1}": {
+		emoji: "👩🏻‍🦱",
+		name: "woman: light skin tone, curly hair",
+		src: "1F469-1F3FB-200D-1F9B1.svg",
+	},
+	"\u{1F469}\u{1F3FC}\u200D\u{1F9B1}": {
+		emoji: "👩🏼‍🦱",
+		name: "woman: medium-light skin tone, curly hair",
+		src: "1F469-1F3FC-200D-1F9B1.svg",
+	},
+	"\u{1F469}\u{1F3FD}\u200D\u{1F9B1}": {
+		emoji: "👩🏽‍🦱",
+		name: "woman: medium skin tone, curly hair",
+		src: "1F469-1F3FD-200D-1F9B1.svg",
+	},
+	"\u{1F469}\u{1F3FE}\u200D\u{1F9B1}": {
+		emoji: "👩🏾‍🦱",
+		name: "woman: medium-dark skin tone, curly hair",
+		src: "1F469-1F3FE-200D-1F9B1.svg",
+	},
+	"\u{1F469}\u{1F3FF}\u200D\u{1F9B1}": {
+		emoji: "👩🏿‍🦱",
+		name: "woman: dark skin tone, curly hair",
+		src: "1F469-1F3FF-200D-1F9B1.svg",
 	},
 	"\u{1F469}\u200D\u{1F9B2}": {
 		emoji: "👩‍🦲",
 		name: "woman: bald",
 		src: "1F469-200D-1F9B2.svg",
 	},
+	"\u{1F469}\u{1F3FB}\u200D\u{1F9B2}": {
+		emoji: "👩🏻‍🦲",
+		name: "woman: light skin tone, bald",
+		src: "1F469-1F3FB-200D-1F9B2.svg",
+	},
+	"\u{1F469}\u{1F3FC}\u200D\u{1F9B2}": {
+		emoji: "👩🏼‍🦲",
+		name: "woman: medium-light skin tone, bald",
+		src: "1F469-1F3FC-200D-1F9B2.svg",
+	},
+	"\u{1F469}\u{1F3FD}\u200D\u{1F9B2}": {
+		emoji: "👩🏽‍🦲",
+		name: "woman: medium skin tone, bald",
+		src: "1F469-1F3FD-200D-1F9B2.svg",
+	},
+	"\u{1F469}\u{1F3FE}\u200D\u{1F9B2}": {
+		emoji: "👩🏾‍🦲",
+		name: "woman: medium-dark skin tone, bald",
+		src: "1F469-1F3FE-200D-1F9B2.svg",
+	},
+	"\u{1F469}\u{1F3FF}\u200D\u{1F9B2}": {
+		emoji: "👩🏿‍🦲",
+		name: "woman: dark skin tone, bald",
+		src: "1F469-1F3FF-200D-1F9B2.svg",
+	},
 	"\u{1F469}\u200D\u{1F9B3}": {
 		emoji: "👩‍🦳",
 		name: "woman: white hair",
 		src: "1F469-200D-1F9B3.svg",
+	},
+	"\u{1F469}\u{1F3FB}\u200D\u{1F9B3}": {
+		emoji: "👩🏻‍🦳",
+		name: "woman: light skin tone, white hair",
+		src: "1F469-1F3FB-200D-1F9B3.svg",
+	},
+	"\u{1F469}\u{1F3FC}\u200D\u{1F9B3}": {
+		emoji: "👩🏼‍🦳",
+		name: "woman: medium-light skin tone, white hair",
+		src: "1F469-1F3FC-200D-1F9B3.svg",
+	},
+	"\u{1F469}\u{1F3FD}\u200D\u{1F9B3}": {
+		emoji: "👩🏽‍🦳",
+		name: "woman: medium skin tone, white hair",
+		src: "1F469-1F3FD-200D-1F9B3.svg",
+	},
+	"\u{1F469}\u{1F3FE}\u200D\u{1F9B3}": {
+		emoji: "👩🏾‍🦳",
+		name: "woman: medium-dark skin tone, white hair",
+		src: "1F469-1F3FE-200D-1F9B3.svg",
+	},
+	"\u{1F469}\u{1F3FF}\u200D\u{1F9B3}": {
+		emoji: "👩🏿‍🦳",
+		name: "woman: dark skin tone, white hair",
+		src: "1F469-1F3FF-200D-1F9B3.svg",
 	},
 	"\u{1F469}\u200D\u{1F52C}": {
 		emoji: "👩‍🔬",
@@ -640,20 +765,60 @@ export const PREFIXES = {
 		name: "old man",
 		src: "1F474.svg",
 	},
+	"\u{1F474}\u{1F3FB}": {
+		emoji: "👴🏻",
+		name: "old man: light skin tone",
+		src: "1F474-1F3FB.svg",
+	},
+	"\u{1F474}\u{1F3FC}": {
+		emoji: "👴🏼",
+		name: "old man: medium-light skin tone",
+		src: "1F474-1F3FC.svg",
+	},
+	"\u{1F474}\u{1F3FD}": {
+		emoji: "👴🏽",
+		name: "old man: medium skin tone",
+		src: "1F474-1F3FD.svg",
+	},
+	"\u{1F474}\u{1F3FE}": {
+		emoji: "👴🏾",
+		name: "old man: medium-dark skin tone",
+		src: "1F474-1F3FE.svg",
+	},
+	"\u{1F474}\u{1F3FF}": {
+		emoji: "👴🏿",
+		name: "old man: dark skin tone",
+		src: "1F474-1F3FF.svg",
+	},
 	"\u{1F475}": {
 		emoji: "👵",
 		name: "old woman",
 		src: "1F475.svg",
 	},
+	"\u{1F475}\u{1F3FB}": {
+		emoji: "👵🏻",
+		name: "old woman: light skin tone",
+		src: "1F475-1F3FB.svg",
+	},
 	"\u{1F475}\u{1F3FC}": {
 		emoji: "👵🏼",
 		name: "old woman: medium-light skin tone",
-		src: "1F475-1F3FD.svg",
+		src: "1F475-1F3FC.svg",
 	},
 	"\u{1F475}\u{1F3FD}": {
 		emoji: "👵🏽",
 		name: "old woman: medium skin tone",
 		src: "1F475-1F3FD.svg",
+	},
+	"\u{1F475}\u{1F3FE}": {
+		emoji: "👵🏾",
+		name: "old woman: medium-dark skin tone",
+		src: "1F475-1F3FE.svg",
+	},
+	"\u{1F475}\u{1F3FF}": {
+		emoji: "👵🏿",
+		name: "old woman: dark skin tone",
+		src: "1F475-1F3FF.svg",
 	},
 	"\u{1F476}": {
 		emoji: "👶",
