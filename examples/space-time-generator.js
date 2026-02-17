@@ -34,14 +34,20 @@ const args = process.argv
 				return args;
 			}
 
-			args[parts.groups.name ?? parts.groups.value] =
+			const slot = parts.groups.name ?? parts.groups.value;
+			const value =
 				typeof parts.groups.value === "string" && parts.groups.value !== ""
 					? parts.groups.value
 					: true;
+			args[slot] = Array.isArray(args[slot])
+				? [...args[slot], value]
+				: typeof args[slot] === "undefined"
+					? value
+					: [args[slot], value];
 
 			return args;
 		},
-		/** @type {Record<string, boolean | string>} */ ({}),
+		/** @type {Record<string, boolean | string | Array<boolean | string>>} */ ({}),
 	);
 
 if (typeof args.root !== "string") {

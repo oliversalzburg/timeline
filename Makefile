@@ -205,9 +205,10 @@ $(OUTPUT)/universe.html : $(OUTPUT_BUILD)/universe.info $(_OBJECTS)
 	@date +"%FT%T%z Universe HTML generated '$@'."
 	@cp contrib/favicon.ico $(dir $@)
 	@date +"%FT%T%z Synchronizing media..."
-	@rsync --archive $(DATA_ROOT)/media $(dir $@)
-#	@mkdir --parents $(OUTPUT)/.well-known/appspecific
-#	@echo "{\"workspace\":{\"root\":\"$(dir $@)\",\"uuid\":\"$(file < /proc/sys/kernel/random/uuid)\"}}" > "$(dir $@)/.well-known/appspecific/com.chrome.devtools.json"
+	@node --enable-source-maps examples/media-sync.js \
+		"--root=$(DATA_ROOT)" \
+		"--universe=$(OUTPUT_BUILD)/universe.yml" \
+		"--target=$(dir $@)"
 	@date +"%FT%T%z Media synchronized. Golden image ready at '$(dir $@)'."
 %-demo-universe.html : %-demo-universe.info %-demo-universe.svg $(wildcard contrib/index.template.*) contrib/build-site.js
 	@node --enable-source-maps contrib/build-site.js \

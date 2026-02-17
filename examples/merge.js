@@ -4,8 +4,6 @@ import { createWriteStream, readFileSync } from "node:fs";
 import { parse, stringify } from "yaml";
 import { load, mergeIntoDuringPeriod, serialize } from "../lib/index.js";
 
-/** @import { TimelineAncestryRenderer, TimelineReferenceRenderer } from "../lib/types.js" */
-
 // Parse command line arguments.
 const args = process.argv
 	.slice(2)

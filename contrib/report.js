@@ -3,9 +3,16 @@
 import { createWriteStream, readFileSync } from "node:fs";
 import { mustExist } from "@oliversalzburg/js-utils/data/nil.js";
 import { parse } from "yaml";
-import { load, trimUniverse } from "../lib/index.js";
+import {
+	hopsToWeights,
+	load,
+	report,
+	Styling,
+	trimUniverse,
+	weightedFrames,
+} from "../lib/index.js";
 
-/** @import { TimelineAncestryRenderer, TimelineReferenceRenderer } from "../lib/types.js" */
+/** @import { TimelineAncestryRenderer, TimelineReferenceRenderer, RenderMode } from "../lib/types.js" */
 
 // Parse command line arguments.
 const args = process.argv
@@ -53,6 +60,14 @@ const minIdentityBorn =
 	typeof args["min-identity-born"] === "string"
 		? new Date(args["min-identity-born"]).valueOf()
 		: undefined;
+const probes =
+	typeof args.probe === "string"
+		? [new Date(args.probe).valueOf()]
+		: Array.isArray(args.probe)
+			? args.probe.map((_) =>
+					typeof _ === "string" ? new Date(_).valueOf() : 0,
+				)
+			: undefined;
 
 // Load timeline data.
 const rawData = readFileSync(args.origin, "utf-8").split("\n---\n");
@@ -64,7 +79,7 @@ if (typeof originTimelineId !== "string") {
 	process.exit(1);
 }
 
-// Load timeline data.
+process.stderr.write(`report: Reading universe...\n`);
 /** @type {Map<string, TimelineAncestryRenderer | TimelineReferenceRenderer>} */
 const data = new Map(
 	rawData.map((data) => {
@@ -72,10 +87,10 @@ const data = new Map(
 		return [timeline.id, load(timeline, timeline.id)];
 	}),
 );
-
 /** @type {Array<TimelineAncestryRenderer | TimelineReferenceRenderer>} */
 const timelines = [...data.entries().map(([_, timeline]) => timeline)];
 
+process.stderr.write(`report: Performing trim...\n`);
 const trim = trimUniverse(
 	timelines,
 	mustExist(timelines.find((_) => _.meta.id === originTimelineId)),
@@ -84,27 +99,53 @@ const trim = trimUniverse(
 );
 
 process.stderr.write(
-	`trim: Universe consists of ${timelines.length} timelines. The universe is trimmed to ${trim.timelinesRetained.length} total timelines. ${trim.personsRetainedCount} out of ${trim.personsCount} persons have been retained.\n`,
+	`report: Fast-forwarding universe with ${timelines.length} weights, and scanning for ${probes?.length ?? 0} probes...\n`,
 );
+const frameWeights = [];
+let lastFrameWeights;
+const needles = new Set(probes);
+const generator = weightedFrames(
+	timelines,
+	hopsToWeights(timelines, trim.hops),
+	mustExist(timelines.find((_) => _.meta.id === originTimelineId)),
+);
+for (const frame of generator) {
+	if (0 < needles.size && needles.has(frame.timestamp)) {
+		frameWeights.push([frame.timestamp, frame.weights]);
+		needles.delete(frame.timestamp);
+		process.stderr.write(
+			`report: Successful probe for ${frame.timestamp}. ${needles.size} probes remaining.\n`,
+		);
+		if (needles.size === 0) {
+			process.stderr.write(`report: Scanning for end...\n`);
+		}
+	}
 
-let max = Number.NEGATIVE_INFINITY;
-let maxRetained = Number.NEGATIVE_INFINITY;
-const output = createWriteStream(targetPath);
-for (const [id, hops] of [...trim.hops.entries()].sort(
-	([, a], [, b]) => a - b,
-)) {
-	const retained = trim.timelinesRetained.find(
-		(_) => /** @type {TimelineAncestryRenderer} */ (_).meta.identity?.id === id,
-	);
-	output.write(`${retained ? "" : "X"}${hops}\t${id}\n`);
-	if (Number.isFinite(hops)) {
-		max = Math.max(max, hops);
-	}
-	if (Number.isFinite(hops) && retained) {
-		maxRetained = Math.max(maxRetained, hops);
-	}
+	lastFrameWeights = frame.weights;
 }
 
-process.stderr.write(
-	`trim: Deepest global branch is ${max} hops long. Deepest retainer at hop ${maxRetained}.\n`,
+process.stderr.write(`report: Calculating baseline weights...\n`);
+const baseline = hopsToWeights(trim.solidsRetained, trim.hops);
+
+// Generate stylesheet.
+/** @type {RenderMode} */
+const theme = args.theme === "light" ? "light" : "dark";
+const style = new Styling(trim.timelinesRetained, theme);
+const styleSheet = style.styles(trim.graph, trim.hops, maxHops);
+
+process.stderr.write(`report: Generating report...\n`);
+const reportString = report(
+	trim.solidsRetained,
+	trim.nonSolidsRetained,
+	trim.timelinesTrimmed,
+	trim.hops,
+	baseline,
+	mustExist(lastFrameWeights),
+	// @ts-expect-error YUNO tuple
+	frameWeights,
+	trim.graph,
+	styleSheet,
+	style.palette(),
 );
+const output = createWriteStream(targetPath);
+output.write(`${reportString}\n`);
