@@ -318,10 +318,6 @@ body {
 				transform: none;
 				opacity: 1;
 			}
-
-			.artifact {
-				background-color: rgba(255, 0, 255, 0.208);
-			}
 		}
 		#status {
 			transition:

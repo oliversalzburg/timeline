@@ -842,7 +842,10 @@ const main = async function main() {
 			const timelineColorPen = timelines.get(idFocusedTimeline)?.[1];
 
 			timelineMediaIds = newNeighbors.mediaItems;
-			for (const mediaItemId of newNeighbors.mediaItems) {
+			for (const mediaItemId of newNeighbors.mediaItems.sort(
+				(a, b) =>
+					timelines.get(a)?.[4].localeCompare(timelines.get(b)?.[4] ?? "") ?? 0,
+			)) {
 				const mediaItem = timelines.get(mediaItemId);
 				if (mediaItem === undefined) {
 					console.error(`failed to find '${mediaItemId}'`);
@@ -854,7 +857,11 @@ const main = async function main() {
 					document.createElement("img")
 				);
 				artifact.classList.add("artifact");
-				artifact.src = mediaItem[4];
+				artifact.src = mediaItem[4].startsWith("/kiwix/")
+					? "media/logo-wikipedia.svg"
+					: mediaItem[4].endsWith(".pdf")
+						? "media/logo-pdf.svg"
+						: mediaItem[4];
 				artifact.style.width = `${(Math.round(isPortrait ? (whd[0] / whd[1]) * 100 : 100) / 100) * 3}cm`;
 				artifact.style.height = `${(Math.round(isPortrait ? 100 : (whd[1] / whd[0]) * 100) / 100) * 3}cm`;
 				artifactsContainer.appendChild(artifact);
