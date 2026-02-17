@@ -196,27 +196,39 @@ $(OUTPUT)/universe.report : $(OUTPUT_BUILD)/universe.report
 		"--target=$@" "$@.loose"
 	@date +"%FT%T%z Universe SVG generated '$@'."
 
-$(OUTPUT)/universe.html : $(OUTPUT_BUILD)/universe.info $(_OBJECTS)
+$(OUTPUT)/universe.html : $(OUTPUT_BUILD)/universe.info $(OUTPUT)/universe.exif $(OUTPUT)/favicon.ico $(_OBJECTS)
 	+@make $(OUTPUT_BUILD)/universe.svg
 	@node --enable-source-maps contrib/build-site.js \
 		"--build=$(OUTPUT_BUILD)" \
 		--format=zen \
 		"--target=$@"
 	@date +"%FT%T%z Universe HTML generated '$@'."
-	@cp contrib/favicon.ico $(dir $@)
-	@date +"%FT%T%z Synchronizing media..."
-	@node --enable-source-maps examples/media-sync.js \
-		"--root=$(DATA_ROOT)" \
-		"--universe=$(OUTPUT_BUILD)/universe.yml" \
-		"--target=$(dir $@)"
-	@mkdir --parents $(OUTPUT)/media/sfx
-	@cp --recursive contrib/SND01_sine $(OUTPUT)/media/sfx/SND01_sine
-	@date +"%FT%T%z Media synchronized. Golden image ready at '$(dir $@)'."
+	
 %-demo-universe.html : %-demo-universe.info %-demo-universe.svg $(wildcard contrib/index.template.*) contrib/build-site.js
 	@node --enable-source-maps contrib/build-site.js \
 		--format=zen \
 		--target=$@
 	@date +"%FT%T%z DEMO Universe HTML generated '$@'."
+
+$(OUTPUT)/favicon.ico : contrib/favicon.ico
+	@mkdir --parents $(dir $@)
+	@cp contrib/favicon.ico $@
+	@date +"%FT%T%z Updated favicon '$@'."
+
+$(OUTPUT)/media/.sync : examples/media-sync.js $(OUTPUT_BUILD)/universe.yml lib/tsconfig.source.tsbuildinfo
+	@date +"%FT%T%z Synchronizing media..."
+	@mkdir --parents $(OUTPUT)/media/sfx
+	@node --enable-source-maps examples/media-sync.js \
+		"--root=$(DATA_ROOT)" \
+		"--universe=$(OUTPUT_BUILD)/universe.yml" \
+		"--target=$(dir $@)"
+	@cp --recursive contrib/SND01_sine $(OUTPUT)/media/sfx/SND01_sine
+	@date +"%FT%T%z Media synchronized."
+	@touch $@
+$(OUTPUT)/universe.exif : $(OUTPUT)/media/.sync
+	@date +"%FT%T%z Extracting EXIF data..."
+	@cd $(OUTPUT) && exiftool -json -quiet -recurse media > $@
+	@date +"%FT%T%z EXIF data extracted '$@'."
 
 %.dot : %.gv
 	@dot $(DOT_FLAGS) -Tcanon -o $@ $<

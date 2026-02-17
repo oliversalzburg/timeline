@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-import { copyFileSync, readFileSync, writeFileSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { readFileSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
 import {
 	FONT_NAME,
 	FONT_SCALE,
@@ -154,7 +154,3 @@ const html = templateHtml
 	.replace("<!--SVG-->", svg);
 
 writeFileSync(settings.output, html);
-copyFileSync(
-	join(import.meta.dirname, "favicon.ico"),
-	join(dirname(settings.output), "favicon.ico"),
-);

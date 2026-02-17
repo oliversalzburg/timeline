@@ -89,11 +89,11 @@ for (const data of rawData) {
 
 		const isMediaItem =
 			id.startsWith("media/") &&
-			(id.startsWith("media/sfx") ||
-				fileExtension === "jpg" ||
+			(fileExtension === "jpg" ||
 				fileExtension === "jpeg" ||
 				fileExtension === "mp3" ||
 				fileExtension === "mp4" ||
+				fileExtension === "pdf" ||
 				fileExtension === "png");
 		if (!isMediaItem) {
 			continue;
