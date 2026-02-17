@@ -296,7 +296,7 @@ body {
 		left: 0;
 		width: 100vw;
 		margin: 0;
-		padding: 2mm;
+		padding: 0;
 		z-index: 4;
 
 		#artifacts {
@@ -307,6 +307,7 @@ body {
 			display: flex;
 			flex-direction: row;
 			justify-content: center;
+			align-items: center;
 			gap: 5mm;
 
 			width: 100vw;

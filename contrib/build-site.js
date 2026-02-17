@@ -90,7 +90,7 @@ const settings = {
 	...meta,
 	output: args.target,
 	info: readFileSync(join(args.build, "universe.info"), "utf-8"),
-	meta: readFileSync(join(args.build, "universe.meta"), "utf-8"),
+	meta: readFileSync(join(args.build, "universe.metaxy"), "utf-8"),
 	svg: readFileSync(join(args.build, `universe${meta.svgSource}`), "utf-8"),
 };
 

@@ -133,6 +133,8 @@ export type TimelineMetadata = [
 	string,
 	/** identity name or id */
 	string,
+	/** width, height, duration */
+	[number, number, number]?,
 ];
 export type RenderResultMetadata = [
 	/**

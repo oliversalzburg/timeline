@@ -196,7 +196,7 @@ $(OUTPUT)/universe.report : $(OUTPUT_BUILD)/universe.report
 		"--target=$@" "$@.loose"
 	@date +"%FT%T%z Universe SVG generated '$@'."
 
-$(OUTPUT)/universe.html : $(OUTPUT_BUILD)/universe.info $(OUTPUT)/universe.exif $(OUTPUT)/favicon.ico $(_OBJECTS)
+$(OUTPUT)/universe.html : $(OUTPUT_BUILD)/universe.info $(OUTPUT_BUILD)/universe.metaxy $(OUTPUT)/favicon.ico $(_OBJECTS)
 	+@make $(OUTPUT_BUILD)/universe.svg
 	@node --enable-source-maps contrib/build-site.js \
 		"--build=$(OUTPUT_BUILD)" \
@@ -221,14 +221,21 @@ $(OUTPUT)/media/.sync : examples/media-sync.js $(OUTPUT_BUILD)/universe.yml lib/
 	@node --enable-source-maps examples/media-sync.js \
 		"--root=$(DATA_ROOT)" \
 		"--universe=$(OUTPUT_BUILD)/universe.yml" \
-		"--target=$(dir $@)"
+		"--target=$(OUTPUT)"
 	@cp --recursive contrib/SND01_sine $(OUTPUT)/media/sfx/SND01_sine
 	@date +"%FT%T%z Media synchronized."
 	@touch $@
-$(OUTPUT)/universe.exif : $(OUTPUT)/media/.sync
+$(OUTPUT_BUILD)/universe.exif : $(OUTPUT)/media/.sync
 	@date +"%FT%T%z Extracting EXIF data..."
 	@cd $(OUTPUT) && exiftool -json -quiet -recurse media > $@
 	@date +"%FT%T%z EXIF data extracted '$@'."
+$(OUTPUT_BUILD)/universe.metaxy : contrib/thumbinfo.js $(OUTPUT_BUILD)/universe.exif $(OUTPUT_BUILD)/universe.meta
+	@date +"%FT%T%z Generating media metadata information..."
+	@node --enable-source-maps contrib/thumbinfo.js \
+		"--exif=$(OUTPUT_BUILD)/universe.exif" \
+		"--meta=$(OUTPUT_BUILD)/universe.meta" \
+		"--target=$@"
+	@date +"%FT%T%z Generated media metadata information '$@'."
 
 %.dot : %.gv
 	@dot $(DOT_FLAGS) -Tcanon -o $@ $<
