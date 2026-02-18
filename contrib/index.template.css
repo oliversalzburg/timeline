@@ -309,14 +309,28 @@ body {
 			justify-content: center;
 			align-items: center;
 			gap: 5mm;
+			margin: 5mm;
 
 			width: 100vw;
 			transform: translateY(10vmin);
-			opacity: 0;
+			opacity: 1;
 
 			&.open {
 				transform: none;
 				opacity: 1;
+			}
+
+			.artifact {
+				transition:
+					ease-in-out opacity 0.6s,
+					ease-in-out transform 0.5s;
+
+				opacity: 1;
+				transform: none;
+
+				&.pending {
+					opacity: 0;
+				}
 			}
 		}
 		#status {

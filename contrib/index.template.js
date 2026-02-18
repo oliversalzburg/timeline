@@ -856,8 +856,8 @@ const main = async function main() {
 				const artifact = /** @type {HTMLImageElement} */ (
 					document.createElement("img")
 				);
-				artifact.classList.add("artifact");
-				artifact.src = mediaItem[4].startsWith("/kiwix/")
+				artifact.classList.add("artifact", "pending");
+				artifact.dataset.src = mediaItem[4].startsWith("/kiwix/")
 					? "media/logo-wikipedia.svg"
 					: mediaItem[4].endsWith(".pdf")
 						? "media/logo-pdf.svg"
@@ -1016,12 +1016,17 @@ const main = async function main() {
 	 * Finalize a camera movement, like after a scrollTo() operation.
 	 */
 	const cameraMovementFinalize = function cameraMovementFinalize() {
+		/** @type {NodeListOf<HTMLImageElement>}*/
+		let pendingArtifacts;
 		/** @type {NodeListOf<HTMLDivElement>}*/
 		let pendingDays;
 		DOM.read("cameraMovementFinalize", () => {
 			view.position.x = window.scrollX;
 			view.position.y = window.scrollY;
 			view.scope.y = window.scrollY - view.window.height;
+			pendingArtifacts = document.querySelectorAll(
+				"#artifacts .artifact.pending",
+			);
 			pendingDays = document.querySelectorAll(".calendar.previous.pending");
 		});
 		if (cameraIsAttached) {
@@ -1038,6 +1043,16 @@ const main = async function main() {
 					targetFocusElement.style.top = `calc(${event.bb.y}px - 4mm)`;
 					targetFocusElement.style.width = `calc(${event.bb.w}px + 8mm)`;
 					targetFocusElement.style.height = `calc(${event.bb.h}px + 8mm)`;
+				}
+
+				for (const artifact of pendingArtifacts) {
+					if (artifact.dataset.src === undefined) {
+						console.error("Missing src in dataset!");
+					} else {
+						artifact.src = artifact.dataset.src;
+						delete artifact.dataset.src;
+					}
+					artifact.classList.remove("pending");
 				}
 
 				for (const day of pendingDays) {
@@ -1399,6 +1414,7 @@ const main = async function main() {
 			}
 			calendarContainer.classList.add("open");
 			menuContainer.classList.remove("open");
+			artifactsContainer.classList.add("open");
 			statusContainer.classList.add("open");
 			targetFocusElement.classList.add("visible");
 		});
@@ -1418,6 +1434,7 @@ const main = async function main() {
 			DOM.write("returnToMenuPlan", () => {
 				calendarContainer.classList.remove("open");
 				menuContainer.classList.add("open");
+				artifactsContainer.classList.add("open");
 				statusContainer.classList.add("open");
 			});
 			return plane;
@@ -1810,6 +1827,7 @@ const main = async function main() {
 		DOM.write("returnToMedia", () => {
 			calendarContainer.classList.add("open");
 			menuContainer.classList.remove("open");
+			artifactsContainer.classList.add("open");
 			statusContainer.classList.add("open");
 		});
 		updateStatus();
@@ -2898,6 +2916,7 @@ const main = async function main() {
 				}, 5000);
 
 				window.setTimeout(() => {
+					artifactsContainer.classList.add("open");
 					statusContainer.classList.add("open");
 					returnToNeutral();
 					console.info("Status shown.");
