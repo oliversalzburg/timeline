@@ -427,57 +427,70 @@ body {
 				margin: 0 0 0 1em;
 				text-align: left;
 			}
-			.options {
+			.buttons {
 				display: flex;
 				flex-direction: row;
 				align-items: center;
 				justify-content: end;
-				position: absolute;
+				position: relative;
 				right: 0;
 				bottom: 0;
 				margin-bottom: 0.25em;
 
 				opacity: 0;
-				transition: ease-in-out opacity 0.3s;
+				transform: scaleY(0);
+				transition:
+					ease-in-out transform 0.4s,
+					ease-in-out opacity 0.3s;
+
 				&.visible {
+					transform: none;
 					opacity: 1;
+					min-height: 1em;
 				}
 
-				.button {
-					display: inline-block;
-					color: rgb(255 255 255 / 0.95);
-					opacity: 0.95;
-					font-weight: bold;
-					/* FONT_SIZE_READ */
-					width: 1em;
-					height: 1em;
-					line-height: 1em;
-					text-align: center;
-					border-radius: 50% 50%;
-					text-shadow:
-						0 0 0.2vmin rgb(0 0 0 / 0.5),
-						1px 1px 0 black;
-					filter: drop-shadow(0 0 0.1vmin black);
-					user-select: none;
-					margin-right: 1vmin;
+				div.button {
+					.button {
+						display: inline-block;
+						color: rgb(255 255 255 / 0.95);
+						opacity: 0.95;
+						font-weight: bold;
+						/* FONT_SIZE_READ */
+						width: 1em;
+						height: 1em;
+						line-height: 1em;
+						text-align: center;
+						border-radius: 50% 50%;
+						text-shadow:
+							0 0 0.2vmin rgb(0 0 0 / 0.5),
+							1px 1px 0 black;
+						filter: drop-shadow(0 0 0.1vmin black);
+						user-select: none;
+						margin-right: 1vmin;
+					}
 
-					&.a {
+					.label {
+						/* FONT_SIZE_READ */
+						margin-right: 2vmin;
+					}
+
+					&.a .button {
 						background-color: rgb(0 128 0 / 0.75);
 						border: 0.2vmin solid rgb(0 128 0);
 					}
-					&.b {
+					&.b .button {
 						background-color: rgb(255 0 0 / 0.75);
 						border: 0.2vmin solid rgb(255 0 0);
 					}
-					&.x {
+					&.x .button {
 						background-color: rgb(0 0 255 / 0.75);
 						border: 0.2vmin solid rgb(0 0 255);
 					}
-					&.y {
+					&.y .button {
 						background-color: rgb(255 255 0 / 0.75);
 						border: 0.2vmin solid rgb(255 255 0);
 					}
-					&.start {
+					&.start .button {
 						background-color: rgb(55 55 55 / 0.75);
 						border: 0.2vmin solid rgb(33 33 33);
 						border-radius: 40% 40%;
@@ -486,12 +499,8 @@ body {
 						width: unset;
 						max-width: 5em;
 						padding: 0 0.25em;
+						transform: scale(0.5);
 					}
-				}
-
-				.option {
-					/* FONT_SIZE_READ */
-					margin-right: 2vmin;
 				}
 			}
 		}

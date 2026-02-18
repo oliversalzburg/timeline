@@ -119,87 +119,87 @@ const main = async function main() {
 	/** @type {HTMLParagraphElement | null} */
 	const statusText = document.querySelector("#status .text");
 	if (statusText === null) {
-		throw new Error("Unable to find #status element.");
+		throw new Error("Unable to find #status .text element.");
 	}
 	/** @type {HTMLDivElement | null} */
 	const shouldersContainer = document.querySelector("#status .shoulders");
 	if (shouldersContainer === null) {
-		throw new Error("Unable to find #status element.");
+		throw new Error("Unable to find #status .shoulders element.");
 	}
 	/** @type {HTMLSpanElement | null} */
 	const shoulderLeft = document.querySelector("#status .shoulder.left");
 	if (shoulderLeft === null) {
-		throw new Error("Unable to find #status element.");
+		throw new Error("Unable to find #status .shoulder.left element.");
 	}
 	/** @type {HTMLSpanElement | null} */
 	const shoulderRight = document.querySelector("#status .shoulder.right");
 	if (shoulderRight === null) {
-		throw new Error("Unable to find #status element.");
+		throw new Error("Unable to find #status .shoulder.right element.");
 	}
 	/** @type {HTMLSpanElement | null} */
 	const intro = document.querySelector("#status .intro");
 	if (intro === null) {
-		throw new Error("Unable to find #status element.");
+		throw new Error("Unable to find #status .intro element.");
 	}
 
 	/** @type {HTMLSpanElement | null} */
-	const statusOptions = document.querySelector("#status .options");
+	const statusOptions = document.querySelector("#status .buttons");
 	if (statusOptions === null) {
-		throw new Error("Unable to find #status element.");
+		throw new Error("Unable to find #status .buttons element.");
 	}
 	/** @type {HTMLSpanElement | null} */
-	const statusOptionA = document.querySelector("#status .options .option.a");
+	const statusOptionA = document.querySelector("#status .buttons .a .label");
 	if (statusOptionA === null) {
-		throw new Error("Unable to find #status element.");
+		throw new Error("Unable to find #status .buttons .a .label element.");
 	}
 	/** @type {HTMLSpanElement | null} */
-	const statusOptionB = document.querySelector("#status .options .option.b");
+	const statusOptionB = document.querySelector("#status .buttons .b .label");
 	if (statusOptionB === null) {
-		throw new Error("Unable to find #status element.");
+		throw new Error("Unable to find #status .buttons .b .label element.");
 	}
 	/** @type {HTMLSpanElement | null} */
-	const statusOptionX = document.querySelector("#status .options .option.x");
+	const statusOptionX = document.querySelector("#status .buttons .x .label");
 	if (statusOptionX === null) {
-		throw new Error("Unable to find #status element.");
+		throw new Error("Unable to find #status .buttons .x .label element.");
 	}
 	/** @type {HTMLSpanElement | null} */
-	const statusOptionY = document.querySelector("#status .options .option.y");
+	const statusOptionY = document.querySelector("#status .buttons .y .label");
 	if (statusOptionY === null) {
-		throw new Error("Unable to find #status element.");
+		throw new Error("Unable to find #status .buttons .y .label element.");
 	}
 	/** @type {HTMLSpanElement | null} */
 	const statusOptionStart = document.querySelector(
-		"#status .options .option.start",
+		"#status .buttons .start .label",
 	);
 	if (statusOptionStart === null) {
-		throw new Error("Unable to find #status element.");
+		throw new Error("Unable to find #status .buttons .start .label element.");
 	}
 	/** @type {HTMLSpanElement | null} */
-	const statusButtonA = document.querySelector("#status .options .button.a");
+	const statusButtonA = document.querySelector("#status .buttons .button.a");
 	if (statusButtonA === null) {
-		throw new Error("Unable to find #status element.");
+		throw new Error("Unable to find #status .buttons .button.a element.");
 	}
 	/** @type {HTMLSpanElement | null} */
-	const statusButtonB = document.querySelector("#status .options .button.b");
+	const statusButtonB = document.querySelector("#status .buttons .button.b");
 	if (statusButtonB === null) {
-		throw new Error("Unable to find #status element.");
+		throw new Error("Unable to find #status .buttons .button.b element.");
 	}
 	/** @type {HTMLSpanElement | null} */
-	const statusButtonX = document.querySelector("#status .options .button.x");
+	const statusButtonX = document.querySelector("#status .buttons .button.x");
 	if (statusButtonX === null) {
-		throw new Error("Unable to find #status element.");
+		throw new Error("Unable to find #status .buttons .button.x element.");
 	}
 	/** @type {HTMLSpanElement | null} */
-	const statusButtonY = document.querySelector("#status .options .button.y");
+	const statusButtonY = document.querySelector("#status .buttons .button.y");
 	if (statusButtonY === null) {
-		throw new Error("Unable to find #status element.");
+		throw new Error("Unable to find #status .buttons .button.y element.");
 	}
 	/** @type {HTMLSpanElement | null} */
 	const statusButtonStart = document.querySelector(
-		"#status .options .button.start",
+		"#status .buttons .button.start",
 	);
 	if (statusButtonStart === null) {
-		throw new Error("Unable to find #status element.");
+		throw new Error("Unable to find #status .buttons .button.start element.");
 	}
 	//#endregion
 
@@ -854,7 +854,7 @@ const main = async function main() {
 			}
 
 			const newNeighbors = getNodeNeighbors(idFocused, idFocusedTimeline);
-			if (1 < newNeighbors.intersection.length) {
+			if (1 < newNeighbors.intersection.length && !mediaItemVisible) {
 				statusOptions.classList.add("visible");
 				statusOptionX.textContent = "Umsteigen";
 				statusOptionX.style.display = "inline-block";
@@ -878,12 +878,21 @@ const main = async function main() {
 				const artifact = /** @type {HTMLImageElement} */ (
 					document.createElement("img")
 				);
-				artifact.classList.add("artifact", "pending");
-				artifact.dataset.src = mediaItem[4].startsWith("/kiwix/")
-					? "media/logo-wikipedia.svg"
-					: mediaItem[4].endsWith(".pdf")
-						? "media/logo-pdf.svg"
-						: mediaItem[4];
+				artifact.classList.add("artifact");
+				if (cameraIsIdle) {
+					artifact.classList.add("pending");
+					artifact.dataset.src = mediaItem[4].startsWith("/kiwix/")
+						? "media/logo-wikipedia.svg"
+						: mediaItem[4].endsWith(".pdf")
+							? "media/logo-pdf.svg"
+							: mediaItem[4];
+				} else {
+					artifact.src = mediaItem[4].startsWith("/kiwix/")
+						? "media/logo-wikipedia.svg"
+						: mediaItem[4].endsWith(".pdf")
+							? "media/logo-pdf.svg"
+							: mediaItem[4];
+				}
 				artifact.style.width = `${(Math.round(isPortrait ? (whd[0] / whd[1]) * 100 : 100) / 100) * 3}cm`;
 				artifact.style.height = `${(Math.round(isPortrait ? 100 : (whd[1] / whd[0]) * 100) / 100) * 3}cm`;
 				artifactsContainer.appendChild(artifact);
@@ -1455,8 +1464,8 @@ const main = async function main() {
 			InputFrameCache = [];
 			DOM.write("returnToMenuPlan", () => {
 				calendarContainer.classList.remove("open");
+				artifactsContainer.classList.remove("open");
 				menuContainer.classList.add("open");
-				artifactsContainer.classList.add("open");
 				statusContainer.classList.add("open");
 			});
 			return plane;
@@ -1917,12 +1926,15 @@ const main = async function main() {
 
 		if (isActive) {
 			if (menuMainFocusIndex === 0) {
+				menuMainJumpFocusIndex = 0;
 				menuMainJump(false);
 			}
 			if (menuMainFocusIndex === 1) {
+				menuMainSwitchTimelineFocusIndex = 0;
 				menuMainSwitchTimeline(false);
 			}
 			if (menuMainFocusIndex === 2) {
+				menuMainArtifactsFocusIndex = 0;
 				menuMainArtifacts(false);
 			}
 		}
@@ -2219,6 +2231,12 @@ const main = async function main() {
 			menuMainFocusIndex = 0;
 			menuMain(false);
 			menuMainJump(false);
+
+			updateStatusForMenu(() => {
+				statusOptionA.textContent = "Auswählen";
+				statusOptionA.style.display = "inline-block";
+				statusButtonA.style.display = "inline-block";
+			});
 		}
 
 		DOM.write("menuMainJumpDate", () => {
@@ -2520,6 +2538,7 @@ const main = async function main() {
 		DOM.write("updateStatusForMenu", () => {
 			artifactsContainer.classList.remove("open");
 			statusOptions.classList.remove("visible");
+			shouldersContainer.classList.remove("visible");
 			shoulderLeft.classList.remove("visible");
 			shoulderRight.classList.remove("visible");
 			statusButtonA.style.display = "none";
@@ -2575,15 +2594,17 @@ const main = async function main() {
 
 		const options = getNodeNeighbors().intersection;
 		DOM.write("menuMainSwitchTimeline", () => {
+			if (cssRuleHighlightActive !== undefined) {
+				stylesheet.deleteRule(cssRuleHighlightActive);
+				cssRuleHighlightActive = undefined;
+			}
+
 			if (isActive) {
-				const styleHighlight = `g.event.${idFocusedTimeline}, g.edge.${idFocusedTimeline} {
-				filter: drop-shadow(0 0 6px rgb(255, 255, 255)) drop-shadow(0 0 15px rgba(255, 255, 255, 0.5));
-			}`;
-				if (cssRuleHighlightActive !== undefined) {
-					stylesheet.deleteRule(cssRuleHighlightActive);
-				}
-				cssRuleHighlightActive = stylesheet.cssRules.length;
-				stylesheet.insertRule(styleHighlight, stylesheet.cssRules.length);
+				//const styleHighlight = `g.event.${options[menuMainSwitchTimelineFocusIndex]}, g.edge.${options[menuMainSwitchTimelineFocusIndex]} {
+				//	filter: drop-shadow(0 0 6px rgb(255, 255, 255)) drop-shadow(0 0 15px rgba(255, 255, 255, 0.5));
+				//}`;
+				//cssRuleHighlightActive = stylesheet.cssRules.length;
+				//stylesheet.insertRule(styleHighlight, stylesheet.cssRules.length);
 				targetFocusElement.classList.remove("visible");
 			}
 
@@ -2966,6 +2987,7 @@ const main = async function main() {
 			Promise.all(samplesLoading.values().toArray()).then(() => {
 				document.body.classList.remove("loading");
 				window.requestAnimationFrame(present);
+				returnToNeutral();
 
 				window.setTimeout(() => {
 					calendarContainer.classList.add("open");
@@ -2975,13 +2997,12 @@ const main = async function main() {
 				window.setTimeout(() => {
 					artifactsContainer.classList.add("open");
 					statusContainer.classList.add("open");
-					returnToNeutral();
 					console.info("Status shown.");
 				}, 6000);
 
 				window.setTimeout(() => {
-					loader.style.display = "none";
-					console.info("Loader hidden.");
+					loader.remove();
+					console.info("Loader removed.");
 				}, 10000);
 			});
 		});
