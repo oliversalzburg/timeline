@@ -477,6 +477,16 @@ body {
 						background-color: rgb(255 255 0 / 0.75);
 						border: 0.2vmin solid rgb(255 255 0);
 					}
+					&.start {
+						background-color: rgb(55 55 55 / 0.75);
+						border: 0.2vmin solid rgb(33 33 33);
+						border-radius: 40% 40%;
+						line-height: 1.25em;
+						height: 1.25em;
+						width: unset;
+						max-width: 5em;
+						padding: 0 0.25em;
+					}
 				}
 
 				.option {

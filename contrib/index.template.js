@@ -168,6 +168,13 @@ const main = async function main() {
 		throw new Error("Unable to find #status element.");
 	}
 	/** @type {HTMLSpanElement | null} */
+	const statusOptionStart = document.querySelector(
+		"#status .options .option.start",
+	);
+	if (statusOptionStart === null) {
+		throw new Error("Unable to find #status element.");
+	}
+	/** @type {HTMLSpanElement | null} */
 	const statusButtonA = document.querySelector("#status .options .button.a");
 	if (statusButtonA === null) {
 		throw new Error("Unable to find #status element.");
@@ -185,6 +192,13 @@ const main = async function main() {
 	/** @type {HTMLSpanElement | null} */
 	const statusButtonY = document.querySelector("#status .options .button.y");
 	if (statusButtonY === null) {
+		throw new Error("Unable to find #status element.");
+	}
+	/** @type {HTMLSpanElement | null} */
+	const statusButtonStart = document.querySelector(
+		"#status .options .button.start",
+	);
+	if (statusButtonStart === null) {
 		throw new Error("Unable to find #status element.");
 	}
 	//#endregion
@@ -535,7 +549,7 @@ const main = async function main() {
 	 *
 	 * @type {string | undefined}
 	 */
-	let previousTimelineActive = idFocusedTimeline;
+	let _previousTimelineActive = idFocusedTimeline;
 
 	/**
 	 * Try to focus an event on the focused timeline, which is closest to the
@@ -811,10 +825,17 @@ const main = async function main() {
 			statusButtonB.style.display = "none";
 			statusButtonX.style.display = "none";
 			statusButtonY.style.display = "none";
+			statusButtonStart.style.display = "none";
+			statusOptionA.style.display = "none";
+			statusOptionB.style.display = "none";
+			statusOptionX.style.display = "none";
+			statusOptionY.style.display = "none";
+			statusOptionStart.style.display = "none";
 			statusOptionA.textContent = "";
 			statusOptionB.textContent = "";
 			statusOptionX.textContent = "";
 			statusOptionY.textContent = "";
+			statusOptionStart.textContent = "";
 
 			if (existingArtifacts !== undefined) {
 				for (const artifact of existingArtifacts) {
@@ -836,6 +857,7 @@ const main = async function main() {
 			if (1 < newNeighbors.intersection.length) {
 				statusOptions.classList.add("visible");
 				statusOptionX.textContent = "Umsteigen";
+				statusOptionX.style.display = "inline-block";
 				statusButtonX.style.display = "inline-block";
 			}
 
@@ -1348,7 +1370,7 @@ const main = async function main() {
 				};
 			},
 			[Inputs.BUTTON_X]: () => {
-				previousTimelineActive = idFocusedTimeline;
+				_previousTimelineActive = idFocusedTimeline;
 				menuMainSwitchTimeline();
 				sfxPlaySwipe();
 				return {
@@ -1851,7 +1873,7 @@ const main = async function main() {
 
 	let menuMainFocusIndex = 0;
 	const menuMain = function menuMain(isActive = true) {
-		updateStatusMenuSwitchTimeline();
+		updateStatusForMenu();
 
 		/** @type {NodeListOf<HTMLDivElement> | undefined} */
 		let existingMenuItems;
@@ -1891,12 +1913,6 @@ const main = async function main() {
 			}
 			menuItemArtifacts.textContent = "Artefakte";
 			menuLevel0.appendChild(menuItemArtifacts);
-
-			statusOptions.classList.add("visible");
-			statusOptionA.textContent = "Auswählen";
-			statusButtonA.style.display = "inline-block";
-			statusOptionX.textContent = "Zurück";
-			statusButtonX.style.display = "inline-block";
 		});
 
 		if (isActive) {
@@ -1951,7 +1967,7 @@ const main = async function main() {
 					};
 				}
 				if (menuMainFocusIndex === 1) {
-					_menuMainSwitchTimelineFocusIndex = 0;
+					menuMainSwitchTimelineFocusIndex = 0;
 					menuMainSwitchTimeline();
 					sfxPlaySwipe();
 					return {
@@ -1990,7 +2006,7 @@ const main = async function main() {
 					};
 				}
 				if (menuMainFocusIndex === 1) {
-					_menuMainSwitchTimelineFocusIndex = 0;
+					menuMainSwitchTimelineFocusIndex = 0;
 					menuMainSwitchTimeline();
 					sfxPlaySwipe();
 					return {
@@ -2030,6 +2046,14 @@ const main = async function main() {
 	const menuMainJump = function menuMainJump(isActive = true) {
 		if (isActive) {
 			menuMain(false);
+
+			updateStatusForMenu(() => {
+				if (0 < menuMainJumpFocusIndex) {
+					statusOptionA.textContent = "Auswählen";
+					statusOptionA.style.display = "inline-block";
+					statusButtonA.style.display = "inline-block";
+				}
+			});
 		}
 
 		DOM.write("menuMainJump", () => {
@@ -2487,35 +2511,66 @@ const main = async function main() {
 	//#endregion
 
 	//#region Switch Timeline
-	const updateStatusMenuSwitchTimeline =
-		function updateStatusMenuSwitchTimeline() {
-			DOM.write("updateStatusMenuSwitchTimeline", () => {
-				statusOptions.classList.remove("visible");
-				shoulderLeft.classList.remove("visible");
-				shoulderRight.classList.remove("visible");
-				statusButtonA.style.display = "none";
-				statusButtonB.style.display = "none";
-				statusButtonX.style.display = "none";
-				statusButtonY.style.display = "none";
-				statusOptionA.textContent = "";
-				statusOptionB.textContent = "";
-				statusOptionX.textContent = "";
-				statusOptionY.textContent = "";
-				statusText.textContent = "";
-				intro.style.color = "transparent";
-			});
-		};
+	/**
+	 * @param {undefined | (() => void)} additional -
+	 */
+	const updateStatusForMenu = function updateStatusForMenu(
+		additional = undefined,
+	) {
+		DOM.write("updateStatusForMenu", () => {
+			artifactsContainer.classList.remove("open");
+			statusOptions.classList.remove("visible");
+			shoulderLeft.classList.remove("visible");
+			shoulderRight.classList.remove("visible");
+			statusButtonA.style.display = "none";
+			statusButtonB.style.display = "none";
+			statusButtonX.style.display = "none";
+			statusButtonY.style.display = "none";
+			statusOptionA.style.display = "none";
+			statusOptionB.style.display = "none";
+			statusOptionX.style.display = "none";
+			statusOptionY.style.display = "none";
+			statusOptionA.textContent = "";
+			statusOptionB.textContent = "";
+			statusOptionX.textContent = "";
+			statusOptionY.textContent = "";
+			statusText.textContent = "";
+			intro.style.color = "transparent";
+
+			statusOptions.classList.add("visible");
+			statusOptionStart.textContent = "Schließen";
+			statusOptionStart.style.display = "inline-block";
+			statusButtonStart.style.display = "inline-block";
+
+			//statusOptionA.textContent = "Auswählen";
+			//statusButtonA.style.display = "inline-block";
+			//statusOptionX.textContent = "Zurück";
+			//statusButtonX.style.display = "inline-block";
+
+			if (additional !== undefined) {
+				additional();
+			}
+		});
+	};
 
 	/** @type {number | undefined} */
 	let cssRuleHighlightActive;
-	let _menuMainSwitchTimelineFocusIndex = 0;
+	let menuMainSwitchTimelineFocusIndex = 0;
 	const menuMainSwitchTimeline = function menuMainSwitchTimeline(
 		isActive = true,
 	) {
-		updateStatusMenuSwitchTimeline();
 		if (isActive) {
 			menuMainFocusIndex = 1;
 			menuMain(false);
+
+			updateStatusForMenu(() => {
+				statusOptions.classList.add("visible");
+				statusOptionA.textContent = "Umsteigen";
+				statusOptionA.style.display = "inline-block";
+				statusButtonA.style.display = "inline-block";
+				//statusOptionX.textContent = "Zurück";
+				//statusButtonX.style.display = "inline-block";
+			});
 		}
 
 		const options = getNodeNeighbors().intersection;
@@ -2540,24 +2595,19 @@ const main = async function main() {
 			offsetMenu(menuLevel1, 1);
 			menuContainer.appendChild(menuLevel1);
 
-			for (const timelineId of options) {
+			for (const [index, timelineId] of options.entries()) {
 				const timeline = timelines.get(timelineId);
 				if (timeline === undefined) {
 					throw new Error(`can't find timeline '${timelineId}'`);
 				}
 				const menuItem = document.createElement("div");
 				menuItem.classList.add("item", timelineId);
-				if (idFocusedTimeline === timelineId) {
+				if (menuMainSwitchTimelineFocusIndex === index) {
 					menuItem.classList.add("active");
 				}
 				menuItem.textContent = timeline[5] ?? timeline[4] ?? "???";
 				menuLevel1.appendChild(menuItem);
 			}
-			statusOptions.classList.add("visible");
-			statusOptionA.textContent = "Umsteigen";
-			statusButtonA.style.display = "inline-block";
-			statusOptionX.textContent = "Zurück";
-			statusButtonX.style.display = "inline-block";
 		});
 	};
 
@@ -2569,9 +2619,10 @@ const main = async function main() {
 				if (idFocusedTimeline === undefined || idFocused === undefined) {
 					return undefined;
 				}
-				const neighbors = getNodeNeighbors();
-				const activeIndex = neighbors.intersection.indexOf(idFocusedTimeline);
-				focusNode(idFocused, neighbors.intersection[activeIndex - 1]);
+				//const neighbors = getNodeNeighbors();
+				//const activeIndex = _menuMainSwitchTimelineFocusIndex;
+				menuMainSwitchTimelineFocusIndex -= 1;
+				//focusNode(idFocused, neighbors.intersection[activeIndex - 1]);
 				sfxPlayTap();
 				menuMainSwitchTimeline();
 				return {
@@ -2587,9 +2638,10 @@ const main = async function main() {
 				if (idFocusedTimeline === undefined || idFocused === undefined) {
 					return undefined;
 				}
-				const neighbors = getNodeNeighbors();
-				const activeIndex = neighbors.intersection.indexOf(idFocusedTimeline);
-				focusNode(idFocused, neighbors.intersection[activeIndex + 1]);
+				menuMainSwitchTimelineFocusIndex += 1;
+				//const neighbors = getNodeNeighbors();
+				//const activeIndex = neighbors.intersection.indexOf(idFocusedTimeline);
+				//focusNode(idFocused, neighbors.intersection[activeIndex + 1]);
 				sfxPlayTap();
 				menuMainSwitchTimeline();
 				return {
@@ -2602,8 +2654,9 @@ const main = async function main() {
 				};
 			},
 			[Inputs.BUTTON_LEFT]: () => {
-				menuMain();
 				sfxPlayTap();
+				menuMain();
+				//focusNode(idFocused, previousTimelineActive);
 				return {
 					name: "return",
 					released: {
@@ -2612,19 +2665,23 @@ const main = async function main() {
 				};
 			},
 			[Inputs.BUTTON_A]: () => {
-				sfxPlaySwipe();
 				sfxPlay("button");
+				const neighbors = getNodeNeighbors();
+				const activeTimeline =
+					neighbors.intersection[menuMainSwitchTimelineFocusIndex];
+				focusNode(idFocused, activeTimeline);
+				sfxPlaySwipe();
 				return {
 					name: "return",
 					released: { [Inputs.BUTTON_A]: returnToNeutral },
 				};
 			},
-			[Inputs.BUTTON_X]: () => {
-				focusNode(idFocused, previousTimelineActive);
-				sfxPlaySwipe();
+			[Inputs.BUTTON_START]: () => {
+				//focusNode(idFocused, previousTimelineActive);
+				sfxPlay("transition_down");
 				return {
 					name: "return",
-					released: { [Inputs.BUTTON_X]: returnToNeutral },
+					released: { [Inputs.BUTTON_START]: returnToNeutral },
 				};
 			},
 		},
