@@ -22,7 +22,7 @@ import {
 } from "./genealogy.js";
 import type { WeightedFrame, WeightedFramesGenerator } from "./index.js";
 import { matchLuminance, rgbaToHexString } from "./palette.js";
-import { type RendererOptions, rank, renderMilliseconds } from "./renderer.js";
+import { type RendererOptions, renderMilliseconds } from "./renderer.js";
 import {
 	STYLE_TRANSFER_MARKER,
 	STYLE_UNBOUND_MEDIA,
@@ -269,7 +269,6 @@ export const render = <
 	timelines: Array<TTimelines>,
 	options: RendererOptions,
 	frames: WeightedFramesGenerator<TTimelines>,
-	hops?: Map<string, number> | undefined,
 ): RendererResultMetadata<TTimelines> => {
 	const dotGraph = (d = dot()) => {
 		const fontsize = FONT_SIZE_1000MM_V07_READ_PT;
@@ -332,17 +331,6 @@ export const render = <
 	);
 	const classes = new Map<string, string>(
 		timelines.map((_) => [_.meta.id, `t${hashCyrb53(_.meta.id)}`]),
-	);
-	const _ranks = new Map<string, number>(
-		timelines.map((_) => [
-			_.meta.id,
-			rank(
-				_,
-				"identity" in _.meta
-					? hops?.get(_.meta.identity.id)
-					: Number.POSITIVE_INFINITY,
-			),
-		]),
 	);
 	const idMesh = new Map<TTimelines, Array<string>>();
 	for (const timeline of timelines) {

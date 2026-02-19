@@ -20,8 +20,6 @@ export interface RendererOptions {
 	 */
 	origin: string;
 	segment?: number | undefined;
-	skipAfter?: number | undefined;
-	skipBefore?: number | undefined;
 	theme: RenderMode;
 	rendererAnalytics: "enabled" | "disabled";
 	rendererAnonymization: "enabled" | "disabled";

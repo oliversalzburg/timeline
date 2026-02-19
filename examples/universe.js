@@ -142,8 +142,6 @@ const renderOptions = {
 	rendererAnalytics: args.analytics === true ? "enabled" : "disabled",
 	rendererAnonymization: args.anonymize === true ? "enabled" : "disabled",
 	segment,
-	skipBefore,
-	skipAfter,
 	styleSheet,
 	theme,
 };
@@ -153,6 +151,8 @@ const endWeights = fastForward(
 		trim.solidsRetained,
 		hopsToWeights(trim.solidsRetained, trim.hops),
 		mustExist(timelines.find((_) => _.meta.id === originTimelineId)),
+		skipBefore,
+		skipAfter,
 	),
 );
 process.stdout.write(`universe: Rendering...\n`);
@@ -163,6 +163,8 @@ const dotGraph = render(
 		trim.timelinesRetained,
 		hopsToWeights(trim.timelinesRetained, trim.hops),
 		mustExist(timelines.find((_) => _.meta.id === originTimelineId)),
+		skipBefore,
+		skipAfter,
 		endWeights,
 	),
 );
@@ -198,13 +200,8 @@ const dIso = buildDate.toISOString();
 const dStart = new Date(globalEarliest).toUTCString();
 const dEnd = new Date(globalLatest).toUTCString();
 const dFrom =
-	renderOptions.skipBefore !== undefined
-		? new Date(renderOptions.skipBefore).toUTCString()
-		: dStart;
-const dTo =
-	renderOptions.skipAfter !== undefined
-		? new Date(renderOptions.skipAfter).toUTCString()
-		: dEnd;
+	skipBefore !== undefined ? new Date(skipBefore).toUTCString() : dStart;
+const dTo = skipAfter !== undefined ? new Date(skipAfter).toUTCString() : dEnd;
 const info = [
 	`Universe was generated on a device indicating a local point in time of:`,
 	`${dBuild} offset ${offset} minutes from UTC`,

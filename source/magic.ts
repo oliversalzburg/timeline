@@ -137,6 +137,8 @@ export function* weightedFrames<
 	timelines: Array<TTimeline>,
 	baseline: Array<number>,
 	origin: TTimeline,
+	skipBefore?: number | undefined,
+	skipAfter?: number | undefined,
 	endWeights?: Map<TTimeline, [number, number, number | undefined]>,
 ): WeightedFramesGenerator<TTimeline> {
 	const frames = buildFrames(timelines);
@@ -171,7 +173,14 @@ export function* weightedFrames<
 				endWeights?.get(timeline)?.[0],
 			]);
 		}
-		yield { content: frame, timestamp, weights: frameWeights };
+		if (
+			(skipBefore === undefined ||
+				(skipBefore !== undefined && skipBefore < timestamp)) &&
+			(skipAfter === undefined ||
+				(skipAfter !== undefined && timestamp < skipAfter))
+		) {
+			yield { content: frame, timestamp, weights: frameWeights };
+		}
 		weightCache = frameWeights;
 	}
 }

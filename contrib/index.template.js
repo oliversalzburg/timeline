@@ -607,6 +607,8 @@ const main = async function main() {
 		let previousDay;
 		/** @type {NodeListOf<HTMLDivElement>} */
 		let previousDays;
+		/** @type {NodeListOf<HTMLParagraphElement>} */
+		let previousStatusTexts;
 		DOM.read("focusNode", () => {
 			/** @type {HTMLElement | null} */
 			const node = document.querySelector(anchor);
@@ -628,6 +630,7 @@ const main = async function main() {
 				calendarContainer.cloneNode(true)
 			);
 			previousDays = document.querySelectorAll(".calendar.previous");
+			previousStatusTexts = document.querySelectorAll("#status .text.previous");
 		});
 
 		DOM.write("focusNode", () => {
@@ -648,11 +651,14 @@ const main = async function main() {
 			for (const day of previousDays) {
 				day.remove();
 			}
+			for (const status of previousStatusTexts) {
+				status.remove();
+			}
 			document.body.append(previousDay);
 			previousDay.id = "";
 			previousDay.classList.add("previous", "pending");
 			previousDay.style.transition =
-				"transform ease-in-out 2s, opacity linear 2s";
+				"transform 2s ease-in-out, opacity 2s linear";
 			previousDay.style.zIndex = "5";
 
 			const titleParts = nodeTitle.split("\n");
@@ -692,10 +698,10 @@ const main = async function main() {
 			);
 		});
 
-		updateStatus();
 		if (shiftFocus) {
 			cameraIsAttached = true;
 			requestFocusShift(id);
+			updateStatus();
 		}
 	};
 
@@ -811,31 +817,39 @@ const main = async function main() {
 	const updateStatus = function updateStatus() {
 		/** @type {NodeListOf<HTMLImageElement> | undefined} */
 		let existingArtifacts;
+		/** @type {HTMLParagraphElement | undefined} */
+		let previousStatusText;
 		DOM.read("updateStatus", () => {
 			existingArtifacts = /** @type {NodeListOf<HTMLImageElement>} */ (
 				document.querySelectorAll("#artifacts .artifact")
 			);
+			if (
+				previousStatusText === undefined &&
+				!mediaIsOpen &&
+				!statusText.classList.contains("artifact") &&
+				!statusText.classList.contains("pending")
+			) {
+				previousStatusText = /** @type {HTMLParagraphElement} */ (
+					statusText.cloneNode(true)
+				);
+			}
 		});
+
 		DOM.write("updateStatus", () => {
 			statusOptions.classList.remove("visible");
 			shouldersContainer.classList.remove("visible");
 			shoulderLeft.classList.remove("visible");
 			shoulderRight.classList.remove("visible");
-			statusButtonA.style.display = "none";
-			statusButtonB.style.display = "none";
-			statusButtonX.style.display = "none";
-			statusButtonY.style.display = "none";
-			statusButtonStart.style.display = "none";
-			statusOptionA.style.display = "none";
-			statusOptionB.style.display = "none";
-			statusOptionX.style.display = "none";
-			statusOptionY.style.display = "none";
-			statusOptionStart.style.display = "none";
-			statusOptionA.textContent = "";
-			statusOptionB.textContent = "";
-			statusOptionX.textContent = "";
-			statusOptionY.textContent = "";
-			statusOptionStart.textContent = "";
+			statusButtonA.classList.remove("visible");
+			statusButtonB.classList.remove("visible");
+			statusButtonX.classList.remove("visible");
+			statusButtonY.classList.remove("visible");
+			statusButtonStart.classList.remove("visible");
+			//statusOptionA.textContent = "";
+			//statusOptionB.textContent = "";
+			//statusOptionX.textContent = "";
+			//statusOptionY.textContent = "";
+			//statusOptionStart.textContent = "";
 
 			if (existingArtifacts !== undefined) {
 				for (const artifact of existingArtifacts) {
@@ -854,20 +868,32 @@ const main = async function main() {
 			}
 
 			const newNeighbors = getNodeNeighbors(idFocused, idFocusedTimeline);
-			if (1 < newNeighbors.intersection.length && !mediaItemVisible) {
-				statusOptions.classList.add("visible");
+			if (1 < newNeighbors.intersection.length && !mediaIsOpen && !menuIsOpen) {
 				statusOptionX.textContent = "Umsteigen";
-				statusOptionX.style.display = "inline-block";
-				statusButtonX.style.display = "inline-block";
+				statusButtonX.classList.add("visible");
+				statusOptions.classList.add("visible");
 			}
 
 			const timelineColorPen = timelines.get(idFocusedTimeline)?.[1];
 
 			timelineMediaIds = newNeighbors.mediaItems;
-			for (const mediaItemId of newNeighbors.mediaItems.sort(
-				(a, b) =>
-					timelines.get(a)?.[4].localeCompare(timelines.get(b)?.[4] ?? "") ?? 0,
-			)) {
+			if (timelineMediaIds.length === 0) {
+				artifactsContainer.classList.remove("open");
+			} else {
+				artifactsContainer.classList.add("open");
+			}
+			if (mediaIsOpen) {
+				artifactsContainer.classList.add("full");
+			} else {
+				artifactsContainer.classList.remove("full");
+			}
+			for (const [index, mediaItemId] of timelineMediaIds
+				.sort(
+					(a, b) =>
+						timelines.get(a)?.[4].localeCompare(timelines.get(b)?.[4] ?? "") ??
+						0,
+				)
+				.entries()) {
 				const mediaItem = timelines.get(mediaItemId);
 				if (mediaItem === undefined) {
 					console.error(`failed to find '${mediaItemId}'`);
@@ -893,6 +919,9 @@ const main = async function main() {
 							? "media/logo-pdf.svg"
 							: mediaItem[4];
 				}
+				if (mediaIsOpen && index === timelineMediaIdActive) {
+					artifact.classList.add("active");
+				}
 				artifact.style.width = `${(Math.round(isPortrait ? (whd[0] / whd[1]) * 100 : 100) / 100) * 3}cm`;
 				artifact.style.height = `${(Math.round(isPortrait ? 100 : (whd[1] / whd[0]) * 100) / 100) * 3}cm`;
 				artifactsContainer.appendChild(artifact);
@@ -909,21 +938,37 @@ const main = async function main() {
 				);
 			}
 
-			if (mediaIdentityName !== undefined) {
+			if (mediaIsOpen && mediaIdentityName !== undefined) {
 				intro.textContent = "Artefaktname:";
+				intro.classList.add("visible");
 				statusText.textContent = mediaIdentityName;
+				statusText.classList.add("artifact");
+				if (cameraIsIdle) {
+					statusText.classList.add("pending");
+				}
 			} else {
+				if (previousStatusText !== undefined) {
+					previousStatusText.classList.add("previous", "pending");
+					statusContainer.insertBefore(previousStatusText, statusOptions);
+					previousStatusText = undefined;
+				}
+
+				intro.style.color = timelineColorPen ?? "";
 				intro.textContent = `Reise auf Zeit-Gleis: ${timelineIdentityName}`;
+				intro.classList.add("visible");
 				statusText.textContent = event.title;
+				statusText.classList.remove("artifact");
+
+				if (cameraIsIdle) {
+					statusText.classList.add("pending");
+				} else {
+					statusText.classList.remove("pending", "hidden");
+				}
 			}
 
-			intro.style.color = timelineColorPen ?? "";
-			statusText.style.textShadow = `2px 2px 3px ${timelineColorPen}`;
-
 			const hasShoulderLeft =
-				0 < newNeighbors.mediaItems.length &&
-				timelineMediaIdActive !== undefined;
-			const hasShoulderRight = 0 < newNeighbors.mediaItems.length;
+				0 < timelineMediaIds.length && timelineMediaIdActive !== undefined;
+			const hasShoulderRight = 0 < timelineMediaIds.length;
 
 			if (hasShoulderLeft) {
 				shoulderLeft.classList.add("visible");
@@ -942,6 +987,37 @@ const main = async function main() {
 
 			if (hasShoulderLeft || hasShoulderRight) {
 				shouldersContainer.classList.add("visible");
+			}
+		});
+	};
+
+	/**
+	 * @param {undefined | (() => void)} additional -
+	 */
+	const updateStatusForMenu = function updateStatusForMenu(
+		additional = undefined,
+	) {
+		DOM.write("updateStatusForMenu", () => {
+			artifactsContainer.classList.remove("open", "full");
+			statusOptions.classList.remove("visible");
+			shouldersContainer.classList.remove("visible");
+			shoulderLeft.classList.remove("visible");
+			shoulderRight.classList.remove("visible");
+			statusButtonA.classList.remove("visible");
+			statusButtonB.classList.remove("visible");
+			statusButtonX.classList.remove("visible");
+			statusButtonY.classList.remove("visible");
+			statusButtonStart.classList.remove("visible");
+
+			statusOptionStart.textContent = "Schließen";
+			statusButtonStart.classList.add("visible");
+			statusOptions.classList.add("visible");
+
+			intro.classList.remove("visible");
+			statusText.classList.add("pending", "hidden");
+
+			if (additional !== undefined) {
+				additional();
 			}
 		});
 	};
@@ -1051,6 +1127,8 @@ const main = async function main() {
 		let pendingArtifacts;
 		/** @type {NodeListOf<HTMLDivElement>}*/
 		let pendingDays;
+		/** @type {NodeListOf<HTMLParagraphElement>}*/
+		let pendingStatusTexts;
 		DOM.read("cameraMovementFinalize", () => {
 			view.position.x = window.scrollX;
 			view.position.y = window.scrollY;
@@ -1059,6 +1137,9 @@ const main = async function main() {
 				"#artifacts .artifact.pending",
 			);
 			pendingDays = document.querySelectorAll(".calendar.previous.pending");
+			pendingStatusTexts = document.querySelectorAll(
+				"#status .text.previous.pending",
+			);
 		});
 		if (cameraIsAttached) {
 			DOM.write("cameraMovementFinalize", () => {
@@ -1090,6 +1171,12 @@ const main = async function main() {
 					day.style.opacity = "0";
 					day.style.transform = "perspective(50vh) rotateX(90deg)";
 					day.classList.remove("pending");
+				}
+
+				statusText.classList.remove("pending", "hidden");
+
+				for (const status of pendingStatusTexts) {
+					status.classList.remove("pending");
 				}
 
 				cull();
@@ -1445,9 +1532,10 @@ const main = async function main() {
 			}
 			calendarContainer.classList.add("open");
 			menuContainer.classList.remove("open");
-			artifactsContainer.classList.add("open");
+			//artifactsContainer.classList.add("open");
 			statusContainer.classList.add("open");
 			targetFocusElement.classList.add("visible");
+			menuIsOpen = false;
 		});
 		updateStatus();
 		return InputPlaneNeutral;
@@ -1462,9 +1550,9 @@ const main = async function main() {
 		return () => {
 			console.debug("Clearing input cache, returning provided menu plane.");
 			InputFrameCache = [];
-			DOM.write("returnToMenuPlan", () => {
+			DOM.write("returnToMenuPlane", () => {
 				calendarContainer.classList.remove("open");
-				artifactsContainer.classList.remove("open");
+				artifactsContainer.classList.remove("open", "full");
 				menuContainer.classList.add("open");
 				statusContainer.classList.add("open");
 			});
@@ -1626,7 +1714,7 @@ const main = async function main() {
 	/** @type {number | undefined} */
 	let timelineMediaIdActive;
 	let mediaItemPosition = { x: 0, y: 100, z: 10 };
-	let mediaItemVisible = false;
+	let mediaIsOpen = false;
 
 	/** @type {number | null} */
 	let iFrameResizeHandle = null;
@@ -1638,7 +1726,7 @@ const main = async function main() {
 		const resizeIFrame = () => {
 			iFrameResizeHandle = null;
 
-			if (mediaItemVisible === false) {
+			if (mediaIsOpen === false) {
 				return;
 			}
 
@@ -1728,7 +1816,7 @@ const main = async function main() {
 			}
 
 			dialog.show();
-			mediaItemVisible = true;
+			mediaIsOpen = true;
 		});
 		return true;
 	};
@@ -1758,7 +1846,7 @@ const main = async function main() {
 		DOM.write("mediaClose", () => {
 			dialogIFrame.src = "about:blank";
 			dialog.close();
-			mediaItemVisible = false;
+			mediaIsOpen = false;
 		});
 		mediaReset();
 	};
@@ -1824,6 +1912,14 @@ const main = async function main() {
 					released: { [Inputs.BUTTON_RT]: returnToMedia },
 				};
 			},
+			[Inputs.BUTTON_START]: () => {
+				timelineMediaIdActive = undefined;
+				mediaClose();
+				return {
+					name: "return",
+					released: { [Inputs.BUTTON_START]: returnToNeutral },
+				};
+			},
 		},
 		axes: (frame) => {
 			let changed = false;
@@ -1880,8 +1976,10 @@ const main = async function main() {
 		}
 	};
 
+	let menuIsOpen = false;
 	let menuMainFocusIndex = 0;
 	const menuMain = function menuMain(isActive = true) {
+		menuIsOpen = true;
 		updateStatusForMenu();
 
 		/** @type {NodeListOf<HTMLDivElement> | undefined} */
@@ -2062,8 +2160,8 @@ const main = async function main() {
 			updateStatusForMenu(() => {
 				if (0 < menuMainJumpFocusIndex) {
 					statusOptionA.textContent = "Auswählen";
-					statusOptionA.style.display = "inline-block";
-					statusButtonA.style.display = "inline-block";
+					statusButtonA.classList.add("visible");
+					statusOptions.classList.add("visible");
 				}
 			});
 		}
@@ -2234,8 +2332,8 @@ const main = async function main() {
 
 			updateStatusForMenu(() => {
 				statusOptionA.textContent = "Auswählen";
-				statusOptionA.style.display = "inline-block";
-				statusButtonA.style.display = "inline-block";
+				statusButtonA.classList.add("visible");
+				statusOptions.classList.add("visible");
 			});
 		}
 
@@ -2529,49 +2627,6 @@ const main = async function main() {
 	//#endregion
 
 	//#region Switch Timeline
-	/**
-	 * @param {undefined | (() => void)} additional -
-	 */
-	const updateStatusForMenu = function updateStatusForMenu(
-		additional = undefined,
-	) {
-		DOM.write("updateStatusForMenu", () => {
-			artifactsContainer.classList.remove("open");
-			statusOptions.classList.remove("visible");
-			shouldersContainer.classList.remove("visible");
-			shoulderLeft.classList.remove("visible");
-			shoulderRight.classList.remove("visible");
-			statusButtonA.style.display = "none";
-			statusButtonB.style.display = "none";
-			statusButtonX.style.display = "none";
-			statusButtonY.style.display = "none";
-			statusOptionA.style.display = "none";
-			statusOptionB.style.display = "none";
-			statusOptionX.style.display = "none";
-			statusOptionY.style.display = "none";
-			statusOptionA.textContent = "";
-			statusOptionB.textContent = "";
-			statusOptionX.textContent = "";
-			statusOptionY.textContent = "";
-			statusText.textContent = "";
-			intro.style.color = "transparent";
-
-			statusOptions.classList.add("visible");
-			statusOptionStart.textContent = "Schließen";
-			statusOptionStart.style.display = "inline-block";
-			statusButtonStart.style.display = "inline-block";
-
-			//statusOptionA.textContent = "Auswählen";
-			//statusButtonA.style.display = "inline-block";
-			//statusOptionX.textContent = "Zurück";
-			//statusButtonX.style.display = "inline-block";
-
-			if (additional !== undefined) {
-				additional();
-			}
-		});
-	};
-
 	/** @type {number | undefined} */
 	let cssRuleHighlightActive;
 	let menuMainSwitchTimelineFocusIndex = 0;
@@ -2583,12 +2638,9 @@ const main = async function main() {
 			menuMain(false);
 
 			updateStatusForMenu(() => {
-				statusOptions.classList.add("visible");
 				statusOptionA.textContent = "Umsteigen";
-				statusOptionA.style.display = "inline-block";
-				statusButtonA.style.display = "inline-block";
-				//statusOptionX.textContent = "Zurück";
-				//statusButtonX.style.display = "inline-block";
+				statusButtonA.classList.add("visible");
+				statusOptions.classList.add("visible");
 			});
 		}
 
@@ -2715,6 +2767,8 @@ const main = async function main() {
 		if (isActive) {
 			menuMainFocusIndex = 2;
 			menuMain(false);
+
+			updateStatusForMenu();
 		}
 
 		DOM.write("menuMainArtifacts", () => {
@@ -2828,7 +2882,12 @@ const main = async function main() {
 
 		// We don't want to update the starfield every frame, because it doesn't
 		// move much, but consumes a lot of fill rate.
-		if (!cameraIsIdle && cameraIsAttached && 1000 < deltaStarfield) {
+		if (
+			!cameraIsIdle &&
+			cameraIsAttached &&
+			1000 < deltaStarfield &&
+			!menuIsOpen
+		) {
 			const sinceStart = Date.now() - startTime;
 
 			DOM.write("updateStarfield", () => {
@@ -2871,7 +2930,7 @@ const main = async function main() {
 			});
 		}
 
-		if (mediaItemVisible) {
+		if (mediaIsOpen) {
 			DOM.write("updateMediaItem", () => {
 				// Browser X-Y is reversed.
 				dialog.style.transform = `perspective(20px) translate3d(${mediaItemPosition.x}px, ${mediaItemPosition.y}px, ${mediaItemPosition.z}px)`;
@@ -2995,7 +3054,7 @@ const main = async function main() {
 				}, 5000);
 
 				window.setTimeout(() => {
-					artifactsContainer.classList.add("open");
+					//artifactsContainer.classList.add("open");
 					statusContainer.classList.add("open");
 					console.info("Status shown.");
 				}, 6000);
