@@ -1888,6 +1888,32 @@ const main = async function main() {
 					released: { [Inputs.BUTTON_RB]: returnToMedia },
 				};
 			},
+			[Inputs.BUTTON_LEFT]: () => {
+				if (!mediaBackward()) {
+					mediaClose();
+					return {
+						name: "return",
+						released: { [Inputs.BUTTON_LEFT]: returnToNeutral },
+					};
+				}
+				return {
+					name: "return",
+					released: { [Inputs.BUTTON_LEFT]: returnToMedia },
+				};
+			},
+			[Inputs.BUTTON_RIGHT]: () => {
+				if (!mediaForward()) {
+					mediaClose();
+					return {
+						name: "return",
+						released: { [Inputs.BUTTON_RIGHT]: returnToNeutral },
+					};
+				}
+				return {
+					name: "return",
+					released: { [Inputs.BUTTON_RIGHT]: returnToMedia },
+				};
+			},
 			[Inputs.BUTTON_LT]: (frame) => {
 				mediaItemPosition.z -= (frame.delta / (1000 / 60)) * SPEED_MEDIA_SCALE;
 				// Otherwise the item ends up behind the camera, or too far away.
