@@ -554,7 +554,7 @@ body {
 					}
 					&.start .button {
 						background-color: rgb(55 55 55 / 0.75);
-						border: 0.2vmin solid rgb(33 33 33);
+						border: 2mm solid rgb(33 33 33);
 						border-radius: 40% 40%;
 						line-height: 1.25em;
 						height: 1.25em;
@@ -562,6 +562,7 @@ body {
 						max-width: 5em;
 						padding: 0 0.25em;
 						transform: scale(0.5);
+						margin-right: -0.5em;
 					}
 				}
 			}

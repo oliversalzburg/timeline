@@ -1786,7 +1786,7 @@ const main = async function main() {
 			dialogImage.src = "";
 			dialogImage.style.display = "none";
 			if (resetAudio) {
-				dialogAudio.src = "";
+				dialogAudio.src = "about:blank";
 				dialogAudio.style.display = "none";
 			}
 			dialogVideo.src = "";
@@ -2077,7 +2077,8 @@ const main = async function main() {
 			menuItemArtifacts.textContent = "Artefakte";
 			menuLevel0.appendChild(menuItemArtifacts);
 
-			if (dialogAudio.src !== "") {
+			console.warn(dialogAudio.src);
+			if (dialogAudio.src !== "about:blank") {
 				const menuItemMute = document.createElement("div");
 				menuItemMute.classList.add("item");
 				if (menuMainFocusIndex === 3) {
@@ -2110,7 +2111,7 @@ const main = async function main() {
 		pressed: {
 			[Inputs.BUTTON_UP]: () => {
 				menuMainFocusIndex = Math.min(
-					dialogAudio.src !== "" ? 3 : 2,
+					dialogAudio.src !== "about:blank" ? 3 : 2,
 					Math.max(0, menuMainFocusIndex - 1),
 				);
 				menuMain();
@@ -2124,7 +2125,7 @@ const main = async function main() {
 			},
 			[Inputs.BUTTON_DOWN]: () => {
 				menuMainFocusIndex = Math.min(
-					dialogAudio.src !== "" ? 3 : 2,
+					dialogAudio.src !== "about:blank" ? 3 : 2,
 					Math.max(0, menuMainFocusIndex + 1),
 				);
 				menuMain();
@@ -2212,7 +2213,7 @@ const main = async function main() {
 					};
 				}
 				if (menuMainFocusIndex === 3) {
-					dialogAudio.src = "";
+					dialogAudio.src = "about:blank";
 					sfxPlay("transition_down");
 					return {
 						name: "return",
