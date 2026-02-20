@@ -66,10 +66,21 @@ const main = async function main() {
 	if (dialogImage === null) {
 		throw new Error("Unable to find <dialog> element.");
 	}
+	/** @type {HTMLAudioElement | null} */
+	const dialogAudio = document.querySelector("dialog audio");
+	if (dialogAudio === null) {
+		throw new Error("Unable to find dialog audio element.");
+	}
 	/** @type {HTMLVideoElement | null} */
 	const dialogVideo = document.querySelector("dialog video");
 	if (dialogVideo === null) {
-		throw new Error("Unable to find <dialog> element.");
+		throw new Error("Unable to find dialog video element.");
+	}
+
+	/** @type {HTMLAudioElement | null} */
+	const baseAudio = document.querySelector("audio.base");
+	if (baseAudio === null) {
+		throw new Error("Unable to find audio.base element.");
 	}
 
 	/** @type {HTMLDivElement | null} */
@@ -910,14 +921,18 @@ const main = async function main() {
 					artifact.dataset.src = mediaItem[4].startsWith("/kiwix/")
 						? "media/logo-wikipedia.svg"
 						: mediaItem[4].endsWith(".pdf")
-							? "media/logo-pdf.svg"
-							: mediaItem[4];
+							? "media/mime/application/pdf.svg"
+							: mediaItem[4].endsWith(".mp3")
+								? "media/mime/audio/mpeg.svg"
+								: mediaItem[4];
 				} else {
 					artifact.src = mediaItem[4].startsWith("/kiwix/")
 						? "media/logo-wikipedia.svg"
 						: mediaItem[4].endsWith(".pdf")
-							? "media/logo-pdf.svg"
-							: mediaItem[4];
+							? "media/mime/application/pdf.svg"
+							: mediaItem[4].endsWith(".mp3")
+								? "media/mime/audio/mpeg.svg"
+								: mediaItem[4];
 				}
 				if (mediaIsOpen && index === timelineMediaIdActive) {
 					artifact.classList.add("active");
@@ -967,22 +982,23 @@ const main = async function main() {
 			}
 
 			const hasShoulderLeft =
-				0 < timelineMediaIds.length && timelineMediaIdActive !== undefined;
+				0 < timelineMediaIds.length &&
+				timelineMediaIdActive !== undefined &&
+				timelines
+					.get(timelineMediaIds[timelineMediaIdActive])?.[4]
+					.endsWith(".mp3");
 			const hasShoulderRight = 0 < timelineMediaIds.length;
 
 			if (hasShoulderLeft) {
 				shoulderLeft.classList.add("visible");
-				shoulderLeft.textContent =
-					timelineMediaIdActive === 0 ? "Schließen" : "Zurück blättern";
+				shoulderLeft.textContent = "🔇 Schließen";
 			}
 			if (hasShoulderRight) {
 				shoulderRight.classList.add("visible");
 				shoulderRight.textContent =
 					timelineMediaIdActive === undefined
 						? "Artefakte anzeigen"
-						: timelineMediaIdActive === timelineMediaIds.length - 1
-							? "Schließen"
-							: "Vorwärts blättern";
+						: "Schließen";
 			}
 
 			if (hasShoulderLeft || hasShoulderRight) {
@@ -1267,7 +1283,7 @@ const main = async function main() {
 	 */
 	const onClick = function onClick(event) {
 		DOM.write("onClick", () => {
-			document.documentElement.style.cursor = "default";
+			document.body.style.cursor = "default";
 		});
 
 		if (event.target === null) {
@@ -1294,8 +1310,8 @@ const main = async function main() {
 	 * @param {MouseEvent} _event -
 	 */
 	const onMouseMove = function onMouseMove(_event) {
-		DOM.write("onClick", () => {
-			document.documentElement.style.cursor = "default";
+		DOM.write("onMouseMove", () => {
+			document.body.style.cursor = "default";
 		});
 	};
 	//#endregion
@@ -1751,12 +1767,16 @@ const main = async function main() {
 		iFrameResizeHandle = window.setTimeout(resizeIFrame, 100);
 	};
 	dialogIFrame.addEventListener("load", onIFrameLoad);
+	const onAudioLoad = function onAudioLoad() {
+		dialogAudio.play();
+	};
+	dialogAudio.addEventListener("canplaythrough", onAudioLoad);
 	const onVideoLoad = function onVideoLoad() {
 		dialogVideo.play();
 	};
 	dialogVideo.addEventListener("canplaythrough", onVideoLoad);
 
-	const mediaReset = function mediaReset() {
+	const mediaReset = function mediaReset(resetAudio = true) {
 		mediaItemPosition = { x: 0, y: 100, z: 10 };
 		DOM.write("mediaReset", () => {
 			dialog.style.transform = `perspective(20px) translate3d(${mediaItemPosition.x}vmin, ${mediaItemPosition.y}vmin, ${mediaItemPosition.z}vmin)`;
@@ -1765,6 +1785,10 @@ const main = async function main() {
 			dialogIFrame.style.width = "";
 			dialogImage.src = "";
 			dialogImage.style.display = "none";
+			if (resetAudio) {
+				dialogAudio.src = "";
+				dialogAudio.style.display = "none";
+			}
 			dialogVideo.src = "";
 			dialogVideo.style.display = "none";
 		});
@@ -1796,7 +1820,7 @@ const main = async function main() {
 
 		console.info(`Showing media item ${mediaIndex}...`);
 		timelineMediaIdActive = mediaIndex;
-		mediaReset();
+		mediaReset(false);
 
 		DOM.write("mediaShow", () => {
 			if (mediaPath.startsWith("/kiwix/")) {
@@ -1807,6 +1831,9 @@ const main = async function main() {
 				dialogIFrame.style.display = "block";
 				dialogIFrame.style.height = "600mm";
 				dialogIFrame.style.width = "215mm";
+			} else if (mediaPath.endsWith(".mp3")) {
+				dialogAudio.src = mediaPath;
+				dialogAudio.style.display = "block";
 			} else if (mediaPath.endsWith(".mp4")) {
 				dialogVideo.src = mediaPath;
 				dialogVideo.style.display = "block";
@@ -1838,7 +1865,7 @@ const main = async function main() {
 			timelineMediaIdActive === undefined ? 0 : timelineMediaIdActive - 1,
 		);
 	};
-	const mediaClose = function mediaClose() {
+	const mediaClose = function mediaClose(resetAudio = false) {
 		console.info("Closing media...");
 		if (iFrameResizeHandle !== null) {
 			window.clearTimeout(iFrameResizeHandle);
@@ -1848,7 +1875,13 @@ const main = async function main() {
 			dialog.close();
 			mediaIsOpen = false;
 		});
-		mediaReset();
+		mediaReset(resetAudio);
+	};
+	const mediaCloseWithAudio = function mediaCloseWithAudio() {
+		//console.info("Cloning audio...");
+		//baseAudio.src = dialogAudio.src;
+		//baseAudio.play();
+		mediaClose(true);
 	};
 
 	/** @type {InputPlane} */
@@ -1856,36 +1889,35 @@ const main = async function main() {
 		name: "media",
 		pressed: {
 			[Inputs.BUTTON_BACK]: () => {
+				timelineMediaIdActive = undefined;
 				mediaClose();
 				return {
 					name: "return",
 					released: { [Inputs.BUTTON_BACK]: returnToNeutral },
 				};
 			},
-			[Inputs.BUTTON_LB]: () => {
-				if (!mediaBackward()) {
-					mediaClose();
-					return {
-						name: "return",
-						released: { [Inputs.BUTTON_LB]: returnToNeutral },
-					};
-				}
+			[Inputs.BUTTON_START]: () => {
+				timelineMediaIdActive = undefined;
+				mediaClose();
 				return {
 					name: "return",
-					released: { [Inputs.BUTTON_LB]: returnToMedia },
+					released: { [Inputs.BUTTON_START]: returnToNeutral },
+				};
+			},
+			[Inputs.BUTTON_LB]: () => {
+				timelineMediaIdActive = undefined;
+				mediaCloseWithAudio();
+				return {
+					name: "return",
+					released: { [Inputs.BUTTON_LB]: returnToNeutral },
 				};
 			},
 			[Inputs.BUTTON_RB]: () => {
-				if (!mediaForward()) {
-					mediaClose();
-					return {
-						name: "return",
-						released: { [Inputs.BUTTON_RB]: returnToNeutral },
-					};
-				}
+				timelineMediaIdActive = undefined;
+				mediaClose();
 				return {
 					name: "return",
-					released: { [Inputs.BUTTON_RB]: returnToMedia },
+					released: { [Inputs.BUTTON_RB]: returnToNeutral },
 				};
 			},
 			[Inputs.BUTTON_LEFT]: () => {
@@ -1936,14 +1968,6 @@ const main = async function main() {
 						[Inputs.BUTTON_RT]: InputPlaneMedia.pressed?.[Inputs.BUTTON_RT],
 					},
 					released: { [Inputs.BUTTON_RT]: returnToMedia },
-				};
-			},
-			[Inputs.BUTTON_START]: () => {
-				timelineMediaIdActive = undefined;
-				mediaClose();
-				return {
-					name: "return",
-					released: { [Inputs.BUTTON_START]: returnToNeutral },
 				};
 			},
 		},
@@ -2006,7 +2030,13 @@ const main = async function main() {
 	let menuMainFocusIndex = 0;
 	const menuMain = function menuMain(isActive = true) {
 		menuIsOpen = true;
-		updateStatusForMenu();
+		updateStatusForMenu(() => {
+			if (menuMainFocusIndex === 3) {
+				statusOptionA.textContent = "Musik abschalten";
+				statusButtonA.classList.add("visible");
+				statusOptions.classList.add("visible");
+			}
+		});
 
 		/** @type {NodeListOf<HTMLDivElement> | undefined} */
 		let existingMenuItems;
@@ -2046,6 +2076,16 @@ const main = async function main() {
 			}
 			menuItemArtifacts.textContent = "Artefakte";
 			menuLevel0.appendChild(menuItemArtifacts);
+
+			if (dialogAudio.src !== "") {
+				const menuItemMute = document.createElement("div");
+				menuItemMute.classList.add("item");
+				if (menuMainFocusIndex === 3) {
+					menuItemMute.classList.add("active");
+				}
+				menuItemMute.textContent = "🔇";
+				menuLevel0.appendChild(menuItemMute);
+			}
 		});
 
 		if (isActive) {
@@ -2069,7 +2109,10 @@ const main = async function main() {
 		name: "menuMain",
 		pressed: {
 			[Inputs.BUTTON_UP]: () => {
-				menuMainFocusIndex = Math.min(2, Math.max(0, menuMainFocusIndex - 1));
+				menuMainFocusIndex = Math.min(
+					dialogAudio.src !== "" ? 3 : 2,
+					Math.max(0, menuMainFocusIndex - 1),
+				);
 				menuMain();
 				sfxPlayTap();
 				return {
@@ -2080,7 +2123,10 @@ const main = async function main() {
 				};
 			},
 			[Inputs.BUTTON_DOWN]: () => {
-				menuMainFocusIndex = Math.min(2, Math.max(0, menuMainFocusIndex + 1));
+				menuMainFocusIndex = Math.min(
+					dialogAudio.src !== "" ? 3 : 2,
+					Math.max(0, menuMainFocusIndex + 1),
+				);
 				menuMain();
 				sfxPlayTap();
 				return {
@@ -2163,6 +2209,14 @@ const main = async function main() {
 						released: {
 							[Inputs.BUTTON_A]: returnToMenuPlane(InputPlaneMenuMainArtifacts),
 						},
+					};
+				}
+				if (menuMainFocusIndex === 3) {
+					dialogAudio.src = "";
+					sfxPlay("transition_down");
+					return {
+						name: "return",
+						released: { [Inputs.BUTTON_A]: returnToNeutral },
 					};
 				}
 			},

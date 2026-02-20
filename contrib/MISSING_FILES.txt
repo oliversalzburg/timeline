@@ -3,3 +3,6 @@
 
 -	`openmoji-svg-color`
 	Retrieve from https://github.com/hfg-gmuend/openmoji
+
+-	`svg-file-icons-master`
+	Retrieve from https://github.com/jcfieldsdev/svg-file-icons

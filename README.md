@@ -69,6 +69,8 @@ dot -Tsvg:cairo timelines/mtg-editions.yml.gv > timelines/mtg-editions.yml.svg
 # Profile build
 remake --profile --jobs --keep-going --output-sync profile
 gprof2dot -e0 -n0 --format=callgrind callgrind.out.* > callgrind.out.dot
+
+for file in *.mp3; do if [ -f "$file" ]; then LENGTH="$(ffprobe -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "$file" 2>/dev/null)"; SUM="$(sha256sum "$file" | cut -d " " -f 1 )"; echo $SUM\\t$file\\t$LENGTH; fi; done | tee durations.txt
 ```
 
 ```

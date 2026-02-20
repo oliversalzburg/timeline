@@ -223,7 +223,7 @@ $(OUTPUT)/media/.sync : examples/media-sync.js $(OUTPUT_BUILD)/universe.yml lib/
 		"--universe=$(OUTPUT_BUILD)/universe.yml" \
 		"--target=$(OUTPUT)"
 	@cp --recursive contrib/SND01_sine $(OUTPUT)/media/sfx/SND01_sine
-	@cp contrib/wikimedia/logo-pdf.svg $(OUTPUT)/media/logo-pdf.svg
+	@cp --recursive contrib/svg-file-icons-master $(OUTPUT)/media/mime
 	@cp contrib/wikimedia/logo-wikipedia.svg $(OUTPUT)/media/logo-wikipedia.svg
 	@date +"%FT%T%z Media synchronized."
 	@touch $@
