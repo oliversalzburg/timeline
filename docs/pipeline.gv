@@ -1,10 +1,10 @@
 digraph pipeline {
-	graph[rankdir=TB];
+	graph[rankdir=BT];
 
-	korpus [label="Korpus" shape=cylinder];
+	korpus [label="Korpus" shape=cylinder style=bold width=2 height=2];
 	emoji [label="*.svg" shape=rect style=rounded];
 	stg [label="Space-Time-Generator" shape=oval];
-	universe [label="universe.yml" shape=circle];
+	universe [label="universe.yml" shape=square];
 
 	reporter [label="report.js" shape=oval];
 	renderer [label="universe.js" shape=oval];
@@ -15,6 +15,9 @@ digraph pipeline {
 	svgnest [label="svgnest.js" shape=oval];
 	gradientify [label="gradientify.js" shape=oval];
 	buildsite [label="build-site.js" shape=oval];
+	mediasync [label="media-sync.js" shape=oval];
+	exiftool [label="exiftool -json" shape=oval];
+	thumbinfo [label="thumbinfo.js" shape=oval];
 	
 	gvus [label="universe.*.gvus" shape=rect style=rounded];
 	dotus [label="universe.*.dotus" shape=rect style=rounded];
@@ -30,14 +33,27 @@ digraph pipeline {
 
 	svg [label="universe.svg" shape=rect];
 	meta [label="universe.meta" shape=rect];
+	metaxy [label="universe.metaxy" shape=rect];
 	info [label="universe.info" shape=rect];
+	exif [label="universe.exif" shape=rect];
 	html [label="universe.html" shape=rect];
 	report [label="universe.report" shape=rect];
 	indexjs [label="index.js" shape=rect];
 	indexcss [label="index.css" shape=rect];
 	indexhtml [label="index.html" shape=rect];
+	media [label="media/" shape=cylinder];
+	
+	output [label="Golden Image" shape=circle style=bold];
 
 	korpus -> stg -> universe;
+	
+	korpus -> mediasync;
+	universe -> mediasync;
+	mediasync -> media;
+	media -> exiftool -> exif;
+	exif -> thumbinfo;
+	meta -> thumbinfo;
+	thumbinfo -> metaxy;
 
 	universe -> renderer;
 	universe -> reporter -> report;
@@ -81,6 +97,9 @@ digraph pipeline {
 	indexhtml -> buildsite;
 	svg -> buildsite;
 	info -> buildsite;
-	meta -> buildsite;
-	buildsite -> html [label="produce single document"];
+	metaxy -> buildsite;
+	buildsite -> html;
+	
+	html -> output:w;
+	media -> output:e;
 }

@@ -1283,7 +1283,7 @@ const main = async function main() {
 	 */
 	const onClick = function onClick(event) {
 		DOM.write("onClick", () => {
-			document.body.style.cursor = "default";
+			document.documentElement.style.cursor = "default";
 		});
 
 		if (event.target === null) {
@@ -1311,7 +1311,7 @@ const main = async function main() {
 	 */
 	const onMouseMove = function onMouseMove(_event) {
 		DOM.write("onMouseMove", () => {
-			document.body.style.cursor = "default";
+			document.documentElement.style.cursor = "default";
 		});
 	};
 	//#endregion

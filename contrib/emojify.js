@@ -291,6 +291,11 @@ export const PREFIXES = {
 		name: "circus tent",
 		src: "1F3AA.svg",
 	},
+	"\u{1F3AB}": {
+		emoji: "🎫",
+		name: "ticket",
+		src: "1F3AB.svg",
+	},
 	"\u{1F3AC}": {
 		emoji: "🎬",
 		name: "clapper board",
@@ -310,6 +315,11 @@ export const PREFIXES = {
 		emoji: "🎴",
 		name: "flower playing cards",
 		src: "1F3B4.svg",
+	},
+	"\u{1F3B5}": {
+		emoji: "🎵",
+		name: "musical note",
+		src: "1F3B5.svg",
 	},
 	"\u{1F3B6}": {
 		emoji: "🎶",
@@ -860,6 +870,11 @@ export const PREFIXES = {
 		emoji: "📄",
 		name: "page facing up",
 		src: "1F4C4.svg",
+	},
+	"\u{1F4C5}": {
+		emoji: "📅",
+		name: "calendar",
+		src: "1F4C5.svg",
 	},
 	"\u{1F4C9}": {
 		emoji: "📉",
