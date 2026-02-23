@@ -120,6 +120,11 @@ export interface TimelineAncestryRenderer extends Timeline {
 	meta: MetaSectionAncestryRenderer;
 	records: Array<TimelineRecord>;
 }
+export const TIMELINE_TYPE_IDENTITY_PERSON = 1;
+export const TIMELINE_TYPE_IDENTITY_LOCATION = 2;
+export const TIMELINE_TYPE_IDENTITY_MEDIA = 3;
+export const TIMELINE_TYPE_IDENTITY_PERIOD = 4;
+export const TIMELINE_TYPE_IDENTITY_PLAIN = 5;
 export type TimelineMetadata = [
 	/** CSS class */
 	string,

@@ -29,86 +29,62 @@ const main = async function main() {
 	console.info("Program loaded. Starting static initialization...");
 
 	//#region DOM Element Selection
-	/** @type {HTMLStyleElement | null} */
-	const css = document.querySelector("#css");
-	if (css === null) {
-		throw new Error("Unable to find #css element.");
-	}
+	/**
+	 * @param {string} query -
+	 * @returns {Element}
+	 */
+	const selectElement = function selectElement(query) {
+		/** @type {Element | null} */
+		const element = document.querySelector(query);
+		if (element === null) {
+			throw new Error(`Query matched no element: '${query}'`);
+		}
+		return element;
+	};
+
+	const css = /** @type {HTMLStyleElement} */ (selectElement("#css"));
 	const stylesheet = css.sheet;
 	if (stylesheet === null) {
 		throw new Error("Unable to find stylesheet.");
 	}
 
-	/** @type {HTMLDivElement | null} */
-	const loader = document.querySelector("body > .loader");
-	if (loader === null) {
-		throw new Error("Unable to find loader element.");
-	}
+	const loader = /** @type {HTMLDivElement} */ (
+		selectElement("body > .loader")
+	);
+	const svg = /** @type {SVGElement } */ (selectElement("body > svg"));
+	const dialog = /** @type {HTMLDialogElement } */ (selectElement("dialog"));
+	const dialogIFrame = /** @type {HTMLIFrameElement} */ (
+		selectElement("dialog iframe")
+	);
+	const dialogImage = /** @type {HTMLImageElement} */ (
+		selectElement("dialog img")
+	);
+	const dialogAudio = /** @type {HTMLAudioElement } */ (
+		selectElement("dialog audio")
+	);
+	const dialogVideo = /** @type {HTMLVideoElement} */ (
+		selectElement("dialog video")
+	);
+	const _baseAudio = /** @type {HTMLAudioElement} */ (
+		selectElement("audio.base")
+	);
 
-	/** @type {SVGElement | null} */
-	const svg = document.querySelector("body > svg");
-	if (svg === null) {
-		throw new Error("Unable to find <svg> element.");
-	}
+	const calendarContainer = /** @type {HTMLDivElement} */ (
+		selectElement("#calendar")
+	);
+	const calendarDate = /** @type {HTMLParagraphElement} */ (
+		selectElement("#calendar .date")
+	);
+	const calendarText = /** @type {HTMLParagraphElement} */ (
+		selectElement("#calendar .text")
+	);
 
-	/** @type {HTMLDialogElement | null} */
-	const dialog = document.querySelector("dialog");
-	if (dialog === null) {
-		throw new Error("Unable to find <dialog> element.");
-	}
-	/** @type {HTMLIFrameElement | null} */
-	const dialogIFrame = document.querySelector("dialog iframe");
-	if (dialogIFrame === null) {
-		throw new Error("Unable to find <dialog> element.");
-	}
-	/** @type {HTMLImageElement | null} */
-	const dialogImage = document.querySelector("dialog img");
-	if (dialogImage === null) {
-		throw new Error("Unable to find <dialog> element.");
-	}
-	/** @type {HTMLAudioElement | null} */
-	const dialogAudio = document.querySelector("dialog audio");
-	if (dialogAudio === null) {
-		throw new Error("Unable to find dialog audio element.");
-	}
-	/** @type {HTMLVideoElement | null} */
-	const dialogVideo = document.querySelector("dialog video");
-	if (dialogVideo === null) {
-		throw new Error("Unable to find dialog video element.");
-	}
-
-	/** @type {HTMLAudioElement | null} */
-	const baseAudio = document.querySelector("audio.base");
-	if (baseAudio === null) {
-		throw new Error("Unable to find audio.base element.");
-	}
-
-	/** @type {HTMLDivElement | null} */
-	const calendarContainer = document.querySelector("#calendar");
-	if (calendarContainer === null) {
-		throw new Error("Unable to find #calendar element.");
-	}
-	/** @type {HTMLParagraphElement | null} */
-	const calendarDate = document.querySelector("#calendar .date");
-	if (calendarDate === null) {
-		throw new Error("Unable to find #calendar element.");
-	}
-	/** @type {HTMLParagraphElement | null} */
-	const calendarText = document.querySelector("#calendar .text");
-	if (calendarText === null) {
-		throw new Error("Unable to find #calendar element.");
-	}
-
-	/** @type {HTMLDivElement | null} */
-	const targetElement = document.querySelector("#target");
-	if (targetElement === null) {
-		throw new Error("Unable to find #target element.");
-	}
-	/** @type {HTMLDivElement | null} */
-	const targetFocusElement = document.querySelector("#target-focus");
-	if (targetFocusElement === null) {
-		throw new Error("Unable to find #target-focus element.");
-	}
+	const targetElement = /** @type {HTMLDivElement} */ (
+		selectElement("#target")
+	);
+	const targetFocusElement = /** @type {HTMLDivElement} */ (
+		selectElement("#target-focus")
+	);
 
 	/** @type {HTMLDivElement | null} */
 	const menuContainer = document.querySelector("#menu");
@@ -816,7 +792,7 @@ const main = async function main() {
 					? null
 					: eventIds[eventIndexOnTimeline + 1],
 			intersection: timelineIds.filter((_) =>
-				[1, 2].includes(timelines.get(_)?.[3] ?? 0),
+				[1, 2, 4, 5].includes(timelines.get(_)?.[3] ?? 0),
 			),
 			mediaItems: timelineIds.filter((_) => timelines.get(_)?.[3] === 3),
 		};
@@ -2077,7 +2053,6 @@ const main = async function main() {
 			menuItemArtifacts.textContent = "Artefakte";
 			menuLevel0.appendChild(menuItemArtifacts);
 
-			console.warn(dialogAudio.src);
 			if (dialogAudio.src !== "about:blank") {
 				const menuItemMute = document.createElement("div");
 				menuItemMute.classList.add("item");

@@ -16,7 +16,9 @@ import {
 import {
 	isIdentityLocation,
 	isIdentityMedia,
+	isIdentityPeriod,
 	isIdentityPerson,
+	isIdentityPlain,
 	uncertainEventToDateDeterministic,
 	uncertainEventToDateString,
 } from "./genealogy.js";
@@ -28,13 +30,18 @@ import {
 	STYLE_UNBOUND_MEDIA,
 	type Style,
 } from "./style.js";
-import type {
-	RendererResultMetadata,
-	RGBATuple,
-	TimelineAncestryRenderer,
-	TimelineEntry,
-	TimelineMetadata,
-	TimelineReferenceRenderer,
+import {
+	type RendererResultMetadata,
+	type RGBATuple,
+	TIMELINE_TYPE_IDENTITY_LOCATION,
+	TIMELINE_TYPE_IDENTITY_MEDIA,
+	TIMELINE_TYPE_IDENTITY_PERIOD,
+	TIMELINE_TYPE_IDENTITY_PERSON,
+	TIMELINE_TYPE_IDENTITY_PLAIN,
+	type TimelineAncestryRenderer,
+	type TimelineEntry,
+	type TimelineMetadata,
+	type TimelineReferenceRenderer,
 } from "./types.js";
 
 export const weightedContributors = <
@@ -659,12 +666,16 @@ export const render = <
 					rgbaToHexString(style.pencolor),
 					rgbaToHexString(style.fillcolor),
 					isIdentityPerson(_)
-						? 1
+						? TIMELINE_TYPE_IDENTITY_PERSON
 						: isIdentityLocation(_)
-							? 2
+							? TIMELINE_TYPE_IDENTITY_LOCATION
 							: isIdentityMedia(_)
-								? 3
-								: 0,
+								? TIMELINE_TYPE_IDENTITY_MEDIA
+								: isIdentityPeriod(_)
+									? TIMELINE_TYPE_IDENTITY_PERIOD
+									: isIdentityPlain(_)
+										? TIMELINE_TYPE_IDENTITY_PLAIN
+										: 0,
 					"identity" in _.meta ? _.meta.identity.id : _.meta.id,
 					"identity" in _.meta
 						? (_.meta.identity.name ?? _.meta.identity.id)

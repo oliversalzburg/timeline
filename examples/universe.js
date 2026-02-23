@@ -226,7 +226,7 @@ const metadata = /** @type {UniverseResultMetadata} */ ([
 		...dotGraph.events.entries().flatMap(([timestamp, eventTitles]) =>
 			eventTitles.values().map(
 				(_) =>
-					/** @type {[Number, string,string,Array<string>]} */ ([
+					/** @type {[number, string, string, Array<string>]} */ ([
 						timestamp,
 						_[0],
 						_[1],

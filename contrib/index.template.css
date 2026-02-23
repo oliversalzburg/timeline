@@ -128,8 +128,7 @@ body {
 		}
 
 		.prefix {
-			/*opacity: 0.7;*/
-			filter: drop-shadow(0px 0px 4px white);
+			filter: drop-shadow(0px 0px 2px rgb(255 255 255));
 		}
 	}
 
