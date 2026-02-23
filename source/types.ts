@@ -159,10 +159,25 @@ export interface RendererResultMetadata<
 		| TimelineReferenceRenderer
 		| TimelineAncestryRenderer,
 > {
+	/**
+	 * A map of timestamps to a set of tuples containing the `id` and title for events at that timestamp.
+	 */
 	events: Map<number, Set<[string, string]>>;
+	/**
+	 * A map of timelines to the metadata that was assigned to them.
+	 */
 	timelines: Map<TTimelines, TimelineMetadata>;
-	contributors: Map<string, Set<TTimelines>>;
+	/**
+	 * A map of event titles to the timelines that contribute to the event with that title, ordered according to their weight.
+	 */
+	contributors: Map<string, Array<TTimelines>>;
+	/**
+	 * Information about the origin that was used during rendering.
+	 */
 	origin: TimelineMetadata;
+	/**
+	 * The generated DOT graph segments.
+	 */
 	graph: Array<{ graph: string; start: number; end: number }>;
 }
 export type UniverseResultMetadata = [
