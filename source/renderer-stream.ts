@@ -72,9 +72,9 @@ export const renderEventAsNode = <
 					`missing style for '${leader.meta.id}'`,
 				)
 			: STYLE_UNBOUND_MEDIA;
-	const contributorClasses = [
-		...styleContributors.values().map((_) => classes.get(_.meta.id)),
-	];
+	const contributorClasses = [...styleContributors.values()]
+		.sort(byWeights)
+		.map((_) => classes.get(_.meta.id));
 	const classList = ["event", ...contributorClasses];
 	const color = styleLeader.pencolor;
 	const fillcolors = styleContributors
