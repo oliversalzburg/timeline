@@ -1,6 +1,13 @@
 #!/bin/env node
 
-import { constants, copyFileSync, mkdirSync, readFileSync } from "node:fs";
+import {
+	constants,
+	copyFileSync,
+	mkdirSync,
+	readFileSync,
+	statSync,
+	utimesSync,
+} from "node:fs";
 import { dirname, join } from "node:path";
 import { parse } from "yaml";
 import { load } from "../lib/index.js";
@@ -89,7 +96,8 @@ for (const data of rawData) {
 
 		const isMediaItem =
 			id.startsWith("media/") &&
-			(fileExtension === "jpg" ||
+			(fileExtension === "flac" ||
+				fileExtension === "jpg" ||
 				fileExtension === "jpeg" ||
 				fileExtension === "mp3" ||
 				fileExtension === "mp4" ||
@@ -103,7 +111,19 @@ for (const data of rawData) {
 		const pathTarget = join(target, timeline.meta.identity.id);
 		mkdirSync(dirname(pathTarget), { recursive: true });
 		try {
+			const statSource = statSync(pathSource);
+			const statTarget = statSync(pathTarget, { throwIfNoEntry: false });
+			if (statTarget?.isFile()) {
+				if (
+					statSource.mtime === statTarget.mtime &&
+					statSource.size === statTarget.size
+				) {
+					continue;
+				}
+			}
 			copyFileSync(pathSource, pathTarget, constants.COPYFILE_FICLONE);
+			utimesSync(pathTarget, statSource.atime, statSource.mtime);
+
 			if (fileExtension === "jpeg") {
 				process.stderr.write(`Consider renaming ${pathSource} to '.jpg'!\n`);
 			}

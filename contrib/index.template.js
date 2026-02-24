@@ -900,7 +900,9 @@ const main = async function main() {
 							? "media/mime/application/pdf.svg"
 							: mediaItem[4].endsWith(".mp3")
 								? "media/mime/audio/mpeg.svg"
-								: mediaItem[4];
+								: mediaItem[4].endsWith(".mp4")
+									? "media/mime/video/mp4.svg"
+									: mediaItem[4];
 				} else {
 					artifact.src = mediaItem[4].startsWith("/kiwix/")
 						? "media/logo-wikipedia.svg"
@@ -908,7 +910,9 @@ const main = async function main() {
 							? "media/mime/application/pdf.svg"
 							: mediaItem[4].endsWith(".mp3")
 								? "media/mime/audio/mpeg.svg"
-								: mediaItem[4];
+								: mediaItem[4].endsWith(".mp4")
+									? "media/mime/video/mp4.svg"
+									: mediaItem[4];
 				}
 				if (mediaIsOpen && index === timelineMediaIdActive) {
 					artifact.classList.add("active");

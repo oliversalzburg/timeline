@@ -60,7 +60,7 @@ const exifData = JSON.parse(exifDataRaw);
 const exifLookup = new Map(exifData.map((_) => [_.SourceFile, _]));
 
 const metaRaw = readFileSync(args.meta, "utf-8");
-/** @type {import("source/types.js").RenderResultMetadata} */
+/** @type {import("../lib/types.js").RenderResultMetadata} */
 const meta = JSON.parse(metaRaw);
 
 let failed = false;
@@ -72,7 +72,9 @@ for (const timelineMeta of meta[1]) {
 
 	const exif = exifLookup.get(id);
 	if (exif === undefined) {
-		process.stderr.write(`failed to lookup exif for '${id}'!\n`);
+		process.stderr.write(
+			`failed to lookup exif for '${id}'! use different media format.\n`,
+		);
 		failed = true;
 		continue;
 	}

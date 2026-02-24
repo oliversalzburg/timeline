@@ -281,6 +281,11 @@ export const PREFIXES = {
 		name: "military medal",
 		src: "1F396.svg",
 	},
+	"\u{1F39E}": {
+		emoji: "🎞",
+		name: "film frames",
+		src: "1F39E.svg",
+	},
 	"\u{1F3A4}": {
 		emoji: "🎤",
 		name: "microphone",
