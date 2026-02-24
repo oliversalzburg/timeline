@@ -900,9 +900,11 @@ const main = async function main() {
 							? "media/mime/application/pdf.svg"
 							: mediaItem[4].endsWith(".mp3")
 								? "media/mime/audio/mpeg.svg"
-								: mediaItem[4].endsWith(".mp4")
-									? "media/mime/video/mp4.svg"
-									: mediaItem[4];
+								: mediaItem[4].endsWith(".flac")
+									? "media/mime/audio/vnd.wave.svg"
+									: mediaItem[4].endsWith(".mp4")
+										? "media/mime/video/mp4.svg"
+										: mediaItem[4];
 				} else {
 					artifact.src = mediaItem[4].startsWith("/kiwix/")
 						? "media/logo-wikipedia.svg"
@@ -910,9 +912,11 @@ const main = async function main() {
 							? "media/mime/application/pdf.svg"
 							: mediaItem[4].endsWith(".mp3")
 								? "media/mime/audio/mpeg.svg"
-								: mediaItem[4].endsWith(".mp4")
-									? "media/mime/video/mp4.svg"
-									: mediaItem[4];
+								: mediaItem[4].endsWith(".flac")
+									? "media/mime/audio/vnd.wave.svg"
+									: mediaItem[4].endsWith(".mp4")
+										? "media/mime/video/mp4.svg"
+										: mediaItem[4];
 				}
 				if (mediaIsOpen && index === timelineMediaIdActive) {
 					artifact.classList.add("active");
@@ -964,9 +968,12 @@ const main = async function main() {
 			const hasShoulderLeft =
 				0 < timelineMediaIds.length &&
 				timelineMediaIdActive !== undefined &&
-				timelines
+				(timelines
 					.get(timelineMediaIds[timelineMediaIdActive])?.[4]
-					.endsWith(".mp3");
+					.endsWith(".flac") ||
+					timelines
+						.get(timelineMediaIds[timelineMediaIdActive])?.[4]
+						.endsWith(".mp3"));
 			const hasShoulderRight = 0 < timelineMediaIds.length;
 
 			if (hasShoulderLeft) {
@@ -1811,7 +1818,7 @@ const main = async function main() {
 				dialogIFrame.style.display = "block";
 				dialogIFrame.style.height = "600mm";
 				dialogIFrame.style.width = "215mm";
-			} else if (mediaPath.endsWith(".mp3")) {
+			} else if (mediaPath.endsWith(".flac") || mediaPath.endsWith(".mp3")) {
 				dialogAudio.src = mediaPath;
 				dialogAudio.style.display = "block";
 			} else if (mediaPath.endsWith(".mp4")) {
