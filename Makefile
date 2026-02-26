@@ -15,10 +15,10 @@ IMAGES := $(addprefix $(OUTPUT_BUILD)/,$(notdir $(_IMAGES)))
 
 DATA_ROOT ?= $(shell realpath ~/timelines)
 ifneq ("$(wildcard $(DATA_ROOT))","")
-	TIMELINES ?= $(shell find $(DATA_ROOT) -iname "*.yml" -print0)
+	TIMELINES ?= $(shell find $(DATA_ROOT) -iname "*.yml")
 else
 	DATA_ROOT = $(abspath timelines)
-	TIMELINES = $(shell find $(DATA_ROOT) -iname "*.yml" -print0)
+	TIMELINES = $(shell find $(DATA_ROOT) -iname "*.yml")
 endif
 
 SEGMENTS := $(wildcard $(OUTPUT_BUILD)/*.gvus)
