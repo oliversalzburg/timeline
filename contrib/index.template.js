@@ -1259,7 +1259,7 @@ const main = async function main() {
 		}
 
 		previousVisibleEdges = new Set(visibleEdges);
-		previousFirstVisibleNodeIndex = firstVisibleNodeIndex;
+		previousFirstVisibleNodeIndex = firstVisibleNodeIndex - 1;
 		previousVisibleNodes = new Set(visibleNodes);
 	};
 	//#endregion
@@ -2064,7 +2064,7 @@ const main = async function main() {
 			menuItemArtifacts.textContent = "Artefakte";
 			menuLevel0.appendChild(menuItemArtifacts);
 
-			if (dialogAudio.src !== "about:blank") {
+			if (dialogAudio.src !== "about:blank" && dialogAudio.src !== "") {
 				const menuItemMute = document.createElement("div");
 				menuItemMute.classList.add("item");
 				if (menuMainFocusIndex === 3) {
