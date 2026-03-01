@@ -179,6 +179,7 @@ body {
 		}
 	}
 	#target-focus {
+		display: none;
 		position: absolute;
 		margin: 0;
 		padding: 0;
@@ -197,12 +198,14 @@ body {
 		pointer-events: none;
 		z-index: 2;
 		transform: translateZ(0px);
+		/*
 		transition:
 			top ease-out 0.1s,
 			left ease-in-out 0.5s,
 			width ease-in-out 0.5s,
 			height ease-in-out 0.5s,
 			opacity normal 0s;
+			*/
 
 		opacity: 0;
 		&.visible {
@@ -451,8 +454,12 @@ body {
 				padding: 0;
 				margin: 0 0 0 1em;
 				z-index: 2;
-				text-align: left;
 				opacity: 1;
+
+				text-align: left;
+				text-overflow: ellipsis;
+				text-wrap-mode: nowrap;
+				overflow: clip;
 
 				transition:
 					transform 1s ease-in,

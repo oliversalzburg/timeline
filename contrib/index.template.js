@@ -262,6 +262,57 @@ const main = async function main() {
 		},
 	};
 
+	/**
+	 * Information about different view bounds.
+	 *
+	 * ### Window
+	 * The size of the entire drawable area.
+	 * View window is the size of the visible area of the window.
+	 * Not the size of the (larger) scrollable background plane.
+	 *
+	 * ### Bounds
+	 * View bounds are the size of the SVG, which should be a huge
+	 * DOM element, that defines the size of the background plane.
+	 *
+	 * ### Scope
+	 * View scope is larger than the position, and is used for culling operations.
+	 *
+	 * ### Position
+	 * View position is the segment of the SVG we're currently looking
+	 * at. It's the exact window into the background plane that we see.
+	 *
+	 * ### Focus
+	 *
+	 */
+	const View = {
+		window: {
+			width: 0,
+			height: 0,
+		},
+		bounds: {
+			width: 0,
+			height: 0,
+		},
+		scope: {
+			x: 0,
+			y: 0,
+			width: 0,
+			height: 0,
+		},
+		position: {
+			x: 0,
+			y: 0,
+			width: 0,
+			height: 0,
+		},
+		focus: {
+			x: 0,
+			y: 0,
+			width: 0,
+			height: 0,
+		},
+	};
+
 	//#region SFX
 	const audioContext = new window.AudioContext();
 	const samples = new Map();
@@ -332,35 +383,6 @@ const main = async function main() {
 	};
 	//#endregion
 
-	const view = {
-		window: {
-			width: 0,
-			height: 0,
-		},
-		bounds: {
-			width: 0,
-			height: 0,
-		},
-		scope: {
-			x: 0,
-			y: 0,
-			width: 0,
-			height: 0,
-		},
-		position: {
-			x: 0,
-			y: 0,
-			width: 0,
-			height: 0,
-		},
-		focus: {
-			x: 0,
-			y: 0,
-			width: 0,
-			height: 0,
-		},
-	};
-
 	/**
 	 * A set of all the unique event IDs.
 	 */
@@ -411,42 +433,6 @@ const main = async function main() {
 	 * @type {Map<string, Array<string>>}
 	 */
 	const contributors = new Map();
-	for (const [
-		index,
-		[timestamp, id, title, eventContributors],
-	] of DATA[0].entries()) {
-		/** @type {SVGElement | null} */
-		const element = document.querySelector(`#${id}`);
-		if (element === null) {
-			throw new Error(`Couldn't find '#${id}'`);
-		}
-		const boundingRect = element.getBoundingClientRect();
-		events[index] = {
-			timestamp,
-			id,
-			title,
-			contributors: eventContributors,
-			bb: {
-				x: boundingRect.x + window.scrollX,
-				y: boundingRect.y + window.scrollY,
-				w: boundingRect.width,
-				h: boundingRect.height,
-			},
-			element,
-		};
-		contributors.set(id, events[index].contributors);
-		eventsById.set(id, events[index]);
-
-		for (const contributor of events[index].contributors) {
-			const contributorMeta = timelines.get(contributor);
-			if (contributorMeta === undefined) {
-				throw new Error("couldn't find meta");
-			}
-			const contributorEvents = timelineEvents.get(contributorMeta[0]) ?? [];
-			contributorEvents.push(events[index]);
-			timelineEvents.set(contributorMeta[0], contributorEvents);
-		}
-	}
 	/**
 	 * @type {Array<{
 	 * 	element: SVGElement,
@@ -454,24 +440,6 @@ const main = async function main() {
 	 * }>}
 	 */
 	const timelineEdges = new Array();
-	for (const timelineId of timelines.keys()) {
-		/** @type {NodeListOf<SVGElement>} */
-		const elements = document.querySelectorAll(`g.edge.${timelineId}`);
-		for (const element of elements) {
-			const boundingRect = element.getBoundingClientRect();
-			const edge = {
-				element,
-				bb: {
-					x: boundingRect.x + window.scrollX,
-					y: boundingRect.y + window.scrollY,
-					w: boundingRect.width,
-					h: boundingRect.height,
-				},
-			};
-			timelineEdges.push(edge);
-		}
-	}
-	timelineEdges.toSorted((a, b) => a.bb.y - b.bb.y);
 
 	console.info("Constructing star planes...");
 	const starPlanes = Array.from({
@@ -707,7 +675,7 @@ const main = async function main() {
 			throw new Error(`can't find event '${id}'`);
 		}
 
-		view.focus = {
+		View.focus = {
 			x: event.bb.x,
 			y: event.bb.y,
 			width: event.bb.w,
@@ -732,10 +700,10 @@ const main = async function main() {
 			if (!cameraIsAttached && previousVisibleNodes !== undefined) {
 				for (const node of previousVisibleNodes) {
 					if (
-						node.bb.x < cameraFocus.x &&
-						cameraFocus.x < node.bb.x + node.bb.w &&
-						node.bb.y < cameraFocus.y &&
-						cameraFocus.y < node.bb.y + node.bb.h
+						node.bb.x < View.focus.x &&
+						View.focus.x < node.bb.x + node.bb.w &&
+						node.bb.y < View.focus.y &&
+						View.focus.y < node.bb.y + node.bb.h
 					) {
 						if (node.id !== idFocused) {
 							focusNode(node.id);
@@ -1028,12 +996,6 @@ const main = async function main() {
 
 	//#region Camera
 	/**
-	 * The position the camera is looking at.
-	 *
-	 * @type {{x: number, y: number}}
-	 */
-	let cameraFocus = { x: 0, y: 0 };
-	/**
 	 * Is the camera currently being moved?
 	 *
 	 * @type {boolean}
@@ -1061,30 +1023,35 @@ const main = async function main() {
 			return true;
 		}
 
-		const newFocus = {
-			x: view.focus.x + view.focus.width / 2,
-			y: view.focus.y + view.focus.height / 2,
+		const newPosition = {
+			x: Math.round(
+				View.focus.x + View.focus.width / 2 - View.window.width / 2,
+			),
+			y: Math.round(
+				View.focus.y + View.focus.height / 2 - View.window.height / 2,
+			),
+			width: View.window.width,
+			height: View.window.height,
 		};
 
-		if (newFocus.x === cameraFocus.x && newFocus.y === cameraFocus.y) {
+		if (
+			Math.abs(newPosition.x - View.position.x) < 1 &&
+			Math.abs(newPosition.y - View.position.y) < 1
+		) {
 			//console.debug("Camera update was redundant.");
 			return false;
 		}
 
-		const newScope = {
-			x: newFocus.x - view.window.width / 2,
-			y: newFocus.y - view.window.height / 2,
-			width: view.window.width,
-			height: view.window.height,
-		};
-
-		//console.debug("Camera doesn't match focus. Adjusting scope...", newScope);
+		console.debug(
+			"Camera doesn't match focus. Adjusting position...",
+			Math.abs(newPosition.x - View.position.x),
+			Math.abs(newPosition.y - View.position.y),
+		);
 
 		DOM.write("updateCamera", () => {
-			cameraFocus = newFocus;
 			if (requestInstantFocusUpdate) {
-				document.documentElement.scrollLeft = newScope.x;
-				document.documentElement.scrollTop = newScope.y;
+				document.documentElement.scrollLeft = newPosition.x;
+				document.documentElement.scrollTop = newPosition.y;
 
 				targetElement.classList.add("visible");
 
@@ -1108,8 +1075,8 @@ const main = async function main() {
 				cameraIsIdle = true;
 				window.scrollTo({
 					behavior: requestInstantFocusUpdate ? "instant" : "smooth",
-					left: newScope.x,
-					top: newScope.y,
+					left: newPosition.x,
+					top: newPosition.y,
 				});
 				timeoutCameraUnlock = window.setTimeout(() => {
 					timeoutCameraUnlock = undefined;
@@ -1126,6 +1093,7 @@ const main = async function main() {
 	 * Finalize a camera movement, like after a scrollTo() operation.
 	 */
 	const cameraMovementFinalize = function cameraMovementFinalize() {
+		console.debug("cameraMovementFinalize");
 		/** @type {NodeListOf<HTMLImageElement>}*/
 		let pendingArtifacts;
 		/** @type {NodeListOf<HTMLDivElement>}*/
@@ -1133,9 +1101,9 @@ const main = async function main() {
 		/** @type {NodeListOf<HTMLParagraphElement>}*/
 		let pendingStatusTexts;
 		DOM.read("cameraMovementFinalize", () => {
-			view.position.x = window.scrollX;
-			view.position.y = window.scrollY;
-			view.scope.y = window.scrollY - view.window.height;
+			View.position.x = window.scrollX;
+			View.position.y = window.scrollY;
+			View.scope.y = window.scrollY - View.window.height;
 			pendingArtifacts = document.querySelectorAll(
 				"#artifacts .artifact.pending",
 			);
@@ -1147,27 +1115,28 @@ const main = async function main() {
 		if (cameraIsAttached) {
 			DOM.write("cameraMovementFinalize", () => {
 				if (idFocused !== undefined) {
-					const event = eventsById.get(idFocused);
-					if (event === undefined) {
-						console.error(`Unable to look up event for ID '${idFocused}'.`);
-						return;
-					}
 					targetElement.classList.remove("visible");
 					targetFocusElement.classList.add("visible");
-					targetFocusElement.style.left = `calc(${event.bb.x}px - 4mm)`;
-					targetFocusElement.style.top = `calc(${event.bb.y}px - 4mm)`;
-					targetFocusElement.style.width = `calc(${event.bb.w}px + 8mm)`;
-					targetFocusElement.style.height = `calc(${event.bb.h}px + 8mm)`;
+					targetFocusElement.style.left = `calc(${View.focus.x}px - 4mm)`;
+					targetFocusElement.style.top = `calc(${View.focus.y}px - 4mm)`;
+					targetFocusElement.style.width = `calc(${View.focus.width}px + 8mm)`;
+					targetFocusElement.style.height = `calc(${View.focus.height}px + 8mm)`;
 				}
 
 				for (const artifact of pendingArtifacts) {
 					if (artifact.dataset.src === undefined) {
-						console.error("Missing src in dataset!");
+						if (artifact.complete) {
+							artifact.classList.remove("pending");
+						}
+						//console.error("Missing src in dataset!");
 					} else {
+						artifact.loading = "lazy";
 						artifact.src = artifact.dataset.src;
 						delete artifact.dataset.src;
+						artifact.addEventListener("load", () => {
+							artifact.classList.remove("pending");
+						});
 					}
-					artifact.classList.remove("pending");
 				}
 
 				for (const day of pendingDays) {
@@ -1182,11 +1151,10 @@ const main = async function main() {
 					status.classList.remove("pending");
 				}
 
-				cull();
+				cameraIsIdle = false;
+				requestInstantFocusUpdate = false;
 			});
 		}
-		cameraIsIdle = false;
-		requestInstantFocusUpdate = false;
 	};
 
 	/**
@@ -1211,7 +1179,7 @@ const main = async function main() {
 	 * }>}
 	 */
 	let previousVisibleNodes = new Set(events);
-	const cull = function cull() {
+	const _cull = function cull() {
 		const visibleEdges = [];
 		for (
 			let firstVisibleEdgeIndex = 0;
@@ -1219,10 +1187,10 @@ const main = async function main() {
 			++firstVisibleEdgeIndex
 		) {
 			const edge = timelineEdges[firstVisibleEdgeIndex];
-			if (view.scope.y + view.scope.height < edge.bb.y) {
+			if (View.scope.y + View.scope.height < edge.bb.y) {
 				continue;
 			}
-			if (edge.bb.y + edge.bb.h < view.scope.y) {
+			if (edge.bb.y + edge.bb.h < View.scope.y) {
 				continue;
 			}
 			visibleEdges.push(edge);
@@ -1232,13 +1200,13 @@ const main = async function main() {
 		let firstVisibleNodeIndex = previousFirstVisibleNodeIndex;
 		for (; 0 < firstVisibleNodeIndex; --firstVisibleNodeIndex) {
 			const event = events[firstVisibleNodeIndex];
-			if (event.bb.y + event.bb.h < view.scope.y) {
+			if (event.bb.y + event.bb.h < View.scope.y) {
 				break;
 			}
 		}
 		for (; firstVisibleNodeIndex < events.length; ++firstVisibleNodeIndex) {
 			const event = events[firstVisibleNodeIndex];
-			if (view.scope.y + view.scope.height < event.bb.y) {
+			if (View.scope.y + View.scope.height < event.bb.y) {
 				break;
 			}
 			visibleNodes.push(event);
@@ -1426,7 +1394,7 @@ const main = async function main() {
 
 	let requestInstantFocusUpdate = false;
 	const INPUT_THRESHOLD = 0.1;
-	const SPEED_FREE_FLIGHT = 5.0;
+	const SPEED_FREE_FLIGHT = 6.5;
 	const SPEED_MEDIA_SCALE = 0.5;
 	const SPEED_MEDIA_TRANSLATE = 5.0;
 
@@ -1497,7 +1465,7 @@ const main = async function main() {
 			if (INPUT_THRESHOLD < Math.abs(frame.axes[Inputs.AXIS_LEFT_X])) {
 				cameraIsAttached = false;
 				requestInstantFocusUpdate = true;
-				view.focus.x +=
+				View.focus.x +=
 					frame.axes[Inputs.AXIS_LEFT_X] *
 					(frame.delta / (1000 / 60)) *
 					SPEED_FREE_FLIGHT;
@@ -1506,7 +1474,7 @@ const main = async function main() {
 			if (INPUT_THRESHOLD < Math.abs(frame.axes[Inputs.AXIS_LEFT_Y])) {
 				cameraIsAttached = false;
 				requestInstantFocusUpdate = true;
-				view.focus.y +=
+				View.focus.y +=
 					frame.axes[Inputs.AXIS_LEFT_Y] *
 					(frame.delta / (1000 / 60)) *
 					SPEED_FREE_FLIGHT;
@@ -1514,8 +1482,8 @@ const main = async function main() {
 			}
 
 			if (changed) {
-				view.focus.x = Math.max(Math.min(view.focus.x, view.bounds.width), 0);
-				view.focus.y = Math.max(Math.min(view.focus.y, view.bounds.height), 0);
+				View.focus.x = Math.max(Math.min(View.focus.x, View.bounds.width), 0);
+				View.focus.y = Math.max(Math.min(View.focus.y, View.bounds.height), 0);
 
 				focusHitTest();
 			}
@@ -1570,6 +1538,7 @@ const main = async function main() {
 	 * @type {Array<InputFrame>}
 	 */
 	let InputFrameCache = [];
+	const EMPTY_INPUT_FRAME = { axes: {}, delta: 0 };
 	/**
 	 * @param {InputFrame} a -
 	 * @param {InputFrame} b -
@@ -1591,7 +1560,7 @@ const main = async function main() {
 				? InputFrameCache[InputFrameCache.length - 1]
 				: null;
 		if (head === null) {
-			//console.debug("Recorded input frame.", InputFrameCache.length);
+			console.debug("Recorded input frame.", InputFrameCache.length);
 			InputFrameCache.push(frame);
 			return;
 		}
@@ -1601,7 +1570,7 @@ const main = async function main() {
 			return;
 		}
 
-		//console.debug("Recorded input frame.", InputFrameCache.length);
+		console.debug("Recorded input frame.", InputFrameCache.length);
 		InputFrameCache.push(frame);
 	};
 	const digestInputFrames = function digestInputFrames() {
@@ -1707,6 +1676,7 @@ const main = async function main() {
 			pushInputFrame(InputFrame);
 			return digestInputFrames();
 		}
+		pushInputFrame(EMPTY_INPUT_FRAME);
 		return false;
 	};
 	//#endregion
@@ -2962,28 +2932,28 @@ const main = async function main() {
 					const planeSet = starPlanes[z];
 
 					const offset =
-						(z + 1) * (view.scope.y * speedScroll + sinceStart * speedTime);
+						(z + 1) * (View.scope.y * speedScroll + sinceStart * speedTime);
 
 					const planeOffsets = [planeSet[0], planeSet[1]];
 					const planes = [planeSet[2], planeSet[3]];
 
-					planeOffsets[0] = offset % view.window.height;
-					planeOffsets[1] = (offset % view.window.height) - view.window.height;
+					planeOffsets[0] = offset % View.window.height;
+					planeOffsets[1] = (offset % View.window.height) - View.window.height;
 
 					planes[0].style.transition =
-						view.window.height / 2 < Math.abs(planeSet[0] - planeOffsets[0])
+						View.window.height / 2 < Math.abs(planeSet[0] - planeOffsets[0])
 							? "none"
 							: "ease-out all 0.9s";
 					planes[1].style.transition =
-						view.window.height / 2 < Math.abs(planeSet[1] - planeOffsets[1])
+						View.window.height / 2 < Math.abs(planeSet[1] - planeOffsets[1])
 							? "none"
 							: "ease-out all 0.9s";
 					planes[0].style.opacity =
-						view.window.height / 2 < Math.abs(planeSet[0] - planeOffsets[0])
+						View.window.height / 2 < Math.abs(planeSet[0] - planeOffsets[0])
 							? "0"
 							: "1";
 					planes[1].style.opacity =
-						view.window.height / 2 < Math.abs(planeSet[1] - planeOffsets[1])
+						View.window.height / 2 < Math.abs(planeSet[1] - planeOffsets[1])
 							? "0"
 							: "1";
 
@@ -3019,41 +2989,97 @@ const main = async function main() {
 		const color = components.map((_) => Math.floor(_ * scale)).join(" ");
 		return `rgb(${color})`;
 	};
+
 	const initGraphics = function initGraphics() {
 		console.info("Initializing graphics...");
 
-		// View window is the size of the visible area of the window.
-		// Not the size of the (larger) scrollable background plane.
-		view.window.width = document.documentElement.clientWidth;
-		view.window.height = document.documentElement.clientHeight;
+		View.window.width = document.documentElement.clientWidth;
+		View.window.height = document.documentElement.clientHeight;
 
-		// View bounds are the size of the SVG, which should be a huge DOM
-		// element, that defines the size of the background plane.
-		view.bounds.width = svg.scrollWidth;
-		view.bounds.height = svg.scrollHeight;
+		View.bounds.width = svg.scrollWidth;
+		View.bounds.height = svg.scrollHeight;
 
-		// View position is the segment of the SVG we're currently looking
-		// at. It's the exact window into the background plane that we see.
-		view.position.x = window.scrollX;
-		view.position.y = window.scrollY;
-		view.position.width = view.window.width;
-		view.position.height = view.window.height;
+		View.position.x = window.scrollX;
+		View.position.y = window.scrollY;
+		View.position.width = View.window.width;
+		View.position.height = View.window.height;
 
-		// View scope is larger than the position, and is used for culling operations.
-		view.scope.x = 0;
-		view.scope.y = window.scrollY - view.window.height;
-		view.scope.width = view.window.width;
-		view.scope.height = view.window.height * 3;
+		View.scope.x = 0;
+		View.scope.y = window.scrollY - View.window.height;
+		View.scope.width = View.window.width;
+		View.scope.height = View.window.height * 3;
 
-		for (const [, , planeTop, planeBottom] of starPlanes) {
-			for (const plane of [planeTop, planeBottom]) {
-				plane.width = view.window.width;
-				plane.height = view.window.height;
+		console.info("Registering event bounding boxes...");
+		for (const [
+			index,
+			[timestamp, id, title, eventContributors],
+		] of DATA[0].entries()) {
+			/** @type {SVGElement | null} */
+			const element = document.querySelector(`#${id}`);
+			if (element === null) {
+				throw new Error(`Couldn't find '#${id}'`);
+			}
+			const boundingRect = element.getBoundingClientRect();
+			events[index] = {
+				timestamp,
+				id,
+				title,
+				contributors: eventContributors,
+				bb: {
+					x: boundingRect.x + window.scrollX,
+					y: boundingRect.y + window.scrollY,
+					w: boundingRect.width,
+					h: boundingRect.height,
+				},
+				element,
+			};
+			contributors.set(id, events[index].contributors);
+			eventsById.set(id, events[index]);
+
+			for (const contributor of events[index].contributors) {
+				const contributorMeta = timelines.get(contributor);
+				if (contributorMeta === undefined) {
+					throw new Error("couldn't find meta");
+				}
+				const contributorEvents = timelineEvents.get(contributorMeta[0]) ?? [];
+				contributorEvents.push(events[index]);
+				timelineEvents.set(contributorMeta[0], contributorEvents);
 			}
 		}
 
-		let stars = 2 ** 11;
+		console.info("Registering edge bounding boxes...");
+		timelineEdges.length = 0;
+		for (const timelineId of timelines.keys()) {
+			/** @type {NodeListOf<SVGElement>} */
+			const elements = document.querySelectorAll(`g.edge.${timelineId}`);
+			for (const element of elements) {
+				const boundingRect = element.getBoundingClientRect();
+				const edge = {
+					element,
+					bb: {
+						x: boundingRect.x + window.scrollX,
+						y: boundingRect.y + window.scrollY,
+						w: boundingRect.width,
+						h: boundingRect.height,
+					},
+				};
+				timelineEdges.push(edge);
+			}
+		}
+		timelineEdges.toSorted((a, b) => a.bb.y - b.bb.y);
+
+		console.info("Drawing star planes...");
 		for (const [, , planeTop, planeBottom] of starPlanes) {
+			for (const plane of [planeTop, planeBottom]) {
+				plane.width = View.window.width;
+				plane.height = View.window.height;
+			}
+		}
+
+		let stars = Math.floor(View.window.width * View.window.height * 0.001);
+		let index = 0;
+		for (const [, , planeTop, planeBottom] of starPlanes) {
+			console.info(`Drawing ${stars} stars on plane ${++index}...`);
 			for (const plane of [planeTop, planeBottom]) {
 				const context = plane.getContext("2d");
 				if (context === null) {
@@ -3078,7 +3104,7 @@ const main = async function main() {
 				document.body.insertBefore(plane, svg);
 			}
 
-			stars *= 0.9;
+			stars = Math.floor(stars * 0.9);
 		}
 	};
 
@@ -3107,7 +3133,7 @@ const main = async function main() {
 
 		window.setTimeout(() => {
 			// Ensure initial view is culled.
-			cull();
+			//cull();
 
 			console.info("Program init finalized.");
 			Promise.all(samplesLoading.values().toArray()).then(() => {

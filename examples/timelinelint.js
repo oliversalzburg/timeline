@@ -101,7 +101,7 @@ const lint = (job) => {
 	const isPrivate = job.timeline.meta.private;
 	if (isPerson && isPrivate) {
 		if ("urls" in job.timeline.meta.identity === false) {
-			job.report.log(`Missing 'urls' section in identity.`);
+			//job.report.log(`Missing 'urls' section in identity.`);
 		} else {
 			if (
 				!job.timeline.meta.identity.urls?.some((_) => _.match(/ancestry.com/))

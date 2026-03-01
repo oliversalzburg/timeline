@@ -48,12 +48,13 @@ Installation media no longer required
 1. Reboot. Technically not required, but gives us a good feeling to know it can reboot up until here. Should default boot
 
 # $ sudo dpkg-reconfigure linux-image-$(uname -r)
-# $ # sudo efibootmgr --bootnum 1 --delete-bootnum
 # $ sudo /sbin/create_EFI_Boot_Entry.sh
 
 1. Reboot. Technically not required, but gives us a good feeling to know it can reboot up until here. Should skip grub
 
-# $ sudo plymouth-set-default-theme -R spinner
+If the device freezes on boot, powercycle before panicing.
+
+# $ sudo plymouth-set-default-theme -R abstract_ring
 # $ sudo reboot
 
 1. Reboot. Should boot: Intel NUC logo -> white blinking cursor -> black -> plymouth spinner -> white blinking cursor -> (cage'd) Chromium
