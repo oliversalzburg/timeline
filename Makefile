@@ -370,11 +370,6 @@ test: lib/tsconfig.source.tsbuildinfo
 	TZ=UTC node --enable-source-maps --inspect \
 		node_modules/.bin/mocha --reporter-option maxDiffSize=16000 \
 		lib/*.test.js
-coverage: lib/tsconfig.source.tsbuildinfo
-	NODE_OPTIONS=--enable-source-maps TZ=UTC npm exec -- \
-		c8 --reporter=html-spa \
-		mocha --reporter-option maxDiffSize=16000 \
-		lib/*.test.js
 
 # Python dependency handling
 .venv: .venv/touchfile
