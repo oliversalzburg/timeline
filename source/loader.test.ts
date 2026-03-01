@@ -1,5 +1,5 @@
-import { expect } from "chai";
-import { describe, it } from "mocha";
+import * as assert from "node:assert";
+import { before, describe, it } from "node:test";
 import {
 	beforeUnix,
 	history,
@@ -20,7 +20,8 @@ import type { TimelineDocument } from "./types.js";
 
 describe("Loader", () => {
 	before(() => {
-		expect(new Date().getTimezoneOffset()).to.equal(
+		assert.strictEqual(
+			new Date().getTimezoneOffset(),
 			0,
 			"The test suite must be executed in the UTC time zone.",
 		);
@@ -34,7 +35,8 @@ describe("Loader", () => {
 			recordIndex < timeline.records.length;
 			++recordIndex
 		) {
-			expect(timeline.records[recordIndex][0]).to.equal(
+			assert.strictEqual(
+				timeline.records[recordIndex][0],
 				Number(timeline.records[recordIndex][1].title),
 				"Resulting timestamp does not match expectation of date string. The input date string is lost, and can not be shown.",
 			);
@@ -49,7 +51,8 @@ describe("Loader", () => {
 			recordIndex < timeline.records.length;
 			++recordIndex
 		) {
-			expect(timeline.records[recordIndex][0]).to.equal(
+			assert.strictEqual(
+				timeline.records[recordIndex][0],
 				Number(timeline.records[recordIndex][1].title),
 				"Resulting timestamp does not match expectation of date string. The input date string is lost, and can not be shown.",
 			);
@@ -65,8 +68,9 @@ describe("Loader", () => {
 			recordIndex < timeline.records.length;
 			++recordIndex
 		) {
-			expect(timeline.records[recordIndex][0]).to.be.greaterThanOrEqual(
-				previousTimestamp,
+			assert.strictEqual(
+				previousTimestamp <= timeline.records[recordIndex][0],
+				true,
 			);
 			previousTimestamp = timeline.records[recordIndex][0];
 		}
@@ -81,8 +85,9 @@ describe("Loader", () => {
 			recordIndex < timeline.records.length;
 			++recordIndex
 		) {
-			expect(timeline.records[recordIndex][0]).to.be.greaterThanOrEqual(
-				previousTimestamp,
+			assert.strictEqual(
+				previousTimestamp <= timeline.records[recordIndex][0],
+				true,
 			);
 			previousTimestamp = timeline.records[recordIndex][0];
 		}
@@ -97,8 +102,9 @@ describe("Loader", () => {
 			recordIndex < timeline.records.length;
 			++recordIndex
 		) {
-			expect(timeline.records[recordIndex][0]).to.be.greaterThanOrEqual(
-				previousTimestamp,
+			assert.strictEqual(
+				previousTimestamp <= timeline.records[recordIndex][0],
+				true,
 			);
 			previousTimestamp = timeline.records[recordIndex][0];
 		}

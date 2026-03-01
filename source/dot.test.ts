@@ -1,5 +1,5 @@
-import { expect } from "chai";
-import { describe, it } from "mocha";
+import * as assert from "node:assert";
+import { describe, it } from "node:test";
 import { dot } from "./dot.js";
 
 /**
@@ -13,7 +13,8 @@ describe("DOT", () => {
 		d.raw("digraph {");
 		d.raw("}");
 
-		expect(d.toString()).to.equal(
+		assert.strictEqual(
+			d.toString(),
 			"digraph {\n}",
 			"The GraphViz helper produced unexpected output.",
 		);
@@ -25,7 +26,8 @@ describe("DOT", () => {
 		d.node("GraphViz is great", { color: "#FF0000FF" });
 		d.raw("}");
 
-		expect(d.toString()).to.equal(
+		assert.strictEqual(
+			d.toString(),
 			"digraph {\n" +
 				'\t1\t[color="#FF0000FF",\n\t\tlabel=<GraphViz is great>];\n' +
 				"}",

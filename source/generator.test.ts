@@ -1,5 +1,5 @@
-import { expect } from "chai";
-import { describe, it } from "mocha";
+import * as assert from "node:assert";
+import { before, describe, it } from "node:test";
 import { MILLISECONDS } from "./constants.js";
 import { interval, recurringYearly } from "./generator.js";
 
@@ -10,7 +10,8 @@ import { interval, recurringYearly } from "./generator.js";
 
 describe("Generator - Interval", () => {
 	before(() => {
-		expect(new Date().getTimezoneOffset()).to.equal(
+		assert.strictEqual(
+			new Date().getTimezoneOffset(),
 			0,
 			"The test suite must be executed in the UTC time zone.",
 		);
@@ -25,7 +26,8 @@ describe("Generator - Interval", () => {
 			0,
 		);
 
-		expect(records).to.eql(
+		assert.deepStrictEqual(
+			records,
 			[
 				[946684800000, { title: "Some Event" }],
 				[946771200000, { title: "Some Event #1" }],
@@ -45,7 +47,8 @@ describe("Generator - Interval", () => {
 			1,
 		);
 
-		expect(records).to.eql(
+		assert.deepStrictEqual(
+			records,
 			[
 				[946771200000, { title: "Some Event #1" }],
 				[946857600000, { title: "Some Event #2" }],
@@ -65,7 +68,8 @@ describe("Generator - Interval", () => {
 			1,
 		);
 
-		expect(records).to.eql(
+		assert.deepStrictEqual(
+			records,
 			[
 				[946771200000, { title: "1. Some Event" }],
 				[946857600000, { title: "2. Some Event" }],
@@ -79,7 +83,8 @@ describe("Generator - Interval", () => {
 
 describe("Generator - Yearly Occurrence", () => {
 	before(() => {
-		expect(new Date().getTimezoneOffset()).to.equal(
+		assert.strictEqual(
+			new Date().getTimezoneOffset(),
 			0,
 			"The test suite must be executed in the UTC time zone.",
 		);
@@ -94,7 +99,8 @@ describe("Generator - Yearly Occurrence", () => {
 			0,
 		);
 
-		expect(records).to.eql(
+		assert.deepStrictEqual(
+			records,
 			[
 				[946684800000, { generated: true, title: "Some Event" }],
 				[978307200000, { generated: true, title: "Some Event #1" }],

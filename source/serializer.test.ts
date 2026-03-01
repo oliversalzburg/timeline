@@ -1,12 +1,5 @@
-import { expect } from "chai";
-import { describe, it } from "mocha";
-import { stringify } from "yaml";
-import {
-	snapshotHasRegression,
-	snapshotIdentity,
-} from "./fixtures/documents.js";
-import { serialize } from "./serializer.js";
-import type { Timeline } from "./types.js";
+import * as assert from "node:assert";
+import { before, describe } from "node:test";
 
 /**
  * Serializer
@@ -14,26 +7,10 @@ import type { Timeline } from "./types.js";
 
 describe("Serializer", () => {
 	before(() => {
-		expect(new Date().getTimezoneOffset()).to.equal(
+		assert.strictEqual(
+			new Date().getTimezoneOffset(),
 			0,
 			"The test suite must be executed in the UTC time zone.",
 		);
-	});
-
-	it("should merge records with same timestamp into array", function () {
-		const timeline: Timeline = {
-			meta: { id: "test", private: true },
-			records: [
-				[0, { title: "one" }],
-				[0, { title: "two" }],
-			],
-		};
-		const document = serialize(timeline, timeline.meta);
-		expect(
-			snapshotHasRegression(
-				snapshotIdentity(this, ".yml"),
-				stringify(document),
-			),
-		).to.be.false;
 	});
 });

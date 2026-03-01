@@ -1,5 +1,5 @@
-import { expect } from "chai";
-import { describe, it } from "mocha";
+import * as assert from "node:assert";
+import { before, describe, it } from "node:test";
 import { analyze } from "./analyzer.js";
 import { random, withConflict } from "./fixtures/documents.js";
 import { load } from "./loader.js";
@@ -11,7 +11,8 @@ import type { TimelineDocument } from "./types.js";
 
 describe("Analyzer", () => {
 	before(() => {
-		expect(new Date().getTimezoneOffset()).to.equal(
+		assert.strictEqual(
+			new Date().getTimezoneOffset(),
 			0,
 			"The test suite must be executed in the UTC time zone.",
 		);
@@ -22,7 +23,7 @@ describe("Analyzer", () => {
 		const timeline = load(document, "document");
 		const metrics = analyze(timeline.records);
 
-		expect(metrics).to.eql({
+		assert.deepStrictEqual(metrics, {
 			durationTotal: 1289820508000,
 			periodLongest: 329167508000,
 			periodShortest: 4878406000,
@@ -36,7 +37,7 @@ describe("Analyzer", () => {
 		const timeline = load(document, "document");
 		const metrics = analyze(timeline.records);
 
-		expect(metrics).to.eql({
+		assert.deepStrictEqual(metrics, {
 			durationTotal: 802273890000,
 			periodLongest: 802273890000,
 			periodShortest: 0,
