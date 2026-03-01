@@ -569,7 +569,7 @@ const main = async function main() {
 		let previousDays;
 		/** @type {NodeListOf<HTMLParagraphElement>} */
 		let previousStatusTexts;
-		DOM.read("focusNode", () => {
+		DOM.read("focusNode", function focusNodeRead() {
 			/** @type {HTMLElement | null} */
 			const node = document.querySelector(anchor);
 			/** @type {HTMLElement | null} */
@@ -593,7 +593,7 @@ const main = async function main() {
 			previousStatusTexts = document.querySelectorAll("#status .text.previous");
 		});
 
-		DOM.write("focusNode", () => {
+		DOM.write("focusNode", function focusNodeWrite() {
 			if (nodeTitle === undefined) {
 				console.error(
 					`Node with ID '${id}' does not provide a title. Unable to focus node.`,
@@ -694,31 +694,7 @@ const main = async function main() {
 	 *
 	 * @type {number | undefined}
 	 */
-	let timeoutCameraLock;
-
-	const focusHitTest = function focusHitTest() {
-		if (timeoutCameraLock !== undefined) {
-			window.clearTimeout(timeoutCameraLock);
-			timeoutCameraLock = undefined;
-		}
-		timeoutCameraLock = window.setTimeout(() => {
-			if (!cameraIsAttached && previousVisibleNodes !== undefined) {
-				for (const node of previousVisibleNodes) {
-					if (
-						node.bb.x < View.focus.x &&
-						View.focus.x < node.bb.x + node.bb.w &&
-						node.bb.y < View.focus.y &&
-						View.focus.y < node.bb.y + node.bb.h
-					) {
-						if (node.id !== idFocused) {
-							focusNode(node.id);
-							break;
-						}
-					}
-				}
-			}
-		}, 1000);
-	};
+	let timeoutLockCamera;
 
 	/**
 	 * @param id {string | undefined} -
@@ -1049,16 +1025,21 @@ const main = async function main() {
 			return false;
 		}
 
+		/*
 		console.debug(
 			"Camera doesn't match focus. Adjusting position...",
 			Math.abs(newPosition.x - View.position.x),
 			Math.abs(newPosition.y - View.position.y),
 		);
+		*/
 
-		DOM.write("updateCamera", () => {
-			if (requestInstantFocusUpdate) {
+		if (requestInstantFocusUpdate) {
+			DOM.write("updateCamera", function writeCameraInstant() {
 				document.documentElement.scrollLeft = newPosition.x;
 				document.documentElement.scrollTop = newPosition.y;
+				View.position.x = newPosition.x;
+				View.position.y = newPosition.y;
+				View.scope.y = newPosition.y - View.window.height;
 
 				targetElement.classList.add("visible");
 
@@ -1074,18 +1055,18 @@ const main = async function main() {
 					targetFocusElement.style.width = `calc(${event.bb.w}px + 8mm)`;
 					targetFocusElement.style.height = `calc(${event.bb.h}px + 8mm)`;
 				}
-			}
-		});
+			});
+		}
 
 		if (!requestInstantFocusUpdate) {
-			DOM.dominate("scrollTo", () => {
+			DOM.dominate("scrollTo", function scrollTo() {
 				cameraIsIdle = true;
 				window.scrollTo({
-					behavior: requestInstantFocusUpdate ? "instant" : "smooth",
+					behavior: "smooth",
 					left: newPosition.x,
 					top: newPosition.y,
 				});
-				timeoutCameraUnlock = window.setTimeout(() => {
+				timeoutCameraUnlock = window.setTimeout(function forceCameraUnlock() {
 					timeoutCameraUnlock = undefined;
 					cameraMovementFinalize();
 					console.warn("Forced camera movement finalization!");
@@ -1100,6 +1081,10 @@ const main = async function main() {
 	 * Finalize a camera movement, like after a scrollTo() operation.
 	 */
 	const cameraMovementFinalize = function cameraMovementFinalize() {
+		if (!cameraIsAttached) {
+			return;
+		}
+
 		console.debug("cameraMovementFinalize");
 		/** @type {NodeListOf<HTMLImageElement>}*/
 		let pendingArtifacts;
@@ -1107,7 +1092,7 @@ const main = async function main() {
 		let pendingDays;
 		/** @type {NodeListOf<HTMLParagraphElement>}*/
 		let pendingStatusTexts;
-		DOM.read("cameraMovementFinalize", () => {
+		DOM.read("cameraMovementFinalize", function readCamera() {
 			View.position.x = window.scrollX;
 			View.position.y = window.scrollY;
 			View.scope.y = window.scrollY - View.window.height;
@@ -1119,8 +1104,9 @@ const main = async function main() {
 				"#status .text.previous.pending",
 			);
 		});
+
 		if (cameraIsAttached) {
-			DOM.write("cameraMovementFinalize", () => {
+			DOM.write("cameraMovementFinalize", function writeCamera() {
 				if (idFocused !== undefined) {
 					targetElement.classList.remove("visible");
 					targetFocusElement.classList.add("visible");
@@ -1427,7 +1413,7 @@ const main = async function main() {
 	/**
 	 * @typedef {{
 	 * 	name: string,
-	 * 	axes?: undefined | ((frame: InputFrame) => void),
+	 * 	axes?: undefined | ((frame: InputFrame) => boolean),
 	 * 	pressed?: Record<number, undefined | ((frame: InputFrame) => (InputPlane | undefined))>,
 	 * 	released?: Record<number, undefined | ((frame: InputFrame) => (InputPlane | undefined))>,
 	 * }} InputPlane
@@ -1509,9 +1495,9 @@ const main = async function main() {
 			if (changed) {
 				View.focus.x = Math.max(Math.min(View.focus.x, View.bounds.width), 0);
 				View.focus.y = Math.max(Math.min(View.focus.y, View.bounds.height), 0);
-
-				focusHitTest();
 			}
+
+			return changed;
 		},
 	};
 
@@ -1598,22 +1584,30 @@ const main = async function main() {
 		console.debug("Recorded input frame.", InputFrameCache.length);
 		InputFrameCache.push(frame);
 	};
+
+	/**
+	 * @returns {boolean} Wether there was any relevant input.
+	 */
 	const digestInputFrames = function digestInputFrames() {
 		const head =
 			0 < InputFrameCache.length
 				? InputFrameCache[InputFrameCache.length - 1]
 				: null;
 		if (head === null) {
-			return;
+			return false;
 		}
 
+		let axisChanged = false;
 		if (activeInputPlane.axes !== undefined) {
-			activeInputPlane.axes(head);
+			axisChanged ||= activeInputPlane.axes(head);
+		}
+		if (axisChanged) {
+			return true;
 		}
 
 		const canPeekCount = InputFrameCache.length - 1;
 		if (canPeekCount < 1) {
-			return;
+			return false;
 		}
 
 		/** @param {number} slot - */
@@ -1977,6 +1971,8 @@ const main = async function main() {
 					-1_000_000,
 				);
 			}
+
+			return changed;
 		},
 	};
 
@@ -2925,6 +2921,8 @@ const main = async function main() {
 	let previousTimestamp;
 	/** @type {number | undefined} */
 	let previousTimestampStarfield;
+	/** @type {number | undefined} */
+	let timeoutCull;
 	/**
 	 * @param timestamp {number} -
 	 */
@@ -2939,8 +2937,40 @@ const main = async function main() {
 		const delta = timestamp - previousTimestamp;
 		const deltaStarfield = timestamp - previousTimestampStarfield;
 
-		handleInputs(delta);
+		const hadInput = handleInputs(delta);
 		updateCamera();
+		if (hadInput) {
+			if (timeoutCull !== undefined) {
+				window.clearTimeout(timeoutCull);
+				timeoutCull = undefined;
+			}
+			if (timeoutLockCamera !== undefined) {
+				window.clearTimeout(timeoutLockCamera);
+				timeoutLockCamera = undefined;
+			}
+		} else {
+			timeoutCull ??= window.setTimeout(function invokeCull() {
+				cull();
+				timeoutCull = undefined;
+			}, 3000);
+			timeoutLockCamera ??= window.setTimeout(function performHitTest() {
+				if (!cameraIsAttached && previousVisibleNodes !== undefined) {
+					for (const node of previousVisibleNodes) {
+						if (
+							node.bb.x < View.focus.x &&
+							View.focus.x < node.bb.x + node.bb.w &&
+							node.bb.y < View.focus.y &&
+							View.focus.y < node.bb.y + node.bb.h
+						) {
+							if (node.id !== idFocused) {
+								focusNode(node.id);
+								break;
+							}
+						}
+					}
+				}
+			}, 1000);
+		}
 
 		// We don't want to update the starfield every frame, because it doesn't
 		// move much, but consumes a lot of fill rate.
