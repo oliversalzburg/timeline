@@ -368,7 +368,6 @@ validate-data: .venv validate-schema lib/tsconfig.source.tsbuildinfo
 # Run available software tests.
 test: lib/tsconfig.source.tsbuildinfo
 	TZ=UTC node --enable-source-maps --inspect \
-		node_modules/.bin/mocha --reporter-option maxDiffSize=16000 \
 		lib/*.test.js
 
 # Python dependency handling

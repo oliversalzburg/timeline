@@ -1,8 +1,8 @@
 /** biome-ignore-all lint/style/noUnusedTemplateLiteral: Consistency overrules */
 
+import * as assert from "node:assert";
+import { before, describe, it } from "node:test";
 import { mustExist } from "@oliversalzburg/js-utils/data/nil.js";
-import { expect } from "chai";
-import { describe, it } from "mocha";
 import { matchFontColorTo } from "./palette.js";
 import type { RGBTuple } from "./types.js";
 
@@ -12,7 +12,8 @@ import type { RGBTuple } from "./types.js";
 
 describe("Renderer", () => {
 	before(() => {
-		expect(new Date().getTimezoneOffset()).to.equal(
+		assert.strictEqual(
+			new Date().getTimezoneOffset(),
 			0,
 			"The test suite must be executed in the UTC time zone.",
 		);
@@ -27,7 +28,8 @@ describe("Renderer", () => {
 				Number.parseInt(x, 16),
 			) as RGBTuple;
 			const generated = matchFontColorTo(rgb);
-			expect(generated).to.eql(
+			assert.deepStrictEqual(
+				generated,
 				[250, 250, 250, 255],
 				`Generated font color '${generated}' doesn't match expected font color '${font}'.`,
 			);
