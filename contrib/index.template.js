@@ -1,3 +1,6 @@
+/** @type {import("../lib/types.js").UniverseResultMetadata} */
+const DATA = [[], [], ["", "", ""]];
+
 const Inputs = {
 	BUTTON_A: 0,
 	BUTTON_B: 1,
@@ -22,8 +25,124 @@ const Inputs = {
 	AXIS_RIGHT_Y: 3,
 };
 
-/** @type {import("../lib/types.js").UniverseResultMetadata} */
-const DATA = [[], [], ["", "", ""]];
+const DOM = {
+	queueRead: new Map(),
+	queueWrite: new Map(),
+	/** @type {undefined|(() => unknown) } */
+	dominator: undefined,
+	writing: false,
+	/**
+	 * Schedule DOM read operation.
+	 * @param {string} id -
+	 * @param {() => unknown} operation -
+	 */
+	read: function readDOM(id, operation) {
+		if (DOM.writing) {
+			console.warn(`DOM read operation '${id}' scheduled during write cycle!`);
+		}
+		Object.defineProperty(operation, "name", {
+			value: `DOMread_${id}`,
+			writable: false,
+		});
+		DOM.queueRead.set(id, operation);
+	},
+	/**
+	 * Schedule DOM write operation.
+	 * @param {string} id -
+	 * @param {() => unknown} operation -
+	 */
+	write: function writeDOM(id, operation) {
+		if (DOM.writing) {
+			console.warn(`DOM write operation '${id}' scheduled during write cycle!`);
+		}
+		Object.defineProperty(operation, "name", {
+			value: `DOMwrite_${id}`,
+			writable: false,
+		});
+		DOM.queueWrite.set(id, operation);
+	},
+	/**
+	 * Schedule full DOM read-write cycle operation.
+	 * @param {string} id -
+	 * @param {() => unknown} operation -
+	 */
+	dominate: function dominateDOM(id, operation) {
+		Object.defineProperty(operation, "name", {
+			value: `DOM_${id}`,
+			writable: false,
+		});
+		DOM.dominator = operation;
+	},
+	run: function runTasksDOM() {
+		if (DOM.dominator !== undefined) {
+			DOM.dominator();
+			DOM.dominator = undefined;
+			return;
+		}
+
+		for (const [, operation] of DOM.queueRead.entries()) {
+			operation();
+		}
+		DOM.queueRead.clear();
+		DOM.writing = true;
+		for (const [, operation] of DOM.queueWrite.entries()) {
+			operation();
+		}
+		DOM.writing = false;
+		DOM.queueWrite.clear();
+	},
+};
+
+/**
+ * Information about different view bounds.
+ *
+ * ### Window
+ * The size of the entire drawable area.
+ * View window is the size of the visible area of the window.
+ * Not the size of the (larger) scrollable background plane.
+ *
+ * ### Bounds
+ * View bounds are the size of the SVG, which should be a huge
+ * DOM element, that defines the size of the background plane.
+ *
+ * ### Scope
+ * View scope is larger than the position, and is used for culling operations.
+ *
+ * ### Position
+ * View position is the segment of the SVG we're currently looking
+ * at. It's the exact window into the background plane that we see.
+ *
+ * ### Focus
+ *
+ */
+const View = {
+	window: {
+		width: 0,
+		height: 0,
+	},
+	bounds: {
+		width: 0,
+		height: 0,
+	},
+	scope: {
+		x: 0,
+		y: 0,
+		width: 0,
+		height: 0,
+	},
+	position: {
+		x: 0,
+		y: 0,
+		width: 0,
+		height: 0,
+	},
+	focus: {
+		x: 0,
+		y: 0,
+		width: 0,
+		height: 0,
+	},
+};
 
 const main = async function main() {
 	console.info("Program loaded. Starting static initialization...");
@@ -189,129 +308,6 @@ const main = async function main() {
 		throw new Error("Unable to find #status .buttons .button.start element.");
 	}
 	//#endregion
-
-	const DOM = {
-		queueRead: new Map(),
-		queueWrite: new Map(),
-		/** @type {undefined|(() => unknown) } */
-		dominator: undefined,
-		writing: false,
-		/**
-		 * Schedule DOM read operation.
-		 * @param {string} id -
-		 * @param {() => unknown} operation -
-		 */
-		read: function readDOM(id, operation) {
-			if (DOM.writing) {
-				console.warn(
-					`DOM read operation '${id}' scheduled during write cycle!`,
-				);
-			}
-			Object.defineProperty(operation, "name", {
-				value: `DOMread_${id}`,
-				writable: false,
-			});
-			DOM.queueRead.set(id, operation);
-		},
-		/**
-		 * Schedule DOM write operation.
-		 * @param {string} id -
-		 * @param {() => unknown} operation -
-		 */
-		write: function writeDOM(id, operation) {
-			if (DOM.writing) {
-				console.warn(
-					`DOM write operation '${id}' scheduled during write cycle!`,
-				);
-			}
-			Object.defineProperty(operation, "name", {
-				value: `DOMwrite_${id}`,
-				writable: false,
-			});
-			DOM.queueWrite.set(id, operation);
-		},
-		/**
-		 * Schedule full DOM read-write cycle operation.
-		 * @param {string} id -
-		 * @param {() => unknown} operation -
-		 */
-		dominate: function dominateDOM(id, operation) {
-			Object.defineProperty(operation, "name", {
-				value: `DOM_${id}`,
-				writable: false,
-			});
-			DOM.dominator = operation;
-		},
-		run: function runTasksDOM() {
-			if (DOM.dominator !== undefined) {
-				DOM.dominator();
-				DOM.dominator = undefined;
-				return;
-			}
-
-			for (const [, operation] of DOM.queueRead.entries()) {
-				operation();
-			}
-			DOM.queueRead.clear();
-			DOM.writing = true;
-			for (const [, operation] of DOM.queueWrite.entries()) {
-				operation();
-			}
-			DOM.writing = false;
-			DOM.queueWrite.clear();
-		},
-	};
-
-	/**
-	 * Information about different view bounds.
-	 *
-	 * ### Window
-	 * The size of the entire drawable area.
-	 * View window is the size of the visible area of the window.
-	 * Not the size of the (larger) scrollable background plane.
-	 *
-	 * ### Bounds
-	 * View bounds are the size of the SVG, which should be a huge
-	 * DOM element, that defines the size of the background plane.
-	 *
-	 * ### Scope
-	 * View scope is larger than the position, and is used for culling operations.
-	 *
-	 * ### Position
-	 * View position is the segment of the SVG we're currently looking
-	 * at. It's the exact window into the background plane that we see.
-	 *
-	 * ### Focus
-	 *
-	 */
-	const View = {
-		window: {
-			width: 0,
-			height: 0,
-		},
-		bounds: {
-			width: 0,
-			height: 0,
-		},
-		scope: {
-			x: 0,
-			y: 0,
-			width: 0,
-			height: 0,
-		},
-		position: {
-			x: 0,
-			y: 0,
-			width: 0,
-			height: 0,
-		},
-		focus: {
-			x: 0,
-			y: 0,
-			width: 0,
-			height: 0,
-		},
-	};
 
 	//#region SFX
 	const audioContext = new window.AudioContext();
@@ -3106,13 +3102,38 @@ const main = async function main() {
 		}
 	};
 
-	document.addEventListener("click", onClick);
-	document.addEventListener("mousemove", onMouseMove);
-	document.addEventListener("keydown", onKeyDown);
-	document.addEventListener("keyup", onKeyUp);
-	window.addEventListener("popstate", onPopState);
-	window.addEventListener("resize", initGraphics);
-	window.addEventListener("scrollend", onScrollEnd);
+	const firstFrame = function firstFrame() {
+		console.info("Program init finalized. Performing first-frame tasks...");
+
+		// Ensure initial view is culled.
+		cull();
+
+		Promise.all(samplesLoading.values().toArray()).then(() => {
+			console.info("Setting up UI...");
+
+			returnToNeutral();
+
+			document.body.classList.remove("loading");
+
+			window.setTimeout(() => {
+				calendarContainer.classList.add("open");
+				console.info("Calendar shown.");
+			}, 5000);
+
+			window.setTimeout(() => {
+				//artifactsContainer.classList.add("open");
+				statusContainer.classList.add("open");
+				console.info("Status shown.");
+			}, 6000);
+
+			window.setTimeout(() => {
+				loader.remove();
+				console.info("Loader removed.");
+			}, 10000);
+
+			present(Number(document.timeline.currentTime));
+		});
+	};
 
 	const init = function init() {
 		initGraphics();
@@ -3129,46 +3150,30 @@ const main = async function main() {
 			navigateHome();
 		}
 
-		window.setTimeout(() => {
-			// Ensure initial view is culled.
-			cull();
+		document.addEventListener("click", onClick);
+		document.addEventListener("mousemove", onMouseMove);
+		document.addEventListener("keydown", onKeyDown);
+		document.addEventListener("keyup", onKeyUp);
+		window.addEventListener("popstate", onPopState);
+		window.addEventListener("resize", initGraphics);
+		window.addEventListener("scrollend", onScrollEnd);
 
-			console.info("Program init finalized.");
-			Promise.all(samplesLoading.values().toArray()).then(() => {
-				document.body.classList.remove("loading");
-				window.requestAnimationFrame(present);
-				returnToNeutral();
-
-				window.setTimeout(() => {
-					calendarContainer.classList.add("open");
-					console.info("Calendar shown.");
-				}, 5000);
-
-				window.setTimeout(() => {
-					//artifactsContainer.classList.add("open");
-					statusContainer.classList.add("open");
-					console.info("Status shown.");
-				}, 6000);
-
-				window.setTimeout(() => {
-					loader.remove();
-					console.info("Loader removed.");
-				}, 10000);
-			});
-		});
+		window.setTimeout(firstFrame);
 	};
+
 	window.setTimeout(init);
 	console.info("Next-frame ignition requested.");
 	//#endregion
+};
+
+const invokeMain = function invokeMain() {
+	main().catch(console.error);
 };
 
 const onDOMContentLoaded = function onDOMContentLoaded() {
 	console.info(
 		"DOM content loaded. Program init is pending. Allow at least 30 seconds to pass before looking for bugs.",
 	);
-	const invokeMain = function invokeMain() {
-		main().catch(console.error);
-	};
-	setTimeout(invokeMain, 1000);
+	setTimeout(invokeMain);
 };
 document.addEventListener("DOMContentLoaded", onDOMContentLoaded);
