@@ -394,102 +394,53 @@ const main = async function main() {
 	 * @type {Map<string, import("../lib/types.js").TimelineMetadata>}
 	 */
 	const timelines = new Map(DATA[1].map((_) => [_[0], _]));
+
 	/**
 	 * @type {Map<string, Array<{
-	 * 	timestamp: number,
-	 * 	id: string,
-	 * 	title: string,
 	 * 	contributors: Array<string>
+	 * 	id: string,
+	 * 	timestamp: number,
+	 * 	title: string,
 	 * }>>}
 	 */
 	const timelineEvents = new Map();
+
 	/**
 	 * @type {Array<{
-	 * 	timestamp: number,
-	 * 	id: string,
-	 * 	title: string,
+	 * 	bb: { x: number, y: number, w: number, h: number }
 	 * 	contributors: Array<string>,
 	 * 	element: SVGElement,
-	 * 	bb: { x: number, y: number, w: number, h: number }
+	 * 	id: string,
+	 * 	timestamp: number,
+	 * 	title: string,
 	 * }>}
 	 */
-	const events = new Array();
+	const timelineNodes = new Array();
+
+	/**
+	 * @type {Array<{
+	 * 	bb: { x: number, y: number, w: number, h: number }
+	 * 	element: SVGElement,
+	 * }>}
+	 */
+	const timelineEdges = new Array();
+
 	/**
 	 * @type {Map<string, {
-	 * 	timestamp: number,
-	 * 	id: string,
-	 * 	title: string,
+	 * 	bb: { x: number, y: number, w: number, h: number }
 	 * 	contributors: Array<string>,
 	 * 	element: SVGElement,
-	 * 	bb: { x: number, y: number, w: number, h: number }
+	 * 	id: string,
+	 * 	timestamp: number,
+	 * 	title: string,
 	 * }>}
 	 */
 	const eventsById = new Map();
+
 	/**
 	 * @type {Map<string, Array<string>>}
 	 */
 	const contributors = new Map();
-	for (const [
-		index,
-		[timestamp, id, title, eventContributors],
-	] of DATA[0].entries()) {
-		/** @type {SVGElement | null} */
-		const element = document.querySelector(`#${id}`);
-		if (element === null) {
-			throw new Error(`Couldn't find '#${id}'`);
-		}
-		const boundingRect = element.getBoundingClientRect();
-		events[index] = {
-			timestamp,
-			id,
-			title,
-			contributors: eventContributors,
-			bb: {
-				x: boundingRect.x + window.scrollX,
-				y: boundingRect.y + window.scrollY,
-				w: boundingRect.width,
-				h: boundingRect.height,
-			},
-			element,
-		};
-		contributors.set(id, events[index].contributors);
-		eventsById.set(id, events[index]);
-
-		for (const contributor of events[index].contributors) {
-			const contributorMeta = timelines.get(contributor);
-			if (contributorMeta === undefined) {
-				throw new Error("couldn't find meta");
-			}
-			const contributorEvents = timelineEvents.get(contributorMeta[0]) ?? [];
-			contributorEvents.push(events[index]);
-			timelineEvents.set(contributorMeta[0], contributorEvents);
-		}
-	}
-	/**
-	 * @type {Array<{
-	 * 	element: SVGElement,
-	 * 	bb: { x: number, y: number, w: number, h: number }
-	 * }>}
-	 */
-	const timelineEdges = new Array();
-	for (const timelineId of timelines.keys()) {
-		/** @type {NodeListOf<SVGElement>} */
-		const elements = document.querySelectorAll(`g.edge.${timelineId}`);
-		for (const element of elements) {
-			const boundingRect = element.getBoundingClientRect();
-			const edge = {
-				element,
-				bb: {
-					x: boundingRect.x + window.scrollX,
-					y: boundingRect.y + window.scrollY,
-					w: boundingRect.width,
-					h: boundingRect.height,
-				},
-			};
-			timelineEdges.push(edge);
-		}
-	}
-	timelineEdges.toSorted((a, b) => a.bb.y - b.bb.y);
 
 	console.info("Constructing star planes...");
 	const starPlanes = Array.from({
@@ -503,18 +454,21 @@ const main = async function main() {
 				document.createElement("canvas"),
 			]),
 	);
+
 	/**
 	 * How much time is contributing to the speed of the starfield.
 	 *
 	 * @type {number}
 	 */
 	const speedTime = 0.0001;
+
 	/**
 	 * How much scroll position is contributing to the speed of the starfield.
 	 *
 	 * @type {number}
 	 */
 	const speedScroll = 0.001;
+
 	/**
 	 * The base colors of stars in the starfield.
 	 *
@@ -527,6 +481,7 @@ const main = async function main() {
 		[173, 216, 230],
 		[176, 224, 230],
 	];
+
 	/**
 	 * Point in time when the page was initialized.
 	 *
@@ -1051,18 +1006,21 @@ const main = async function main() {
 	 * @type {{x: number, y: number}}
 	 */
 	let cameraFocus = { x: 0, y: 0 };
+
 	/**
 	 * Is the camera currently being moved?
 	 *
 	 * @type {boolean}
 	 */
 	let cameraIsIdle = false;
+
 	/**
 	 * Is the camera currently locked to a timeline?
 	 *
 	 * @type {boolean}
 	 */
 	let cameraIsAttached = true;
+
 	/**
 	 * Timeout for a callback to clean up camera locks.
 	 *
@@ -1218,9 +1176,22 @@ const main = async function main() {
 	};
 
 	let previousFirstVisibleNodeIndex = 0;
-	/** @type {Set<{element: SVGElement, bb: { x: number, y: number, w: number, h: number } }>} */
-	let previousVisibleEdges = new Set(timelineEdges);
+
 	/**
+	 * Edges that were visible after the previous cull.
+	 *
+	 * Initially empty, to be filled with *all* edges before first cull.
+	 * @type {Set<{
+	 * 	bb: { x: number, y: number, w: number, h: number }
+	 * 	element: SVGElement,
+	 * }>}
+	 */
+	let previousVisibleEdges = new Set(timelineEdges);
+
+	/**
+	 * Nodes that were visible after the previous cull.
+	 *
+	 * Initially empty, to be filled with *all* nodes before first cull.
 	 * @type {Set<{
 	 * 	bb: { x: number, y: number, w: number, h: number }
 	 * 	element: SVGElement,
@@ -1228,7 +1199,8 @@ const main = async function main() {
 	 * 	title: string,
 	 * }>}
 	 */
-	let previousVisibleNodes = new Set(events);
+	let previousVisibleNodes = new Set(timelineNodes);
+
 	const cull = function cull() {
 		const visibleEdges = [];
 		for (
@@ -1249,13 +1221,17 @@ const main = async function main() {
 		const visibleNodes = [];
 		let firstVisibleNodeIndex = previousFirstVisibleNodeIndex;
 		for (; 0 < firstVisibleNodeIndex; --firstVisibleNodeIndex) {
-			const event = events[firstVisibleNodeIndex];
+			const event = timelineNodes[firstVisibleNodeIndex];
 			if (event.bb.y + event.bb.h < View.scope.y) {
 				break;
 			}
 		}
-		for (; firstVisibleNodeIndex < events.length; ++firstVisibleNodeIndex) {
-			const event = events[firstVisibleNodeIndex];
+		for (
+			;
+			firstVisibleNodeIndex < timelineNodes.length;
+			++firstVisibleNodeIndex
+		) {
+			const event = timelineNodes[firstVisibleNodeIndex];
 			if (View.scope.y + View.scope.height < event.bb.y) {
 				break;
 			}
@@ -3037,6 +3013,7 @@ const main = async function main() {
 		const color = components.map((_) => Math.floor(_ * scale)).join(" ");
 		return `rgb(${color})`;
 	};
+
 	const initGraphics = function initGraphics() {
 		console.info("Initializing graphics...");
 
@@ -3106,8 +3083,10 @@ const main = async function main() {
 		console.info("Program init finalized. Performing first-frame tasks...");
 
 		// Ensure initial view is culled.
+		console.info("Culling initial view...");
 		cull();
 
+		console.info("Ensuring audio samples are ready...");
 		Promise.all(samplesLoading.values().toArray()).then(() => {
 			console.info("Setting up UI...");
 
@@ -3136,6 +3115,64 @@ const main = async function main() {
 	};
 
 	const init = function init() {
+		for (const [
+			index,
+			[timestamp, id, title, eventContributors],
+		] of DATA[0].entries()) {
+			/** @type {SVGElement | null} */
+			const element = document.querySelector(`#${id}`);
+			if (element === null) {
+				throw new Error(`Couldn't find '#${id}'`);
+			}
+			const boundingRect = element.getBoundingClientRect();
+			timelineNodes[index] = {
+				timestamp,
+				id,
+				title,
+				contributors: eventContributors,
+				bb: {
+					x: boundingRect.x + window.scrollX,
+					y: boundingRect.y + window.scrollY,
+					w: boundingRect.width,
+					h: boundingRect.height,
+				},
+				element,
+			};
+			contributors.set(id, timelineNodes[index].contributors);
+			eventsById.set(id, timelineNodes[index]);
+
+			for (const contributor of timelineNodes[index].contributors) {
+				const contributorMeta = timelines.get(contributor);
+				if (contributorMeta === undefined) {
+					throw new Error("couldn't find meta");
+				}
+				const contributorEvents = timelineEvents.get(contributorMeta[0]) ?? [];
+				contributorEvents.push(timelineNodes[index]);
+				timelineEvents.set(contributorMeta[0], contributorEvents);
+			}
+		}
+		previousVisibleNodes = new Set(timelineNodes);
+
+		for (const timelineId of timelines.keys()) {
+			/** @type {NodeListOf<SVGElement>} */
+			const elements = document.querySelectorAll(`g.edge.${timelineId}`);
+			for (const element of elements) {
+				const boundingRect = element.getBoundingClientRect();
+				const edge = {
+					element,
+					bb: {
+						x: boundingRect.x + window.scrollX,
+						y: boundingRect.y + window.scrollY,
+						w: boundingRect.width,
+						h: boundingRect.height,
+					},
+				};
+				timelineEdges.push(edge);
+			}
+		}
+		timelineEdges.toSorted((a, b) => a.bb.y - b.bb.y);
+		previousVisibleEdges = new Set(timelineEdges);
+
 		initGraphics();
 
 		console.info("Requesting initial focus...");
