@@ -3074,8 +3074,10 @@ const main = async function main() {
 			}
 		}
 
-		let stars = 2 ** 11;
+		let stars = Math.floor(View.window.width * View.window.height * 0.001);
+		let index = 0;
 		for (const [, , planeTop, planeBottom] of starPlanes) {
+			console.info(`Drawing ${stars} stars on plane ${++index}...`);
 			for (const plane of [planeTop, planeBottom]) {
 				const context = plane.getContext("2d");
 				if (context === null) {
@@ -3100,7 +3102,7 @@ const main = async function main() {
 				document.body.insertBefore(plane, svg);
 			}
 
-			stars *= 0.9;
+			stars = Math.floor(stars * 0.9);
 		}
 	};
 
