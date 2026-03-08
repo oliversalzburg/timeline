@@ -564,8 +564,18 @@ const main = async function main() {
 			return;
 		}
 
+		idFocused = id;
+		// If the newly focused node exists on the already focused timeline,
+		// don't attempt to switch focus. This could cause focus to switch
+		// to another timeline when entering a merge node.
+		idFocusedTimeline =
+			onTimelineId ??
+			(idFocusedTimeline !== undefined &&
+			contributors.get(id)?.includes(idFocusedTimeline)
+				? idFocusedTimeline
+				: contributors.get(id)?.[0]);
+
 		const anchor = `#${id}`;
-		const event = eventsById.get(id);
 		/** @type {string | undefined} */
 		let nodeTitle;
 		/** @type {HTMLDivElement} */
@@ -574,22 +584,15 @@ const main = async function main() {
 		let previousDays;
 		/** @type {NodeListOf<HTMLParagraphElement>} */
 		let previousStatusTexts;
+
 		DOM.read("focusNode", function focusNodeRead() {
 			/** @type {HTMLElement | null} */
-			const node = document.querySelector(anchor);
-			/** @type {HTMLElement | null} */
 			const nodeTitleAnchor = document.querySelector(`${anchor} a`);
+
 			nodeTitle = nodeTitleAnchor?.attributes.getNamedItemNS(
 				"http://www.w3.org/1999/xlink",
 				"title",
 			)?.value;
-
-			if (node === null) {
-				console.error(
-					`Node with ID '${id}' wasn't found in DOM. Unable to focus node.`,
-				);
-				return;
-			}
 
 			previousDay = /** @type {HTMLDivElement} */ (
 				calendarContainer.cloneNode(true)
@@ -606,19 +609,13 @@ const main = async function main() {
 				return;
 			}
 
-			if (event === undefined) {
-				console.error(
-					`Couldn't find event relating to node ID '${id}'. Unable to focus node.`,
-				);
-				return;
-			}
-
 			for (const day of previousDays) {
 				day.remove();
 			}
 			for (const status of previousStatusTexts) {
 				status.remove();
 			}
+
 			document.body.append(previousDay);
 			previousDay.id = "";
 			previousDay.classList.add("previous", "pending");
@@ -630,17 +627,6 @@ const main = async function main() {
 			calendarDate.textContent = titleParts[0];
 			calendarText.textContent = `${titleParts[1]}\n${titleParts[2]}`;
 			document.title = titleParts[0];
-
-			idFocused = id;
-			// If the newly focused node exists on the already focused timeline,
-			// don't attempt to switch focus. This could cause focus to switch
-			// to another timeline when entering a merge node.
-			idFocusedTimeline =
-				onTimelineId ??
-				(idFocusedTimeline !== undefined &&
-				contributors.get(id)?.includes(idFocusedTimeline)
-					? idFocusedTimeline
-					: contributors.get(id)?.[0]);
 
 			const currentDate =
 				idFocused !== undefined
@@ -666,7 +652,7 @@ const main = async function main() {
 		}
 
 		console.info(
-			`📍 Focused node ${id} of timeline ${onTimelineId}. View update is pending.`,
+			`📍 Focused node '${idFocused}' of timeline '${idFocusedTimeline}'. View update is ${shiftFocus ? "pending" : "skipped"}.`,
 		);
 	};
 
@@ -1029,9 +1015,9 @@ const main = async function main() {
 			return false;
 		}
 
-		console.debug(
-			`🎥 Camera moved away from position (${newPosition.x - View.position.x},${newPosition.y - View.position.y}). Adjusting position${requestInstantFocusUpdate ? " during next DOM write cycle." : "..."}`,
-		);
+		//console.debug(
+		//	`🎥 Camera moved away from position (${newPosition.x - View.position.x},${newPosition.y - View.position.y}). Adjusting position${requestInstantFocusUpdate ? " during next DOM write cycle." : "..."}`,
+		//);
 
 		if (requestInstantFocusUpdate) {
 			DOM.write("updateCamera", function writeCameraInstant() {
@@ -1088,12 +1074,14 @@ const main = async function main() {
 		}
 
 		console.debug("🎥 Finalizing previous camera movement...");
+
 		/** @type {NodeListOf<HTMLImageElement>}*/
 		let pendingArtifacts;
 		/** @type {NodeListOf<HTMLDivElement>}*/
 		let pendingDays;
 		/** @type {NodeListOf<HTMLParagraphElement>}*/
 		let pendingStatusTexts;
+
 		DOM.read("cameraMovementFinalize", function readCamera() {
 			View.position.x = window.scrollX;
 			View.position.y = window.scrollY;
@@ -1159,7 +1147,6 @@ const main = async function main() {
 		window.clearTimeout(timeoutCameraUnlock);
 		timeoutCameraUnlock = undefined;
 		cameraMovementFinalize();
-		//console.debug("🎥 Camera updated", view);
 	};
 
 	let previousFirstVisibleNodeIndex = 0;
@@ -1577,10 +1564,10 @@ const main = async function main() {
 				? InputFrameCache[InputFrameCache.length - 1]
 				: null;
 		if (head === null) {
+			InputFrameCache.push(frame);
 			console.debug(
 				`🔀 Recorded input frame. Cache now has ${InputFrameCache.length} items.`,
 			);
-			InputFrameCache.push(frame);
 			return;
 		}
 
@@ -1589,10 +1576,10 @@ const main = async function main() {
 			return;
 		}
 
+		InputFrameCache.push(frame);
 		console.debug(
 			`🔀 Recorded input frame. Cache now has ${InputFrameCache.length} items.`,
 		);
-		InputFrameCache.push(frame);
 	};
 
 	/**
@@ -3116,8 +3103,8 @@ const main = async function main() {
 		console.info("🍲 Program init finalized. Performing first-frame tasks...");
 
 		// Ensure initial view is culled.
-		console.info("🍲 Culling initial view...");
-		cull();
+		//console.info("🍲 Culling initial view...");
+		//cull();
 
 		console.info("🍲 Ensuring audio samples are ready...");
 		Promise.all(samplesLoading.values().toArray()).then(() => {
@@ -3149,6 +3136,7 @@ const main = async function main() {
 
 	const init = function init() {
 		console.info("🍲 Registering event bounding boxes...");
+
 		for (const [
 			index,
 			[timestamp, id, title, eventContributors],
@@ -3211,6 +3199,7 @@ const main = async function main() {
 		initGraphics();
 
 		console.info("🍲 Requesting initial focus...");
+		cameraMovementFinalize();
 		const existingAnchor = window.location.hash;
 		if (existingAnchor !== "") {
 			try {
