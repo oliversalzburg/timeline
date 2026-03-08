@@ -262,6 +262,57 @@ const main = async function main() {
 		},
 	};
 
+	/**
+	 * Information about different view bounds.
+	 *
+	 * ### Window
+	 * The size of the entire drawable area.
+	 * View window is the size of the visible area of the window.
+	 * Not the size of the (larger) scrollable background plane.
+	 *
+	 * ### Bounds
+	 * View bounds are the size of the SVG, which should be a huge
+	 * DOM element, that defines the size of the background plane.
+	 *
+	 * ### Scope
+	 * View scope is larger than the position, and is used for culling operations.
+	 *
+	 * ### Position
+	 * View position is the segment of the SVG we're currently looking
+	 * at. It's the exact window into the background plane that we see.
+	 *
+	 * ### Focus
+	 *
+	 */
+	const View = {
+		window: {
+			width: 0,
+			height: 0,
+		},
+		bounds: {
+			width: 0,
+			height: 0,
+		},
+		scope: {
+			x: 0,
+			y: 0,
+			width: 0,
+			height: 0,
+		},
+		position: {
+			x: 0,
+			y: 0,
+			width: 0,
+			height: 0,
+		},
+		focus: {
+			x: 0,
+			y: 0,
+			width: 0,
+			height: 0,
+		},
+	};
+
 	//#region SFX
 	const audioContext = new window.AudioContext();
 	const samples = new Map();
@@ -331,35 +382,6 @@ const main = async function main() {
 		sfxPlay(`tap${index}`);
 	};
 	//#endregion
-
-	const View = {
-		window: {
-			width: 0,
-			height: 0,
-		},
-		bounds: {
-			width: 0,
-			height: 0,
-		},
-		scope: {
-			x: 0,
-			y: 0,
-			width: 0,
-			height: 0,
-		},
-		position: {
-			x: 0,
-			y: 0,
-			width: 0,
-			height: 0,
-		},
-		focus: {
-			x: 0,
-			y: 0,
-			width: 0,
-			height: 0,
-		},
-	};
 
 	/**
 	 * A set of all the unique event IDs.
