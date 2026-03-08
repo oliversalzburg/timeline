@@ -1038,10 +1038,7 @@ const main = async function main() {
 						return;
 					}
 					targetFocusElement.classList.add("visible");
-					targetFocusElement.style.left = `calc(${event.bb.x}px - 4mm)`;
-					targetFocusElement.style.top = `calc(${event.bb.y}px - 4mm)`;
-					targetFocusElement.style.width = `calc(${event.bb.w}px + 8mm)`;
-					targetFocusElement.style.height = `calc(${event.bb.h}px + 8mm)`;
+					targetFocusElement.style.transform = `translate(calc(${event.bb.x - 10}px), calc(${event.bb.y - 10}px)) scale(${(event.bb.w + 20) / 733}, ${(event.bb.h + 20) / 100})`;
 				}
 			});
 		}
@@ -1075,11 +1072,11 @@ const main = async function main() {
 
 		console.debug("🎥 Finalizing previous camera movement...");
 
-		/** @type {NodeListOf<HTMLImageElement>}*/
+		/** @type {NodeListOf<HTMLImageElement>} */
 		let pendingArtifacts;
-		/** @type {NodeListOf<HTMLDivElement>}*/
+		/** @type {NodeListOf<HTMLDivElement>} */
 		let pendingDays;
-		/** @type {NodeListOf<HTMLParagraphElement>}*/
+		/** @type {NodeListOf<HTMLParagraphElement>} */
 		let pendingStatusTexts;
 
 		DOM.read("cameraMovementFinalize", function readCamera() {
@@ -1100,10 +1097,7 @@ const main = async function main() {
 				if (idFocused !== undefined) {
 					targetElement.classList.remove("visible");
 					targetFocusElement.classList.add("visible");
-					targetFocusElement.style.left = `calc(${View.focus.x}px - 4mm)`;
-					targetFocusElement.style.top = `calc(${View.focus.y}px - 4mm)`;
-					targetFocusElement.style.width = `calc(${View.focus.width}px + 8mm)`;
-					targetFocusElement.style.height = `calc(${View.focus.height}px + 8mm)`;
+					targetFocusElement.style.transform = `translate(calc(${View.focus.x - 10}px), calc(${View.focus.y - 10}px)) scale(${(View.focus.width + 20) / 733}, ${(View.focus.height + 20) / 100})`;
 				}
 
 				for (const artifact of pendingArtifacts) {

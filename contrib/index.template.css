@@ -180,29 +180,26 @@ body {
 	}
 	#target-focus {
 		position: absolute;
+		top: 0;
+		left: 0;
+		width: 733px;
+		height: 100px;
+		transform-origin: top left;
 		margin: 0;
 		padding: 0;
 		box-sizing: border-box;
-		/*
-		background: repeating-linear-gradient(
-			45deg,
-			rgba(255, 0, 255, 0),
-			rgba(255, 0, 255, 0) 2mm,
-			rgba(255, 0, 255, 0.5) 2mm,
-			rgba(255, 0, 255, 0.5) 4mm
-		);
-		*/
-		border: 2mm solid white;
-		border-radius: 2mm;
+		background: rgb(45, 16, 116);
+		border: 7px solid white;
+		border-radius: 7px;
 		pointer-events: none;
-		z-index: 2;
+		z-index: -1;
 		transform: translateZ(0px);
 		transition:
-			top ease-out 0.1s,
-			left ease-in-out 0.5s,
+			transform ease-in-out 0.5s,
 			width ease-in-out 0.5s,
 			height ease-in-out 0.5s,
 			opacity normal 0s;
+		filter: blur(30px);
 
 		opacity: 0;
 		&.visible {
