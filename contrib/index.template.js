@@ -332,7 +332,7 @@ const main = async function main() {
 	};
 	//#endregion
 
-	const view = {
+	const View = {
 		window: {
 			width: 0,
 			height: 0,
@@ -707,7 +707,7 @@ const main = async function main() {
 			throw new Error(`can't find event '${id}'`);
 		}
 
-		view.focus = {
+		View.focus = {
 			x: event.bb.x,
 			y: event.bb.y,
 			width: event.bb.w,
@@ -1062,8 +1062,8 @@ const main = async function main() {
 		}
 
 		const newFocus = {
-			x: view.focus.x + view.focus.width / 2,
-			y: view.focus.y + view.focus.height / 2,
+			x: View.focus.x + View.focus.width / 2,
+			y: View.focus.y + View.focus.height / 2,
 		};
 
 		if (newFocus.x === cameraFocus.x && newFocus.y === cameraFocus.y) {
@@ -1072,10 +1072,10 @@ const main = async function main() {
 		}
 
 		const newScope = {
-			x: newFocus.x - view.window.width / 2,
-			y: newFocus.y - view.window.height / 2,
-			width: view.window.width,
-			height: view.window.height,
+			x: newFocus.x - View.window.width / 2,
+			y: newFocus.y - View.window.height / 2,
+			width: View.window.width,
+			height: View.window.height,
 		};
 
 		//console.debug("Camera doesn't match focus. Adjusting scope...", newScope);
@@ -1133,9 +1133,9 @@ const main = async function main() {
 		/** @type {NodeListOf<HTMLParagraphElement>}*/
 		let pendingStatusTexts;
 		DOM.read("cameraMovementFinalize", () => {
-			view.position.x = window.scrollX;
-			view.position.y = window.scrollY;
-			view.scope.y = window.scrollY - view.window.height;
+			View.position.x = window.scrollX;
+			View.position.y = window.scrollY;
+			View.scope.y = window.scrollY - View.window.height;
 			pendingArtifacts = document.querySelectorAll(
 				"#artifacts .artifact.pending",
 			);
@@ -1219,10 +1219,10 @@ const main = async function main() {
 			++firstVisibleEdgeIndex
 		) {
 			const edge = timelineEdges[firstVisibleEdgeIndex];
-			if (view.scope.y + view.scope.height < edge.bb.y) {
+			if (View.scope.y + View.scope.height < edge.bb.y) {
 				continue;
 			}
-			if (edge.bb.y + edge.bb.h < view.scope.y) {
+			if (edge.bb.y + edge.bb.h < View.scope.y) {
 				continue;
 			}
 			visibleEdges.push(edge);
@@ -1232,13 +1232,13 @@ const main = async function main() {
 		let firstVisibleNodeIndex = previousFirstVisibleNodeIndex;
 		for (; 0 < firstVisibleNodeIndex; --firstVisibleNodeIndex) {
 			const event = events[firstVisibleNodeIndex];
-			if (event.bb.y + event.bb.h < view.scope.y) {
+			if (event.bb.y + event.bb.h < View.scope.y) {
 				break;
 			}
 		}
 		for (; firstVisibleNodeIndex < events.length; ++firstVisibleNodeIndex) {
 			const event = events[firstVisibleNodeIndex];
-			if (view.scope.y + view.scope.height < event.bb.y) {
+			if (View.scope.y + View.scope.height < event.bb.y) {
 				break;
 			}
 			visibleNodes.push(event);
@@ -1497,7 +1497,7 @@ const main = async function main() {
 			if (INPUT_THRESHOLD < Math.abs(frame.axes[Inputs.AXIS_LEFT_X])) {
 				cameraIsAttached = false;
 				requestInstantFocusUpdate = true;
-				view.focus.x +=
+				View.focus.x +=
 					frame.axes[Inputs.AXIS_LEFT_X] *
 					(frame.delta / (1000 / 60)) *
 					SPEED_FREE_FLIGHT;
@@ -1506,7 +1506,7 @@ const main = async function main() {
 			if (INPUT_THRESHOLD < Math.abs(frame.axes[Inputs.AXIS_LEFT_Y])) {
 				cameraIsAttached = false;
 				requestInstantFocusUpdate = true;
-				view.focus.y +=
+				View.focus.y +=
 					frame.axes[Inputs.AXIS_LEFT_Y] *
 					(frame.delta / (1000 / 60)) *
 					SPEED_FREE_FLIGHT;
@@ -1514,8 +1514,8 @@ const main = async function main() {
 			}
 
 			if (changed) {
-				view.focus.x = Math.max(Math.min(view.focus.x, view.bounds.width), 0);
-				view.focus.y = Math.max(Math.min(view.focus.y, view.bounds.height), 0);
+				View.focus.x = Math.max(Math.min(View.focus.x, View.bounds.width), 0);
+				View.focus.y = Math.max(Math.min(View.focus.y, View.bounds.height), 0);
 
 				focusHitTest();
 			}
@@ -2962,28 +2962,28 @@ const main = async function main() {
 					const planeSet = starPlanes[z];
 
 					const offset =
-						(z + 1) * (view.scope.y * speedScroll + sinceStart * speedTime);
+						(z + 1) * (View.scope.y * speedScroll + sinceStart * speedTime);
 
 					const planeOffsets = [planeSet[0], planeSet[1]];
 					const planes = [planeSet[2], planeSet[3]];
 
-					planeOffsets[0] = offset % view.window.height;
-					planeOffsets[1] = (offset % view.window.height) - view.window.height;
+					planeOffsets[0] = offset % View.window.height;
+					planeOffsets[1] = (offset % View.window.height) - View.window.height;
 
 					planes[0].style.transition =
-						view.window.height / 2 < Math.abs(planeSet[0] - planeOffsets[0])
+						View.window.height / 2 < Math.abs(planeSet[0] - planeOffsets[0])
 							? "none"
 							: "ease-out all 0.9s";
 					planes[1].style.transition =
-						view.window.height / 2 < Math.abs(planeSet[1] - planeOffsets[1])
+						View.window.height / 2 < Math.abs(planeSet[1] - planeOffsets[1])
 							? "none"
 							: "ease-out all 0.9s";
 					planes[0].style.opacity =
-						view.window.height / 2 < Math.abs(planeSet[0] - planeOffsets[0])
+						View.window.height / 2 < Math.abs(planeSet[0] - planeOffsets[0])
 							? "0"
 							: "1";
 					planes[1].style.opacity =
-						view.window.height / 2 < Math.abs(planeSet[1] - planeOffsets[1])
+						View.window.height / 2 < Math.abs(planeSet[1] - planeOffsets[1])
 							? "0"
 							: "1";
 
@@ -3024,31 +3024,31 @@ const main = async function main() {
 
 		// View window is the size of the visible area of the window.
 		// Not the size of the (larger) scrollable background plane.
-		view.window.width = document.documentElement.clientWidth;
-		view.window.height = document.documentElement.clientHeight;
+		View.window.width = document.documentElement.clientWidth;
+		View.window.height = document.documentElement.clientHeight;
 
 		// View bounds are the size of the SVG, which should be a huge DOM
 		// element, that defines the size of the background plane.
-		view.bounds.width = svg.scrollWidth;
-		view.bounds.height = svg.scrollHeight;
+		View.bounds.width = svg.scrollWidth;
+		View.bounds.height = svg.scrollHeight;
 
 		// View position is the segment of the SVG we're currently looking
 		// at. It's the exact window into the background plane that we see.
-		view.position.x = window.scrollX;
-		view.position.y = window.scrollY;
-		view.position.width = view.window.width;
-		view.position.height = view.window.height;
+		View.position.x = window.scrollX;
+		View.position.y = window.scrollY;
+		View.position.width = View.window.width;
+		View.position.height = View.window.height;
 
 		// View scope is larger than the position, and is used for culling operations.
-		view.scope.x = 0;
-		view.scope.y = window.scrollY - view.window.height;
-		view.scope.width = view.window.width;
-		view.scope.height = view.window.height * 3;
+		View.scope.x = 0;
+		View.scope.y = window.scrollY - View.window.height;
+		View.scope.width = View.window.width;
+		View.scope.height = View.window.height * 3;
 
 		for (const [, , planeTop, planeBottom] of starPlanes) {
 			for (const plane of [planeTop, planeBottom]) {
-				plane.width = view.window.width;
-				plane.height = view.window.height;
+				plane.width = View.window.width;
+				plane.height = View.window.height;
 			}
 		}
 
