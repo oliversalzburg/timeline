@@ -150,7 +150,7 @@ const View = {
 };
 
 const main = async function main() {
-	console.info("Program loaded. Starting static initialization...");
+	console.info("🍲 Program loaded. Starting static initialization...");
 
 	//#region DOM Element Selection
 	/**
@@ -323,7 +323,7 @@ const main = async function main() {
 	 * @param {string} url -
 	 */
 	const sfxPrepareSample = async function sfxPrepareSample(id, url) {
-		console.debug(`Preparing sample '${id}' from '${url}'...`);
+		console.debug(`🎶 Preparing sample '${id}' from '${url}'...`);
 		const load = async () => {
 			const raw = await fetch(url);
 			const data = await audioContext.decodeAudioData(await raw.arrayBuffer());
@@ -332,7 +332,7 @@ const main = async function main() {
 		const dataRequest = load();
 		samplesLoading.set(url, dataRequest);
 		const data = await dataRequest;
-		console.debug(`Sample '${id}' is ready.`);
+		console.debug(`🎶 Sample '${id}' is ready.`);
 		samples.set(id, data);
 	};
 
@@ -365,13 +365,13 @@ const main = async function main() {
 			console.warn(`Trying to play unprepared sample '${id}'!`);
 			return;
 		}
-		console.debug(`Requesting to play '${id}'.`);
+		console.debug(`🎶 Requesting to play '${id}'.`);
 		await audioContext.resume();
 		const sfxBuffer = audioContext.createBufferSource();
 		sfxBuffer.buffer = samples.get(id);
 		sfxBuffer.connect(audioContext.destination);
 		sfxBuffer.loop = false;
-		console.debug(`Playing '${id}'...`);
+		console.debug(`🎶 Playing '${id}'...`);
 		sfxBuffer.start();
 	};
 	const sfxPlaySwipe = function sfxPlaySwipe() {
@@ -447,7 +447,7 @@ const main = async function main() {
 	 */
 	const contributors = new Map();
 
-	console.info("Constructing star planes...");
+	console.info("🍲 Constructing star planes...");
 	const starPlanes = Array.from({
 		length: 12,
 	}).map(
@@ -657,10 +657,6 @@ const main = async function main() {
 					window.location.toString().replace(/(#.*)|$/, anchor),
 				);
 			}
-
-			console.info(
-				`Focused node ${idFocused} of timeline ${idFocusedTimeline}. View update is pending.`,
-			);
 		});
 
 		if (shiftFocus) {
@@ -668,6 +664,10 @@ const main = async function main() {
 			requestFocusShift(id);
 			updateStatus();
 		}
+
+		console.info(
+			`📍 Focused node ${id} of timeline ${onTimelineId}. View update is pending.`,
+		);
 	};
 
 	/**
@@ -695,7 +695,6 @@ const main = async function main() {
 			x: event.bb.x + event.bb.w / 2,
 			y: event.bb.y + event.bb.h / 2,
 		};
-		//console.debug("New focus box requested", view.focus);
 	};
 
 	/**
@@ -1011,7 +1010,7 @@ const main = async function main() {
 	 */
 	const updateCamera = function updateCamera() {
 		if (cameraIsIdle) {
-			//console.debug("Camera update requested while camera was idle.");
+			//console.debug("🎥 Camera update requested while camera was idle.");
 			return true;
 		}
 
@@ -1026,17 +1025,13 @@ const main = async function main() {
 			Math.abs(newPosition.x - View.position.x) < 1 &&
 			Math.abs(newPosition.y - View.position.y) < 1
 		) {
-			//console.debug("Camera update was redundant.");
+			//console.debug("🎥 Camera update was redundant.");
 			return false;
 		}
 
-		/*
 		console.debug(
-			"Camera doesn't match focus. Adjusting position...",
-			Math.abs(newPosition.x - View.position.x),
-			Math.abs(newPosition.y - View.position.y),
+			`🎥 Camera moved away from position (${newPosition.x - View.position.x},${newPosition.y - View.position.y}). Adjusting position${requestInstantFocusUpdate ? " during next DOM write cycle." : "..."}`,
 		);
-		*/
 
 		if (requestInstantFocusUpdate) {
 			DOM.write("updateCamera", function writeCameraInstant() {
@@ -1076,7 +1071,7 @@ const main = async function main() {
 				timeoutCameraUnlock = window.setTimeout(function forceCameraUnlock() {
 					timeoutCameraUnlock = undefined;
 					cameraMovementFinalize();
-					console.warn("Forced camera movement finalization!");
+					console.warn("🎥 Forced camera movement finalization!");
 				}, 3000);
 			});
 		}
@@ -1092,7 +1087,7 @@ const main = async function main() {
 			return;
 		}
 
-		console.debug("cameraMovementFinalize");
+		console.debug("🎥 Finalizing previous camera movement...");
 		/** @type {NodeListOf<HTMLImageElement>}*/
 		let pendingArtifacts;
 		/** @type {NodeListOf<HTMLDivElement>}*/
@@ -1164,7 +1159,7 @@ const main = async function main() {
 		window.clearTimeout(timeoutCameraUnlock);
 		timeoutCameraUnlock = undefined;
 		cameraMovementFinalize();
-		//console.debug("Camera updated", view);
+		//console.debug("🎥 Camera updated", view);
 	};
 
 	let previousFirstVisibleNodeIndex = 0;
@@ -1194,6 +1189,7 @@ const main = async function main() {
 	let previousVisibleNodes = new Set(timelineNodes);
 
 	const cull = function cull() {
+		console.debug("♻️ Culling...");
 		const visibleEdges = [];
 		for (
 			let firstVisibleEdgeIndex = 0;
@@ -1273,7 +1269,7 @@ const main = async function main() {
 			}
 
 			if (node.id !== idFocused && idSet.has(node.id)) {
-				console.info(`User selected ${node.id}. Focusing...`);
+				console.info(`📍 User selected ${node.id}. Focusing...`);
 				focusNode(node.id);
 			}
 		});
@@ -1294,7 +1290,7 @@ const main = async function main() {
 	 * @param {KeyboardEvent} event -
 	 */
 	const onKeyDown = function onKeyDown(event) {
-		console.debug(`keydown: key:${event.key} code:${event.code}`);
+		console.debug(`⌨️ keydown: key:${event.key} code:${event.code}`);
 		switch (event.code) {
 			case "ArrowDown":
 			case "ArrowLeft":
@@ -1308,7 +1304,7 @@ const main = async function main() {
 	 * @param {KeyboardEvent} event -
 	 */
 	const onKeyUp = function onKeyUp(event) {
-		console.debug(`keyup: key:${event.key} code:${event.code}`);
+		console.debug(`⌨️ keyup: key:${event.key} code:${event.code}`);
 
 		switch (event.code) {
 			case "ArrowDown":
@@ -1512,7 +1508,7 @@ const main = async function main() {
 	};
 
 	const returnToNeutral = function returnToNeutral() {
-		console.debug("Clearing input cache, returning neutral plane.");
+		console.debug("🔀 Clearing input cache, returning neutral plane.");
 		InputFrameCache = [];
 		menuMainFocusIndex = 0;
 		menuMainJumpFocusIndex = 0;
@@ -1540,7 +1536,7 @@ const main = async function main() {
 	 */
 	const returnToMenuPlane = function returnToMenuPlane(plane) {
 		return () => {
-			console.debug("Clearing input cache, returning provided menu plane.");
+			console.debug("🔀 Clearing input cache, returning provided menu plane.");
 			InputFrameCache = [];
 			DOM.write("returnToMenuPlane", () => {
 				calendarContainer.classList.remove("open");
@@ -1581,7 +1577,9 @@ const main = async function main() {
 				? InputFrameCache[InputFrameCache.length - 1]
 				: null;
 		if (head === null) {
-			console.debug("Recorded input frame.", InputFrameCache.length);
+			console.debug(
+				`🔀 Recorded input frame. Cache now has ${InputFrameCache.length} items.`,
+			);
 			InputFrameCache.push(frame);
 			return;
 		}
@@ -1591,7 +1589,9 @@ const main = async function main() {
 			return;
 		}
 
-		console.debug("Recorded input frame.", InputFrameCache.length);
+		console.debug(
+			`🔀 Recorded input frame. Cache now has ${InputFrameCache.length} items.`,
+		);
 		InputFrameCache.push(frame);
 	};
 
@@ -1633,7 +1633,7 @@ const main = async function main() {
 				// Trigger on button press
 				if (activeInputPlane.pressed?.[buttonIndex] !== undefined) {
 					console.debug(
-						`Triggering button press on ${activeInputPlane.name} input plane.`,
+						`🎮 Triggering button press on ${activeInputPlane.name} input plane.`,
 					);
 					activeInputPlane =
 						activeInputPlane.pressed?.[buttonIndex]?.(head) ?? activeInputPlane;
@@ -1651,7 +1651,7 @@ const main = async function main() {
 				// Trigger on button release
 				if (activeInputPlane.released?.[buttonIndex] !== undefined) {
 					console.debug(
-						`Triggering button release on ${activeInputPlane.name} input plane.`,
+						`🎮 Triggering button release on ${activeInputPlane.name} input plane.`,
 					);
 					activeInputPlane =
 						activeInputPlane.released?.[buttonIndex]?.(head) ??
@@ -1804,7 +1804,7 @@ const main = async function main() {
 			return false;
 		}
 
-		console.info(`Showing media item ${mediaIndex}...`);
+		console.info(`🖼️ Showing media item ${mediaIndex}...`);
 		timelineMediaIdActive = mediaIndex;
 		mediaReset(false);
 
@@ -1852,7 +1852,7 @@ const main = async function main() {
 		);
 	};
 	const mediaClose = function mediaClose(resetAudio = false) {
-		console.info("Closing media...");
+		console.info("🖼️ Closing media...");
 		if (iFrameResizeHandle !== null) {
 			window.clearTimeout(iFrameResizeHandle);
 		}
@@ -1864,9 +1864,6 @@ const main = async function main() {
 		mediaReset(resetAudio);
 	};
 	const mediaCloseWithAudio = function mediaCloseWithAudio() {
-		//console.info("Cloning audio...");
-		//baseAudio.src = dialogAudio.src;
-		//baseAudio.play();
 		mediaClose(true);
 	};
 
@@ -1987,7 +1984,7 @@ const main = async function main() {
 	};
 
 	const returnToMedia = function returnToMedia() {
-		console.debug("Clearing input cache, returning media plane.");
+		console.debug("🔀 Clearing input cache, returning media plane.");
 		InputFrameCache = [];
 		DOM.write("returnToMedia", () => {
 			calendarContainer.classList.add("open");
@@ -2961,9 +2958,9 @@ const main = async function main() {
 		} else {
 			timeoutCull ??= window.setTimeout(function invokeCull() {
 				cull();
-				timeoutCull = undefined;
 			}, 3000);
 			timeoutLockCamera ??= window.setTimeout(function performHitTest() {
+				console.debug("🎥 Looking for attachment...");
 				if (!cameraIsAttached && previousVisibleNodes !== undefined) {
 					for (const node of previousVisibleNodes) {
 						if (
@@ -2973,6 +2970,7 @@ const main = async function main() {
 							View.camera.y < node.bb.y + node.bb.h
 						) {
 							if (node.id !== idFocused) {
+								requestInstantFocusUpdate = false;
 								focusNode(node.id);
 								break;
 							}
@@ -3056,7 +3054,7 @@ const main = async function main() {
 	};
 
 	const initGraphics = function initGraphics() {
-		console.info("Initializing graphics...");
+		console.info("🍲 Initializing graphics...");
 
 		View.window.width = document.documentElement.clientWidth;
 		View.window.height = document.documentElement.clientHeight;
@@ -3085,7 +3083,7 @@ const main = async function main() {
 		let stars = Math.floor(View.window.width * View.window.height * 0.001);
 		let index = 0;
 		for (const [, , planeTop, planeBottom] of starPlanes) {
-			console.info(`Drawing ${stars} stars on plane ${++index}...`);
+			console.info(`🌟 Drawing ${stars} stars on plane ${++index}...`);
 			for (const plane of [planeTop, planeBottom]) {
 				const context = plane.getContext("2d");
 				if (context === null) {
@@ -3115,15 +3113,15 @@ const main = async function main() {
 	};
 
 	const firstFrame = function firstFrame() {
-		console.info("Program init finalized. Performing first-frame tasks...");
+		console.info("🍲 Program init finalized. Performing first-frame tasks...");
 
 		// Ensure initial view is culled.
-		console.info("Culling initial view...");
+		console.info("🍲 Culling initial view...");
 		cull();
 
-		console.info("Ensuring audio samples are ready...");
+		console.info("🍲 Ensuring audio samples are ready...");
 		Promise.all(samplesLoading.values().toArray()).then(() => {
-			console.info("Setting up UI...");
+			console.info("🍲 Setting up UI...");
 
 			returnToNeutral();
 
@@ -3131,18 +3129,18 @@ const main = async function main() {
 
 			window.setTimeout(() => {
 				calendarContainer.classList.add("open");
-				console.info("Calendar shown.");
+				console.info("🍲 Calendar shown.");
 			}, 5000);
 
 			window.setTimeout(() => {
 				//artifactsContainer.classList.add("open");
 				statusContainer.classList.add("open");
-				console.info("Status shown.");
+				console.info("🍲 Status shown.");
 			}, 6000);
 
 			window.setTimeout(() => {
 				loader.remove();
-				console.info("Loader removed.");
+				console.info("🍲 Loader removed.");
 			}, 10000);
 
 			present(Number(document.timeline.currentTime));
@@ -3150,6 +3148,7 @@ const main = async function main() {
 	};
 
 	const init = function init() {
+		console.info("🍲 Registering event bounding boxes...");
 		for (const [
 			index,
 			[timestamp, id, title, eventContributors],
@@ -3188,6 +3187,7 @@ const main = async function main() {
 		}
 		previousVisibleNodes = new Set(timelineNodes);
 
+		console.info("🍲 Registering edge bounding boxes...");
 		for (const timelineId of timelines.keys()) {
 			/** @type {NodeListOf<SVGElement>} */
 			const elements = document.querySelectorAll(`g.edge.${timelineId}`);
@@ -3210,7 +3210,7 @@ const main = async function main() {
 
 		initGraphics();
 
-		console.info("Requesting initial focus...");
+		console.info("🍲 Requesting initial focus...");
 		const existingAnchor = window.location.hash;
 		if (existingAnchor !== "") {
 			try {
@@ -3234,7 +3234,7 @@ const main = async function main() {
 	};
 
 	window.setTimeout(init);
-	console.info("Next-frame ignition requested.");
+	console.info("🍲 Next-frame ignition requested.");
 	//#endregion
 };
 
@@ -3244,7 +3244,7 @@ const invokeMain = function invokeMain() {
 
 const onDOMContentLoaded = function onDOMContentLoaded() {
 	console.info(
-		"DOM content loaded. Program init is pending. Allow at least 30 seconds to pass before looking for bugs.",
+		"ℹ️ DOM content loaded. Program init is pending. Allow at least 30 seconds to pass before looking for bugs.",
 	);
 	setTimeout(invokeMain);
 };
