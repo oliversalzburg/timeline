@@ -113,6 +113,7 @@ const DOM = {
  * at. It's the exact window into the background plane that we see.
  *
  * ### Focus
+ * The bounds of the event in focus.
  *
  */
 const View = {
@@ -141,6 +142,10 @@ const View = {
 		y: 0,
 		width: 0,
 		height: 0,
+	},
+	camera: {
+		x: 0,
+		y: 0,
 	},
 };
 
@@ -686,6 +691,10 @@ const main = async function main() {
 			width: event.bb.w,
 			height: event.bb.h,
 		};
+		View.camera = {
+			x: event.bb.x + event.bb.w / 2,
+			y: event.bb.y + event.bb.h / 2,
+		};
 		//console.debug("New focus box requested", view.focus);
 	};
 
@@ -1007,12 +1016,8 @@ const main = async function main() {
 		}
 
 		const newPosition = {
-			x: Math.round(
-				View.focus.x + View.focus.width / 2 - View.window.width / 2,
-			),
-			y: Math.round(
-				View.focus.y + View.focus.height / 2 - View.window.height / 2,
-			),
+			x: Math.round(View.camera.x - View.window.width / 2),
+			y: Math.round(View.camera.y - View.window.height / 2),
 			width: View.window.width,
 			height: View.window.height,
 		};
@@ -1037,6 +1042,8 @@ const main = async function main() {
 			DOM.write("updateCamera", function writeCameraInstant() {
 				document.documentElement.scrollLeft = newPosition.x;
 				document.documentElement.scrollTop = newPosition.y;
+				View.camera.x = newPosition.x + View.window.width / 2;
+				View.camera.y = newPosition.y + View.window.height / 2;
 				View.position.x = newPosition.x;
 				View.position.y = newPosition.y;
 				View.scope.y = newPosition.y - View.window.height;
@@ -1476,7 +1483,7 @@ const main = async function main() {
 			if (INPUT_THRESHOLD < Math.abs(frame.axes[Inputs.AXIS_LEFT_X])) {
 				cameraIsAttached = false;
 				requestInstantFocusUpdate = true;
-				View.focus.x +=
+				View.camera.x +=
 					frame.axes[Inputs.AXIS_LEFT_X] *
 					(frame.delta / (1000 / 60)) *
 					SPEED_FREE_FLIGHT;
@@ -1485,7 +1492,7 @@ const main = async function main() {
 			if (INPUT_THRESHOLD < Math.abs(frame.axes[Inputs.AXIS_LEFT_Y])) {
 				cameraIsAttached = false;
 				requestInstantFocusUpdate = true;
-				View.focus.y +=
+				View.camera.y +=
 					frame.axes[Inputs.AXIS_LEFT_Y] *
 					(frame.delta / (1000 / 60)) *
 					SPEED_FREE_FLIGHT;
@@ -1493,8 +1500,11 @@ const main = async function main() {
 			}
 
 			if (changed) {
-				View.focus.x = Math.max(Math.min(View.focus.x, View.bounds.width), 0);
-				View.focus.y = Math.max(Math.min(View.focus.y, View.bounds.height), 0);
+				View.camera.x = Math.max(Math.min(View.camera.x, View.bounds.width), 0);
+				View.camera.y = Math.max(
+					Math.min(View.camera.y, View.bounds.height),
+					0,
+				);
 			}
 
 			return changed;
@@ -2957,10 +2967,10 @@ const main = async function main() {
 				if (!cameraIsAttached && previousVisibleNodes !== undefined) {
 					for (const node of previousVisibleNodes) {
 						if (
-							node.bb.x < View.focus.x &&
-							View.focus.x < node.bb.x + node.bb.w &&
-							node.bb.y < View.focus.y &&
-							View.focus.y < node.bb.y + node.bb.h
+							node.bb.x < View.camera.x &&
+							View.camera.x < node.bb.x + node.bb.w &&
+							node.bb.y < View.camera.y &&
+							View.camera.y < node.bb.y + node.bb.h
 						) {
 							if (node.id !== idFocused) {
 								focusNode(node.id);

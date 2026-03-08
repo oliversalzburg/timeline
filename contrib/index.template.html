@@ -11,7 +11,9 @@
 	</head>
 	<body>
 		<script>
-		console.info("JavaScript is enabled. Please wait.");
+		console.info(
+			"JavaScript is enabled. Please wait while the document is being loaded.",
+		);
 		// We set this up this way so that we don't block the view when no JavaScript is enabled.
 		document.body.classList.add("INITIAL_BODY_CLASS");
 		document.documentElement.style.cursor = "none";
