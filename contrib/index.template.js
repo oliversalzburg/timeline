@@ -175,15 +175,15 @@ const main = async function main() {
 	const loader = /** @type {HTMLDivElement} */ (
 		selectElement("body > .loader")
 	);
-	const svg = /** @type {SVGElement } */ (selectElement("body > svg"));
-	const dialog = /** @type {HTMLDialogElement } */ (selectElement("dialog"));
+	const svg = /** @type {SVGElement} */ (selectElement("body > svg"));
+	const dialog = /** @type {HTMLDialogElement} */ (selectElement("dialog"));
 	const dialogIFrame = /** @type {HTMLIFrameElement} */ (
 		selectElement("dialog iframe")
 	);
 	const dialogImage = /** @type {HTMLImageElement} */ (
 		selectElement("dialog img")
 	);
-	const dialogAudio = /** @type {HTMLAudioElement } */ (
+	const dialogAudio = /** @type {HTMLAudioElement} */ (
 		selectElement("dialog audio")
 	);
 	const dialogVideo = /** @type {HTMLVideoElement} */ (
@@ -210,108 +210,65 @@ const main = async function main() {
 		selectElement("#target-focus")
 	);
 
-	/** @type {HTMLDivElement | null} */
-	const menuContainer = document.querySelector("#menu");
-	if (menuContainer === null) {
-		throw new Error("Unable to find #menu element.");
-	}
+	const menuContainer = /** @type {HTMLDivElement} */ (selectElement("#menu"));
 
-	/** @type {HTMLDivElement | null} */
-	const artifactsContainer = document.querySelector("#artifacts");
-	if (artifactsContainer === null) {
-		throw new Error("Unable to find #artifacts element.");
-	}
-
-	/** @type {HTMLDivElement | null} */
-	const statusContainer = document.querySelector("#status");
-	if (statusContainer === null) {
-		throw new Error("Unable to find #status element.");
-	}
-	/** @type {HTMLParagraphElement | null} */
-	const statusText = document.querySelector("#status .text");
-	if (statusText === null) {
-		throw new Error("Unable to find #status .text element.");
-	}
-	/** @type {HTMLDivElement | null} */
-	const shouldersContainer = document.querySelector("#status .shoulders");
-	if (shouldersContainer === null) {
-		throw new Error("Unable to find #status .shoulders element.");
-	}
-	/** @type {HTMLSpanElement | null} */
-	const shoulderLeft = document.querySelector("#status .shoulder.left");
-	if (shoulderLeft === null) {
-		throw new Error("Unable to find #status .shoulder.left element.");
-	}
-	/** @type {HTMLSpanElement | null} */
-	const shoulderRight = document.querySelector("#status .shoulder.right");
-	if (shoulderRight === null) {
-		throw new Error("Unable to find #status .shoulder.right element.");
-	}
-	/** @type {HTMLSpanElement | null} */
-	const intro = document.querySelector("#status .intro");
-	if (intro === null) {
-		throw new Error("Unable to find #status .intro element.");
-	}
-
-	/** @type {HTMLSpanElement | null} */
-	const statusOptions = document.querySelector("#status .buttons");
-	if (statusOptions === null) {
-		throw new Error("Unable to find #status .buttons element.");
-	}
-	/** @type {HTMLSpanElement | null} */
-	const statusOptionA = document.querySelector("#status .buttons .a .label");
-	if (statusOptionA === null) {
-		throw new Error("Unable to find #status .buttons .a .label element.");
-	}
-	/** @type {HTMLSpanElement | null} */
-	const statusOptionB = document.querySelector("#status .buttons .b .label");
-	if (statusOptionB === null) {
-		throw new Error("Unable to find #status .buttons .b .label element.");
-	}
-	/** @type {HTMLSpanElement | null} */
-	const statusOptionX = document.querySelector("#status .buttons .x .label");
-	if (statusOptionX === null) {
-		throw new Error("Unable to find #status .buttons .x .label element.");
-	}
-	/** @type {HTMLSpanElement | null} */
-	const statusOptionY = document.querySelector("#status .buttons .y .label");
-	if (statusOptionY === null) {
-		throw new Error("Unable to find #status .buttons .y .label element.");
-	}
-	/** @type {HTMLSpanElement | null} */
-	const statusOptionStart = document.querySelector(
-		"#status .buttons .start .label",
+	const artifactsContainer = /** @type {HTMLDivElement} */ (
+		selectElement("#artifacts")
 	);
-	if (statusOptionStart === null) {
-		throw new Error("Unable to find #status .buttons .start .label element.");
-	}
-	/** @type {HTMLSpanElement | null} */
-	const statusButtonA = document.querySelector("#status .buttons .button.a");
-	if (statusButtonA === null) {
-		throw new Error("Unable to find #status .buttons .button.a element.");
-	}
-	/** @type {HTMLSpanElement | null} */
-	const statusButtonB = document.querySelector("#status .buttons .button.b");
-	if (statusButtonB === null) {
-		throw new Error("Unable to find #status .buttons .button.b element.");
-	}
-	/** @type {HTMLSpanElement | null} */
-	const statusButtonX = document.querySelector("#status .buttons .button.x");
-	if (statusButtonX === null) {
-		throw new Error("Unable to find #status .buttons .button.x element.");
-	}
-	/** @type {HTMLSpanElement | null} */
-	const statusButtonY = document.querySelector("#status .buttons .button.y");
-	if (statusButtonY === null) {
-		throw new Error("Unable to find #status .buttons .button.y element.");
-	}
-	/** @type {HTMLSpanElement | null} */
-	const statusButtonStart = document.querySelector(
-		"#status .buttons .button.start",
+
+	const statusContainer = /** @type {HTMLDivElement} */ (
+		selectElement("#status")
 	);
-	if (statusButtonStart === null) {
-		throw new Error("Unable to find #status .buttons .button.start element.");
-	}
+
+	const statusText = /** @type {HTMLParagraphElement} */ (
+		selectElement("#status .text")
+	);
+	const shouldersContainer = /** @type {HTMLDivElement} */ (
+		selectElement("#status .shoulders")
+	);
+	const shoulderLeft = /** @type {HTMLSpanElement} */ (
+		selectElement("#status .shoulder.left")
+	);
+	const shoulderRight = /** @type {HTMLSpanElement} */ (
+		selectElement("#status .shoulder.right")
+	);
+	const intro = /** @type {HTMLSpanElement} */ (
+		selectElement("#status .intro")
+	);
+
+	const statusOptions = /** @type {HTMLSpanElement} */ (
+		selectElement("#status .buttons")
+	);
+	const statusOptionA = /** @type {HTMLSpanElement} */ (
+		selectElement("#status .buttons .a .label")
+	);
+	const _statusOptionB = /** @type {HTMLSpanElement} */ (
+		selectElement("#status .buttons .b .label")
+	);
+	const statusOptionX = /** @type {HTMLSpanElement} */ (
+		selectElement("#status .buttons .x .label")
+	);
+	const _statusOptionY = /** @type {HTMLSpanElement} */ (
+		selectElement("#status .buttons .y .label")
+	);
+	const statusOptionStart = /** @type {HTMLSpanElement} */ (
+		selectElement("#status .buttons .start .label")
+	);
+	const statusButtonA = /** @type {HTMLSpanElement} */ (
+		selectElement("#status .buttons .button.a")
+	);
+	const statusButtonB = /** @type {HTMLSpanElement} */ (
+		selectElement("#status .buttons .button.b")
+	);
+	const statusButtonX = /** @type {HTMLSpanElement} */ (
+		selectElement("#status .buttons .button.x")
+	);
+	const statusButtonY = /** @type {HTMLSpanElement} */ (
+		selectElement("#status .buttons .button.y")
+	);
+	const statusButtonStart = /** @type {HTMLSpanElement} */ (
+		selectElement("#status .buttons .button.start")
+	);
 	//#endregion
 
 	//#region SFX
