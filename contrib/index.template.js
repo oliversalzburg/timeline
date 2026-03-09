@@ -451,6 +451,8 @@ const main = async function main() {
 	 */
 	const startTime = Date.now();
 
+	let requestInstantFocusUpdate = false;
+
 	//#region Focus Select
 	/**
 	 * The ID of the currently focused node.
@@ -532,6 +534,10 @@ const main = async function main() {
 				? idFocusedTimeline
 				: contributors.get(id)?.[0]);
 
+		if (idFocusedTimeline === undefined) {
+			throw new Error("couldn't determine timeline for event");
+		}
+
 		const anchor = `#${id}`;
 		/** @type {string | undefined} */
 		let nodeTitle;
@@ -607,6 +613,28 @@ const main = async function main() {
 			requestFocusShift(id);
 			updateStatus();
 		}
+
+		const event = eventsById.get(id);
+		if (event === undefined) {
+			throw new Error(`can't find event with ID '${id}'`);
+		}
+		const timeline = timelines.get(idFocusedTimeline);
+		if (timeline === undefined) {
+			throw new Error(`can't find timeline with ID '${idFocusedTimeline}'`);
+		}
+
+		const neighbors = getNodeNeighbors(event.id, timeline[0]);
+		const up = neighbors.up !== null ? eventsById.get(neighbors.up) : undefined;
+		const down =
+			neighbors.down !== null ? eventsById.get(neighbors.down) : undefined;
+
+		// Adjust culling scope for new target
+		View.scope.y =
+			(up?.bb.y ?? event.bb.y - View.window.height) - View.window.height / 2;
+		View.scope.height =
+			(down?.bb.y ?? event.bb.y + View.window.height) -
+			View.scope.y +
+			View.window.height / 2;
 
 		console.info(
 			`📍 Focused node '${idFocused}' of timeline '${idFocusedTimeline}'. View update is ${shiftFocus ? "pending" : "skipped"}.`,
@@ -924,6 +952,13 @@ const main = async function main() {
 			}
 		});
 	};
+
+	/**
+	 * @param event {PopStateEvent} -
+	 */
+	const onPopState = function onPopState(event) {
+		focusNode(event.state.id, undefined, false);
+	};
 	//#endregion
 
 	//#region Camera
@@ -984,7 +1019,6 @@ const main = async function main() {
 				View.camera.y = newPosition.y + View.window.height / 2;
 				View.position.x = newPosition.x;
 				View.position.y = newPosition.y;
-				View.scope.y = newPosition.y - View.window.height;
 
 				targetElement.classList.add("visible");
 
@@ -1039,7 +1073,7 @@ const main = async function main() {
 		DOM.read("cameraMovementFinalize", function readCamera() {
 			View.position.x = window.scrollX;
 			View.position.y = window.scrollY;
-			View.scope.y = window.scrollY - View.window.height;
+
 			pendingArtifacts = document.querySelectorAll(
 				"#artifacts .artifact.pending",
 			);
@@ -1128,6 +1162,7 @@ const main = async function main() {
 
 	const cull = function cull() {
 		console.debug("♻️ Culling...");
+
 		const visibleEdges = [];
 		for (
 			let firstVisibleEdgeIndex = 0;
@@ -1337,14 +1372,6 @@ const main = async function main() {
 	};
 	//#endregion
 
-	/**
-	 * @param event {PopStateEvent} -
-	 */
-	const onPopState = function onPopState(event) {
-		focusNode(event.state.id, undefined, false);
-	};
-
-	let requestInstantFocusUpdate = false;
 	const INPUT_THRESHOLD = 0.1;
 	const SPEED_FREE_FLIGHT = 6.5;
 	const SPEED_MEDIA_SCALE = 0.5;
@@ -3005,7 +3032,6 @@ const main = async function main() {
 		View.position.width = View.window.width;
 		View.position.height = View.window.height;
 
-		// View scope is larger than the position, and is used for culling operations.
 		View.scope.x = 0;
 		View.scope.y = window.scrollY - View.window.height;
 		View.scope.width = View.window.width;
