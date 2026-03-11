@@ -831,8 +831,10 @@ const main = async function main() {
 				if (mediaIsOpen && index === timelineMediaIdActive) {
 					artifact.classList.add("active");
 				}
-				artifact.style.width = `${(Math.round(isPortrait ? (whd[0] / whd[1]) * 100 : 100) / 100) * 3}cm`;
-				artifact.style.height = `${(Math.round(isPortrait ? 100 : (whd[1] / whd[0]) * 100) / 100) * 3}cm`;
+				artifact.style.width = `${(Math.round(isPortrait ? (whd[0] / whd[1]) * 100 : 100) / 100) * 5}cm`;
+				artifact.style.height = `${(Math.round(isPortrait ? 100 : (whd[1] / whd[0]) * 100) / 100) * 5}cm`;
+				artifact.style.rotate = `${Math.round((Math.random() - 0.5) * 180 - 30)}deg`;
+				artifact.style.translate = `${(Math.random() - 0.5) * 20}mm ${(Math.random() - 0.5) * 10}mm`;
 				artifactsContainer.appendChild(artifact);
 			}
 

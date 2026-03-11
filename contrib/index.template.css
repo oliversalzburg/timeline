@@ -313,28 +313,23 @@ body {
 			margin: 5mm;
 
 			width: 100vw;
-			transform: translateY(10em);
 			opacity: 1;
 
-			&.open {
-				transform: translateY(5em);
-				opacity: 0.7;
-				gap: 1mm;
-
-				&.full {
-					transform: none;
-					opacity: 1;
-					gap: 3mm;
-				}
+			&.open.full .artifact {
+				transform: translateY(-20vh);
 			}
 
 			.artifact {
+				position: absolute;
+				right: 5vw;
+				bottom: 7vh;
 				transition:
 					opacity 0.6s ease-in-out,
 					transform 0.5s ease-in-out;
 
 				opacity: 1;
 				transform: none;
+				transform-origin: center;
 				border: 2mm solid transparent;
 
 				&.pending {
