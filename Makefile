@@ -12,6 +12,9 @@ _LIBS_D_TS_MAP := $(patsubst source/%,lib/%,$(patsubst %.ts,%.d.ts.map,$(_SOURCE
 
 _IMAGES := $(wildcard contrib/openmoji-svg-color/*.svg) $(wildcard contrib/wikimedia/*.svg)
 IMAGES := $(addprefix $(OUTPUT_BUILD)/,$(notdir $(_IMAGES)))
+_MEDIA_JPG := $(patsubst %.jpg,%.thumb.jpg,$(shell find $(OUTPUT) -iname "*.jpg" -and ! -iname "*.thumb.jpg"))
+_MEDIA_PNG := $(patsubst %.png,%.thumb.png,$(shell find $(OUTPUT) -iname "*.png" -and ! -iname "*.thumb.png"))
+_MEDIA_PDF := $(patsubst %.pdf,%.images.pdf,$(shell find $(OUTPUT) -iname "*.pdf" -and ! -iname "*.images.pdf"))
 
 DATA_ROOT ?= $(shell realpath ~/timelines)
 ifneq ("$(wildcard $(DATA_ROOT))","")
@@ -231,6 +234,8 @@ $(OUTPUT_BUILD)/universe.exif : $(OUTPUT)/media/.sync
 	@date +"%FT%T%z Extracting EXIF data..."
 	@cd $(OUTPUT) && exiftool -json -quiet -recurse media > $@
 	@date +"%FT%T%z EXIF data extracted '$@'."
+	+@make pdfimages
+	+@make thumbs
 $(OUTPUT_BUILD)/universe.metaxy : contrib/thumbinfo.js $(OUTPUT_BUILD)/universe.exif $(OUTPUT_BUILD)/universe.meta
 	@date +"%FT%T%z Generating media metadata information..."
 	@node --enable-source-maps contrib/thumbinfo.js \
@@ -311,9 +316,21 @@ docs/grundlagen.pdf : docs/grundlagen/grundlagen.md docs/grundlagen/eisvogel.lat
 	@date +"%FT%T%z Generated documentation '$@'."
 
 # Compress an SVG by applying lossy XML transformations.
-%.min.svg: %.svg
+%.min.svg : %.svg
 	@scour $(_SCOUR_FLAGS) -i $< -o $@
 	@date +"%FT%T%z Generated minified '$@'."
+
+pdfimages : $(_MEDIA_PDF)
+thumbs : $(_MEDIA_JPG) $(_MEDIA_PNG)
+%.thumb.png : %.png
+	@convert $< -thumbnail 100x100 $@
+	@date +"%FT%T%z Generated thumbnail '$@'."
+%.thumb.jpg : %.jpg
+	@convert $< -define jpeg:size=100x100 -thumbnail 100x100 $@
+	@date +"%FT%T%z Generated thumbnail '$@'."
+%.images.pdf : %.pdf
+	@pdfimages -all -p $< $<
+	@date +"%FT%T%z Extracted images from '$<'."
 
 
 # Not actually referenced in the implementation. Contains the library code
@@ -323,7 +340,7 @@ lib/timeline.js: node_modules/.package-lock.json build.js | lib
 
 # Clean up all build artifacts.
 clean:
-	@rm --force --recursive _site coverage lib $(OUTPUT) output
+	@rm --force --recursive _site coverage lib $(OUTPUT_BUILD)
 	@find -iname "callgrind.out.*" -delete
 	@find -iwholename "schemas/*.schema.json" -delete
 	@date +"%FT%T%z Cleaned."

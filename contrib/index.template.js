@@ -822,29 +822,9 @@ const main = async function main() {
 				artifact.classList.add("artifact");
 				if (cameraIsIdle) {
 					artifact.classList.add("pending");
-					artifact.dataset.src = mediaItem[4].startsWith("/kiwix/")
-						? "media/logo-wikipedia.svg"
-						: mediaItem[4].endsWith(".pdf")
-							? "media/mime/application/pdf.svg"
-							: mediaItem[4].endsWith(".mp3")
-								? "media/mime/audio/mpeg.svg"
-								: mediaItem[4].endsWith(".flac")
-									? "media/mime/audio/vnd.wave.svg"
-									: mediaItem[4].endsWith(".mp4")
-										? "media/mime/video/mp4.svg"
-										: mediaItem[4];
+					artifact.dataset.src = resolveArtifactImage(mediaItem[4]);
 				} else {
-					artifact.src = mediaItem[4].startsWith("/kiwix/")
-						? "media/logo-wikipedia.svg"
-						: mediaItem[4].endsWith(".pdf")
-							? "media/mime/application/pdf.svg"
-							: mediaItem[4].endsWith(".mp3")
-								? "media/mime/audio/mpeg.svg"
-								: mediaItem[4].endsWith(".flac")
-									? "media/mime/audio/vnd.wave.svg"
-									: mediaItem[4].endsWith(".mp4")
-										? "media/mime/video/mp4.svg"
-										: mediaItem[4];
+					artifact.src = resolveArtifactImage(mediaItem[4]);
 				}
 				if (mediaIsOpen && index === timelineMediaIdActive) {
 					artifact.classList.add("active");
@@ -1688,6 +1668,30 @@ const main = async function main() {
 	let timelineMediaIdActive;
 	let mediaItemPosition = { x: 0, y: 100, z: 10 };
 	let mediaIsOpen = false;
+
+	/**
+	 * @param {string} filename -
+	 */
+	const resolveArtifactImage = function resolveArtifactImage(filename) {
+		switch (true) {
+			case filename.startsWith("/kiwix/"):
+				return "media/logo-wikipedia.svg";
+			case filename.endsWith(".flac"):
+				return "media/mime/audio/vnd.wave.svg";
+			case filename.endsWith(".jpg"):
+				return filename.replace(/\.jpg$/, ".thumb.jpg");
+			case filename.endsWith(".mp3"):
+				return "media/mime/audio/mpeg.svg";
+			case filename.endsWith(".mp4"):
+				return "media/mime/video/mp4.svg";
+			case filename.endsWith(".pdf"):
+				return "media/mime/application/pdf.svg";
+			case filename.endsWith(".png"):
+				return filename.replace(/\.png$/, ".thumb.png");
+			default:
+				return filename;
+		}
+	};
 
 	/** @type {number | null} */
 	let iFrameResizeHandle = null;
