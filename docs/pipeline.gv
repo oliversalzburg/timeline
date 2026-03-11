@@ -18,6 +18,9 @@ digraph pipeline {
 	mediasync [label="media-sync.js" shape=oval];
 	exiftool [label="exiftool -json" shape=oval];
 	thumbinfo [label="thumbinfo.js" shape=oval];
+	thumbnail_jpg [label="convert -define -thumbnail" shape=oval];
+	thumbnail_png [label="convert -thumbnail" shape=oval];
+	pdfimages [label="pdfimages -all" shape=oval];
 	
 	gvus [label="universe.*.gvus" shape=rect style=rounded];
 	dotus [label="universe.*.dotus" shape=rect style=rounded];
@@ -41,19 +44,40 @@ digraph pipeline {
 	indexjs [label="index.js" shape=rect];
 	indexcss [label="index.css" shape=rect];
 	indexhtml [label="index.html" shape=rect];
-	media [label="media/" shape=cylinder];
+	media_0 [label="media/" shape=cylinder];
+	media_1 [label="media/" shape=cylinder style=dotted];
+	media_2 [label="media/" shape=cylinder style=dotted];
+	media_jpg [label="*.jpg" shape=rect style=rounded];
+	media_png [label="*.png" shape=rect style=rounded];
+	media_pdf [label="*.pdf" shape=rect style=rounded];
+	media_jpg_thumb [label="*.thumb.jpg" shape=rect style=rounded];
+	media_png_thumb [label="*.thumb.png" shape=rect style=rounded];
+	media_pdf_image [label="*.pdf-*" shape=rect style=rounded];
 	
 	output [label="Golden Image" shape=circle style=bold];
 
 	korpus -> stg -> universe;
-	
+
 	korpus -> mediasync;
 	universe -> mediasync;
-	mediasync -> media;
-	media -> exiftool -> exif;
+	mediasync -> media_0;
+	media_0 -> exiftool -> exif;
 	exif -> thumbinfo;
 	meta -> thumbinfo;
 	thumbinfo -> metaxy;
+	
+	media_0 -> media_pdf;
+	media_1 -> media_jpg;
+	media_1 -> media_png;
+	media_pdf -> pdfimages;
+	media_jpg -> thumbnail_jpg;
+	media_png -> thumbnail_png;
+	pdfimages -> media_pdf_image;
+	thumbnail_jpg -> media_jpg_thumb;
+	thumbnail_png -> media_png_thumb;
+	media_pdf_image -> media_1;
+	media_jpg_thumb -> media_2;
+	media_png_thumb -> media_2;
 
 	universe -> renderer;
 	universe -> reporter -> report;
@@ -100,6 +124,7 @@ digraph pipeline {
 	metaxy -> buildsite;
 	buildsite -> html;
 	
-	html -> output:w;
-	media -> output:e;
+	html -> output;
+	media_0 -> output;
+	media_2 -> output;
 }

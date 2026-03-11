@@ -730,6 +730,8 @@ const main = async function main() {
 	 * Update the information on the bottom status bar.
 	 */
 	const updateStatus = function updateStatus() {
+		console.debug(`📍 Updating status UI...`);
+
 		/** @type {NodeListOf<HTMLImageElement> | undefined} */
 		let existingArtifacts;
 		/** @type {HTMLParagraphElement | undefined} */
@@ -1737,8 +1739,11 @@ const main = async function main() {
 	};
 	dialogVideo.addEventListener("canplaythrough", onVideoLoad);
 
-	const mediaReset = function mediaReset(resetAudio = true) {
-		mediaItemPosition = { x: 0, y: 100, z: 10 };
+	const mediaReset = function mediaReset(
+		resetAudio = true,
+		position = { x: 0, y: 100, z: 10 },
+	) {
+		mediaItemPosition = position;
 		DOM.write("mediaReset", () => {
 			dialog.style.transform = `perspective(20px) translate3d(${mediaItemPosition.x}vmin, ${mediaItemPosition.y}vmin, ${mediaItemPosition.z}vmin)`;
 			dialogIFrame.style.display = "none";
@@ -1773,15 +1778,21 @@ const main = async function main() {
 			return false;
 		}
 
-		const mediaPath = timelines.get(timelineMediaIds[mediaIndex])?.[4] ?? "";
+		const mediaItem = timelines.get(timelineMediaIds[mediaIndex]);
+		const mediaPath = mediaItem?.[4] ?? "";
+		const whd = mediaItem?.[6] ?? [100, 100, 0];
 		if (mediaPath === "") {
 			timelineMediaIdActive = undefined;
 			return false;
 		}
 
+		const scaleW = whd[0] / View.window.width;
+		const scaleH = whd[1] / View.window.height;
+		const scale = Math.max(scaleW, scaleH);
+
 		console.info(`🖼️ Showing media item ${mediaIndex}...`);
 		timelineMediaIdActive = mediaIndex;
-		mediaReset(false);
+		mediaReset(false, { x: 0, y: 100, z: 10 / scale });
 
 		DOM.write("mediaShow", () => {
 			if (mediaPath.startsWith("/kiwix/")) {
