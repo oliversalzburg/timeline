@@ -1122,6 +1122,9 @@ const main = async function main() {
 				cameraIsIdle = false;
 				requestInstantFocusUpdate = false;
 			});
+			DOM.write("invokeCull", function invokeCull() {
+				cull();
+			});
 		}
 	};
 
@@ -1216,6 +1219,9 @@ const main = async function main() {
 		previousVisibleEdges = new Set(visibleEdges);
 		previousFirstVisibleNodeIndex = firstVisibleNodeIndex - 1;
 		previousVisibleNodes = new Set(visibleNodes);
+
+		cullEffectsArePending = true;
+		console.time("cullEffectsArePending");
 	};
 	//#endregion
 
@@ -2895,6 +2901,7 @@ const main = async function main() {
 	let previousTimestampStarfield;
 	/** @type {number | undefined} */
 	let timeoutCull;
+	let cullEffectsArePending = false;
 	/**
 	 * @param timestamp {number} -
 	 */
@@ -2909,6 +2916,11 @@ const main = async function main() {
 		const delta = timestamp - previousTimestamp;
 		const deltaStarfield = timestamp - previousTimestampStarfield;
 
+		if (cullEffectsArePending) {
+			console.timeEnd("cullEffectsArePending");
+			cullEffectsArePending = false;
+		}
+
 		const hadInput = handleInputs(delta);
 		updateCamera();
 		if (hadInput) {
@@ -2921,12 +2933,16 @@ const main = async function main() {
 				timeoutLockCamera = undefined;
 			}
 		} else {
-			timeoutCull ??= window.setTimeout(function invokeCull() {
-				cull();
-			}, 3000);
-			timeoutLockCamera ??= window.setTimeout(function performHitTest() {
-				console.debug("🎥 Looking for attachment...");
-				if (!cameraIsAttached && previousVisibleNodes !== undefined) {
+			if (!cameraIsAttached) {
+				timeoutCull ??= window.setTimeout(function invokeCull() {
+					DOM.write("invokeCull", function invokeCull() {
+						cull();
+					});
+				}, 1000);
+			}
+			if (!cameraIsAttached && previousVisibleNodes !== undefined) {
+				timeoutLockCamera ??= window.setTimeout(function performHitTest() {
+					console.debug("🎥 Looking for attachment...");
 					for (const node of previousVisibleNodes) {
 						if (
 							node.bb.x < View.camera.x &&
@@ -2941,8 +2957,8 @@ const main = async function main() {
 							}
 						}
 					}
-				}
-			}, 1000);
+				}, 1000);
+			}
 		}
 
 		// We don't want to update the starfield every frame, because it doesn't
