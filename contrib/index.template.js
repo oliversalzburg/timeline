@@ -611,7 +611,7 @@ const main = async function main() {
 		if (shiftFocus) {
 			cameraIsAttached = true;
 			requestFocusShift(id);
-			updateStatus();
+			statusToNeutral();
 		}
 
 		const event = eventsById.get(id);
@@ -729,7 +729,7 @@ const main = async function main() {
 	/**
 	 * Update the information on the bottom status bar.
 	 */
-	const updateStatus = function updateStatus() {
+	const statusToNeutral = function statusToNeutral(rebuildArtifacts = true) {
 		console.debug(`📍 Updating status UI...`);
 
 		/** @type {NodeListOf<HTMLImageElement> | undefined} */
@@ -762,13 +762,8 @@ const main = async function main() {
 			statusButtonX.classList.remove("visible");
 			statusButtonY.classList.remove("visible");
 			statusButtonStart.classList.remove("visible");
-			//statusOptionA.textContent = "";
-			//statusOptionB.textContent = "";
-			//statusOptionX.textContent = "";
-			//statusOptionY.textContent = "";
-			//statusOptionStart.textContent = "";
 
-			if (existingArtifacts !== undefined) {
+			if (rebuildArtifacts && existingArtifacts !== undefined) {
 				for (const artifact of existingArtifacts) {
 					artifact.remove();
 				}
@@ -799,55 +794,120 @@ const main = async function main() {
 			} else {
 				artifactsContainer.classList.add("open");
 			}
-			if (mediaIsOpen) {
-				artifactsContainer.classList.add("full");
-			} else {
-				artifactsContainer.classList.remove("full");
-			}
-			for (const [index, mediaItemId] of timelineMediaIds
-				.sort(
-					(a, b) =>
-						timelines.get(a)?.[4].localeCompare(timelines.get(b)?.[4] ?? "") ??
-						0,
-				)
-				.entries()) {
-				const mediaItem = timelines.get(mediaItemId);
-				if (mediaItem === undefined) {
-					console.error(`failed to find '${mediaItemId}'`);
-					continue;
+			artifactsContainer.classList.remove("full");
+
+			if (rebuildArtifacts) {
+				for (const [index, mediaItemId] of timelineMediaIds
+					.sort(
+						(a, b) =>
+							timelines
+								.get(a)?.[4]
+								.localeCompare(timelines.get(b)?.[4] ?? "") ?? 0,
+					)
+					.entries()) {
+					const mediaItem = timelines.get(mediaItemId);
+					if (mediaItem === undefined) {
+						console.error(`failed to find '${mediaItemId}'`);
+						continue;
+					}
+					const whd = mediaItem[6] ?? [100, 100, 0];
+					const isPortrait = whd[0] < whd[1];
+					const artifact = /** @type {HTMLImageElement} */ (
+						document.createElement("img")
+					);
+					artifact.classList.add("artifact");
+					if (cameraIsIdle) {
+						artifact.classList.add("pending");
+						artifact.dataset.src = resolveArtifactImage(mediaItem[4]);
+					} else {
+						artifact.src = resolveArtifactImage(mediaItem[4]);
+					}
+					if (mediaIsOpen && index === timelineMediaIdActive) {
+						artifact.classList.add("active");
+					}
+					artifact.style.width = `${(Math.round(isPortrait ? (whd[0] / whd[1]) * 100 : 100) / 100) * 5}cm`;
+					artifact.style.height = `${(Math.round(isPortrait ? 100 : (whd[1] / whd[0]) * 100) / 100) * 5}cm`;
+					artifact.style.rotate = `${Math.round((Math.random() - 0.5) * 180 - 30)}deg`;
+					artifact.style.translate = `${(Math.random() - 0.5) * 50}mm ${(Math.random() - 0.5) * 20}mm`;
+					artifactsContainer.appendChild(artifact);
 				}
-				const whd = mediaItem[6] ?? [100, 100, 0];
-				const isPortrait = whd[0] < whd[1];
-				const artifact = /** @type {HTMLImageElement} */ (
-					document.createElement("img")
-				);
-				artifact.classList.add("artifact");
-				if (cameraIsIdle) {
-					artifact.classList.add("pending");
-					artifact.dataset.src = resolveArtifactImage(mediaItem[4]);
-				} else {
-					artifact.src = resolveArtifactImage(mediaItem[4]);
-				}
-				if (mediaIsOpen && index === timelineMediaIdActive) {
-					artifact.classList.add("active");
-				}
-				artifact.style.width = `${(Math.round(isPortrait ? (whd[0] / whd[1]) * 100 : 100) / 100) * 5}cm`;
-				artifact.style.height = `${(Math.round(isPortrait ? 100 : (whd[1] / whd[0]) * 100) / 100) * 5}cm`;
-				artifact.style.rotate = `${Math.round((Math.random() - 0.5) * 180 - 30)}deg`;
-				artifact.style.translate = `${(Math.random() - 0.5) * 20}mm ${(Math.random() - 0.5) * 10}mm`;
-				artifactsContainer.appendChild(artifact);
 			}
 
 			const timelineIdentityName = timelines.get(idFocusedTimeline)?.[5];
-			const mediaIdentityName =
-				timelineMediaIdActive !== undefined
-					? timelines.get(timelineMediaIds[timelineMediaIdActive])?.[5]
-					: undefined;
 			if (timelineIdentityName === undefined) {
 				console.error(
 					`Unable to look up identity for timeline ID '${idFocusedTimeline}'. Using fallback status.`,
 				);
 			}
+
+			if (previousStatusText !== undefined) {
+				previousStatusText.classList.add("previous", "pending");
+				statusContainer.insertBefore(previousStatusText, statusOptions);
+				previousStatusText = undefined;
+			}
+
+			intro.style.color = timelineColorPen ?? "";
+			intro.textContent = `Reise auf Zeit-Gleis: ${timelineIdentityName}`;
+			intro.classList.add("visible");
+			statusText.textContent = event.title;
+			statusText.classList.remove("artifact");
+
+			if (cameraIsIdle) {
+				statusText.classList.add("pending");
+			} else {
+				statusText.classList.remove("pending", "hidden");
+			}
+
+			const hasShoulderRight = 0 < timelineMediaIds.length;
+
+			if (hasShoulderRight) {
+				shoulderRight.classList.add("visible");
+				shoulderRight.textContent =
+					timelineMediaIdActive === undefined
+						? "Artefakte anzeigen"
+						: "Schließen";
+				shouldersContainer.classList.add("visible");
+			}
+		});
+	};
+
+	/**
+	 * Update the information on the bottom status bar.
+	 */
+	const statusToMedia = function statusToMedia() {
+		console.debug(`📍 Updating status to media UI...`);
+
+		DOM.write("updateStatus", () => {
+			statusOptions.classList.remove("visible");
+			shouldersContainer.classList.remove("visible");
+			shoulderLeft.classList.remove("visible");
+			shoulderRight.classList.remove("visible");
+			statusButtonA.classList.remove("visible");
+			statusButtonB.classList.remove("visible");
+			statusButtonX.classList.remove("visible");
+			statusButtonY.classList.remove("visible");
+			statusButtonStart.classList.remove("visible");
+
+			if (idFocused === undefined || idFocusedTimeline === undefined) {
+				return;
+			}
+
+			const event = eventsById.get(idFocused);
+			if (event === undefined) {
+				console.error(`Unable to look up event for ID '${idFocused}'.`);
+				return;
+			}
+
+			const newNeighbors = getNodeNeighbors(idFocused, idFocusedTimeline);
+
+			timelineMediaIds = newNeighbors.mediaItems;
+
+			artifactsContainer.classList.add("full");
+
+			const mediaIdentityName =
+				timelineMediaIdActive !== undefined
+					? timelines.get(timelineMediaIds[timelineMediaIdActive])?.[5]
+					: undefined;
 
 			if (mediaIsOpen && mediaIdentityName !== undefined) {
 				intro.textContent = "Artefaktname:";
@@ -856,24 +916,6 @@ const main = async function main() {
 				statusText.classList.add("artifact");
 				if (cameraIsIdle) {
 					statusText.classList.add("pending");
-				}
-			} else {
-				if (previousStatusText !== undefined) {
-					previousStatusText.classList.add("previous", "pending");
-					statusContainer.insertBefore(previousStatusText, statusOptions);
-					previousStatusText = undefined;
-				}
-
-				intro.style.color = timelineColorPen ?? "";
-				intro.textContent = `Reise auf Zeit-Gleis: ${timelineIdentityName}`;
-				intro.classList.add("visible");
-				statusText.textContent = event.title;
-				statusText.classList.remove("artifact");
-
-				if (cameraIsIdle) {
-					statusText.classList.add("pending");
-				} else {
-					statusText.classList.remove("pending", "hidden");
 				}
 			}
 
@@ -886,32 +928,123 @@ const main = async function main() {
 					timelines
 						.get(timelineMediaIds[timelineMediaIdActive])?.[4]
 						.endsWith(".mp3"));
-			const hasShoulderRight = 0 < timelineMediaIds.length;
 
 			if (hasShoulderLeft) {
 				shoulderLeft.classList.add("visible");
 				shoulderLeft.textContent = "🔇 Schließen";
 			}
-			if (hasShoulderRight) {
-				shoulderRight.classList.add("visible");
-				shoulderRight.textContent =
-					timelineMediaIdActive === undefined
-						? "Artefakte anzeigen"
-						: "Schließen";
+
+			shoulderRight.classList.add("visible");
+			shoulderRight.textContent =
+				timelineMediaIdActive === undefined
+					? "Artefakte anzeigen"
+					: "Schließen";
+
+			shouldersContainer.classList.add("visible");
+		});
+	};
+
+	/**
+	 * Update the information on the bottom status bar.
+	 */
+	const statusRefreshMedia = function statusRefreshMedia() {
+		console.debug(`📍 Updating status UI for media...`);
+
+		/** @type {NodeListOf<HTMLImageElement> | undefined} */
+		let existingArtifacts;
+		/** @type {HTMLParagraphElement | undefined} */
+		let _previousStatusText;
+		DOM.read("updateStatus", () => {
+			existingArtifacts = /** @type {NodeListOf<HTMLImageElement>} */ (
+				document.querySelectorAll("#artifacts .artifact")
+			);
+		});
+
+		DOM.write("updateStatus", () => {
+			statusOptions.classList.remove("visible");
+			shouldersContainer.classList.remove("visible");
+			shoulderLeft.classList.remove("visible");
+			shoulderRight.classList.remove("visible");
+			statusButtonA.classList.remove("visible");
+			statusButtonB.classList.remove("visible");
+			statusButtonX.classList.remove("visible");
+			statusButtonY.classList.remove("visible");
+			statusButtonStart.classList.remove("visible");
+			//statusOptionA.textContent = "";
+			//statusOptionB.textContent = "";
+			//statusOptionX.textContent = "";
+			//statusOptionY.textContent = "";
+			//statusOptionStart.textContent = "";
+
+			if (idFocused === undefined || idFocusedTimeline === undefined) {
+				return;
 			}
 
-			if (hasShoulderLeft || hasShoulderRight) {
-				shouldersContainer.classList.add("visible");
+			const event = eventsById.get(idFocused);
+			if (event === undefined) {
+				console.error(`Unable to look up event for ID '${idFocused}'.`);
+				return;
 			}
+
+			if (existingArtifacts === undefined) {
+				console.error("Expected to see artifacts");
+				return;
+			}
+
+			const newNeighbors = getNodeNeighbors(idFocused, idFocusedTimeline);
+			timelineMediaIds = newNeighbors.mediaItems;
+
+			artifactsContainer.classList.add("full");
+
+			for (const artifact of existingArtifacts) {
+				artifact.style.rotate = `${Math.round((Math.random() - 0.5) * 180 - 30)}deg`;
+			}
+
+			const mediaIdentityName =
+				timelineMediaIdActive !== undefined
+					? timelines.get(timelineMediaIds[timelineMediaIdActive])?.[5]
+					: undefined;
+			if (mediaIdentityName === undefined) {
+				console.error(`Unable to look up media item.`);
+				return;
+			}
+
+			intro.textContent = "Artefaktname:";
+			intro.classList.add("visible");
+			statusText.textContent = mediaIdentityName;
+			statusText.classList.add("artifact");
+			if (cameraIsIdle) {
+				statusText.classList.add("pending");
+			}
+
+			const hasShoulderLeft =
+				0 < timelineMediaIds.length &&
+				timelineMediaIdActive !== undefined &&
+				(timelines
+					.get(timelineMediaIds[timelineMediaIdActive])?.[4]
+					.endsWith(".flac") ||
+					timelines
+						.get(timelineMediaIds[timelineMediaIdActive])?.[4]
+						.endsWith(".mp3"));
+
+			if (hasShoulderLeft) {
+				shoulderLeft.classList.add("visible");
+				shoulderLeft.textContent = "🔇 Schließen";
+			}
+			shoulderRight.classList.add("visible");
+			shoulderRight.textContent =
+				timelineMediaIdActive === undefined
+					? "Artefakte anzeigen"
+					: "Schließen";
+
+			shouldersContainer.classList.add("visible");
 		});
 	};
 
 	/**
 	 * @param {undefined | (() => void)} additional -
 	 */
-	const updateStatusForMenu = function updateStatusForMenu(
-		additional = undefined,
-	) {
+	const statusToMenu = function statusToMenu(additional = undefined) {
 		DOM.write("updateStatusForMenu", () => {
 			artifactsContainer.classList.remove("open", "full");
 			statusOptions.classList.remove("visible");
@@ -1400,6 +1533,7 @@ const main = async function main() {
 			},
 			[Inputs.BUTTON_RB]: () => {
 				mediaShow(0);
+				statusToMedia();
 				return {
 					name: "return",
 					released: { [Inputs.BUTTON_RB]: returnToMedia },
@@ -1480,7 +1614,6 @@ const main = async function main() {
 			targetFocusElement.classList.add("visible");
 			menuIsOpen = false;
 		});
-		updateStatus();
 		return InputPlaneNeutral;
 	};
 
@@ -1886,6 +2019,7 @@ const main = async function main() {
 			[Inputs.BUTTON_RB]: () => {
 				timelineMediaIdActive = undefined;
 				mediaClose();
+				statusToNeutral(false);
 				return {
 					name: "return",
 					released: { [Inputs.BUTTON_RB]: returnToNeutral },
@@ -1894,11 +2028,13 @@ const main = async function main() {
 			[Inputs.BUTTON_LEFT]: () => {
 				if (!mediaBackward()) {
 					mediaClose();
+					statusToNeutral(false);
 					return {
 						name: "return",
 						released: { [Inputs.BUTTON_LEFT]: returnToNeutral },
 					};
 				}
+				statusRefreshMedia();
 				return {
 					name: "return",
 					released: { [Inputs.BUTTON_LEFT]: returnToMedia },
@@ -1907,11 +2043,13 @@ const main = async function main() {
 			[Inputs.BUTTON_RIGHT]: () => {
 				if (!mediaForward()) {
 					mediaClose();
+					statusToNeutral(false);
 					return {
 						name: "return",
 						released: { [Inputs.BUTTON_RIGHT]: returnToNeutral },
 					};
 				}
+				statusRefreshMedia();
 				return {
 					name: "return",
 					released: { [Inputs.BUTTON_RIGHT]: returnToMedia },
@@ -1960,7 +2098,10 @@ const main = async function main() {
 			}
 
 			if (changed) {
-				mediaItemPosition.x = Math.max(Math.min(mediaItemPosition.x, 95), -95);
+				mediaItemPosition.x = Math.max(
+					Math.min(mediaItemPosition.x, 200),
+					-200,
+				);
 				mediaItemPosition.y = Math.max(
 					Math.min(mediaItemPosition.y, 100),
 					-1_000_000,
@@ -1980,7 +2121,6 @@ const main = async function main() {
 			artifactsContainer.classList.add("open");
 			statusContainer.classList.add("open");
 		});
-		updateStatus();
 		return InputPlaneMedia;
 	};
 	//#endregion
@@ -2003,7 +2143,7 @@ const main = async function main() {
 	let menuMainFocusIndex = 0;
 	const menuMain = function menuMain(isActive = true) {
 		menuIsOpen = true;
-		updateStatusForMenu(() => {
+		statusToMenu(() => {
 			if (menuMainFocusIndex === 3) {
 				statusOptionA.textContent = "Musik abschalten";
 				statusButtonA.classList.add("visible");
@@ -2210,7 +2350,7 @@ const main = async function main() {
 		if (isActive) {
 			menuMain(false);
 
-			updateStatusForMenu(() => {
+			statusToMenu(() => {
 				if (0 < menuMainJumpFocusIndex) {
 					statusOptionA.textContent = "Auswählen";
 					statusButtonA.classList.add("visible");
@@ -2383,7 +2523,7 @@ const main = async function main() {
 			menuMain(false);
 			menuMainJump(false);
 
-			updateStatusForMenu(() => {
+			statusToMenu(() => {
 				statusOptionA.textContent = "Auswählen";
 				statusButtonA.classList.add("visible");
 				statusOptions.classList.add("visible");
@@ -2690,7 +2830,7 @@ const main = async function main() {
 			menuMainFocusIndex = 1;
 			menuMain(false);
 
-			updateStatusForMenu(() => {
+			statusToMenu(() => {
 				statusOptionA.textContent = "Umsteigen";
 				statusButtonA.classList.add("visible");
 				statusOptions.classList.add("visible");
@@ -2821,7 +2961,7 @@ const main = async function main() {
 			menuMainFocusIndex = 2;
 			menuMain(false);
 
-			updateStatusForMenu();
+			statusToMenu();
 		}
 
 		DOM.write("menuMainArtifacts", () => {

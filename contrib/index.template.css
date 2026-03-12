@@ -305,27 +305,22 @@ body {
 				gap 1s ease-out,
 				transform 0.5s ease-in-out;
 
-			display: flex;
-			flex-direction: row;
-			justify-content: center;
-			align-items: center;
-			gap: 15mm;
-			margin: 5mm;
-
+			display: block;
 			width: 100vw;
 			opacity: 1;
 
 			&.open.full .artifact {
-				transform: translateY(-20vh);
+				transform: translateY(-5cm);
 			}
 
 			.artifact {
 				position: absolute;
-				right: 5vw;
-				bottom: 7vh;
+				right: 25mm;
+				bottom: 15mm;
 				transition:
 					opacity 0.6s ease-in-out,
-					transform 0.5s ease-in-out;
+					transform 0.5s ease-in-out,
+					rotate 0.5s ease-in-out;
 
 				opacity: 1;
 				transform: none;
