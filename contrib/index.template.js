@@ -370,6 +370,7 @@ const main = async function main() {
 	const loader = /** @type {HTMLDivElement} */ (
 		selectElement("body > .loader")
 	);
+	const stars = /** @type {HTMLDivElement} */ (selectElement("#stars"));
 	const svg = /** @type {SVGElement} */ (selectElement("body > svg"));
 	const dialog = /** @type {HTMLDialogElement} */ (selectElement("dialog"));
 	const dialogIFrame = /** @type {HTMLIFrameElement} */ (
@@ -526,10 +527,18 @@ const main = async function main() {
 		console.debug(`🎶 Playing '${id}'...`);
 		sfxBuffer.start();
 	};
+
+	/**
+	 * Plays a random "swipe" sound.
+	 */
 	const sfxPlaySwipe = function sfxPlaySwipe() {
 		const index = Math.round(1 + Math.random() * 4);
 		sfxPlay(`swipe${index}`);
 	};
+
+	/**
+	 * Plays a random "tap" sound.
+	 */
 	const sfxPlayTap = function sfxPlayTap() {
 		const index = Math.round(1 + Math.random() * 4);
 		sfxPlay(`tap${index}`);
@@ -1164,7 +1173,6 @@ const main = async function main() {
 					0,
 				);
 				const m = ((1 + n) / 2) * 180 - 90;
-				console.debug(n, m);
 				artifact.style.rotate = `${Math.round(m - 30)}deg`;
 			}
 
@@ -1314,7 +1322,9 @@ const main = async function main() {
 						return;
 					}
 					targetFocusElement.classList.add("visible");
-					targetFocusElement.style.transform = `translate(calc(${event.bb.x - 10}px), calc(${event.bb.y - 10}px)) scale(${(event.bb.w + 20) / 733}, ${(event.bb.h + 20) / 100})`;
+					targetFocusElement.style.width = `${event.bb.w + 20}px`;
+					targetFocusElement.style.height = `${event.bb.h + 20}px`;
+					targetFocusElement.style.transform = `translate(calc(${event.bb.x - 10}px), calc(${event.bb.y - 10}px))`;
 				}
 			});
 		}
@@ -1368,7 +1378,9 @@ const main = async function main() {
 				if (idFocused !== undefined) {
 					targetElement.classList.remove("visible");
 					targetFocusElement.classList.add("visible");
-					targetFocusElement.style.transform = `translate(calc(${View.focus.x - 10}px), calc(${View.focus.y - 10}px)) scale(${(View.focus.width + 20) / 733}, ${(View.focus.height + 20) / 100})`;
+					targetFocusElement.style.width = `${View.focus.width + 20}px`;
+					targetFocusElement.style.height = `${View.focus.height + 20}px`;
+					targetFocusElement.style.transform = `translate(calc(${View.focus.x - 10}px), calc(${View.focus.y - 10}px))`;
 				}
 
 				for (const day of pendingDays) {
@@ -1967,7 +1979,7 @@ const main = async function main() {
 	 * 	z: number
 	 * }}
 	 */
-	let mediaItemPosition = { x: 0, y: 100, z: 10 };
+	let mediaItemPosition = { x: 0, y: 0, z: 1 };
 
 	/**
 	 * Is the media viewer dialog currently open?
@@ -2116,7 +2128,7 @@ const main = async function main() {
 
 	const mediaReset = function mediaReset(
 		resetAudio = true,
-		position = { x: 0, y: 100, z: 10 },
+		position = { x: 0, y: 0, z: 1 },
 	) {
 		mediaItemPosition = position;
 		DOM.write("mediaReset", () => {
@@ -2168,10 +2180,12 @@ const main = async function main() {
 
 		console.info(`🖼️ Showing media item ${mediaIndex}...`);
 		timelineMediaIdActive = mediaIndex;
-		mediaReset(false, { x: 0, y: 100, z: 10 / scale });
+		mediaReset(false, { x: 0, y: 0, z: scale * -20 });
 
 		DOM.write("mediaShow", () => {
 			if (mediaPath.startsWith("/kiwix/")) {
+				dialog.style.height = "";
+				dialog.style.width = "";
 				dialogIFrame.src = mediaPath;
 				dialogIFrame.style.display = "block";
 			} else if (mediaPath.endsWith(".pdf")) {
@@ -2183,9 +2197,15 @@ const main = async function main() {
 				dialogAudio.src = mediaPath;
 				dialogAudio.style.display = "block";
 			} else if (mediaPath.endsWith(".mp4")) {
+				dialog.style.height = "100vh";
+				dialog.style.width = "100vw";
 				dialogVideo.src = mediaPath;
 				dialogVideo.style.display = "block";
 			} else {
+				dialog.style.height = "100vh";
+				dialog.style.width = "100vw";
+				dialogImage.width = whd[0];
+				dialogImage.height = whd[1];
 				dialogImage.src = mediaPath;
 				dialogImage.style.display = "block";
 			}
@@ -2299,7 +2319,7 @@ const main = async function main() {
 			[Inputs.BUTTON_LT]: (frame) => {
 				mediaItemPosition.z -= (frame.delta / (1000 / 60)) * SPEED_MEDIA_SCALE;
 				// Otherwise the item ends up behind the camera, or too far away.
-				mediaItemPosition.z = Math.max(Math.min(mediaItemPosition.z, 39), -130);
+				mediaItemPosition.z = Math.max(Math.min(mediaItemPosition.z, 20), -130);
 				return {
 					name: "return",
 					pressed: {
@@ -2311,7 +2331,7 @@ const main = async function main() {
 			[Inputs.BUTTON_RT]: (frame) => {
 				mediaItemPosition.z += (frame.delta / (1000 / 60)) * SPEED_MEDIA_SCALE;
 				// Otherwise the item ends up behind the camera, or too far away.
-				mediaItemPosition.z = Math.max(Math.min(mediaItemPosition.z, 39), -130);
+				mediaItemPosition.z = Math.max(Math.min(mediaItemPosition.z, 20), -130);
 				return {
 					name: "return",
 					pressed: {
@@ -2344,7 +2364,7 @@ const main = async function main() {
 					-200,
 				);
 				mediaItemPosition.y = Math.max(
-					Math.min(mediaItemPosition.y, 100),
+					Math.min(mediaItemPosition.y, 1_000),
 					-1_000_000,
 				);
 			}
@@ -3299,18 +3319,22 @@ const main = async function main() {
 	let previousTimestampStarfield = 0;
 	/** @type {number | undefined} */
 	let timeoutCull;
+	/** @type {number | undefined} */
+	let timeoutResize;
 	let cullEffectsArePending = false;
 	/**
 	 * @param timestamp {number} -
 	 */
 	const present = function present(timestamp) {
 		if (windowWasResized) {
-			windowWasResized = false;
-			setTimeout(function reInitializeGraphics() {
-				initGraphics();
-			}, 1000);
+			if (timeoutResize !== undefined) {
+				return;
+			}
+			timeoutResize = window.setTimeout(initGraphics, 1000);
 			return;
 		}
+
+		timeoutResize = undefined;
 
 		if (previousTimestamp === undefined) {
 			previousTimestamp = timestamp;
@@ -3460,6 +3484,9 @@ const main = async function main() {
 		View.scope.width = View.window.width;
 		View.scope.height = View.window.height * 3;
 
+		// Reset flag, to enable capturing new resizes.
+		windowWasResized = false;
+
 		for (const [, , planeTop, planeBottom] of starPlanes) {
 			for (const plane of [planeTop, planeBottom]) {
 				plane.width = View.window.width;
@@ -3467,10 +3494,10 @@ const main = async function main() {
 			}
 		}
 
-		let stars = Math.floor(View.window.width * View.window.height * 0.001);
+		let starCount = Math.floor(View.window.width * View.window.height * 0.001);
 		let index = 0;
 		for (const [, , planeTop, planeBottom] of starPlanes) {
-			console.info(`🌟 Drawing ${stars} stars on plane ${++index}...`);
+			console.info(`🌟 Drawing ${starCount} stars on plane ${++index}...`);
 			for (const plane of [planeTop, planeBottom]) {
 				const context = plane.getContext("2d");
 				if (context === null) {
@@ -3479,7 +3506,7 @@ const main = async function main() {
 					);
 				}
 
-				for (let _ = 0; _ < stars; ++_) {
+				for (let _ = 0; _ < starCount; ++_) {
 					context.beginPath();
 					context.arc(
 						Math.random() * plane.width,
@@ -3491,11 +3518,9 @@ const main = async function main() {
 					context.fillStyle = getRandomColor();
 					context.fill();
 				}
-
-				document.body.insertBefore(plane, svg);
 			}
 
-			stars = Math.floor(stars * 0.9);
+			starCount = Math.floor(starCount * 0.9);
 		}
 
 		window.requestAnimationFrame(present);
@@ -3587,6 +3612,12 @@ const main = async function main() {
 		timelineEdges.toSorted((a, b) => a.bb.y - b.bb.y);
 		previousVisibleEdges = new Set(timelineEdges);
 
+		for (const [, , planeA] of starPlanes) {
+			stars.appendChild(planeA);
+		}
+		for (const [, , , planeB] of starPlanes) {
+			stars.appendChild(planeB);
+		}
 		initGraphics();
 
 		console.info("🍲 Requesting initial focus...");

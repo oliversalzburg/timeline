@@ -85,7 +85,7 @@ body {
 	background: rgb(0 0 0);
 
 	/* Starfield */
-	> canvas {
+	#stars > canvas {
 		transition:
 			transform 0.9s ease-out,
 			opacity 2s ease-out;
@@ -209,13 +209,14 @@ body {
 		left: 0;
 		margin: 0;
 		padding: 0;
-		width: 100%;
+		/*width: 100vw;*/
+		/*height: 100vh;*/
 		border: none;
 		outline: none;
 		background-color: transparent;
 
 		transform-style: preserve-3d;
-		transform-origin: top;
+		transform-origin: center;
 
 		display: none;
 		&:open {
@@ -231,7 +232,6 @@ body {
 
 		img {
 			flex: 1;
-			width: 1024px;
 		}
 		iframe {
 			width: 1024px;
@@ -637,15 +637,6 @@ body {
 		opacity: 0;
 		background: rgb(0 0 0 / 100%);
 
-		svg {
-			position: fixed;
-			top: 5vh;
-			left: 5vw;
-			width: 90vw;
-			height: 90vh;
-			opacity: 0.5;
-			z-index: 0;
-		}
 		pre {
 			text-align: left;
 			font-size: 15mm;
@@ -678,6 +669,16 @@ body {
 				white-space: normal;
 			}
 
+			svg {
+				position: fixed;
+				top: 5vh;
+				left: 5vw;
+				width: 90vw;
+				height: 90vh;
+				opacity: 0.5;
+				z-index: -1;
+			}
+
 			/*
 			mask:
 				linear-gradient(#000 0 0) padding-box,
@@ -691,8 +692,7 @@ body {
 	&.loading > .loader {
 		opacity: 1;
 		transform: translateY(0);
-		pre,
-		svg {
+		pre {
 			animation: pulse 18s infinite;
 		}
 	}
@@ -703,7 +703,7 @@ body {
 		opacity: 0;
 	}
 	&.loading {
-		canvas,
+		#stars > canvas,
 		#artifacts,
 		.calendar,
 		.calendar.open,
@@ -728,6 +728,12 @@ body {
 			small {
 				font-size: 4mm;
 				line-height: 6mm;
+				background: repeating-linear-gradient(
+					180deg,
+					rgb(255, 255, 255),
+					rgb(113, 113, 113) 6mm
+				);
+				background-clip: text;
 			}
 		}
 	}
