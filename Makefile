@@ -78,7 +78,7 @@ lib/%.d.ts : lib/%.js
 lib/%.d.ts.map : lib/%.d.ts
 lib/%.js.map : lib/%.js
 lib/%.js &: source/%.ts
-	+@make lib/tsconfig.source.tsbuildinfo
+	+@$(MAKE) lib/tsconfig.source.tsbuildinfo
 lib/tsconfig.source.tsbuildinfo : node_modules/.package-lock.json $(_SOURCES_TS)
 	@npm exec -- tsc --build tsconfig.json
 	@touch lib/tsconfig.source.tsbuildinfo
@@ -200,7 +200,7 @@ $(OUTPUT)/universe.report : $(OUTPUT_BUILD)/universe.report
 	@date +"%FT%T%z Universe SVG generated '$@'."
 
 $(OUTPUT)/universe.html : $(OUTPUT_BUILD)/universe.info $(OUTPUT_BUILD)/universe.metaxy $(OUTPUT)/favicon.ico $(_OBJECTS)
-	+@make $(OUTPUT_BUILD)/universe.svg
+	+@$(MAKE) $(OUTPUT_BUILD)/universe.svg
 	@node --enable-source-maps contrib/build-site.js \
 		"--build=$(OUTPUT_BUILD)" \
 		--format=zen \
@@ -234,8 +234,8 @@ $(OUTPUT_BUILD)/universe.exif : $(OUTPUT)/media/.sync
 	@date +"%FT%T%z Extracting EXIF data..."
 	@cd $(OUTPUT) && exiftool -json -quiet -recurse media > $@
 	@date +"%FT%T%z EXIF data extracted '$@'."
-	+@make pdfimages
-	+@make thumbs
+	+@$(MAKE) pdfimages
+	+@$(MAKE) thumbs
 $(OUTPUT_BUILD)/universe.metaxy : contrib/thumbinfo.js $(OUTPUT_BUILD)/universe.exif $(OUTPUT_BUILD)/universe.meta
 	@date +"%FT%T%z Generating media metadata information..."
 	@node --enable-source-maps contrib/thumbinfo.js \

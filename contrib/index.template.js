@@ -1,6 +1,201 @@
 /** @type {import("../lib/types.js").UniverseResultMetadata} */
 const DATA = [[], [], ["", "", ""]];
 
+/**
+ * 3D Simplex Noise
+ * @param {number} seed -
+ */
+const simplex = function simplex(seed = 0) {
+	class Vector3 {
+		/**
+		 * @param {number} x -
+		 * @param {number} y -
+		 * @param {number} z -
+		 */
+		constructor(x, y, z) {
+			this.x = x;
+			this.y = y;
+			this.z = z;
+		}
+		/**
+		 * @param {number} x -
+		 * @param {number} y -
+		 * @param {number} z -
+		 */
+		dot3(x, y, z) {
+			return this.x * x + this.y * y + this.z * z;
+		}
+	}
+	const grad3 = [
+		new Vector3(1, 1, 0),
+		new Vector3(-1, 1, 0),
+		new Vector3(1, -1, 0),
+		new Vector3(-1, -1, 0),
+		new Vector3(1, 0, 1),
+		new Vector3(-1, 0, 1),
+		new Vector3(1, 0, -1),
+		new Vector3(-1, 0, -1),
+		new Vector3(0, 1, 1),
+		new Vector3(0, -1, 1),
+		new Vector3(0, 1, -1),
+		new Vector3(0, -1, -1),
+	];
+	const p = [
+		151, 160, 137, 91, 90, 15, 131, 13, 201, 95, 96, 53, 194, 233, 7, 225, 140,
+		36, 103, 30, 69, 142, 8, 99, 37, 240, 21, 10, 23, 190, 6, 148, 247, 120,
+		234, 75, 0, 26, 197, 62, 94, 252, 219, 203, 117, 35, 11, 32, 57, 177, 33,
+		88, 237, 149, 56, 87, 174, 20, 125, 136, 171, 168, 68, 175, 74, 165, 71,
+		134, 139, 48, 27, 166, 77, 146, 158, 231, 83, 111, 229, 122, 60, 211, 133,
+		230, 220, 105, 92, 41, 55, 46, 245, 40, 244, 102, 143, 54, 65, 25, 63, 161,
+		1, 216, 80, 73, 209, 76, 132, 187, 208, 89, 18, 169, 200, 196, 135, 130,
+		116, 188, 159, 86, 164, 100, 109, 198, 173, 186, 3, 64, 52, 217, 226, 250,
+		124, 123, 5, 202, 38, 147, 118, 126, 255, 82, 85, 212, 207, 206, 59, 227,
+		47, 16, 58, 17, 182, 189, 28, 42, 223, 183, 170, 213, 119, 248, 152, 2, 44,
+		154, 163, 70, 221, 153, 101, 155, 167, 43, 172, 9, 129, 22, 39, 253, 19, 98,
+		108, 110, 79, 113, 224, 232, 178, 185, 112, 104, 218, 246, 97, 228, 251, 34,
+		242, 193, 238, 210, 144, 12, 191, 179, 162, 241, 81, 51, 145, 235, 249, 14,
+		239, 107, 49, 192, 214, 31, 181, 199, 106, 157, 184, 84, 204, 176, 115, 121,
+		50, 45, 127, 4, 150, 254, 138, 236, 205, 93, 222, 114, 67, 29, 24, 72, 243,
+		141, 128, 195, 78, 66, 215, 61, 156, 180,
+	];
+	const F3 = 1 / 3;
+	const G3 = 1 / 6;
+	/** @type {Array<Vector3>} */
+	const gradP = new Array(512);
+	/** @type {Array<number>} */
+	const perm = new Array(512);
+	if (seed > 0 && seed < 1) {
+		seed *= 65536;
+	}
+
+	seed = Math.floor(seed);
+	if (seed < 256) {
+		seed |= seed << 8;
+	}
+
+	for (let i = 0; i < 256; i++) {
+		let v;
+		if (i & 1) {
+			v = p[i] ^ (seed & 255);
+		} else {
+			v = p[i] ^ ((seed >> 8) & 255);
+		}
+
+		perm[i] = perm[i + 256] = v;
+		gradP[i] = gradP[i + 256] = grad3[v % 12];
+	}
+	/**
+	 * @param {number} xin -
+	 * @param {number} yin -
+	 * @param {number} zin -
+	 */
+	return function noise(xin, yin, zin) {
+		let n0, n1, n2, n3;
+		const s = (xin + yin + zin) * F3;
+		let i = Math.floor(xin + s);
+		let j = Math.floor(yin + s);
+		let k = Math.floor(zin + s);
+		const t = (i + j + k) * G3;
+		const x0 = xin - i + t;
+		const y0 = yin - j + t;
+		const z0 = zin - k + t;
+		let i1, j1, k1;
+		let i2, j2, k2;
+		if (x0 >= y0) {
+			if (y0 >= z0) {
+				i1 = 1;
+				j1 = 0;
+				k1 = 0;
+				i2 = 1;
+				j2 = 1;
+				k2 = 0;
+			} else if (x0 >= z0) {
+				i1 = 1;
+				j1 = 0;
+				k1 = 0;
+				i2 = 1;
+				j2 = 0;
+				k2 = 1;
+			} else {
+				i1 = 0;
+				j1 = 0;
+				k1 = 1;
+				i2 = 1;
+				j2 = 0;
+				k2 = 1;
+			}
+		} else {
+			if (y0 < z0) {
+				i1 = 0;
+				j1 = 0;
+				k1 = 1;
+				i2 = 0;
+				j2 = 1;
+				k2 = 1;
+			} else if (x0 < z0) {
+				i1 = 0;
+				j1 = 1;
+				k1 = 0;
+				i2 = 0;
+				j2 = 1;
+				k2 = 1;
+			} else {
+				i1 = 0;
+				j1 = 1;
+				k1 = 0;
+				i2 = 1;
+				j2 = 1;
+				k2 = 0;
+			}
+		}
+		const x1 = x0 - i1 + G3;
+		const y1 = y0 - j1 + G3;
+		const z1 = z0 - k1 + G3;
+		const x2 = x0 - i2 + 2 * G3;
+		const y2 = y0 - j2 + 2 * G3;
+		const z2 = z0 - k2 + 2 * G3;
+		const x3 = x0 - 1 + 3 * G3;
+		const y3 = y0 - 1 + 3 * G3;
+		const z3 = z0 - 1 + 3 * G3;
+		i &= 255;
+		j &= 255;
+		k &= 255;
+		const gi0 = gradP[i + perm[j + perm[k]]];
+		const gi1 = gradP[i + i1 + perm[j + j1 + perm[k + k1]]];
+		const gi2 = gradP[i + i2 + perm[j + j2 + perm[k + k2]]];
+		const gi3 = gradP[i + 1 + perm[j + 1 + perm[k + 1]]];
+		let t0 = 0.6 - x0 * x0 - y0 * y0 - z0 * z0;
+		if (t0 < 0) {
+			n0 = 0;
+		} else {
+			t0 *= t0;
+			n0 = t0 * t0 * gi0.dot3(x0, y0, z0);
+		}
+		let t1 = 0.6 - x1 * x1 - y1 * y1 - z1 * z1;
+		if (t1 < 0) {
+			n1 = 0;
+		} else {
+			t1 *= t1;
+			n1 = t1 * t1 * gi1.dot3(x1, y1, z1);
+		}
+		let t2 = 0.6 - x2 * x2 - y2 * y2 - z2 * z2;
+		if (t2 < 0) {
+			n2 = 0;
+		} else {
+			t2 *= t2;
+			n2 = t2 * t2 * gi2.dot3(x2, y2, z2);
+		}
+		let t3 = 0.6 - x3 * x3 - y3 * y3 - z3 * z3;
+		if (t3 < 0) {
+			n3 = 0;
+		} else {
+			t3 *= t3;
+			n3 = t3 * t3 * gi3.dot3(x3, y3, z3);
+		}
+		return 32 * (n0 + n1 + n2 + n3);
+	};
+};
+
 const Inputs = {
 	BUTTON_A: 0,
 	BUTTON_B: 1,
@@ -797,40 +992,7 @@ const main = async function main() {
 			artifactsContainer.classList.remove("full");
 
 			if (rebuildArtifacts) {
-				for (const [index, mediaItemId] of timelineMediaIds
-					.sort(
-						(a, b) =>
-							timelines
-								.get(a)?.[4]
-								.localeCompare(timelines.get(b)?.[4] ?? "") ?? 0,
-					)
-					.entries()) {
-					const mediaItem = timelines.get(mediaItemId);
-					if (mediaItem === undefined) {
-						console.error(`failed to find '${mediaItemId}'`);
-						continue;
-					}
-					const whd = mediaItem[6] ?? [100, 100, 0];
-					const isPortrait = whd[0] < whd[1];
-					const artifact = /** @type {HTMLImageElement} */ (
-						document.createElement("img")
-					);
-					artifact.classList.add("artifact");
-					if (cameraIsIdle) {
-						artifact.classList.add("pending");
-						artifact.dataset.src = resolveArtifactImage(mediaItem[4]);
-					} else {
-						artifact.src = resolveArtifactImage(mediaItem[4]);
-					}
-					if (mediaIsOpen && index === timelineMediaIdActive) {
-						artifact.classList.add("active");
-					}
-					artifact.style.width = `${(Math.round(isPortrait ? (whd[0] / whd[1]) * 100 : 100) / 100) * 5}cm`;
-					artifact.style.height = `${(Math.round(isPortrait ? 100 : (whd[1] / whd[0]) * 100) / 100) * 5}cm`;
-					artifact.style.rotate = `${Math.round((Math.random() - 0.5) * 180 - 30)}deg`;
-					artifact.style.translate = `${(Math.random() - 0.5) * 50}mm ${(Math.random() - 0.5) * 20}mm`;
-					artifactsContainer.appendChild(artifact);
-				}
+				rebuildArtifactStack();
 			}
 
 			const timelineIdentityName = timelines.get(idFocusedTimeline)?.[5];
@@ -952,8 +1114,6 @@ const main = async function main() {
 
 		/** @type {NodeListOf<HTMLImageElement> | undefined} */
 		let existingArtifacts;
-		/** @type {HTMLParagraphElement | undefined} */
-		let _previousStatusText;
 		DOM.read("updateStatus", () => {
 			existingArtifacts = /** @type {NodeListOf<HTMLImageElement>} */ (
 				document.querySelectorAll("#artifacts .artifact")
@@ -996,8 +1156,16 @@ const main = async function main() {
 
 			artifactsContainer.classList.add("full");
 
-			for (const artifact of existingArtifacts) {
-				artifact.style.rotate = `${Math.round((Math.random() - 0.5) * 180 - 30)}deg`;
+			const g = simplex();
+			for (const [index, artifact] of existingArtifacts.entries()) {
+				const n = g(
+					index / timelineMediaIds.length,
+					(timelineMediaIdActive ?? 0) / timelineMediaIds.length,
+					0,
+				);
+				const m = ((1 + n) / 2) * 180 - 90;
+				console.debug(n, m);
+				artifact.style.rotate = `${Math.round(m - 30)}deg`;
 			}
 
 			const mediaIdentityName =
@@ -1180,8 +1348,6 @@ const main = async function main() {
 
 		console.debug("🎥 Finalizing previous camera movement...");
 
-		/** @type {NodeListOf<HTMLImageElement>} */
-		let pendingArtifacts;
 		/** @type {NodeListOf<HTMLDivElement>} */
 		let pendingDays;
 		/** @type {NodeListOf<HTMLParagraphElement>} */
@@ -1191,9 +1357,6 @@ const main = async function main() {
 			View.position.x = window.scrollX;
 			View.position.y = window.scrollY;
 
-			pendingArtifacts = document.querySelectorAll(
-				"#artifacts .artifact.pending",
-			);
 			pendingDays = document.querySelectorAll(".calendar.previous.pending");
 			pendingStatusTexts = document.querySelectorAll(
 				"#status .text.previous.pending",
@@ -1206,22 +1369,6 @@ const main = async function main() {
 					targetElement.classList.remove("visible");
 					targetFocusElement.classList.add("visible");
 					targetFocusElement.style.transform = `translate(calc(${View.focus.x - 10}px), calc(${View.focus.y - 10}px)) scale(${(View.focus.width + 20) / 733}, ${(View.focus.height + 20) / 100})`;
-				}
-
-				for (const artifact of pendingArtifacts) {
-					if (artifact.dataset.src === undefined) {
-						if (artifact.complete) {
-							artifact.classList.remove("pending");
-						}
-						//console.error("Missing src in dataset!");
-					} else {
-						artifact.loading = "lazy";
-						artifact.src = artifact.dataset.src;
-						delete artifact.dataset.src;
-						artifact.addEventListener("load", () => {
-							artifact.classList.remove("pending");
-						});
-					}
 				}
 
 				for (const day of pendingDays) {
@@ -1252,6 +1399,14 @@ const main = async function main() {
 		window.clearTimeout(timeoutCameraUnlock);
 		timeoutCameraUnlock = undefined;
 		cameraMovementFinalize();
+	};
+
+	let windowWasResized = false;
+	/**
+	 * Remember to re-initialize graphics.
+	 */
+	const onResize = function onResize() {
+		windowWasResized = true;
 	};
 
 	let previousFirstVisibleNodeIndex = 0;
@@ -1803,7 +1958,21 @@ const main = async function main() {
 	let timelineMediaIds;
 	/** @type {number | undefined} */
 	let timelineMediaIdActive;
+
+	/**
+	 * The position of the media viewer dialog in 3D space.
+	 * @type {{
+	 * 	x: number,
+	 * 	y: number,
+	 * 	z: number
+	 * }}
+	 */
 	let mediaItemPosition = { x: 0, y: 100, z: 10 };
+
+	/**
+	 * Is the media viewer dialog currently open?
+	 * @type {boolean}
+	 */
 	let mediaIsOpen = false;
 
 	/**
@@ -1828,6 +1997,77 @@ const main = async function main() {
 			default:
 				return filename;
 		}
+	};
+
+	const rebuildArtifactStack = function rebuildArtifactStack() {
+		const neighbors = getNodeNeighbors(idFocused, idFocusedTimeline);
+
+		for (const [index, mediaItemId] of neighbors.mediaItems
+			.sort(
+				(a, b) =>
+					timelines.get(a)?.[4].localeCompare(timelines.get(b)?.[4] ?? "") ?? 0,
+			)
+			.reverse()
+			.entries()) {
+			const mediaItem = timelines.get(mediaItemId);
+			if (mediaItem === undefined) {
+				console.error(`failed to find '${mediaItemId}'`);
+				continue;
+			}
+			const whd = mediaItem[6] ?? [100, 100, 0];
+			const isPortrait = whd[0] < whd[1];
+			const artifact = /** @type {HTMLImageElement} */ (
+				document.createElement("img")
+			);
+			artifact.classList.add("artifact");
+			artifact.classList.add("pending");
+			artifact.dataset.src = resolveArtifactImage(mediaItem[4]);
+			if (mediaIsOpen && index === timelineMediaIdActive) {
+				artifact.classList.add("active");
+			}
+			artifact.style.width = `${(Math.round(isPortrait ? (whd[0] / whd[1]) * 100 : 100) / 100) * 5}cm`;
+			artifact.style.height = `${(Math.round(isPortrait ? 100 : (whd[1] / whd[0]) * 100) / 100) * 5}cm`;
+			artifact.style.rotate = `${Math.round((Math.random() - 0.5) * 180 - 30)}deg`;
+			artifact.style.translate = `${(Math.random() - 0.5) * 50}mm ${(Math.random() - 0.5) * 20}mm`;
+			artifactsContainer.appendChild(artifact);
+		}
+	};
+
+	const artifactStackUpdate = function artifactStackUpdate() {
+		/** @type {NodeListOf<HTMLImageElement> | undefined} */
+		let existingArtifacts;
+		DOM.read("artifactStackUpdate", () => {
+			existingArtifacts = /** @type {NodeListOf<HTMLImageElement>} */ (
+				document.querySelectorAll("#artifacts .artifact")
+			);
+		});
+		DOM.write("artifactStackUpdate", () => {
+			if (existingArtifacts === undefined) {
+				return;
+			}
+			for (const [_index, artifact] of existingArtifacts.entries()) {
+				if (
+					artifact.classList.contains("pending") &&
+					typeof artifact.dataset.src === "string"
+				) {
+					artifact.src = artifact.dataset.src;
+					delete artifact.dataset.src;
+					break;
+				}
+				if (artifact.classList.contains("pending") && artifact.complete) {
+					artifact.classList.remove("pending");
+					break;
+				}
+				/*
+				if (mediaIsOpen && index === timelineMediaIdActive) {
+					artifact.classList.add("active");
+				} else {
+					artifact.classList.remove("active");
+				}
+				*/
+				artifact.classList.remove("active");
+			}
+		});
 	};
 
 	/** @type {number | null} */
@@ -1894,6 +2134,7 @@ const main = async function main() {
 			dialogVideo.style.display = "none";
 		});
 	};
+
 	/**
 	 * Show the media item with the given index.
 	 *
@@ -3054,8 +3295,8 @@ const main = async function main() {
 	//#region Frame Loop
 	/** @type {number | undefined} */
 	let previousTimestamp;
-	/** @type {number | undefined} */
-	let previousTimestampStarfield;
+	/** @type {number } */
+	let previousTimestampStarfield = 0;
 	/** @type {number | undefined} */
 	let timeoutCull;
 	let cullEffectsArePending = false;
@@ -3063,11 +3304,16 @@ const main = async function main() {
 	 * @param timestamp {number} -
 	 */
 	const present = function present(timestamp) {
+		if (windowWasResized) {
+			windowWasResized = false;
+			setTimeout(function reInitializeGraphics() {
+				initGraphics();
+			}, 1000);
+			return;
+		}
+
 		if (previousTimestamp === undefined) {
 			previousTimestamp = timestamp;
-		}
-		if (previousTimestampStarfield === undefined) {
-			previousTimestampStarfield = timestamp;
 		}
 
 		const delta = timestamp - previousTimestamp;
@@ -3149,6 +3395,7 @@ const main = async function main() {
 						View.window.height / 2 < Math.abs(planeSet[1] - planeOffsets[1])
 							? "none"
 							: "ease-out all 0.9s";
+					/*
 					planes[0].style.opacity =
 						View.window.height / 2 < Math.abs(planeSet[0] - planeOffsets[0])
 							? "0"
@@ -3157,6 +3404,7 @@ const main = async function main() {
 						View.window.height / 2 < Math.abs(planeSet[1] - planeOffsets[1])
 							? "0"
 							: "1";
+							*/
 
 					planes[0].style.transform = `translateY(${-planeOffsets[0]}px)`;
 					planes[1].style.transform = `translateY(${-planeOffsets[1]}px)`;
@@ -3167,6 +3415,8 @@ const main = async function main() {
 				previousTimestampStarfield = timestamp;
 			});
 		}
+
+		artifactStackUpdate();
 
 		if (mediaIsOpen) {
 			DOM.write("updateMediaItem", () => {
@@ -3247,6 +3497,8 @@ const main = async function main() {
 
 			stars = Math.floor(stars * 0.9);
 		}
+
+		window.requestAnimationFrame(present);
 	};
 
 	const firstFrame = function firstFrame() {
@@ -3257,25 +3509,14 @@ const main = async function main() {
 		//cull();
 
 		console.info("🍲 Ensuring audio samples are ready...");
-		Promise.all(samplesLoading.values().toArray()).then(() => {
+		Promise.all(samplesLoading.values().toArray()).then(function setupUi() {
 			console.info("🍲 Setting up UI...");
 
 			returnToNeutral();
 
 			document.body.classList.remove("loading");
 
-			window.setTimeout(() => {
-				calendarContainer.classList.add("open");
-				console.info("🍲 Calendar shown.");
-			}, 5000);
-
-			window.setTimeout(() => {
-				//artifactsContainer.classList.add("open");
-				statusContainer.classList.add("open");
-				console.info("🍲 Status shown.");
-			}, 6000);
-
-			window.setTimeout(() => {
+			window.setTimeout(function removeLoaderFromDOM() {
 				loader.remove();
 				console.info("🍲 Loader removed.");
 			}, 10000);
@@ -3366,7 +3607,7 @@ const main = async function main() {
 		document.addEventListener("keydown", onKeyDown);
 		document.addEventListener("keyup", onKeyUp);
 		window.addEventListener("popstate", onPopState);
-		window.addEventListener("resize", initGraphics);
+		window.addEventListener("resize", onResize);
 		window.addEventListener("scrollend", onScrollEnd);
 
 		window.setTimeout(firstFrame);
