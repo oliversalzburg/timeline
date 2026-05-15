@@ -1,4 +1,4 @@
-1. On already fastbooting device, with the device off, hold power for 4s then release (or the device turns off again). Wait for the Intel NUC logo to appear. If the device boots into the OS, repeat the process. Turn off fastboot until installation is complete.
+1. On already fastbooting device, with the device off, hold power for 4s then release (or the device turns off again). Wait for the Intel NUC logo to appear. The button should light up blue very briefly. If the device boots into the OS, repeat the process. Turn off fastboot until installation is complete.
 	Warning: Hardwired USB IO is required!
 1. Update BIOS to `KY0074.bio`. BIOS should show: KYSKLi70.86A.0074.2021.1029.0102
 1. Disable Legacy Boot, enable only Internal UEFI Shell and USB as boot devices.
@@ -40,14 +40,12 @@ Installation media no longer required
 
 # $ # sudo efibootmgr --bootnum 1 --delete-bootnum
 # $ sudo apt update && sudo apt autoremove && sudo apt full-upgrade
-
-1. Ensure /boot only has 1 kernel. sudo rm /boot/*-6.18.9+*
-
 # $ sudo update-grub
 
 1. Reboot. Technically not required, but gives us a good feeling to know it can reboot up until here. Should default boot
 
 # $ sudo dpkg-reconfigure linux-image-$(uname -r)
+sudo update-initramfs -u -k all
 # $ sudo /sbin/create_EFI_Boot_Entry.sh
 
 1. Reboot. Technically not required, but gives us a good feeling to know it can reboot up until here. Should skip grub
@@ -60,4 +58,16 @@ If the device freezes on boot, powercycle before panicing.
 1. Reboot. Should boot: Intel NUC logo -> white blinking cursor -> black -> plymouth spinner -> white blinking cursor -> (cage'd) Chromium
 
 1. SSH into device
+
+```
+bluetoothctl
+scan on
+scan off
+devices (controller visible?)
+[NEW] Device 78:86:2E:7B:66:1F Xbox Wireless Controller
+pair 78:86:2E:7B:66:1F
+trust 78:86:2E:7B:66:1F
+connect 78:86:2E:7B:66:1F
+exit (controller should instantly work in active subject UI session)
+```
 

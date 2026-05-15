@@ -395,7 +395,8 @@ test: lib/tsconfig.source.tsbuildinfo
 	touch .venv/touchfile
 
 # Nodejs dependency handling
-node_modules/.package-lock.json:
+package-lock.json: package.json
+node_modules/.package-lock.json: package-lock.json
 # This check is a hack for GitHub CI environments. The graphviz in the APT repo
 # may or may not work as expected. The lab environment uses a locally built
 # version of GraphViz.
