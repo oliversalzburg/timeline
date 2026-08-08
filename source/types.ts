@@ -1,4 +1,5 @@
 import type { RendererOptions } from "./renderer.js";
+
 export type { RendererOptions };
 
 export interface TimelineDocument {
