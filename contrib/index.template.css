@@ -285,7 +285,7 @@ body {
 		flex-direction: column;
 
 		position: fixed;
-		bottom: 0;
+		bottom: -2px;
 		left: 0;
 		width: 100vw;
 		margin: 0;

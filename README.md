@@ -60,8 +60,11 @@ from the entry.
 # Build universe straight-forward
 remake <origin>
 
+# Check why things have to be rebuilt
+remake --dry-run --trace
+
 # Build universe
-remake --jobs=24 --max-load=24 --silent --output-sync <origin> 2>&1 | tee build.log
+remake --jobs=24 --max-load=24 --silent --output-sync 2>&1 | tee build.log
 
 # Rebuild MTG editions data set.
 dot -Tsvg:cairo timelines/mtg-editions.yml.gv > timelines/mtg-editions.yml.svg

@@ -65,7 +65,7 @@ ifneq ($(PROBE),)
 endif
 
 .PHONY: default build clean docs git-hook pretty lint test coverage universe
-.PRECIOUS: %/universe.yml %.dotus %.idotus
+.PRECIOUS: %/universe.yml %.dotus %.ibgus %.idotus
 
 default: \
 	$(OUTPUT)/pedigree.pdf \
@@ -191,9 +191,10 @@ $(OUTPUT)/universe.report : $(OUTPUT_BUILD)/universe.report
 		"--target=$(patsubst %/universe-public.info,%/universe-public.gvus,$@)"
 	@date +"%FT%T%z DEMO Universe (Meta-)Information generated '$@'."
 
-%/universe.svg : $(SEGMENTS_ISVG) $(_OBJECTS)
+%/universe.svg.loose : $(SEGMENTS_ISVG) contrib/svgcat.js
 	@node --enable-source-maps contrib/svgcat.js \
-		"--target=$@.loose" $(SEGMENTS_ISVG)
+		"--target=$@" $(SEGMENTS_ISVG)
+%/universe.svg : %/universe.svg.loose contrib/svgnest.js
 	@node --enable-source-maps contrib/svgnest.js \
 		"--assets=$(OUTPUT_BUILD)" \
 		"--target=$@" "$@.loose"

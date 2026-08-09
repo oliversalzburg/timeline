@@ -2148,6 +2148,22 @@ const main = async function main() {
 	};
 
 	/**
+	 * Reset the currently visible media item to the default position.
+	 */
+	const mediaResetPosition = function mediaResetPosition() {
+		if (timelineMediaIds === undefined || timelineMediaIdActive === undefined) {
+			return false;
+		}
+		const mediaItem = timelines.get(timelineMediaIds[timelineMediaIdActive]);
+		const whd = mediaItem?.[6] ?? [100, 100, 0];
+
+		const scaleW = whd[0] / View.window.width;
+		const scaleH = whd[1] / View.window.height;
+		const scale = Math.max(scaleW, scaleH);
+		mediaItemPosition = { x: 0, y: 0, z: scale * -20 };
+	};
+
+	/**
 	 * Show the media item with the given index.
 	 *
 	 * @param {number} mediaIndex -
@@ -2185,7 +2201,7 @@ const main = async function main() {
 		DOM.write("mediaShow", () => {
 			if (mediaPath.startsWith("/kiwix/")) {
 				dialog.style.height = "";
-				dialog.style.width = "";
+				dialog.style.width = "100vw";
 				dialogIFrame.src = mediaPath;
 				dialogIFrame.style.display = "block";
 			} else if (mediaPath.endsWith(".pdf")) {
@@ -2340,6 +2356,13 @@ const main = async function main() {
 					released: { [Inputs.BUTTON_RT]: returnToMedia },
 				};
 			},
+			[Inputs.BUTTON_KNOB_RIGHT]: () => {
+				mediaResetPosition();
+				return {
+					name: "return",
+					released: { [Inputs.BUTTON_KNOB_RIGHT]: returnToMedia },
+				};
+			},
 		},
 		axes: (frame) => {
 			let changed = false;
@@ -2359,9 +2382,11 @@ const main = async function main() {
 			}
 
 			if (changed) {
+				const limit = (mediaItemPosition.z + 130) / 150;
+				const scale = 10 * limit;
 				mediaItemPosition.x = Math.max(
-					Math.min(mediaItemPosition.x, 200),
-					-200,
+					Math.min(mediaItemPosition.x, 200 * scale),
+					-200 * scale,
 				);
 				mediaItemPosition.y = Math.max(
 					Math.min(mediaItemPosition.y, 1_000),
