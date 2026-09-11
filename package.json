@@ -20,7 +20,7 @@
 		"@biomejs/biome": "2.5.12",
 		"@oliversalzburg/js-utils": "0.7.1",
 		"@types/node": "26.4.1",
-		"@types/web": "0.0.354",
+		"@types/web": "0.0.356",
 		"esbuild": "0.28.2",
 		"http-server": "14.1.1",
 		"typescript": "7.0.2"
