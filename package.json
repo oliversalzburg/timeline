@@ -18,7 +18,7 @@
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.5.12",
-		"@oliversalzburg/js-utils": "0.7.1",
+		"@oliversalzburg/js-utils": "0.8.0",
 		"@types/node": "26.4.1",
 		"@types/web": "0.0.356",
 		"esbuild": "0.28.2",
