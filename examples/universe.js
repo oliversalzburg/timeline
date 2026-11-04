@@ -178,17 +178,12 @@ const metrics = new Map(
 const globalEarliest = metrics
 	.values()
 	.reduce(
-		(previous, current) =>
-			current.timeEarliest < previous ? current.timeEarliest : previous,
+		(previous, current) => Math.min(current.timeEarliest, previous),
 		Number.POSITIVE_INFINITY,
 	);
 const globalLatest = metrics
 	.values()
-	.reduce(
-		(previous, current) =>
-			previous < current.timeLatest ? current.timeLatest : previous,
-		0,
-	);
+	.reduce((previous, current) => Math.max(previous, current.timeLatest), 0);
 const finalEntryCount = trim.timelinesRetained.reduce(
 	(previous, timeline) => previous + timeline.records.length,
 	0,
