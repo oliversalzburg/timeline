@@ -1,11 +1,11 @@
 {
-	"$schema": "https://biomejs.dev/schemas/2.5.7/schema.json",
+	"$schema": "https://biomejs.dev/schemas/2.6.4/schema.json",
 	"assist": {
 		"actions": {
-			"recommended": true,
+			"preset": "recommended",
 			"source": {
 				"organizeImports": "on",
-				"recommended": true,
+				"preset": "recommended",
 				"useSortedKeys": "off"
 			}
 		},
@@ -15,7 +15,9 @@
 		"ignoreUnknown": true,
 		"includes": [
 			"**",
+			"!**/*.md",
 			"!**/*.svg",
+			"!**/*.yml",
 			"!.venv",
 			"!coverage",
 			"!fixtures",
